@@ -1,1 +1,32 @@
-æ [æʃ] is a PHP framework. Simple to learn. Simple to use. Simple to extend.
+æ [æʃ] is a web application and content management system development framework written in PHP.
+
+## Philosophy
+
+1. There are many ways around the same problem. Few of them are short, pleasant and easy to find.
+2. The tool must fit its purpose. A good tool fits only one.
+3. Don't write code that generates code, unless it's boilerplate.
+4. 100 lines of code have 10 times less bugs than 1000 lines of code.
+5. There is no good code. No code is good code.
+6. There is beautiful code. Programmers talk in it to each other.
+7. Don't code bullshit.
+
+### Simple to learn
+
+Each library must come with an example of how to use it.
+
+### Simple to use
+
+Libraries must require as little configuration as possible. Method names must be memorable.
+
+### Simple to extend
+
+Libraries should be extended only to add new functionality. Delegation pattern should used in all other cases:
+
+	$utility = new Utility();
+	$plugin = new Plugin();
+
+	$utility->connect($plugin);
+
+### Simple to support
+
+Examples must be used as regression tests. Slimmer, well thought through code tend to be less buggy. Complex solutions must be avoided at all cost.
