@@ -16,11 +16,11 @@
 # limitations under the License.
 # 
 
-ae::invoke('aeDecorator');
+ae::invoke('aeContainer');
 
-class aeDecorator
+class aeContainer
 /*
-	Decorates the views. 
+	Wraps output of a script into an HTML container.
 */
 {
 	protected $path;

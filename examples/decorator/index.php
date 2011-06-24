@@ -1,5 +1,7 @@
 <?php
-	$decorator = ae::load('decorator.php','/examples/decorator/decorator.php');
-	$decorator->set('title', 'Example: Decorator');
+	$container = ae::load('container.php', '/examples/decorator/container_inner.php');
+	$container
+		->set('title', 'Example: Container')
+		->set('header', 'Hello World!');
 ?>
-<h1>Hello World</h1>
+<p>A simple nestable view heirarchy.</p>

@@ -1,6 +1,6 @@
 <?php
-	$decorator = ae::load('decorator.php','/examples/decorator/decorator.php');
-	$decorator->set('title', 'æ');
+	$container = ae::load('container.php','/examples/decorator/container_html.php');
+	$container->set('title', 'æ');
 	
 	$Request = ae::load('request.php');
 ?>
