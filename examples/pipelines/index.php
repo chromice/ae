@@ -1,35 +1,30 @@
 <?php
 
-$process = new aeProcess('image-resize');
+/*
+	This is simple Beanstalkd abstraction I will some day use.
+*/
 
-$job = $process->job('thumbnail/some_image.png?w=200&h=200')
+$pipe = new aePipeline('image-resize');
+
+// $job = $process->job(array())
+$job = $pipe->job('thumbnail/some_image.png?w=200&h=200')
 	->delay(50)
 	->priority(200);
 
-$process->queue($job);
+$pipe->push($job);
 
-$job = $process->job(); // next job
+$job = $pipe->pop(); // get next job from the queue
 
 $job->id;
-$job->data; // raw data
+$job->data; // 'thumbnail/some_image.png?w=200&h=200'
 
-if ($job->format() !== 'json') // or ($job->format() === 'path')
-{
-	// Path format
-	$path = $job->path(); // "thumbnail/some_image.png"
-	$x = $job->paremeter('w'); // $x = 200;
-	$y = $job->paremeter('h'); // $y = 200;
-} 
-else
-{
-	// JSON format
-	$data = $job->decode();
-}
-
+$url = $job->url();
+// OR 
+// 	$url = parse_url($job->data); parse_str($url['query'], $url['query']);
 
 
 $job->delay(100);
-$queue->queue($job);
+$pipe->queue($job);
 
 // $queue->bury($job);
 // $queue->kick(1);
