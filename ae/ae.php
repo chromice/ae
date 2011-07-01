@@ -35,10 +35,17 @@ final class ae
 	
 	public function __construct($context, $path = null)
 	/*
-		Creates a new context that all ae::*() calls will use while the object exists.
-	
-			$context = new ae('modules.auth');
-			$model = ae::load('data.php'); // load data model for auth module
+		Creating and/or switches to a new context. Context is defined by
+		its name and path to directory where its files reside.
+		
+			$context = new ae('module.examples','examples/');
+			echo ae::resolve('foo.php'); // 'examples/foo.php'
+		
+			$context2 = new ae('module.samples', 'samples/')
+			echo ae::resolve('foo.php'); // 'samples/foo.php'
+			unset($context2)
+			
+			echo ae::resolve('foo.php'); // 'examples/foo.php'
 	*/
 	{
 		if (!isset(self::$contexts[$context]))
@@ -77,7 +84,20 @@ final class ae
 	
 	public static function resolve($path)
 	/*
-		Resolves relative paths to directories and files.
+		Resolves a relative path to a directory or file. By default
+		'ae' directory is used for base:
+		
+			echo ae::resolve('options.php'); // '.../ae/options.php'
+		
+		You may create a context for a different directory:
+		
+			$context = new ae('module.foo','path/to/foo');
+			echo ae::resolve('bar.php'); // 'path/to/foo/bar.php'
+		
+		ae would still fallback to the core directory:
+		
+			$request = ae::load('request.php');
+		
 	*/
 	{
 		if (isset(self::$paths[$path]))
@@ -121,7 +141,8 @@ final class ae
 	
 	public static function invoke($misc, $type = 0)
 	/*
-		Defines a class to instantiate or an object factory to use when the file is loaded.
+		Called from inside of the loaded or imported script to define 
+		class name or factory that load() method should use.
 		
 			ae::invoke('SomeClassName'); 
 			ae::invoke('SomeClassName', ae::singleton);
@@ -145,7 +166,7 @@ final class ae
 	
 	public static function import($path)
 	/*
-		Resolves relative path and imports the file.
+		Imports external script. Does not do anything else.
 		
 			ae::import('path/to/script.php');
 	*/
@@ -165,82 +186,18 @@ final class ae
 		} catch (Exception $e) {
 			throw $e;
 		}
-		
-		// TODO: return some meta information, e.g. class name, callback, type, etc
 	}
 	
 	public static function load($path, $parameters = null)
 	/*
-		Imports the file and attepmts to invoke an object.
+		Loads a script and attempts to invoke an object defined in it:
 		
 			$image = ae::load('image.php','/path/to/image.png');
 	*/
 	{
+		ae::import($path);
+		
 		$path = self::resolve($path);
-		
-		if (isset(self::$paths[$path]))
-		{
-			return self::_invoke($path, $parameters);
-		}
-		
-		$ps = new aeSwitch(self::$current_path, $path);
-		
-		try {
-			self::$paths[$path] = null;
-			self::_include();
-		} catch (Exception $e) {
-			throw $e;
-		}
-		
-		return self::_invoke($path, $parameters);
-	}
-	
-	public static function render($path, $parameters = null)
-	/*
-		Renders a view and returns it as a string.
-	*/
-	{
-		$path = self::resolve($path);
-		
-		$ps = new aeSwitch(self::$current_path, $path);
-		$ob = new aeBuffer();
-		
-		try {
-			self::_include($parameters);
-		} catch (Exception $e) {
-			throw $e;
-		}
-		
-		$output = $ob->output();
-		
-		return $output;
-	}
-	
-	private static function _include($__ae_secret_array__ = null)
-	/*
-		Includes an external script with nearly pristine namespace
-	*/
-	{
-		if (is_array($__ae_secret_array__))
-		{
-			extract($__ae_secret_array__, EXTR_REFS);
-		}
-		
-		unset($__ae_secret_array__);
-		
-		require self::$current_path;
-	}
-	
-	private static function _invoke($path, $parameters)
-	/*
-		Invokes an object for the path.
-	*/
-	{
-		if (!isset(self::$paths[$path]))
-		{
-			return;
-		}
-		
 		$data =& self::$paths[$path];
 		
 		if (isset($data['instance']))
@@ -263,6 +220,40 @@ final class ae
 		}
 		
 		return $instance;
+	}
+	
+	public static function render($path, $parameters = null)
+	/*
+		Renders a script and returns the output.
+	*/
+	{
+		$path = self::resolve($path);
+		
+		$ps = new aeSwitch(self::$current_path, $path);
+		$ob = new aeBuffer();
+		
+		try {
+			self::_include($parameters);
+		} catch (Exception $e) {
+			throw $e;
+		}
+		
+		return $ob->output();
+	}
+	
+	private static function _include($__ae_secret_array__ = null)
+	/*
+		Includes an external script with nearly pristine namespace
+	*/
+	{
+		if (is_array($__ae_secret_array__))
+		{
+			extract($__ae_secret_array__, EXTR_REFS);
+		}
+		
+		unset($__ae_secret_array__);
+		
+		require self::$current_path;
 	}
 }
 
