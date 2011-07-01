@@ -19,6 +19,22 @@
 ae::invoke('aeOptions');
 
 class aeOptions
+/*
+	Provides simple interface for library and module configuration.
+	
+		$lib_options = ae::load('options.php','library');
+		
+		$lib_options->set('bar','foo');
+		
+		echo $lib_options->get('bar', 'default value'); // 'foo'
+		echo $lib_options->get('foo', 'default value'); // 'default value'
+		
+		$ref =& $lib_options->reference();
+		$ref['foo'] = 'bar';
+		
+		echo $ref['bar']; // 'foo'
+		echo $ref['foo']; // 'bar'
+*/
 {
 	protected static $options;
 	protected $reference;
