@@ -20,8 +20,8 @@ ae::invoke('aeProbe');
 
 class aeProbe
 {
-	const report_correction = 92; // footprint of the report() itself
-	const object_correction = 448; // foot of the probe itself
+	const report_footprint = 92; // footprint of the report()
+	const object_footprint = 448; // footprint of the probe
 	
 	protected $name;
 	
@@ -46,7 +46,7 @@ class aeProbe
 		static $initial_time, $last_t, $last_m;
 		
 		$t = microtime(true);
-		$m = memory_get_usage() - self::report_correction;
+		$m = memory_get_usage() - self::report_footprint;
 		$ts = 0.0;
 
 		if (!isset($initial_time))
@@ -56,7 +56,7 @@ class aeProbe
 			$initial_time = $t;
 
 			$last_t = $t;
-			$last_m = $m - self::object_correction;
+			$last_m = $m - self::object_footprint;
 		}
 		else
 		{

@@ -127,10 +127,12 @@ class aeResponse
 		unset($this->buffer);
 		
 		// Compress output, if possible
+		// TODO: Make compression level user configurable.
 		$output = $this->_compress($output, 5);
 		
 		// Content-*
-		$this->header('Content-type', $this->type . '; charset='.$this->charset)
+		$this
+			->header('Content-type', $this->type . '; charset='.$this->charset)
 			->header('Content-length', strlen($output));
 		
 		// Output headers

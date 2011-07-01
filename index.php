@@ -2,7 +2,7 @@
 
 include 'ae/ae.php';
 
-$module = new ae('ae/examples', dirname(__FILE__));
+$module = new ae('module.examples', dirname(__FILE__));
 	
 $response = ae::load('response.php');
 $request = ae::load('request.php', !empty($_GET['uri']) ? $_GET['uri'] : '/');
