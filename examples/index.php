@@ -11,9 +11,9 @@
 		'Decorator' => 'decorator',
 		'Options' => 'options',
 		'Probes' => 'probes',
-		'Request' => 'request/is/here'
+		'Request' => 'non-existant/uri/is/here'
 	) as $name => $uri): ?>
-	<li><a href="/?uri=<?= $Request->href($uri) ?>"><?= $name ?></a></li>
+	<li><a href="/?uri=<?= $uri ?>"><?= $name ?></a></li>
 <?php endforeach ?>
 </ul>
 
