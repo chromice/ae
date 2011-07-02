@@ -193,6 +193,8 @@ final class ae
 		Loads a script and attempts to invoke an object defined in it:
 		
 			$image = ae::load('image.php','/path/to/image.png');
+		
+		
 	*/
 	{
 		ae::import($path);

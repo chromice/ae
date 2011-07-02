@@ -100,7 +100,7 @@ class aeRequest
 		}
 		
 		$segments = implode('/', $this->segments);
-		$segments = $this->_rewrite($segments);
+		$segments = $this->rewrite($segments);
 		$segments = explode('/', $segments);
 		
 		for ($l = count($segments); $l > 0; $l--)
