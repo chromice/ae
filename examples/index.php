@@ -10,10 +10,10 @@
 <?php foreach (array(
 		'Decorator' => 'decorator',
 		'Options' => 'options',
-		'Probes' => 'probes',
-		'Request' => 'non-existant/uri/is/here'
+		'Probes' => 'probe',
+		'Request' => 'request/some/uri/segments'
 	) as $name => $uri): ?>
-	<li><a href="/?uri=<?= $uri ?>"><?= $name ?></a></li>
+	<li><a href="/<?= trim($uri,'/') ?>"><?= $name ?></a></li>
 <?php endforeach ?>
 </ul>
 

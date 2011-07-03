@@ -1,0 +1,40 @@
+# ======================
+# = Enable pretty urls =
+# ======================
+<IfModule mod_rewrite.c>
+	# Options +FollowSymLinks
+	RewriteEngine on
+	RewriteBase /
+	
+	# Do not rewrite, if the requested file or directory exists...
+	# 
+	# ...files:
+	RewriteCond %{REQUEST_FILENAME} !-f
+	#
+	# ...directories:
+	RewriteCond %{REQUEST_FILENAME} !-d
+	
+	# Choose:
+	#
+	# A: Rewrite request preserving $_GET parameters
+	RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
+	#
+	# B: Rewrite request without $_GET parameters
+	#RewriteRule ^(.*)$ index.php?/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+	# If mod_rewrite is not available, throw all non-existing 
+	# paths at index.php
+	ErrorDocument 404 /index.php
+</IfModule>
+
+# ============================
+# = Cache assests for a year =
+# ============================
+<ifmodule mod_expires.c>
+	<filesmatch "\.(swf|jpg|gif|png|css|js)$">
+		ExpiresActive on
+		ExpiresDefault "access plus 1 year"
+	</filesmatch>
+</ifmodule>

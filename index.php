@@ -12,7 +12,7 @@ $route = $request->route('/examples', array(
 
 if ($route->exists())
 {
-	echo ae::render($route->path());
+	$route->follow();
 }
 else
 {

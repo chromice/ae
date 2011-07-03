@@ -28,25 +28,117 @@ class aeRequest
 	protected $rules = array();
 	protected $rules_reverse = array();
 	
+	protected $method;
+	protected $is_cli = false;
+	protected $is_ajax = false;
 	
-	public function __construct($segments = null, $base_url = '/')
+	public function __construct()
 	{
-		if (is_null($segments))
+		// Who wants to deal with magic quotes?
+		if (get_magic_quotes_gpc())
 		{
-			// TODO: Detect segments automatically.
+		   trigger_error('Magic quotes must be turned off.', E_USER_ERROR);
 		}
 		
-		$this->base_url = $base_url;
-		$this->segments = explode('/', trim($segments, '/'));
-		array_map('urldecode', $this->segments);
+		// Method & type
+		$this->is_cli = defined('STDIN');
+		
+		if (!$this->is_cli)
+		{
+			$this->method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'UKNOWN';
+			$this->is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
+			
+			$this->segments = $this->_parse_uri();
+		}
+		else
+		{
+			$this->segments = $this->_parse_args();
+		}
 	}
 	
+	protected function _parse_uri()
+	{
+		// Parse uri
+		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
+		$uri = '';
+		
+		// Determine the uri path
+		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
+		{
+			$uri = isset($_SERVER[$var]) ? $_SERVER[$var] : @getenv($var);
+
+			if ($var === 'REQUEST_URI' && false !== ($pos = strpos($uri, '?')))
+			{
+				if (count($_GET) == 0)
+				{
+					// Query string has not been parsed. We do it ourselves.
+					parse_str(substr($uri, $pos + 1), $_GET);
+				}
+				
+				$uri = substr($uri, 0, $pos);
+			}
+			
+			if ($var !== 'PATH_INFO')
+			{
+				$uri = str_replace($script_name, '', $uri);
+			}
+
+			if ($uri)
+			{
+				break;
+			}
+		}
+		
+		$segments = explode('/', trim($uri, '/'));
+		
+		return array_map('urldecode', $segments);
+	}
+	
+	protected function _parse_args()
+	{
+		if (empty($_SERVER['argv']))
+		{
+			return array();
+		}
+		
+		$segements = $_SERVER['argv'];
+		array_shift($segements);
+		
+		return $segements;
+	}
+	
+	public function is($what)
+	{
+		$result = true;
+		$what = preg_split('/\s+/',$what);
+		
+		foreach ($what as $_what) switch ($_what)
+		{
+			case 'ajax':
+			case 'remote':
+				$result &= $this->is_ajax;
+				break;
+			case 'cli':
+			case 'shell':
+				$result &= $this->is_cli;
+				break;
+			case 'normal':
+			case 'standard':
+				$result &= !$this->is_cli && !$this->is_ajax;
+				break;
+			default:
+				$result &= $this->method === strtoupper($_what);
+		}
+		
+		return $result;
+	}
+
 	public function segment($offset, $default = false)
 	{
 		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
 	}
 	
-	public function segments($offset, $length = 1)
+	public function segments($offset = 0, $length = 1)
 	{
 		if (is_null($length) || ($length + $offset) > count($this->segments))
 		{
@@ -56,27 +148,6 @@ class aeRequest
 		return array_slice($this->segments, $offset, $length);
 	}
 	
-	public function is($type)
-	{
-		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
-		$is_cli = defined('STDIN');
-		
-		switch ($type)
-		{
-			case 'ajax':
-			case 'remote':
-				return $is_ajax;
-			case 'cli':
-			case 'shell':
-				return $is_cli;
-			case 'web':
-			case 'normal':
-				return !$is_cli && !$is_ajax;
-			default:
-				return false;
-		}
-	}
-
 	public function route($base_dir, $aliases = array())
 	{
 		$arguments = null;
@@ -113,6 +184,7 @@ class aeRequest
 			if (file_exists($path))
 			{
 				$arguments = array_slice($segments, $l);
+				break;
 			}
 		} 
 		
@@ -127,9 +199,6 @@ class aeRequest
 	}
 
 	public function rewrite($uri, $reverse = false)
-	/*
-		Does the actual mapping.
-	*/
 	{
 		$uri = trim($uri, '/');
 		
@@ -151,10 +220,10 @@ class aeRequest
 
 
 class aeRoute
-/*
-	
-*/
 {
+	protected $path;
+	protected $arguments;
+	
 	public function __construct($path, $arguments)
 	{
 		$this->path = $path;
@@ -169,6 +238,13 @@ class aeRoute
 	public function path()
 	{
 		return $this->path;
+	}
+	
+	public function follow($parameters = array())
+	{
+		$parameters['route'] = $this;
+		
+		echo ae::render($this->path, $parameters);
 	}
 	
 	public function argument($offset, $default = false)

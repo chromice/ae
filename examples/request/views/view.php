@@ -1,0 +1,1 @@
+Hello world! <?= $route->argument(0); ?>
