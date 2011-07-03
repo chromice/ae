@@ -87,7 +87,7 @@ class aeResponse
 	
 	public function __destruct()
 	{
-		$this->send();
+		$this->present();
 	}
 	
 	public function reset()
@@ -105,7 +105,7 @@ class aeResponse
 			->charset('utf-8');
 	}
 	
-	public function send()
+	public function present()
 	/*
 		Sends the response to the browser and halts the execution.
 	*/

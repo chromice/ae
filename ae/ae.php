@@ -126,8 +126,6 @@ final class ae
 			
 			return realpath($__path);
 		}
-		
-		return false;
 	}
 	
 	// ===================

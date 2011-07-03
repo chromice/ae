@@ -35,7 +35,7 @@ class aeRequest
 	public function __construct()
 	{
 		// Who wants to deal with magic quotes?
-		if (get_magic_quotes_gpc())
+		if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 		{
 		   trigger_error('Magic quotes must be turned off.', E_USER_ERROR);
 		}
@@ -217,6 +217,7 @@ class aeRequest
 		}
 	}
 }
+
 
 
 class aeRoute

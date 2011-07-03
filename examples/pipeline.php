@@ -5,7 +5,7 @@
 */
 
 $pipe = new aePipeline('image-resize');
-// $pipe will use tube 'image-resize'
+// $pipe will use 'image-resize' tube
 
 // $job = $process->job(array())
 $job = $pipe->job('thumbnail/some_image.png?w=200&h=200')
@@ -19,18 +19,15 @@ $job = $pipe->pop(); // get next job from the queue
 $job->id;	// a Beantalkd ID
 $job->data; // 'thumbnail/some_image.png?w=200&h=200'
 
+$data = parse_url($job->data); parse_str($data['query'], $data['query']);
+
 // A nice to have feature.
 $stats = $pipe->command('stats'); // returns an associative array.
 // OR
 $tube_stats = $pipe->command('stats-tube image-resize'); // same but for this tube
 
-$url = $job->url();
-// OR 
-// 	$url = parse_url($job->data); parse_str($url['query'], $url['query']);
-
-
 $job->delay(100);
-$pipe->queue($job);
+$pipe->push($job);
 
 // $queue->bury($job);
 // $queue->kick(1);

@@ -10,7 +10,7 @@ $request = ae::load('request.php');
 	
 	cli request: index.php segment-1 segment-2 segment-3
 */
-echo '<pre>';
+echo "<pre>\n";
 if ($request->is('normal get')) // or 'cli', or 'normal'
 {
 	echo "Normal GET request\n";
@@ -43,5 +43,5 @@ else
 		'uri' => implode(',', $request->segments())
 	));
 }
-echo '</pre>';
+echo "\n</pre>";
 
