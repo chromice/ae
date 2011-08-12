@@ -11,7 +11,7 @@
 		'Decorator' => 'decorator',
 		'Options' => 'options',
 		'Probes' => 'probe',
-		'Request' => 'request/some/uri/segments'
+		'Request' => 'request/view/some/uri'
 	) as $name => $uri): ?>
 	<li><a href="/<?= trim($uri,'/') ?>"><?= $name ?></a></li>
 <?php endforeach ?>

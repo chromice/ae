@@ -5,10 +5,8 @@ include 'ae/ae.php';
 $module = new ae('module.examples', dirname(__FILE__));
 	
 $response = ae::load('response.php');
-$request = ae::load('request.php', !empty($_GET['uri']) ? $_GET['uri'] : '/');
-$route = $request->route('/examples', array(
-	'non-existant/uri' => 'request'
-));
+$request = ae::load('request.php');
+$route = $request->route('/examples/');
 
 if ($route->exists())
 {

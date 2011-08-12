@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-ae::invoke('aeRequest', ae::singleton);
+ae::invoke(array('aeRoute','request'), ae::factory);
 
 class aeRequest
 /*
@@ -25,38 +25,97 @@ class aeRequest
 {
 	protected $segments = array();
 	
-	protected $rules = array();
-	protected $rules_reverse = array();
+	public function __construct($segments)
+	{
+		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
+	}
+		
+	public function is($what)
+	{
+		$is_cli = defined('STDIN');
+		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
+			&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
+		
+		$method = isset($_SERVER['REQUEST_METHOD']) ? 
+			strtoupper($_SERVER['REQUEST_METHOD']) : 'UKNOWN';
+		
+		$result = true;
+		$what = preg_split('/\s+/',$what);
+		
+		foreach ($what as $_what) switch ($_what)
+		{
+			case 'ajax':
+			case 'remote':
+				$result &= $is_ajax;
+				break;
+			case 'cli':
+			case 'shell':
+				$result &= $is_cli;
+				break;
+			case 'normal':
+			case 'standard':
+				$result &= !$is_cli && !$is_ajax;
+				break;
+			default:
+				$result &= $method === strtoupper($_what);
+		}
+		
+		return $result;
+	}
 	
-	protected $method;
-	protected $is_cli = false;
-	protected $is_ajax = false;
+	public function uri($offset = 0, $length = null)
+	{
+		if (is_null($length) || ($length + $offset) > count($this->segments))
+		{
+			$length = count($this->segments) - $offset;
+		}
+		
+		return implode('/', array_slice($this->segments, $offset, $length));
+	}
 	
-	public function __construct()
+	public function segment($offset, $default = false)
+	{
+		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
+	}
+	
+	public function route($base_dir)
+	{
+		return new aeRoute($this->uri(), $base_dir);
+	}
+}
+
+
+class aeRoute
+{
+	protected static $base_uri = '';
+	protected static $depth = 0;
+	protected static $segments;
+	
+	public static function request($segments)
 	{
 		// Who wants to deal with magic quotes?
 		if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 		{
-		   trigger_error('Magic quotes must be turned off.', E_USER_ERROR);
+		   trigger_error('Magic quotes must be turned off!', E_USER_ERROR);
 		}
 		
-		// Method & type
-		$this->is_cli = defined('STDIN');
+		// Custom request
+		if (!is_null($segments))
+		{
+			return new aeRequest($segments);
+		}
 		
-		if (!$this->is_cli)
+		// Obtain segments
+		if (empty(self::$segments))
 		{
-			$this->method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'UKNOWN';
-			$this->is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
-			
-			$this->segments = $this->_parse_uri();
+			self::$depth = 0;
+			self::$segments = defined('STDIN') ? self::_parse_args() : self::_parse_uri();
 		}
-		else
-		{
-			$this->segments = $this->_parse_args();
-		}
+		
+		return new aeRequest(array_slice(self::$segments, self::$depth));
 	}
 	
-	protected function _parse_uri()
+	protected static function _parse_uri()
 	{
 		// Parse uri
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
@@ -94,63 +153,26 @@ class aeRequest
 		return array_map('urldecode', $segments);
 	}
 	
-	protected function _parse_args()
+	protected static function _parse_args()
 	{
 		if (empty($_SERVER['argv']))
 		{
 			return array();
 		}
 		
-		$segements = $_SERVER['argv'];
-		array_shift($segements);
+		$segments = $_SERVER['argv'];
+		array_shift($segments);
 		
-		return $segements;
+		return $segments;
 	}
 	
-	public function is($what)
-	{
-		$result = true;
-		$what = preg_split('/\s+/',$what);
-		
-		foreach ($what as $_what) switch ($_what)
-		{
-			case 'ajax':
-			case 'remote':
-				$result &= $this->is_ajax;
-				break;
-			case 'cli':
-			case 'shell':
-				$result &= $this->is_cli;
-				break;
-			case 'normal':
-			case 'standard':
-				$result &= !$this->is_cli && !$this->is_ajax;
-				break;
-			default:
-				$result &= $this->method === strtoupper($_what);
-		}
-		
-		return $result;
-	}
-
-	public function segment($offset, $default = false)
-	{
-		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
-	}
+	protected $uri;
+	protected $offset;
+	protected $path;
 	
-	public function segments($offset = 0, $length = 1)
+	public function __construct($uri, $base_dir)
 	{
-		if (is_null($length) || ($length + $offset) > count($this->segments))
-		{
-			$length = count($this->segments) - $offset;
-		}
-		
-		return array_slice($this->segments, $offset, $length);
-	}
-	
-	public function route($base_dir, $aliases = array())
-	{
-		$arguments = null;
+		// Check if base directory exists
 		$base_dir = ae::resolve($base_dir);
 		
 		if (!is_dir($base_dir))
@@ -158,98 +180,47 @@ class aeRequest
 			trigger_error('Routing failed. Base directory "'.$base_dir.'" does not exist.', E_USER_ERROR);
 		}
 		
-		if (is_array($aliases)) foreach ($aliases as $from => $to)
-		{
-			$from = trim($from, '/');
-			$to = trim($to, '/');
-
-			$_from = '/^' .preg_quote($from,'/') .'/';
-			$_to = '/^' .preg_quote($to,'/') .'/';
-
-			$this->rules[$_from] = $to;
-			$this->rules_reverse[$_to] = $from;
-		}
+		$uri = trim($uri, '/');
 		
-		$segments = implode('/', $this->segments);
-		$segments = $this->rewrite($segments);
-		$segments = explode('/', $segments);
+		// Break into segments and search for a valid path
+		$segments = explode('/', $uri);
 		
 		for ($l = count($segments); $l > 0; $l--)
 		{ 
 			$path = array_slice($segments, 0, $l);
 			$path = implode('/', $path);
 			$path = empty($path) ? 'index.php' : $path . '.php';
-			$path = $base_dir . '/' . $path;
+			$path = $base_dir . '/' . $this->base_path . $path;
 			
 			if (file_exists($path))
 			{
-				$arguments = array_slice($segments, $l);
+				$this->path = $path;
+				$this->offset = $l;
 				break;
 			}
 		} 
-		
-		if (is_null($arguments))
-		{
-			return new aeRoute(null, $segments);
-		}
-		else
-		{
-			return new aeRoute($path, $arguments);
-		}
 	}
-
-	public function rewrite($uri, $reverse = false)
-	{
-		$uri = trim($uri, '/');
 		
-		if (count($this->rules) === 0)
-		{
-			return $uri;
-		}
-		
-		if (!$reverse)
-		{
-			return preg_replace(array_keys($this->rules), $this->rules, $uri);
-		}
-		else
-		{
-			return preg_replace(array_keys($this->rules_reverse), $this->rules_reverse, $uri);
-		}
-	}
-}
-
-
-
-class aeRoute
-{
-	protected $path;
-	protected $arguments;
-	
-	public function __construct($path, $arguments)
-	{
-		$this->path = $path;
-		$this->arguments = $arguments;
-	}
-
 	public function exists()
 	{
 		return !is_null($this->path);
 	}
 	
-	public function path()
-	{
-		return $this->path;
-	}
-	
 	public function follow($parameters = array())
 	{
-		$parameters['route'] = $this;
+		if (is_null($this->path))
+		{
+			trigger_error('Route does not exist.', E_USER_ERROR);
+		}
+		
+		$base_uri = self::$base_uri . '/' . $this->uri;
+		$depth = self::$depth + $this->offset;
+		
+		// Switch global base uri and depth for this context
+		$us = new aeSwitch(self::$base_uri, $base_uri);
+		$ds = new aeSwitch(self::$depth, $depth);
 		
 		echo ae::render($this->path, $parameters);
 	}
 	
-	public function argument($offset, $default = false)
-	{
-		return isset($this->arguments[$offset]) ? $this->arguments[$offset] : $default;
-	}
 }

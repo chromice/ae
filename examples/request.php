@@ -27,10 +27,7 @@ echo "\n";
 echo $request->segment(3, 'default'); // 'default'
 echo "\n";
 
-$route = $request->route('examples/request', array(
-	'request/' => 'views/view',
-	'another/alias' => 'some/other/path'
-));
+$route = $request->route('examples/request/views');
 
 if ($route->exists())
 {
@@ -39,9 +36,7 @@ if ($route->exists())
 }
 else
 {
-	ae::render('errors/404.php', array(
-		'uri' => implode(',', $request->segments())
-	));
+	echo ae::render('examples/request/views/404.php');
 }
 echo "\n</pre>";
 

@@ -16,6 +16,8 @@
 # limitations under the License.
 # 
 
+// TODO: a method that would create a few headers for Varnish and broswer caching.
+
 ae::invoke('aeResponse', ae::singleton);
 
 class aeResponse
@@ -26,6 +28,7 @@ class aeResponse
 	protected $status;
 	protected $type;
 	protected $charset;
+	protected $compression;
 	
 	protected $http_statuses = array(
 		100 => '100 Continue',
@@ -126,13 +129,11 @@ class aeResponse
 		$output = $this->buffer->output();
 		unset($this->buffer);
 		
-		// Compress output, if possible
-		// TODO: Make compression level user configurable.
-		$output = $this->_compress($output, 5);
+		// Compress output, if browser supports compression
+		$output = $this->_compress($output);
 		
 		// Content-*
-		$this
-			->header('Content-type', $this->type . '; charset='.$this->charset)
+		$this->header('Content-type', $this->type . '; charset='.$this->charset)
 			->header('Content-length', strlen($output));
 		
 		// Output headers
@@ -236,17 +237,16 @@ class aeResponse
 		return $this;
 	}
 	
-	protected function _compress($output, $level)
+	protected function _compress($output)
 	/*
 		Attempts to compress the output
 		if the recipient can handle this.
 	*/
 	{
-		if ($level == 0 
-			|| !isset($_SERVER['HTTP_ACCEPT_ENCODING'])
-			|| strpos($_SERVER['HTTP_ACCEPT_ENCODING'],'gzip') === false
-			|| !function_exists('gzencode')
-			|| ini_get('zlib.output_compression'))
+		if (!isset($_SERVER['HTTP_ACCEPT_ENCODING'])
+		|| strpos($_SERVER['HTTP_ACCEPT_ENCODING'],'gzip') === false
+		|| !function_exists('gzencode')
+		|| ini_get('zlib.output_compression'))
 		{
 			return $output;
 		}
@@ -257,6 +257,6 @@ class aeResponse
 		$this->header('Vary','Accept-Encoding')
 			->header('Content-Encoding', $encoding);
 
-		return gzencode($output, $level, FORCE_GZIP);
+		return gzencode($output);
 	}
 }
