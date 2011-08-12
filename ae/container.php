@@ -40,7 +40,6 @@ class aeContainer
 	
 	public function __destruct()
 	{
-		// TODO: Check how this works with a custom error handler
 		$this->vars['content'] = $this->buffer->output();
 		
 		echo ae::render($this->path, $this->vars);

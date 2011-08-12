@@ -24,7 +24,7 @@ class aeProbe
 */
 {
 	const report_footprint = 92; // footprint of the report()
-	const object_footprint = 448; // footprint of the probe
+	const object_footprint = 448; // footprint of the aeProbe instance
 	
 	protected $name;
 	

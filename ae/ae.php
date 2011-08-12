@@ -43,7 +43,7 @@ final class ae
 		
 			$context2 = new ae('module.samples', 'samples/')
 			echo ae::resolve('foo.php'); // 'samples/foo.php'
-			unset($context2)
+			unset($context2);
 			
 			echo ae::resolve('foo.php'); // 'examples/foo.php'
 	*/
@@ -100,7 +100,13 @@ final class ae
 		
 	*/
 	{
-		if (isset(self::$paths[$path]))
+		if (empty($path))
+		{
+			trigger_error('Empty path cannot be resolved.', E_USER_ERROR);
+			
+			return;
+		}
+		else if (isset(self::$paths[$path]))
 		{
 			return $path;
 		}
