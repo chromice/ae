@@ -27,7 +27,21 @@ echo "\n";
 echo $request->segment(3, 'default'); // 'default'
 echo "\n";
 
+// Route requet
 $route = $request->route('examples/request/views');
+
+if ($route->exists())
+{
+	$route->follow(); 
+	// loads a script, e.g. '/segment-1/segment-2.php' and
+}
+else
+{
+	echo ae::render('examples/request/views/404.php');
+}
+
+// Redirect request to a file
+$route = $request->route('examples/request/views/view.php');
 
 if ($route->exists())
 {

@@ -78,16 +78,15 @@ class aeRequest
 		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
 	}
 	
-	public function route($base_dir)
+	public function route($base)
 	{
-		return new aeRoute($this->uri(), $base_dir);
+		return new aeRoute($this->uri(), $base);
 	}
 }
 
 
 class aeRoute
 {
-	protected static $base_uri = '';
 	protected static $depth = 0;
 	protected static $segments;
 	
@@ -170,19 +169,24 @@ class aeRoute
 	protected $offset;
 	protected $path;
 	
-	public function __construct($uri, $base_dir)
+	public function __construct($uri, $base)
 	{
-		// Check if base directory exists
-		$base_dir = ae::resolve($base_dir);
+		$base = ae::resolve($base);
 		
-		if (!is_dir($base_dir))
+		if (!file_exists($base))
 		{
-			trigger_error('Routing failed. Base directory "'.$base_dir.'" does not exist.', E_USER_ERROR);
+			trigger_error('Routing failed. "'.$base.'" does not exist.', E_USER_ERROR);
 		}
 		
+		if (is_file($base))
+		{
+			$this->path = $base;
+			$this->offset = 0;
+			
+			return;
+		}
+
 		$uri = trim($uri, '/');
-		
-		// Break into segments and search for a valid path
 		$segments = explode('/', $uri);
 		
 		for ($l = count($segments); $l > 0; $l--)
@@ -190,8 +194,8 @@ class aeRoute
 			$path = array_slice($segments, 0, $l);
 			$path = implode('/', $path);
 			$path = empty($path) ? 'index.php' : $path . '.php';
-			$path = $base_dir . '/' . $this->base_path . $path;
-			
+			$path = $base . '/' . $path;
+		
 			if (file_exists($path))
 			{
 				$this->path = $path;
@@ -213,11 +217,7 @@ class aeRoute
 			trigger_error('Route does not exist.', E_USER_ERROR);
 		}
 		
-		$base_uri = self::$base_uri . '/' . $this->uri;
 		$depth = self::$depth + $this->offset;
-		
-		// Switch global base uri and depth for this context
-		$us = new aeSwitch(self::$base_uri, $base_uri);
 		$ds = new aeSwitch(self::$depth, $depth);
 		
 		echo ae::render($this->path, $parameters);
