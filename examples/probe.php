@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 // 
 function probe_test()
 {
-	$probe = ae::load('probe.php', 'foo');
+	$probe = ae::load('probe.php', 'probe test');
 	echo memory_get_usage();
 	$probe->report('initialized; did nothing');
 

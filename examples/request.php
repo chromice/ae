@@ -43,14 +43,8 @@ else
 // Redirect request to a file
 $route = $request->route('examples/request/views/view.php');
 
-if ($route->exists())
-{
-	$route->follow(); 
-	// loads a script, e.g. '/segment-1/segment-2.php' and
-}
-else
-{
-	echo ae::render('examples/request/views/404.php');
-}
+// It is pointless to check if path exists or not...
+$route->follow(); 
+
 echo "\n</pre>";
 
