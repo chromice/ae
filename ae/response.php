@@ -16,8 +16,6 @@
 # limitations under the License.
 # 
 
-// TODO: a method that would create a few headers for Varnish and broswer caching.
-
 ae::invoke('aeResponse', ae::singleton);
 
 class aeResponse
@@ -29,6 +27,9 @@ class aeResponse
 	protected $type;
 	protected $charset;
 	protected $compression;
+	
+	protected $cache_ttl;
+	protected $cache_private;
 	
 	protected $http_statuses = array(
 		100 => '100 Continue',
@@ -105,7 +106,8 @@ class aeResponse
 		
 		return $this->status(200)
 			->type('html')
-			->charset('utf-8');
+			->charset('utf-8')
+			->cache(0);
 	}
 	
 	public function present()
@@ -125,15 +127,18 @@ class aeResponse
 			header($protocol . ' ' . $this->http_statuses[$this->status]);
 		}
 		
-		// Get buffered output
+		// Get buffered output and destroy the buffer
 		$output = $this->buffer->output();
 		unset($this->buffer);
+		
+		// Set caching headers
+		$this->_cache();
 		
 		// Compress output, if browser supports compression
 		$output = $this->_compress($output);
 		
 		// Content-*
-		$this->header('Content-type', $this->type . '; charset='.$this->charset)
+		$this->header('Content-type', $this->type . '; charset=' . $this->charset)
 			->header('Content-length', strlen($output));
 		
 		// Output headers
@@ -235,6 +240,36 @@ class aeResponse
 		$this->charset = $charset;
 		
 		return $this;
+	}
+	
+	public function cache($minutes, $private = false)
+	/*
+		Sets the time to live
+	*/
+	{
+		$this->cache_ttl = $minutes;
+		$this->cache_private = $private;
+		
+		return $this;
+	}
+	
+	protected function _cache()
+	{
+		if ($this->cache_ttl > 0)
+		{
+			$seconds = 60 * $this->cache_ttl;
+			$this->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
+				->header('Cache-Control', 'max-age='.$seconds.', ' . ($this->cache_private ? 'private' : 'public'))
+				->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
+		}
+		else
+		{
+			$this->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
+				->header('Last-Modified', gmdate('D, d M Y H:i:s').' GMT')
+				->header('Cache-Control', 'no-store, no-cache, must-revalidate')
+				->header('Cache-Control', 'post-check=0, pre-check=0');
+		}
+		
 	}
 	
 	protected function _compress($output)
