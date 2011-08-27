@@ -35,8 +35,8 @@ final class ae
 	
 	public function __construct($context, $path = null)
 	/*
-		Creating and/or switches to a new context. Context is defined by
-		its name and path to directory where its files reside.
+		Creates and/or switches to a new context. Context is defined by
+		its name and directory path.
 		
 			$context = new ae('module.examples','examples/');
 			echo ae::resolve('foo.php'); // 'examples/foo.php'
@@ -184,12 +184,8 @@ final class ae
 		
 		$ps = new aeSwitch(self::$current_path, $path);
 		
-		try {
-			self::$paths[$path] = null;
-			self::_include();
-		} catch (Exception $e) {
-			throw $e;
-		}
+		self::$paths[$path] = null;
+		self::_include();
 	}
 	
 	public static function load($path, $parameters = null)
@@ -238,11 +234,7 @@ final class ae
 		$ps = new aeSwitch(self::$current_path, $path);
 		$ob = new aeBuffer();
 		
-		try {
-			self::_include($parameters);
-		} catch (Exception $e) {
-			throw $e;
-		}
+		self::_include($parameters);
 		
 		return $ob->output();
 	}
@@ -331,4 +323,3 @@ class aeSwitch
 		$this->var = $this->previous;
 	}
 }
-

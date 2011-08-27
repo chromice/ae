@@ -11,7 +11,7 @@ function probe_test()
 	echo memory_get_usage();
 	$probe->report('initialized; did nothing');
 
-	// Declaring variable would consume a little memory
+	// Declaring a variable would consume some memory
 	$string = "Hello";
 
 	echo $string;

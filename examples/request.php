@@ -1,8 +1,8 @@
 <?php
 
-// $request = ae::load('request.php');
-// or
 $request = ae::load('request.php');
+// or
+// $request = ae::load('request.php', 'foo/bar/fubar');
 // to specify uri manually
 
 /*
@@ -27,13 +27,13 @@ echo "\n";
 echo $request->segment(3, 'default'); // 'default'
 echo "\n";
 
-// Route requet
+// Route request
 $route = $request->route('examples/request/views');
 
 if ($route->exists())
 {
 	$route->follow(); 
-	// loads a script, e.g. '/segment-1/segment-2.php' and
+	// loads a script, e.g. '/segment-1/segment-2.php'
 }
 else
 {
