@@ -3,7 +3,7 @@
 include 'ae/ae.php';
 
 $module = new ae('module.examples', dirname(__FILE__));
-	
+
 $response = ae::load('response.php');
 $request = ae::load('request.php');
 $route = $request->route('/examples/');

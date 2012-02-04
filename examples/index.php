@@ -1,5 +1,5 @@
 <?php
-	$container = ae::load('container.php','/examples/decorator/container_html.php');
+	$container = ae::load('container.php','/examples/container/container_html.php');
 	$container->set('title', 'æ');
 	
 	$Request = ae::load('request.php');
@@ -8,7 +8,8 @@
 <h2>Examples:</h2>
 <ul>
 <?php foreach (array(
-		'Decorator' => 'decorator',
+		'Database' => 'database',
+		'Container' => 'container',
 		'Options' => 'options',
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri'

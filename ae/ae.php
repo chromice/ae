@@ -265,7 +265,7 @@ final class ae
 	
 	public static function options($namespace = null)
 	{
-		return ae::load('options.php', $namespace)
+		return ae::load('options.php', $namespace);
 	}
 	
 	public static function request($segments = null)
