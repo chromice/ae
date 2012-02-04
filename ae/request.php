@@ -37,10 +37,10 @@ class aeRequest
 			&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
 		
 		$method = isset($_SERVER['REQUEST_METHOD']) ? 
-			strtoupper($_SERVER['REQUEST_METHOD']) : 'UKNOWN';
+			strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN';
 		
 		$result = true;
-		$what = preg_split('/\s+/',$what);
+		$what = preg_split('/\s+/', $what);
 		
 		foreach ($what as $_what) switch ($_what)
 		{

@@ -253,6 +253,30 @@ final class ae
 		
 		require self::$current_path;
 	}
+	
+	// ======================================
+	// = Shorthand standard library loading =
+	// ======================================
+	
+	public static function container($path)
+	{
+		return ae::load('container.php', $path);
+	}
+	
+	public static function options($namespace = null)
+	{
+		return ae::load('options.php', $namespace)
+	}
+	
+	public static function request($segments = null)
+	{
+		return ae::load('request.php', $segments);
+	}
+
+	public static function response()
+	{
+		return ae::load('response.php');
+	}
 }
 
 class aeBuffer

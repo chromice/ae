@@ -91,7 +91,7 @@ class aeResponse
 	
 	public function __destruct()
 	{
-		$this->present();
+		$this->finish();
 	}
 	
 	public function reset()
@@ -110,7 +110,7 @@ class aeResponse
 			->cache(0);
 	}
 	
-	public function present()
+	public function finish()
 	/*
 		Sends the response to the browser and halts the execution.
 	*/
@@ -183,11 +183,17 @@ class aeResponse
 		return $this;
 	}
 	
-	public function status($status)
+	public function status($status = null)
 	/*
-		Sets response status.
+		$status = status(); // returns current status.
+		status($status); // Sets response status.
 	*/
 	{
+		if (is_null($status))
+		{
+			return $this->status;
+		}
+		
 		$status = (int)$status;
 		
 		if (isset($this->http_statuses[$status]))
@@ -198,11 +204,19 @@ class aeResponse
 		return $this;
 	}
 	
-	public function type($type)
+	public function type($type = null)
 	/*
-		Sets content type of the response.
+		$type = type(); // returns current mime-type.
+		type($type); // Sets mime-type of the response. [chainable]
+		
+		Aliases are supported, e.g. "html", "css", "json", etc.
 	*/
 	{
+		if (is_null($type))
+		{
+			return $this->type;
+		}
+		
 		$type = strtolower($type);
 		
 		switch ($type)
@@ -232,11 +246,19 @@ class aeResponse
 		return $this;
 	}
 	
-	public function charset($charset)
+	public function charset($charset = null)
 	/*
+		$charset = charset(); // returns current charset.
+		charset($charset); // Sets charset of the response. [chainable]
+		
 		Sets charset of the response.
 	*/
 	{
+		if (is_null($charset))
+		{
+			return $this->charset;
+		}
+		
 		$this->charset = $charset;
 		
 		return $this;
@@ -244,7 +266,8 @@ class aeResponse
 	
 	public function cache($minutes, $private = false)
 	/*
-		Sets the time to live
+		Sets the time to live for client side caching. 
+		Set `$private` to `true` to prevent proxy caching.
 	*/
 	{
 		$this->cache_ttl = $minutes;
@@ -274,8 +297,7 @@ class aeResponse
 	
 	protected function _compress($output)
 	/*
-		Attempts to compress the output
-		if the recipient can handle this.
+		Compresses the output if client supports it.
 	*/
 	{
 		if (!isset($_SERVER['HTTP_ACCEPT_ENCODING'])
