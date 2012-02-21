@@ -20,6 +20,8 @@ else if ($request->is('cli'))
 	echo "CLI request\n";
 }
 
+echo $request->type();
+echo "\n";
 echo $request->segment(0); // 'segment-1'
 echo "\n";
 echo $request->segment(1, 'default'); // 'segment-2'

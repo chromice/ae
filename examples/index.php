@@ -1,14 +1,13 @@
 <?php
-	$container = ae::load('container.php','/examples/container/container_html.php');
+	$container = ae::container('/examples/container/container_html.php');
 	$container->set('title', 'æ');
 	
-	$Request = ae::load('request.php');
+	$Request = ae::request();
 ?>
 <h1>æ</h1>
 <h2>Examples:</h2>
 <ul>
 <?php foreach (array(
-		'Database' => 'database',
 		'Container' => 'container',
 		'Options' => 'options',
 		'Probes' => 'probe',

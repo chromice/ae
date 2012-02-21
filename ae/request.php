@@ -21,12 +21,16 @@ ae::invoke(array('aeRoute','request'), ae::factory);
 class aeRequest
 /*
 	Simple request abstration.
+	
+	
 */
 {
+	protected $type = 'html';
 	protected $segments = array();
 	
-	public function __construct($segments)
+	public function __construct($segments, $type)
 	{
+		$this->type = $type;
 		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
 	}
 		
@@ -63,6 +67,14 @@ class aeRequest
 		return $result;
 	}
 	
+	public function type()
+	/*
+		Returns the file type of the request, `html` by default. Top level 
+	*/
+	{
+		return $this->type;
+	}
+	
 	public function uri($offset = 0, $length = null)
 	{
 		if (is_null($length) || ($length + $offset) > count($this->segments))
@@ -87,6 +99,7 @@ class aeRequest
 
 class aeRoute
 {
+	protected static $type;
 	protected static $depth = 0;
 	protected static $segments;
 	
@@ -101,7 +114,12 @@ class aeRoute
 		// Custom request
 		if (!is_null($segments))
 		{
-			return new aeRequest($segments);
+			if (empty(self::$type))
+			{
+				$type = self::_parse_type($segments);
+			}
+			
+			return new aeRequest($segments, $type);
 		}
 		
 		// Obtain segments
@@ -111,7 +129,31 @@ class aeRoute
 			self::$segments = defined('STDIN') ? self::_parse_args() : self::_parse_uri();
 		}
 		
-		return new aeRequest(array_slice(self::$segments, self::$depth));
+		if (empty(self::$type))
+		{
+			self::$type = self::_parse_type(self::$segments);
+		}
+		
+		return new aeRequest(array_slice(self::$segments, self::$depth), self::$type);
+	}
+	
+	protected static function _parse_type(&$segments)
+	{
+		$last = array_pop($segments);
+		$type = 'html';
+		
+		if (!is_null($last))
+		{
+			if (preg_match('/\.([a-z0-9_]+)$/', $last, $match) == 1)
+			{
+				$type = $match[1];
+				$last = substr($last, 0, strlen($last) - strlen($type) - 1);
+			}
+			
+			array_push($segments, $last);
+		}
+		
+		return $type;
 	}
 	
 	protected static function _parse_uri()

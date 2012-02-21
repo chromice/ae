@@ -1,6 +1,6 @@
 <?php
 
-include 'ae/ae.php';
+include 'ae/core.php';
 
 $module = new ae('module.examples', dirname(__FILE__));
 

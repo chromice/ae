@@ -1,5 +1,5 @@
 <?php
-	$container = ae::load('container.php', '/examples/container/container_inner.php');
+	$container = ae::container('/examples/container/container_inner.php');
 	$container
 		->set('title', 'Example: Container')
 		->set('header', 'Hello World!');
