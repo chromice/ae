@@ -254,9 +254,9 @@ final class ae
 		require self::$current_path;
 	}
 	
-	// ======================================
-	// = Shorthand standard library loading =
-	// ======================================
+	// =================================
+	// = Shortcuts for stock libraries =
+	// =================================
 	
 	public static function container($path)
 	{
@@ -266,6 +266,11 @@ final class ae
 	public static function options($namespace = null)
 	{
 		return ae::load('options.php', $namespace);
+	}
+	
+	public static function probe($name)
+	{
+		return ae::load('probe.php', $name);
 	}
 	
 	public static function request($segments = null)
@@ -283,7 +288,8 @@ class aeBuffer
 /*
 	PHP output buffer abstraction layer. 
 	
-	It ensures that the scope output is always captured or discarded.
+	It ensures that the scope output is always captured or discarded 
+	correctly, even when an exception is thrown.
 */
 {
 	protected $level;
@@ -329,7 +335,8 @@ class aeBuffer
 
 class aeSwitch
 /*
-	Switches the value of a variable for the current context.
+	Switches the value of a variable for the current context. 
+	Restores the previous value, when destroyed.
 */
 {
 	protected $var;

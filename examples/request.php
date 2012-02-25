@@ -1,8 +1,8 @@
 <?php
 
-$request = ae::load('request.php');
+$request = ae::request();
 // or
-// $request = ae::load('request.php', 'foo/bar/fubar');
+// $request = ae::request('foo/bar/fubar');
 // to specify uri manually
 
 /*

@@ -4,8 +4,8 @@ include 'ae/core.php';
 
 $module = new ae('module.examples', dirname(__FILE__));
 
-$response = ae::load('response.php');
-$request = ae::load('request.php');
+$response = ae::response();
+$request = ae::request();
 $route = $request->route('/examples/');
 
 if ($route->exists())

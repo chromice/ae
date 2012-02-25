@@ -20,7 +20,7 @@ ae::invoke('aeProbe');
 
 class aeProbe
 /*
-	
+	A very simple profiler.
 */
 {
 	const report_footprint = 92; // footprint of the report()
@@ -45,6 +45,9 @@ class aeProbe
 	}
 	
 	public function report($description)
+	/*
+		Triggers a notice with performance mertrics in both absolute and delta terms.
+	*/
 	{
 		static $initial_time, $last_t, $last_m;
 		
