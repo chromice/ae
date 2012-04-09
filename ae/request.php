@@ -76,6 +76,9 @@ class aeRequest
 	}
 	
 	public function uri($offset = 0, $length = null)
+	/*
+		Returns current uri or a slice of it.
+	*/
 	{
 		if (is_null($length) || ($length + $offset) > count($this->segments))
 		{
@@ -86,11 +89,17 @@ class aeRequest
 	}
 	
 	public function segment($offset, $default = false)
+	/*
+		Returns segment or default value, if segment does not exist.
+	*/
 	{
 		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
 	}
 	
 	public function route($base)
+	/*
+		Returns an instance of aeRoute for base path and current uri.
+	*/
 	{
 		return new aeRoute($this->uri(), $base);
 	}
@@ -103,7 +112,10 @@ class aeRoute
 	protected static $depth = 0;
 	protected static $segments;
 	
-	public static function request($segments)
+	public static function request($segments = null)
+	/*
+		Returns are an instance of aeRequest object.
+	*/
 	{
 		// Who wants to deal with magic quotes?
 		if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
@@ -138,6 +150,9 @@ class aeRoute
 	}
 	
 	protected static function _parse_type(&$segments)
+	/*
+		Returns the type of the requested resource.
+	*/
 	{
 		$last = array_pop($segments);
 		$type = 'html';
@@ -157,6 +172,9 @@ class aeRoute
 	}
 	
 	protected static function _parse_uri()
+	/*
+		Returns current uri as an array of segments.
+	*/
 	{
 		// Parse uri
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
@@ -195,6 +213,9 @@ class aeRoute
 	}
 	
 	protected static function _parse_args()
+	/*
+		Returns current arguments as an array of segments.
+	*/
 	{
 		if (empty($_SERVER['argv']))
 		{

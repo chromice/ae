@@ -335,8 +335,8 @@ class aeBuffer
 
 class aeSwitch
 /*
-	Switches the value of a variable for the current context. 
-	Restores the previous value, when destroyed.
+	Provides an exception–safe way to swap the value of a variable 
+	for the lifetime of the switch object.
 */
 {
 	protected $var;
