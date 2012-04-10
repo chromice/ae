@@ -15,11 +15,11 @@ class Book extends aeDatabaseEntity
 			->variables(array(
 				'book_id' => $id
 			))
-			->aliases(array(
+			->names(array(
 				'books' => static::table(),
 				'authors' => Author::table()
 			))
-			->using('Author', Author::table())
+			->using('Author', 'author')
 			->one('Book');
 	}
 	
@@ -45,11 +45,18 @@ class Book extends aeDatabaseEntity
 				'limit' => $limit,
 				'offset' => $offset
 			))
-			->aliases(array(
+			->names(array(
 				'books' => static::table(),
 				'authors' => Author::table()
 			))
-			->using('Author')
+			->using('Author', 'author')
 			->many('Book');
 	}
+}
+
+$books = Book::many();
+
+while($book = $books->fetch())
+{
+	echo $book['title'] . ' by ' . $book['author']['name'];
 }

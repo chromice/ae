@@ -71,9 +71,17 @@ class aeDatabase
 	// = Query =
 	// =========
 	
-	public function query($sql)
+	protected $query;
+	
+	protected $names = array();
+	protected $variables = array();
+	protected $values = array();
+	
+	public function query($query)
 	{
-		# code...
+		$this->query = $query;
+		
+		return $this;
 	}
 	
 	public function result()
@@ -81,17 +89,75 @@ class aeDatabase
 		Runs current query and returns the result set.
 	*/
 	{
-		# code...
+		$query = $this->_query();
+		
+		return $this->db->query($query, MYSQLI_STORE_RESULT);
 	}
 	
 	public function run()
 	/*
-		Runs current query.
-		
-		Returns number of affected rows.
+		Runs current query and returns number of affected rows.
 	*/
 	{
+		$query = $this->_query();
+		$this->db->query($query);
+		
 		return $this->db->affected_rows;
+	}
+	
+	protected function _query()
+	/*
+		Returns a ready to execute query and resets
+	*/
+	{
+		if (empty($this->query))
+		{
+			trigger_error('Cannot execute an empty SQL query!', E_USER_ERROR);
+		}
+		
+		$query = $this->query;
+		$placeholders = array();
+		
+		if (!empty($this->names))
+		{
+			$placeholders = array_map(array($this, 'protect'), $this->names);
+		}
+		
+		if (!empty($this->variables))
+		{
+			$placeholders = array_merge($placeholders, array_map(array($this, 'escape'), $this->names));
+		}
+		
+		if (!empty($this->values))
+		{
+			$keys = array();
+			$values = array();
+			$keys_values = array();
+			
+			foreach ($this->values as $key => $value)
+			{
+				$keys[] = $key = $this->protect($key);
+				$values[] = $value = $this->protect($value);
+				$keys_values[] = $key . ' = ' . $value;
+			}
+			
+			$placeholders['keys'] = implode(', ', $keys);
+			$placeholders['values'] = implode(', ', $values);
+			$placeholders['keys_values'] = implode(', ', $keys_values);
+		}
+		
+		$query = str_replace(
+			array_keys($placeholders),
+			array_values($placeholders),
+			$query
+		);
+		
+		$this->query = null;
+		$this->names = array();
+		$this->variables = array();
+		$this->values = array();
+		
+		return $query;
 	}
 	
 	public function protect($value)
@@ -114,9 +180,9 @@ class aeDatabase
 		switch (gettype($value))
 		{
 			case 'array':
-				$value = serialize($value); // and then escape as string
+				$value = serialize($value); // ...and then...
 			case 'object':
-				$value = (string) $value; // implicitly cast to string
+				$value = (string) $value; // ...implicitly cast to string...
 			case 'string': 
 				$value = '"' . $this->db->real_escape_string($value) . '"';
 				break;
@@ -133,37 +199,58 @@ class aeDatabase
 	/*
 		Placeholders
 	*/
-	public function aliases($vars)
+	public function names($names)
 	{
-		# code...
+		$this->names = array_merge($this->names, $names);
+		
+		return $this;
 	}
 	
 	public function variables($vars)
 	{
-		# code...
+		$this->variables = array_merge($this->variables, $variables);
+		
+		return $this;
 	}
 	
-	public function values($vars)
+	public function values($values)
 	{
-		# code...
+		$this->values = array_merge($this->variables, $variables);
+		
+		return $this;
 	}
 	
 	/*
 		Entity binding
 	*/
+	protected $using = array();
+	
 	public function one($class)
 	{
-		# code...
+		$result = $this->many($class);
+		
+		if ($result->length() > 0)
+		{
+			return $result->fetch();
+		}
+		
+		return null;
 	}
 	
 	public function many($class)
 	{
-		# code...
+		$result = new aeDatabaseResult($this->result(), $class, $this->using);
+		
+		$used = array();
+		
+		return $result;
 	}
 	
 	public function using($class, $alias = null)
 	{
-		# code...
+		$this->using[$class] = $alias;
+		
+		return $this;
 	}
 	
 	/*
@@ -172,7 +259,7 @@ class aeDatabase
 	public function insert($table, $values)
 	{
 		return $this->query("INSERT INTO {table} ({keys}) VALUES ({values})")
-			->aliases(array(
+			->names(array(
 				'table' => static::table()
 			))
 			->values($values)
@@ -196,7 +283,7 @@ class aeDatabase
 		return $this->query("INSERT INTO {table} ({keys}, $insert_keys) 
 				VALUES ({values}, $insert_values) 
 				ON DUPLICATE KEY UPDATE {keys_values}")
-			->aliases(array(
+			->names(array(
 				'table' => static::table()
 			))
 			->values(static::serialize($this->values))
@@ -208,7 +295,7 @@ class aeDatabase
 		$where = $this->_where($where);
 		
 		return $this->query("UPDATE {table} SET {keys_values} WHERE $where")
-			->aliases(array(
+			->names(array(
 				'table' => static::table()
 			))
 			->values($values)
@@ -220,7 +307,7 @@ class aeDatabase
 		$where = $this->_where($where);
 		
 		return $db->query("DELETE FROM {table} WHERE $where")
-			->aliases(array(
+			->names(array(
 				'table' => $table
 			))
 			->run();
@@ -243,6 +330,102 @@ class aeDatabase
 		{
 			return $where;
 		}
+	}
+}
+
+class aeDatabaseResult
+{
+	protected $result;
+	
+	protected $class;
+	protected $columns;
+	protected $related;
+	
+	public function __construct($result, $class, $related)
+	{
+		$this->result = $result;
+		
+		$this->class = $class;
+		$this->columns = array();
+		
+		foreach ($related as $class => $alias)
+		{
+			if (is_subclass_of($class, 'aeDatabaseEntity', true))
+			{
+				$this->related[$class::table()] = array(
+					'class' => $class,
+					'alias' => empty($alias) ? $class::table() : $alias
+				);
+			}
+		}
+		
+		foreach ($this->result->fetch_fields() as $offset => $field)
+		{
+			if (isset($this->related[$field->table]))
+			{
+				$this->related[$field->table]['columns'][$offset] = $field->name;
+			}
+			else
+			{
+				$this->columns[$offset] = $field->name;
+			}
+		}
+	}
+	
+	public function __destruct()
+	{
+		$this->result->free();
+	}
+	
+	public function fetch()
+	{
+		$row = $this->result->fetch_array(MYSQLI_NUM);
+
+		$class = $this->entity;
+		$values = array_combine($this->columns, array_intersect_key($row, $this->columns));
+		$values = $class::unserialize($values);
+		
+		$entity = $class::create($values);
+		
+		foreach ($this->related as $table => $params)
+		{
+			$class = $params['class'];
+			$values = array_combine($params['columns'], array_intersect_key($row, $params['columns']));
+			$values = $class::unserialize($values);
+
+			$related = $class::create($values);
+			
+			$entity->attach($params['alias'], $related);
+		}
+		
+		return $entity;
+	}
+	
+	public function all()
+	{
+		$all = array();
+		
+		if ($this->length() > 0)
+		{
+			while ($row = $this->fetch())
+			{
+				$all[] = $row;
+			}
+		
+			$this->seek(0);
+		}
+		
+		return $all;
+	}
+	
+	public function length()
+	{
+		return $this->result->num_rows;
+	}
+	
+	public function seek($offset)
+	{
+		return $this->result->data_seek($offset);
 	}
 }
 
@@ -333,6 +516,8 @@ abstract class aeDatabaseEntity
 	
 	private $ids = array();
 	private $values = array();
+	private $related = array();
+	
 	private $is_dirty = false;
 	
 	public function __construct($values = null)
@@ -360,6 +545,16 @@ abstract class aeDatabaseEntity
 		}
 	}
 	
+	public function attach($related, $entity)
+	{
+		if (!is_subclass_of($entity, 'aeDatabaseEntity'))
+		{
+			trigger_error('Cannot attach a non-entity "' . get_class($entity) . '".', E_USER_ERROR);
+		}
+		
+		$this->related[$related] = $entity;
+	}
+	
 	public function __set($name, $value)
 	{
 		$ref =& $this->_values_or_ids($name);
@@ -374,6 +569,11 @@ abstract class aeDatabaseEntity
 	
 	public function __get($name)
 	{
+		if (isset($this->related[$name]))
+		{
+			return $this->related[$name];
+		}
+		
 		$ref =& $this->_values_or_ids($name);
 		
 		if (isset($ref[$name]))
@@ -463,5 +663,4 @@ abstract class aeDatabaseEntity
 				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
 		}
 	}
-	
 }
