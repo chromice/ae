@@ -241,7 +241,7 @@ class aeDatabase
 	{
 		$result = new aeDatabaseResult($this->result(), $class, $this->using);
 		
-		$used = array();
+		$this->using = array();
 		
 		return $result;
 	}
@@ -256,6 +256,59 @@ class aeDatabase
 	/*
 		Helper queries
 	*/
+	
+	public function columns($table)
+	{
+		$result = $this->query("SHOW COLUMNS FROM {table}")
+			->names(array(
+				'table' => static::table()
+			))
+			->result();
+		
+		$columns = array();
+		
+		while ($column = $result->fetch_assoc())
+		{
+			$columns[$column['Field']] = ($column['Key'] === 'PRI');
+		}
+		
+		return $columns;
+	}
+	
+	public function exists($table, $where)
+	{
+		$where = $this->_where($where);
+		
+		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table} WHERE $where")
+			->names(array(
+				'table' => static::table()
+			))
+			->result();
+		
+		$found = $result->fetch_assoc();
+		
+		$result->close();
+		
+		return $found['found'] > 0;
+	}
+	
+	public function find($table, $where)
+	{
+		$where = $this->_where($where);
+		
+		$result = $this->query("SELECT * FROM {table} WHERE $where")
+			->names(array(
+				'table' => static::table()
+			))
+			->result();
+			
+		$found = $result->fetch_assoc();
+		
+		$result->close();
+		
+		return $found;
+	}
+	
 	public function insert($table, $values)
 	{
 		return $this->query("INSERT INTO {table} ({keys}) VALUES ({values})")
@@ -348,13 +401,13 @@ class aeDatabaseResult
 		$this->class = $class;
 		$this->columns = array();
 		
-		foreach ($related as $class => $alias)
+		foreach ($related as $_class => $_alias)
 		{
-			if (is_subclass_of($class, 'aeDatabaseEntity', true))
+			if (is_subclass_of($_class, 'aeDatabaseEntity', true))
 			{
-				$this->related[$class::table()] = array(
-					'class' => $class,
-					'alias' => empty($alias) ? $class::table() : $alias
+				$this->related[$_class::table()] = array(
+					'class' => $_class,
+					'alias' => empty($_alias) ? $_class::table() : $_alias
 				);
 			}
 		}
@@ -444,7 +497,7 @@ abstract class aeDatabaseEntity
 	
 	public static function create($values = null)
 	/*
-		Creates a new instance.
+		Creates a new instance of entity.
 		
 		Using this factory method is preferable, as it allows
 		the entity implementation class to override this behaviour.
@@ -453,6 +506,15 @@ abstract class aeDatabaseEntity
 		$class = get_called_class();
 		
 		return new $class($values);
+	}
+	
+	public static function find($accessor)
+	{
+		$entity = static::create();
+		
+		$entity->set($accessor, true, false);
+		
+		return $this;
 	}
 	
 	protected static function database()
@@ -479,7 +541,7 @@ abstract class aeDatabaseEntity
 	{
 		if (empty(static::$accessor))
 		{
-			// TODO: Implement accessor detection using database connection
+			static::_load_columns();
 		}
 		
 		if (!is_array(static::$accessor))
@@ -494,15 +556,34 @@ abstract class aeDatabaseEntity
 	{
 		if (empty(static::$columns))
 		{
-			// TODO: Implement column detection using database connection
+			static::_load_columns();
 		}
 		
 		return static::$columns;
 	}
 	
-	public static function serialize($object)
+	protected static function _load_columns()
 	{
-		return $object;
+		$db = static::database();
+		
+		$columns = $db->columns(static::$table());
+		
+		foreach ($columns as $column => $primary)
+		{
+			if ($primary)
+			{
+				static::$accessor[] = $column;
+			}
+			else
+			{
+				static::$columns[] = $column;
+			}
+		}
+	}
+	
+	public static function serialize($values)
+	{
+		return $values;
 	}
 	
 	public static function unserialize($record)
@@ -535,14 +616,27 @@ abstract class aeDatabaseEntity
 		}
 	}
 	
-	public function set($values)
+	public function set($values, $accessor = true, $columns = true)
 	{
-		$values = array_intersect_key($values, static::accessor(), static::columns());
+		if ($accessor && $columns)
+		{
+			$values = array_intersect_key($values, static::accessor(), static::columns());
+		}
+		else if ($accessor)
+		{
+			$values = array_intersect_key($values, static::accessor());
+		}
+		else if ($columns)
+		{
+			$values = array_intersect_key($values, static::columns());
+		}
 		
 		foreach ($values as $key => $value)
 		{
 			$this->$key = $value;
 		}
+		
+		return $this;
 	}
 	
 	public function attach($related, $entity)
@@ -553,8 +647,14 @@ abstract class aeDatabaseEntity
 		}
 		
 		$this->related[$related] = $entity;
+		
+		return $this;
 	}
 	
+	
+	/*
+		Setters and getters
+	*/
 	public function __set($name, $value)
 	{
 		$ref =& $this->_values_or_ids($name);
@@ -612,6 +712,33 @@ abstract class aeDatabaseEntity
 		}
 	}
 	
+	/*
+		Basic CRUD methods.
+	*/
+	public function load()
+	{
+		$db = static::database();
+		$accessor = static::accessor();
+		
+		if (count($accessor) !== count($this->ids))
+		{
+			trigger_error(get_class($this) . '::load() failed, because accessor value' .
+				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+		}
+		
+		$values = $db->find(static::$table, $this->ids);
+		
+		if (!is_null($values))
+		{
+			trigger_error(get_class($this) . '::load() failed, because accessor points ' .
+				'to nothing.', E_USER_ERROR);
+		}
+		
+		$this->set($values, false, true);
+		
+		return $this;
+	}
+	
 	public function save()
 	/*
 		Intelegently saves or updates records in the database.
@@ -646,6 +773,8 @@ abstract class aeDatabaseEntity
 			trigger_error(get_class($this) . '::save() failed, because accessor value' .
 				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
 		}
+		
+		return $this;
 	}
 	
 	public function delete()
@@ -656,11 +785,16 @@ abstract class aeDatabaseEntity
 		if (count($accessor) === count($this->ids))
 		{
 			$db->delete(static::table(), $this->ids);
+			
+			$this->ids = array();
+			$this->values = array();
 		}
 		else
 		{
 			trigger_error(get_class($this) . '::delete() failed, because accessor value' .
 				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
 		}
+		
+		return $this;
 	}
 }

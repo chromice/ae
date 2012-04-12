@@ -2,9 +2,9 @@
 
 class Book extends aeDatabaseEntity
 {
-	protected $database = 'default';
-	protected $table = 'books';
-	protected $primary = 'id'; // or array('key_1', 'key_2')
+	protected static $database = 'default';
+	protected static $table = 'books';
+	protected static $accessor = array('id'); // or array('key_1', 'key_2')
 	
 	public static function one($id)
 	{
@@ -54,9 +54,32 @@ class Book extends aeDatabaseEntity
 	}
 }
 
+$book = Book::create(array(
+	'title' => 'Awesome'
+))->save();
+
 $books = Book::many();
 
-while($book = $books->fetch())
+while ($book = $books->fetch())
 {
-	echo $book['title'] . ' by ' . $book['author']['name'];
+	echo $book->title . ' by ' . $book->author->name;
 }
+
+// Create new instance and point it to book #5
+$book = Book::find(array(
+	'id' => 5
+));
+
+// Load data
+$book->load();
+
+echo $book->title;
+
+// Update data
+$book->title = 'Bullshit';
+
+// Save data
+$book->save();
+
+// Delete data
+$book->delete();
