@@ -9,7 +9,7 @@
 <ul>
 <?php foreach (array(
 		'Container' => 'container',
-		'Database' => 'entity/example',
+		'Database' => 'database/example',
 		'Options' => 'options',
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri'

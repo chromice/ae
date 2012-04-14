@@ -11,8 +11,8 @@ $options = ae::options('database.default')
 $example = new ae('examples.database', dirname(__FILE__));
 
 // Import tables
-ae::import('author.php');
-ae::import('book.php');
+ae::import('authors.php');
+ae::import('books.php');
 
 // Install
 Books::install();

@@ -1,7 +1,7 @@
 <?php
 
 ae::import('database.php');
-ae::import('author.php');
+ae::import('authors.php');
 
 class Books extends aeDatabaseTable
 {	
