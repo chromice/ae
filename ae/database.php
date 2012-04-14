@@ -84,42 +84,9 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function result()
-	/*
-		Runs current query and returns the result set.
-	*/
-	{
-		$query = $this->_query();
-		
-		$result = $this->db->query($query, MYSQLI_STORE_RESULT);
-		
-		if ($result === false)
-		{
-			throw new ErrorException($this->db->error, 0, E_USER_ERROR);
-		}
-		
-		return $result;
-	}
-	
-	public function run()
-	/*
-		Runs current query and returns number of affected rows 
-		or FALSE if query returned an error.
-	*/
-	{
-		$result = $this->result();
-		
-		if (is_object($result))
-		{
-			$result->free();
-		}
-		
-		return $this->db->affected_rows;
-	}
-	
 	protected function _query()
 	/*
-		Returns a ready to execute query and resets
+		Returns a ready to execute query and resets the state.
 	*/
 	{
 		if (empty($this->query))
@@ -235,7 +202,44 @@ class aeDatabase
 	}
 	
 	/*
-		Entity binding
+		Result
+	*/
+	
+	public function result($result = 'aeDatabaseResult')
+	/*
+		Runs current query and returns the result set.
+	*/
+	{
+		return $this->_result(null, $result, null);
+	}
+	
+	public function run()
+	/*
+		Runs current query and returns number of affected rows 
+		or FALSE if query returned an error.
+	*/
+	{
+		$this->result();
+		
+		return $this->db->affected_rows;
+	}
+	
+	protected function _result($class = null, $result = 'aeDatabaseResult', $related = null)
+	{
+		$query = $this->_query();
+		
+		$return = $this->db->query($query, MYSQLI_STORE_RESULT);
+		
+		if ($return === false)
+		{
+			throw new ErrorException($this->db->error, 0, E_USER_ERROR);
+		}
+		
+		return new $result($return, $class, $related);
+	}
+	
+	/*
+		Class binding
 	*/
 	protected $using = array();
 	
@@ -251,13 +255,13 @@ class aeDatabase
 		return null;
 	}
 	
-	public function many($class)
+	public function many($class, $result = 'aeDatabaseResult')
 	{
-		$result = new aeDatabaseResult($this->result(), $class, $this->using);
+		$return = $this->_result($class, $result, $this->using);
 		
 		$this->using = array();
 		
-		return $result;
+		return $return;
 	}
 	
 	public function using($class, $alias = null)
@@ -281,7 +285,7 @@ class aeDatabase
 		
 		$columns = array();
 		
-		while ($column = $result->fetch_assoc())
+		while ($column = $result->fetch())
 		{
 			$columns[$column['Field']] = ($column['Key'] === 'PRI');
 		}
@@ -299,9 +303,7 @@ class aeDatabase
 			))
 			->result();
 		
-		$found = $result->fetch_assoc();
-		
-		$result->free();
+		$found = $result->fetch();
 		
 		return $found['found'] > 0;
 	}
@@ -316,9 +318,7 @@ class aeDatabase
 			))
 			->result();
 			
-		$found = $result->fetch_assoc();
-
-		$result->free();
+		$found = $result->fetch();
 		
 		return $found;
 	}
@@ -408,15 +408,20 @@ class aeDatabaseResult
 	protected $columns;
 	protected $related;
 	
-	public function __construct($result, $class, $related)
+	public function __construct($result, $class = null, $related = null)
 	{
 		$this->result = $result;
+		
+		if (is_null($class))
+		{
+			return;
+		}
 		
 		$this->class = $class;
 		$this->columns = array();
 		$this->related = array();
 		
-		foreach ($related as $_class => $_alias)
+		if (is_array($related)) foreach ($related as $_class => $_alias)
 		{
 			$this->related[$_class::name()] = array(
 				'class' => $_class,
@@ -439,40 +444,68 @@ class aeDatabaseResult
 	
 	public function __destruct()
 	{
-		$this->result->free();
+		if (is_object($this->result))
+		{
+			$this->result->free();
+		}
 	}
 	
 	public function fetch()
 	{
+		if (is_null($this->class))
+		{
+			return $this->result->fetch_assoc();
+		}
+
 		$row = $this->result->fetch_array(MYSQLI_NUM);
 		
 		if (is_null($row))
 		{
 			return;
 		}
-
+		
 		$class = $this->class;
 		
-		$values = array_combine($this->columns, array_intersect_key($row, $this->columns));
-		$values = $class::unserialize($values);
+		$values = $class::unserialize(array_combine(
+			$this->columns, 
+			array_intersect_key($row, $this->columns)
+		));
 		
-		$entity = $class::create($values);
+		$object = $class::create($values);
 		
 		foreach ($this->related as $name => $table)
 		{
 			$class = $table['class'];
 			
-			$values = array_combine($table['columns'], array_intersect_key($row, $table['columns']));
-			$values = $class::unserialize($values);
+			$values = $class::unserialize(array_combine(
+				$table['columns'], 
+				array_intersect_key($row, $table['columns'])
+			));
 			
 			$related = $class::create($values);
 			
-			$entity->attach($table['alias'], $related);
+			$object->attach($table['alias'], $related);
 		}
 		
-		return $entity;
+		return $object;
 	}
 	
+	public function length()
+	{
+		if (is_object($this->result))
+		{
+			return $this->result->num_rows;
+		}
+	}
+	
+	public function seek($offset)
+	{
+		if (is_object($this->result))
+		{
+			return $this->result->data_seek($offset);
+		}
+	}
+
 	public function all()
 	{
 		$all = array();
@@ -489,16 +522,6 @@ class aeDatabaseResult
 		
 		return $all;
 	}
-	
-	public function length()
-	{
-		return $this->result->num_rows;
-	}
-	
-	public function seek($offset)
-	{
-		return $this->result->data_seek($offset);
-	}
 }
 
 abstract class aeDatabaseTable
@@ -514,10 +537,9 @@ abstract class aeDatabaseTable
 	
 	public static function create($values = null)
 	/*
-		Creates a new instance of entity.
+		Creates a new instance.
 		
-		Using this factory method is preferable, as it allows
-		the entity implementation class to override this behaviour.
+		Using this factory method is preferable to new operator.
 	*/
 	{
 		$class = get_called_class();
@@ -536,11 +558,11 @@ abstract class aeDatabaseTable
 			
 		}
 		
-		$entity = static::create();
+		$object = static::create();
 		
-		$entity->set($ids, true, false);
+		$object->set($ids, true, false);
 		
-		return $entity;
+		return $object;
 	}
 	
 	public static function name()
@@ -705,14 +727,14 @@ abstract class aeDatabaseTable
 		return $this;
 	}
 	
-	public function attach($related, $entity)
+	public function attach($related, $object)
 	{
-		if (!is_a($entity, 'aeDatabaseTable'))
+		if (!is_a($object, 'aeDatabaseTable'))
 		{
-			trigger_error('Cannot attach a non-entity "' . get_class($entity) . '".', E_USER_ERROR);
+			trigger_error('Cannot attach an instance of "' . get_class($object) . '" class.', E_USER_ERROR);
 		}
 		
-		$this->related[$related] = $entity;
+		$this->related[$related] = $object;
 		
 		return $this;
 	}
