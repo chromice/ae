@@ -1,11 +1,12 @@
 <?php
 
-$options = ae::options();
-$options->set('bar','foo');
-$optRef =& $options->reference();
-$optRef['foo'] = 'bar';
+$options = ae::options('foo.bar')
+	->set('bar','foo')
+	->set('foo','bar');
 
-$optRef2 =& $options->reference();
-var_dump($optRef2);
+$options2 = ae::options('foo.bar');
+
+echo $options2->get('bar');
+echo $options2->get('foo');
 
 ?>

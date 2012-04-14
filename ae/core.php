@@ -184,7 +184,7 @@ final class ae
 		
 		$ps = new aeSwitch(self::$current_path, $path);
 		
-		self::$paths[$path] = null;
+		self::$paths[$path] = array();
 		self::_include();
 	}
 	
@@ -261,6 +261,11 @@ final class ae
 	public static function container($path)
 	{
 		return ae::load('container.php', $path);
+	}
+	
+	public static function database($name)
+	{
+		return ae::load('database.php', $name);
 	}
 	
 	public static function options($namespace = null)

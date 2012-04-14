@@ -52,7 +52,7 @@ class aeDatabase
 		{
 			$port = (int)$port;
 		}
-		
+
 		$this->db = new MySQLi($host, $user, $password, $database, $port, $socket);
 		
 		if (!empty($this->db->connect_error))
@@ -91,16 +91,28 @@ class aeDatabase
 	{
 		$query = $this->_query();
 		
-		return $this->db->query($query, MYSQLI_STORE_RESULT);
+		$result = $this->db->query($query, MYSQLI_STORE_RESULT);
+		
+		if ($result === false)
+		{
+			throw new ErrorException($this->db->error, 0, E_USER_ERROR);
+		}
+		
+		return $result;
 	}
 	
 	public function run()
 	/*
-		Runs current query and returns number of affected rows.
+		Runs current query and returns number of affected rows 
+		or FALSE if query returned an error.
 	*/
 	{
-		$query = $this->_query();
-		$this->db->query($query);
+		$result = $this->result();
+		
+		if (is_object($result))
+		{
+			$result->free();
+		}
 		
 		return $this->db->affected_rows;
 	}
@@ -125,7 +137,7 @@ class aeDatabase
 		
 		if (!empty($this->variables))
 		{
-			$placeholders = array_merge($placeholders, array_map(array($this, 'escape'), $this->names));
+			$placeholders = array_merge($placeholders, array_map(array($this, 'escape'), $this->variables));
 		}
 		
 		if (!empty($this->values))
@@ -137,7 +149,7 @@ class aeDatabase
 			foreach ($this->values as $key => $value)
 			{
 				$keys[] = $key = $this->protect($key);
-				$values[] = $value = $this->protect($value);
+				$values[] = $value = $this->escape($value);
 				$keys_values[] = $key . ' = ' . $value;
 			}
 			
@@ -145,10 +157,12 @@ class aeDatabase
 			$placeholders['values'] = implode(', ', $values);
 			$placeholders['keys_values'] = implode(', ', $keys_values);
 		}
-		
+
+		$tokens = preg_replace('/.+/', '{$0}', array_keys($placeholders));
+
 		$query = str_replace(
-			array_keys($placeholders),
-			array_values($placeholders),
+			$tokens,
+			$placeholders,
 			$query
 		);
 		
@@ -206,7 +220,7 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function variables($vars)
+	public function variables($variables)
 	{
 		$this->variables = array_merge($this->variables, $variables);
 		
@@ -215,7 +229,7 @@ class aeDatabase
 	
 	public function values($values)
 	{
-		$this->values = array_merge($this->variables, $variables);
+		$this->values = array_merge($this->values, $values);
 		
 		return $this;
 	}
@@ -261,7 +275,7 @@ class aeDatabase
 	{
 		$result = $this->query("SHOW COLUMNS FROM {table}")
 			->names(array(
-				'table' => static::table()
+				'table' => $table
 			))
 			->result();
 		
@@ -281,13 +295,13 @@ class aeDatabase
 		
 		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table} WHERE $where")
 			->names(array(
-				'table' => static::table()
+				'table' => $table
 			))
 			->result();
 		
 		$found = $result->fetch_assoc();
 		
-		$result->close();
+		$result->free();
 		
 		return $found['found'] > 0;
 	}
@@ -298,13 +312,13 @@ class aeDatabase
 		
 		$result = $this->query("SELECT * FROM {table} WHERE $where")
 			->names(array(
-				'table' => static::table()
+				'table' => $table
 			))
 			->result();
 			
 		$found = $result->fetch_assoc();
-		
-		$result->close();
+
+		$result->free();
 		
 		return $found;
 	}
@@ -313,7 +327,7 @@ class aeDatabase
 	{
 		return $this->query("INSERT INTO {table} ({keys}) VALUES ({values})")
 			->names(array(
-				'table' => static::table()
+				'table' => $table
 			))
 			->values($values)
 			->run() > 0 ? $this->db->insert_id : null;
@@ -326,8 +340,8 @@ class aeDatabase
 		
 		foreach ($where as $key => $value)
 		{
-			$insert_keys = $this->protect($key);
-			$insert_values = $this->escape($value);
+			$insert_keys[] = $this->protect($key);
+			$insert_values[] = $this->escape($value);
 		}
 		
 		$insert_keys = implode(', ', $insert_keys);
@@ -337,9 +351,9 @@ class aeDatabase
 				VALUES ({values}, $insert_values) 
 				ON DUPLICATE KEY UPDATE {keys_values}")
 			->names(array(
-				'table' => static::table()
+				'table' => $table
 			))
-			->values(static::serialize($this->values))
+			->values($values)
 			->run();
 	}
 	
@@ -349,7 +363,7 @@ class aeDatabase
 		
 		return $this->query("UPDATE {table} SET {keys_values} WHERE $where")
 			->names(array(
-				'table' => static::table()
+				'table' => $table
 			))
 			->values($values)
 			->run();
@@ -359,7 +373,7 @@ class aeDatabase
 	{
 		$where = $this->_where($where);
 		
-		return $db->query("DELETE FROM {table} WHERE $where")
+		return $this->query("DELETE FROM {table} WHERE $where")
 			->names(array(
 				'table' => $table
 			))
@@ -374,7 +388,7 @@ class aeDatabase
 
 			foreach ($where as $key => $value)
 			{
-				$_where[] = $db->protect($key) . ' = ' . $db->escape($value);
+				$_where[] = $this->protect($key) . ' = ' . $this->escape($value);
 			}
 
 			return implode(' AND ', $_where);
@@ -400,16 +414,14 @@ class aeDatabaseResult
 		
 		$this->class = $class;
 		$this->columns = array();
+		$this->related = array();
 		
 		foreach ($related as $_class => $_alias)
 		{
-			if (is_subclass_of($_class, 'aeDatabaseEntity', true))
-			{
-				$this->related[$_class::table()] = array(
-					'class' => $_class,
-					'alias' => empty($_alias) ? $_class::table() : $_alias
-				);
-			}
+			$this->related[$_class::name()] = array(
+				'class' => $_class,
+				'alias' => empty($_alias) ? $_class::name() : $_alias
+			);
 		}
 		
 		foreach ($this->result->fetch_fields() as $offset => $field)
@@ -433,22 +445,29 @@ class aeDatabaseResult
 	public function fetch()
 	{
 		$row = $this->result->fetch_array(MYSQLI_NUM);
+		
+		if (is_null($row))
+		{
+			return;
+		}
 
-		$class = $this->entity;
+		$class = $this->class;
+		
 		$values = array_combine($this->columns, array_intersect_key($row, $this->columns));
 		$values = $class::unserialize($values);
 		
 		$entity = $class::create($values);
 		
-		foreach ($this->related as $table => $params)
+		foreach ($this->related as $name => $table)
 		{
-			$class = $params['class'];
-			$values = array_combine($params['columns'], array_intersect_key($row, $params['columns']));
+			$class = $table['class'];
+			
+			$values = array_combine($table['columns'], array_intersect_key($row, $table['columns']));
 			$values = $class::unserialize($values);
-
+			
 			$related = $class::create($values);
 			
-			$entity->attach($params['alias'], $related);
+			$entity->attach($table['alias'], $related);
 		}
 		
 		return $entity;
@@ -482,18 +501,16 @@ class aeDatabaseResult
 	}
 }
 
-abstract class aeDatabaseEntity
+abstract class aeDatabaseTable
 {
 	// ==================
 	// = Static methods =
 	// ==================
 	
-	protected static $table;
-	protected static $columns;
-	protected static $accessor; // array(`id`) or array(`foo_id`, `bar_id`) or NULL
+	private static $tables = array();
 	
+	protected static $strict = false;
 	protected static $database = 'default';
-	protected static $connection;
 	
 	public static function create($values = null)
 	/*
@@ -508,78 +525,98 @@ abstract class aeDatabaseEntity
 		return new $class($values);
 	}
 	
-	public static function find($accessor)
+	public static function find($ids)
 	{
+		$accessor = static::accessor();
+		
+		if (count($accessor) !== count($ids))
+		{
+			trigger_error(get_called_class() . '::find() failed, because accessor value' .
+				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+			
+		}
+		
 		$entity = static::create();
 		
-		$entity->set($accessor, true, false);
+		$entity->set($ids, true, false);
 		
-		return $this;
+		return $entity;
+	}
+	
+	public static function name()
+	{
+		$class = get_called_class();
+		
+		if (!isset(self::$tables[$class]['name']))
+		{
+			self::$tables[$class]['name'] = strtolower(
+				preg_replace('~(?<=.)_*([A-Z])~', '_$1', $class)
+			);
+		}
+		
+		return self::$tables[$class]['name'];
 	}
 	
 	protected static function database()
 	{
-		if (empty(static::$connection))
+		if (is_string(static::$database))
 		{
-			static::$connection = ae::database(static::$database);
+			static::$database = ae::database(static::$database);
 		}
 		
-		return static::$connection;
-	}
-	
-	protected static function table()
-	{
-		if (empty(static::$table))
-		{
-			trigger_error(get_called_class() . '::$table is empty!', E_USER_ERROR);
-		}
-		
-		return static::$table;
+		return static::$database;
 	}
 	
 	protected static function accessor()
 	{
-		if (empty(static::$accessor))
+		$class = get_called_class();
+		
+		if (!isset(self::$tables[$class]['accessor']))
 		{
 			static::_load_columns();
 		}
-		
-		if (!is_array(static::$accessor))
-		{
-			static::$accessor = array(static::$accessor);
-		}
-		
-		return static::$accessor;
+
+		return self::$tables[$class]['accessor'];
 	}
 	
 	protected static function columns()
 	{
-		if (empty(static::$columns))
+		$class = get_called_class();
+		
+		if (!isset(self::$tables[$class]['columns']))
 		{
 			static::_load_columns();
 		}
 		
-		return static::$columns;
+		return self::$tables[$class]['columns'];
 	}
 	
 	protected static function _load_columns()
 	{
-		$db = static::database();
+		$class = get_called_class();
 		
-		$columns = $db->columns(static::$table());
+		self::$tables[$class]['accessor'] = array();
+		self::$tables[$class]['columns'] = array();
+		
+		$db = static::database();
+		$columns = $db->columns(static::name());
 		
 		foreach ($columns as $column => $primary)
 		{
 			if ($primary)
 			{
-				static::$accessor[] = $column;
+				self::$tables[$class]['accessor'][] = $column;
 			}
 			else
 			{
-				static::$columns[] = $column;
+				self::$tables[$class]['columns'][] = $column;
 			}
 		}
 	}
+	
+	/*
+		Data serialization
+	*/
 	
 	public static function serialize($values)
 	{
@@ -591,6 +628,20 @@ abstract class aeDatabaseEntity
 		return $record;
 	}
 	
+	/*
+		Install/uninstall
+	*/
+
+	public static function install()
+	{
+		// CREATE TABLE IF NOT EXISTS {table} ( ... )
+	}
+
+	public static function uninstall()
+	{
+		// DROP TABLE IF EXISTS {table};
+	}
+
 	// ====================
 	// = Instance methods =
 	// ====================
@@ -603,11 +654,18 @@ abstract class aeDatabaseEntity
 	
 	public function __construct($values = null)
 	{
+		$table = static::name();
 		$accessor = static::accessor();
+		$columns = static::columns();
 		
 		if (empty($accessor))
 		{
-			trigger_error(get_class($this) . ' has no accessor.', E_USER_WARNING);
+			trigger_error('Table "' . $table . '" has no accessor.', E_USER_ERROR);
+		}
+		
+		if (empty($columns))
+		{
+			trigger_error('Table "' .$table . '" has no columns.', E_USER_ERROR);
 		}
 		
 		if (is_array($values))
@@ -620,15 +678,23 @@ abstract class aeDatabaseEntity
 	{
 		if ($accessor && $columns)
 		{
-			$values = array_intersect_key($values, static::accessor(), static::columns());
+			$values = array_intersect_key($values, 
+				array_merge(
+					array_flip(static::accessor()), array_flip(static::columns())
+				)
+			);
 		}
 		else if ($accessor)
 		{
-			$values = array_intersect_key($values, static::accessor());
+			$values = array_intersect_key($values,
+				array_flip(static::accessor())
+			);
 		}
 		else if ($columns)
 		{
-			$values = array_intersect_key($values, static::columns());
+			$values = array_intersect_key($values, 
+				array_flip(static::columns())
+			);
 		}
 		
 		foreach ($values as $key => $value)
@@ -641,7 +707,7 @@ abstract class aeDatabaseEntity
 	
 	public function attach($related, $entity)
 	{
-		if (!is_subclass_of($entity, 'aeDatabaseEntity'))
+		if (!is_a($entity, 'aeDatabaseTable'))
 		{
 			trigger_error('Cannot attach a non-entity "' . get_class($entity) . '".', E_USER_ERROR);
 		}
@@ -702,13 +768,13 @@ abstract class aeDatabaseEntity
 		{
 			return $this->ids;
 		}
-		else if (in_array($name, static::columns()))
+		else if (static::$strict && !in_array($name, static::columns()))
 		{
-			return $this->values;
+			trigger_error('Uknown property ' . get_class($this) . '::' . $name . '.', E_USER_ERROR);
 		}
 		else
 		{
-			trigger_error('Uknown property ' . get_class($this) . '::' . $name . '.', E_USER_ERROR);
+			return $this->values;
 		}
 	}
 	
@@ -726,9 +792,9 @@ abstract class aeDatabaseEntity
 				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
 		}
 		
-		$values = $db->find(static::$table, $this->ids);
+		$values = $db->find(static::name(), $this->ids);
 		
-		if (!is_null($values))
+		if (is_null($values))
 		{
 			trigger_error(get_class($this) . '::load() failed, because accessor points ' .
 				'to nothing.', E_USER_ERROR);
@@ -756,14 +822,14 @@ abstract class aeDatabaseEntity
 		if (empty($this->ids) && count($accessor) == 1)
 		{
 			$this->ids[array_pop($accessor)] = $db->insert(
-				static::table(),
+				static::name(),
 				static::serialize($this->values)
 			);
 		}
 		else if (count($accessor) === count($this->ids))
 		{
 			$db->insert_or_update(
-				static::table(), 
+				static::name(), 
 				static::serialize($this->values), 
 				$this->ids
 			);
@@ -784,7 +850,7 @@ abstract class aeDatabaseEntity
 		
 		if (count($accessor) === count($this->ids))
 		{
-			$db->delete(static::table(), $this->ids);
+			$db->delete(static::name(), $this->ids);
 			
 			$this->ids = array();
 			$this->values = array();

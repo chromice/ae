@@ -67,9 +67,4 @@ class aeOptions
 
 		return $this;
 	}
-	
-	public function &reference()
-	{
-		return $this->reference;
-	}
 }

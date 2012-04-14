@@ -1,10 +1,33 @@
 <?php
 
-class Book extends aeDatabaseEntity
-{
-	protected static $database = 'default';
-	protected static $table = 'books';
-	protected static $accessor = array('id'); // or array('key_1', 'key_2')
+ae::import('database.php');
+ae::import('author.php');
+
+class Books extends aeDatabaseTable
+{	
+	public static function install()
+	{
+		static::database()->query("CREATE TABLE IF NOT EXISTS {books} (
+				`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+				`author_id` int(10) unsigned NOT NULL,
+				`title` varchar(255) NOT NULL,
+				`content` text NOT NULL,
+				PRIMARY KEY (`id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+			->names(array(
+				'books' => static::name()
+			))
+			->run();
+	}
+
+	public static function uninstall()
+	{
+		static::database()->query("DROP TABLE IF EXISTS {books}")
+			->names(array(
+				'books' => static::name()
+			))
+			->run();
+	}
 	
 	public static function one($id)
 	{
@@ -16,11 +39,11 @@ class Book extends aeDatabaseEntity
 				'book_id' => $id
 			))
 			->names(array(
-				'books' => static::table(),
-				'authors' => Author::table()
+				'books' => static::name(),
+				'authors' => Authors::name()
 			))
-			->using('Author', 'author')
-			->one('Book');
+			->using('Authors', 'author')
+			->one('Books');
 	}
 	
 	public static function many($limit = null, $offset = null)
@@ -40,46 +63,15 @@ class Book extends aeDatabaseEntity
 		}
 		
 		return static::database()->query($query)
+			->names(array(
+				'books' => static::name(),
+				'authors' => Authors::name()
+			))
 			->variables(array(
-				'book_id' => $id,
 				'limit' => $limit,
 				'offset' => $offset
 			))
-			->names(array(
-				'books' => static::table(),
-				'authors' => Author::table()
-			))
-			->using('Author', 'author')
-			->many('Book');
+			->using('Authors', 'author')
+			->many('Books');
 	}
 }
-
-$book = Book::create(array(
-	'title' => 'Awesome'
-))->save();
-
-$books = Book::many();
-
-while ($book = $books->fetch())
-{
-	echo $book->title . ' by ' . $book->author->name;
-}
-
-// Create new instance and point it to book #5
-$book = Book::find(array(
-	'id' => 5
-));
-
-// Load data
-$book->load();
-
-echo $book->title;
-
-// Update data
-$book->title = 'Bullshit';
-
-// Save data
-$book->save();
-
-// Delete data
-$book->delete();
