@@ -531,10 +531,7 @@ abstract class aeDatabaseTable
 	// ==================
 	
 	private static $tables = array();
-	
-	protected static $strict = false;
-	protected static $database = 'default';
-	
+
 	public static function create($values = null)
 	/*
 		Creates a new instance.
@@ -581,12 +578,14 @@ abstract class aeDatabaseTable
 	
 	protected static function database()
 	{
-		if (is_string(static::$database))
+		static $database;
+		
+		if (empty($database))
 		{
-			static::$database = ae::database(static::$database);
+			$database = ae::database('default');
 		}
 		
-		return static::$database;
+		return $database;
 	}
 	
 	protected static function accessor()
@@ -670,6 +669,7 @@ abstract class aeDatabaseTable
 	
 	private $ids = array();
 	private $values = array();
+	private $transient = array();
 	private $related = array();
 	
 	private $is_dirty = false;
@@ -739,10 +739,10 @@ abstract class aeDatabaseTable
 		return $this;
 	}
 	
-	
 	/*
 		Setters and getters
 	*/
+	
 	public function __set($name, $value)
 	{
 		$ref =& $this->_values_or_ids($name);
@@ -790,13 +790,13 @@ abstract class aeDatabaseTable
 		{
 			return $this->ids;
 		}
-		else if (static::$strict && !in_array($name, static::columns()))
+		else if (in_array($name, static::columns()))
 		{
-			trigger_error('Uknown property ' . get_class($this) . '::' . $name . '.', E_USER_ERROR);
+			return $this->values;
 		}
 		else
 		{
-			return $this->values;
+			return $this->transient;
 		}
 	}
 	
@@ -876,6 +876,7 @@ abstract class aeDatabaseTable
 			
 			$this->ids = array();
 			$this->values = array();
+			$this->transient = array();
 		}
 		else
 		{

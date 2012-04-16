@@ -21,9 +21,9 @@ Authors::install();
 
 // Create a new entity and save it to database
 $author = Authors::create(array(
-	'name' => 'Jerome David Salinger'
+	'name' => 'Jerome David Salinger',
+	'non_existant' => 'Property'
 ))->save();
-
 
 $book = Books::create(array(
 	'author_id' => $author->id,
@@ -51,6 +51,8 @@ echo $_book->title . '<br>';
 
 // Update data
 $_book->title = 'The Catcher in the Rye';
+$_book->transient = 'Transient property';
+$_book->transient2 = 'works correctly';
 
 // Save data
 $_book->save();
@@ -59,6 +61,8 @@ $_book->save();
 $book->load();
 
 echo $book->title . '<br>';
+
+echo $_book->transient . ' ' . $_book->transient2 . '<br>';
 
 // Delete data
 $book->delete();
