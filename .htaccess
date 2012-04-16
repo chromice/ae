@@ -1,26 +1,28 @@
-# ======================
-# = Enable pretty urls =
-# ======================
 <IfModule mod_rewrite.c>
 	# Options +FollowSymLinks
 	RewriteEngine on
 	RewriteBase /
 	
-	# Do not rewrite, if the requested file or directory exists...
-	# 
-	# ...files:
-	RewriteCond %{REQUEST_FILENAME} !-f
-	#
-	# ...directories:
-	RewriteCond %{REQUEST_FILENAME} !-d
+	# Prevent direct access to cache
+	# RewriteCond %{IS_SUBREQ} !true
+	# RewriteCond %{REQUEST_URI} ^ae/cache
+	# RewriteRule ^(.*) /index.php?/$1 [L]
 	
-	# Choose:
-	#
-	# A: Rewrite request preserving $_GET parameters
-	RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
-	#
-	# B: Rewrite request without $_GET parameters
-	#RewriteRule ^(.*)$ index.php?/$1 [L]
+	
+	# Add default extension (".html")
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_URI} !\.\w+$
+	RewriteRule ^(.*?)$ /$1.html [L]
+
+	# Redirect to cache directory ("/ae/cache")
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*?)\.(\w+)$ /ae/cache/$1/index.$2 [L]
+	
+	# RewriteCond %{REQUEST_FILENAME} !-f
+	# RewriteCond %{REQUEST_FILENAME} !-d
+	# RewriteRule ^(.*) index.php?/$1 [L,QSA]
 </IfModule>
 
 <IfModule !mod_rewrite.c>
