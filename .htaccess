@@ -1,28 +1,16 @@
 <IfModule mod_rewrite.c>
-	# Options +FollowSymLinks
 	RewriteEngine on
 	RewriteBase /
 	
-	# Prevent direct access to cache
-	# RewriteCond %{IS_SUBREQ} !true
-	# RewriteCond %{REQUEST_URI} ^ae/cache
-	# RewriteRule ^(.*) /index.php?/$1 [L]
-	
-	
-	# Add default extension (".html")
+	# Append ".html", if there is no extension...
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_URI} !\.\w+$
 	RewriteRule ^(.*?)$ /$1.html [L]
 
-	# Redirect to cache directory ("/ae/cache")
+	# ...and redirect to cache directory ("/cache")
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule ^(.*?)\.(\w+)$ /ae/cache/$1/index.$2 [L]
-	
-	# RewriteCond %{REQUEST_FILENAME} !-f
-	# RewriteCond %{REQUEST_FILENAME} !-d
-	# RewriteRule ^(.*) index.php?/$1 [L,QSA]
+	RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
 </IfModule>
 
 <IfModule !mod_rewrite.c>
