@@ -1,9 +1,0 @@
-<IfModule mod_rewrite.c>
-	RewriteEngine on
-	
-	RewriteCond %{ENV:REDIRECT_FROM_ROOT} !1 [OR]
-	RewriteCond %{TIME} >20120420000000
-	RewriteRule ^(.*) /index.php?/$1 [L]
-
-	RequestHeader set Content-type "application/json;charset=utf-8"
-</IfModule>
