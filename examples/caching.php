@@ -1,4 +1,6 @@
 <?php
+	ae::options('response')->set('cache_dir', '/cache/');
+	ae::response()->cache(5, true);
 	
 	// Work for 50ms or so...
 	$j = 0; while($j < 1000000) ++$j;
