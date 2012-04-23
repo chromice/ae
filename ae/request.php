@@ -94,7 +94,7 @@ class aeRequest
 	
 	public function base()
 	{
-		return implode('/', array_slice($this->segments, $this->base));
+		return implode('/', array_slice($this->segments, 0, $this->depth));
 	}
 	
 	public function segment($offset, $default = false)

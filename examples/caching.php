@@ -1,12 +1,12 @@
 <?php
 	ae::options('response')->set('cache_dir', '/cache/');
-	ae::response()->cache(5, true);
 	
 	// Work for 50ms or so...
 	$j = 0; while($j < 1000000) ++$j;
 	
-	$response = ae::response();
 	$request = ae::request();
+	$response = ae::response()
+		->cache(5, $request->segment(0));
 
 	if ($request->type() === 'json'):
 		$response->type('json');
