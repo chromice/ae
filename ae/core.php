@@ -185,7 +185,8 @@ final class ae
 		$ps = new aeSwitch(self::$current_path, $path);
 		
 		self::$paths[$path] = array();
-		self::_include();
+		
+		__ae_include__($path);
 	}
 	
 	public static function load($path, $parameters = null)
@@ -234,24 +235,9 @@ final class ae
 		$ps = new aeSwitch(self::$current_path, $path);
 		$ob = new aeBuffer();
 		
-		self::_include($parameters);
+		__ae_include__($path, $parameters);
 		
 		return $ob->output();
-	}
-	
-	private static function _include($__ae_secret_array__ = null)
-	/*
-		Includes an external script with nearly pristine namespace
-	*/
-	{
-		if (is_array($__ae_secret_array__))
-		{
-			extract($__ae_secret_array__, EXTR_REFS);
-		}
-		
-		unset($__ae_secret_array__);
-		
-		require self::$current_path;
 	}
 	
 	// =================================
@@ -288,6 +274,22 @@ final class ae
 		return ae::load('response.php');
 	}
 }
+
+function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
+/*
+	Includes an external script with nearly pristine namespace
+*/
+{
+	if (is_array($__ae_secret_array__))
+	{
+		extract($__ae_secret_array__, EXTR_REFS);
+	}
+	
+	unset($__ae_secret_array__);
+	
+	require $__ae_path__;
+}
+
 
 class aeBuffer
 /*
