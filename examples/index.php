@@ -10,6 +10,7 @@
 <?php foreach (array(
 		'Container' => 'container',
 		'Database' => 'database/example',
+		'Log' => 'log',
 		'Options' => 'options',
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri'
