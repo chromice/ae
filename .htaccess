@@ -1,26 +1,16 @@
-# ======================
-# = Enable pretty urls =
-# ======================
 <IfModule mod_rewrite.c>
-	# Options +FollowSymLinks
 	RewriteEngine on
 	RewriteBase /
 	
-	# Do not rewrite, if the requested file or directory exists...
-	# 
-	# ...files:
+	# Append ".html", if there is no extension...
 	RewriteCond %{REQUEST_FILENAME} !-f
-	#
-	# ...directories:
 	RewriteCond %{REQUEST_FILENAME} !-d
-	
-	# Choose:
-	#
-	# A: Rewrite request preserving $_GET parameters
-	RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
-	#
-	# B: Rewrite request without $_GET parameters
-	#RewriteRule ^(.*)$ index.php?/$1 [L]
+	RewriteCond %{REQUEST_URI} !\.\w+$
+	RewriteRule ^(.*?)$ /$1.html [L]
+
+	# ...and redirect to cache directory ("/cache")
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
 </IfModule>
 
 <IfModule !mod_rewrite.c>

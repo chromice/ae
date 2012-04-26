@@ -8,6 +8,10 @@
 <h2>Examples:</h2>
 <ul>
 <?php foreach (array(
+		'Caching' => 'caching/test',
+		'Caching (html)' => 'caching/test.html',
+		'Caching (json)' => 'caching/test.json',
+		'Caching (direct)' => 'cache/caching/test/index.html/index.html',
 		'Container' => 'container',
 		'Database' => 'database/example',
 		'Log' => 'log',

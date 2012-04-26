@@ -26,11 +26,13 @@ class aeRequest
 */
 {
 	protected $type = 'html';
+	protected $depth = 0;
 	protected $segments = array();
 	
-	public function __construct($segments, $type)
+	public function __construct($depth, $segments, $type)
 	{
 		$this->type = $type;
+		$this->depth = $depth;
 		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
 	}
 		
@@ -80,6 +82,8 @@ class aeRequest
 		Returns current uri or a slice of it.
 	*/
 	{
+		$offset += $this->depth;
+		
 		if (is_null($length) || ($length + $offset) > count($this->segments))
 		{
 			$length = count($this->segments) - $offset;
@@ -88,11 +92,18 @@ class aeRequest
 		return implode('/', array_slice($this->segments, $offset, $length));
 	}
 	
+	public function base()
+	{
+		return implode('/', array_slice($this->segments, 0, $this->depth));
+	}
+	
 	public function segment($offset, $default = false)
 	/*
 		Returns segment or default value, if segment does not exist.
 	*/
 	{
+		$offset += $this->depth;
+		
 		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
 	}
 	
@@ -110,7 +121,7 @@ class aeRoute
 {
 	protected static $type;
 	protected static $depth = 0;
-	protected static $segments;
+	protected static $segments = array();
 	
 	public static function request($segments = null)
 	/*
@@ -131,7 +142,7 @@ class aeRoute
 				$type = self::_parse_type($segments);
 			}
 			
-			return new aeRequest($segments, $type);
+			return new aeRequest(0, $segments, $type);
 		}
 		
 		// Obtain segments
@@ -146,7 +157,7 @@ class aeRoute
 			self::$type = self::_parse_type(self::$segments);
 		}
 		
-		return new aeRequest(array_slice(self::$segments, self::$depth), self::$type);
+		return new aeRequest(self::$depth, self::$segments, self::$type);
 	}
 	
 	protected static function _parse_type(&$segments)
@@ -176,6 +187,13 @@ class aeRoute
 		Returns current uri as an array of segments.
 	*/
 	{
+		static $segments;
+		
+		if (!empty($segments))
+		{
+			return $segments;
+		}
+		
 		// Parse uri
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
 		$uri = '';
@@ -208,8 +226,9 @@ class aeRoute
 		}
 		
 		$segments = explode('/', trim($uri, '/'));
+		$segments = array_map('urldecode', $segments);
 		
-		return array_map('urldecode', $segments);
+		return $segments;
 	}
 	
 	protected static function _parse_args()
