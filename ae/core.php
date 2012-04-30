@@ -254,6 +254,18 @@ final class ae
 		return ae::load('database.php', $name);
 	}
 	
+	public static function log()
+	{
+		static $log;
+		
+		if (empty($log))
+		{
+			$log = ae::load('log.php');
+		}
+		
+		$log->log(func_get_args());
+	}
+	
 	public static function options($namespace = null)
 	{
 		return ae::load('options.php', $namespace);
