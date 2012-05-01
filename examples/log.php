@@ -1,4 +1,5 @@
 <?php
+	ae::import('log.php');
 	
 	ae::log("Hello world");
 	

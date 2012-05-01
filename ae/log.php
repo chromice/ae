@@ -22,79 +22,178 @@ ae::invoke('aeLog', ae::singleton);
 
 class aeLog
 {
-	protected $log = array();
+	protected static $log = array();
 	
-	public function __construct()
+	public static function log()
 	{
-		// Set up all handlers
-		set_error_handler(array($this,'_handleError'), E_ALL | E_STRICT);
-		set_exception_handler(array($this,'_handleException'));
-		register_shutdown_function(array($this,'_handleShutdown'));
+		$messages = func_get_args();
+		$length = count($messages);
+		$i = 0;
+		
+		if ($length > 0) foreach ($messages as $message)
+		{
+			self::$log[] = array(
+				'part' => ++$i,
+				'length' => $length,
+				'class' => is_array($message) || is_object($message) ? 'dump' : 'message',
+				'type' => gettype($message),
+				'object' => $message);
+		}
 	}
 
-	public function log($messages)
+	protected static function onError($error, $backtrace = null)
 	{
-		$this->log[] = $messages;
+		if ($error['type'] === 'exception')
+		{
+			$class = 'exception';
+		}
+		else if ($error['type'] & self::_error_mask())
+		{
+			$class = 'error';
+		}
+		else if ($error['type'] & self::_warning_mask())
+		{
+			$class = 'warning';
+		}
+		else
+		{
+			$class = 'notice';
+		}
+		
+		// Notices do not backtrace
+		if ($class !== 'notice')
+		{
+			$error['backtrace'] = $backtrace;
+		}
+		
+		self::$log[] = array(
+			'class' => $class,
+			'object' => $error
+		);
 	}
 
-	protected function onError($error, $backtrace = null)
+	protected static function onShutdown()
 	{
-		$error['backtrace'] = $backtrace;
-		$this->log[] = $error;
+		$o = "<!--\n";
+		$message_offset = null;
+		
+		while ($message = array_shift(self::$log))
+		{
+			$class = $message['class'];
+			
+			// Header, e.g. "----- Exception -----"
+			$header = ' ' . ucfirst($message['class']) . ' ';
+			$header = "\n" . str_pad($header, 21, "-", STR_PAD_BOTH) . "\n";
+			
+			switch ($class)
+			{
+				case 'exception':
+				case 'warning':
+				case 'error':
+				case 'notice':
+					$error = $message['object'];
+					
+					$o.= $header;
+					$o.= 'In "' . $error['file'] . '" at line ' . $error['line'] . ":\n";
+					$o.= $error['message'] . "\n";
+					
+					if (!empty($error['context']))
+					{
+						# code...
+					}
+					
+					if (!empty($error['backtrace']));
+					{
+						# code...
+					}
+					
+					break;
+				case 'dump':
+				case 'message':
+					if ($message['part'] === 1)
+					{
+						// Print normal header
+						$o.= $header;
+						
+					}
+					else
+					{
+						// Print short header and pad output
+						$o.= "\n    " . substr($header, 5);
+					}
+					
+					$o.= $message['object'];
+					break;
+			}
+		}
+		
+		$o.= "\n-->";
+		
+		// present output
+		echo $o;
 	}
 
-	protected function onShutdown()
+	protected function _error_mask()
 	{
-		// Present log.
-		var_dump($this->log);
+		return E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_RECOVERABLE_ERROR;
+	}
+	
+	protected function _warning_mask()
+	{
+		return E_WARNING | E_CORE_WARNING | E_COMPILE_WARNING | E_USER_WARNING;
 	}
 
 	/*
 		Event handling
 	*/
 	
-	protected $last_error;
-
-	public function _handleError($type, $message, $file, $line/*, $context*/)
+	protected static $last_error;
+	
+	public static function _handleError($type, $message, $file, $line, $context)
 	{
-		
 		$error['type'] = $type;
+		$error['context'] = $context;
 		$error['message'] = $message;
 		$error['file'] = $file;
 		$error['line'] = $line;
-		// $error['context'] = $context;
 		
-		$this->last_error = $error;
+		self::$last_error = $error;
 		
 		$trace = debug_backtrace();
 		array_shift($trace);
 		
-		$this->onError($error, $trace);
+		self::onError($error, $trace);
 	}
 
-	public function _handleException($e)
+	public static function _handleException($e)
 	{
-		$error['type'] = $e->getCode();
+		$error['type'] = 'exception';
+		$error['code'] = $e->getCode();
 		$error['message'] = $e->getMessage();
 		$error['file'] = $e->getFile();
 		$error['line'] = $e->getLine();
 		
-		$this->onError($error, $e->getTrace());
+		self::onError($error, $e->getTrace());
 	}
 
-	public function _handleShutdown()
+	public static function _handleShutdown()
 	{
 		$error = error_get_last();
-		$_error =& $this->last_error;
+		$_error =& self::$last_error;
 		
 		if (is_array($error) && is_array($_error)
 			&& $error['message'] === $_error['message']
 			&& $error['file'] === $_error['file']
 			&& $error['line'] === $_error['line'])
 		{
-			$this->onError($error);
+			self::onError($error);
 		}
 		
-		$this->onShutdown();
+		self::onShutdown();
 	}
 }
+
+// Set up all handlers
+set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
+set_exception_handler(array('aeLog','_handleException'));
+register_shutdown_function(array('aeLog','_handleShutdown'));

@@ -256,14 +256,10 @@ final class ae
 	
 	public static function log()
 	{
-		static $log;
-		
-		if (empty($log))
+		if (class_exists('aeLog'))
 		{
-			$log = ae::load('log.php');
+			call_user_func_array(array('aeLog', 'log'), func_get_args());
 		}
-		
-		$log->log(func_get_args());
 	}
 	
 	public static function options($namespace = null)
