@@ -28,7 +28,7 @@ class aeOptions
 		
 		echo $lib_options->get('bar', 'default value'); // 'foo'
 		echo $lib_options->get('foo', 'default value'); // 'default value'
-		
+	
 */
 {
 	protected static $options;

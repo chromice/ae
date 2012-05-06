@@ -152,6 +152,7 @@ final class ae
 			ae::invoke('SomeClassName', ae::singleton);
 			ae::invoke('some_function_name', ae::factory);
 			ae::invoke(array('SingletonClass','instance'), ae::factory | ae::singleton);
+		
 	*/
 	{
 		$data =& self::$paths[self::$current_path];
@@ -173,6 +174,7 @@ final class ae
 		Imports external script. Does not do anything else.
 		
 			ae::import('path/to/script.php');
+		
 	*/
 	{
 		$path = self::resolve($path);
@@ -194,7 +196,6 @@ final class ae
 		Loads a script and attempts to invoke an object defined in it:
 		
 			$image = ae::load('image.php','/path/to/image.png');
-		
 		
 	*/
 	{

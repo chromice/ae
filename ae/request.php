@@ -21,8 +21,6 @@ ae::invoke(array('aeRoute','request'), ae::factory);
 class aeRequest
 /*
 	Simple request abstration.
-	
-	
 */
 {
 	protected $type = 'html';
