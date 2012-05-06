@@ -21,6 +21,9 @@
 ae::invoke('aeLog', ae::singleton);
 
 class aeLog
+/*
+	Outputs a log of errors, notices, dumps, etc.
+*/
 {
 	protected static $log = array();
 	
@@ -30,14 +33,15 @@ class aeLog
 		$length = count($messages);
 		$i = 0;
 		
-		if ($length > 0) foreach ($messages as $message)
+		foreach ($messages as $message)
 		{
 			self::$log[] = array(
 				'part' => ++$i,
 				'length' => $length,
-				'class' => is_array($message) || is_object($message) ? 'dump' : 'message',
+				'class' => is_string($message) ? 'message' : 'dump',
 				'type' => gettype($message),
-				'object' => $message);
+				'object' => $message
+			);
 		}
 	}
 
@@ -60,92 +64,212 @@ class aeLog
 			$class = 'notice';
 		}
 		
-		// Notices do not backtrace
-		if ($class !== 'notice')
+		// Notices do not have a backtrace
+		if ($class !== 'notice' && !is_null($backtrace))
 		{
 			$error['backtrace'] = $backtrace;
 		}
+		
+		unset($error['type']);
 		
 		self::$log[] = array(
 			'class' => $class,
 			'object' => $error
 		);
 	}
-
+	
+	protected static function _error_mask()
+	{
+		return E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR;
+	}
+	
+	protected static function _warning_mask()
+	{
+		return E_WARNING | E_CORE_WARNING | E_COMPILE_WARNING | E_USER_WARNING;
+	}
+	
 	protected static function onShutdown()
 	{
-		$o = "<!--\n";
-		$message_offset = null;
+		$o = self::_header();
 		
 		while ($message = array_shift(self::$log))
 		{
-			$class = $message['class'];
-			
-			// Header, e.g. "----- Exception -----"
-			$header = ' ' . ucfirst($message['class']) . ' ';
-			$header = "\n" . str_pad($header, 21, "-", STR_PAD_BOTH) . "\n";
-			
-			switch ($class)
+			switch ($message['class'])
 			{
 				case 'exception':
 				case 'warning':
 				case 'error':
 				case 'notice':
-					$error = $message['object'];
-					
-					$o.= $header;
-					$o.= 'In "' . $error['file'] . '" at line ' . $error['line'] . ":\n";
-					$o.= $error['message'] . "\n";
-					
-					if (!empty($error['context']))
-					{
-						# code...
-					}
-					
-					if (!empty($error['backtrace']));
-					{
-						# code...
-					}
-					
+					$o.= self::_error($message['class'], $message['object']);
 					break;
+				
 				case 'dump':
 				case 'message':
 					if ($message['part'] === 1)
 					{
-						// Print normal header
-						$o.= $header;
-						
+						$o.= self::_horizontal_ruler();
+					}
+					
+					if ($message['class'] === 'message')
+					{
+						$o.= "\n" . $message['object'] . "\n";
 					}
 					else
 					{
-						// Print short header and pad output
-						$o.= "\n    " . substr($header, 5);
+						$o.= self::_dump('(' . $message['type'] . ')', $message['object']);
 					}
-					
-					$o.= $message['object'];
-					break;
 			}
 		}
 		
-		$o.= "\n-->";
-		
-		// present output
+		echo "<!--\n";
 		echo $o;
-	}
-
-	protected function _error_mask()
-	{
-		return E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_RECOVERABLE_ERROR;
+		echo "\n-->";
 	}
 	
-	protected function _warning_mask()
+	public static function _header()
 	{
-		return E_WARNING | E_CORE_WARNING | E_COMPILE_WARNING | E_USER_WARNING;
+		$o = self::_horizontal_ruler();
+		
+		if (isset($_SERVER)) $o.= self::_dump('$_SERVER', $_SERVER);
+		if (isset($_GET)) $o.= self::_dump('$_GET', $_GET);
+		if (isset($_POST)) $o.= self::_dump('$_POST', $_POST);
+		if (isset($_COOKIE)) $o.= self::_dump('$_COOKIE', $_COOKIE);
+		if (isset($_SESSION)) $o.= self::_dump('$_SESSION', $_SESSION);
+		
+		return $o;
+	}
+	
+	public static function _horizontal_ruler()
+	{
+		return "\n- - - - - - - -\n";
+	}
+	
+	public static function _error($class, $error)
+	{
+		$o = self::_horizontal_ruler() . "\n";
+		
+		switch ($class)
+		{
+			case 'exception':
+				$o.= 'Exception: ';
+				break;
+			case 'warning':
+				$o.= 'Warning: ';
+				break;
+			case 'error':
+				$o.= 'Error: ';
+				break;
+			case 'notice':
+				$o.= 'Notice: ';
+				break;
+		}
+		
+		$o.= $error['message'] . "\n";
+		
+		if (isset($error['code']))
+		{
+			$o.= 'Code: ' . $error['code'] . "\n";
+		}
+		
+		$o.= 'File: ' . $error['file'] . "\n";
+		$o.= 'Line: ' . $error['line'] . "\n";
+		
+		if (!empty($error['context']))
+		{
+			$o.= "\nContext:\n";
+			$o.= self::_dump('(array)', $error['context']);
+		}
+		
+		if (!empty($error['backtrace']))
+		{
+			$o.= "\nBacktrace:\n\n";
+			
+			$offset = 0;
+			$prefix = str_repeat(' ', 4);
+			$length = count($error['backtrace']);
+			
+			while ($trace = array_shift($error['backtrace']))
+			{
+				$o.= $prefix . str_pad(($length - $offset++) . '.', 4, ' ', STR_PAD_RIGHT) .
+					'In "' . $trace['file'] . '" at line ' . $trace['line'] . "\n\n";
+				
+				$o.= $prefix . $prefix;
+				
+				if (isset($trace['type']) && $trace['type'] === '->')
+				{
+					$o.= '$';
+				}
+				
+				if (isset($trace['class']))
+				{
+					$o.= $trace['class'] . $trace['type'];
+				}
+				
+				$o.= $trace['function'];
+				
+				$args = array();
+				$dumps = array();
+				$object_offset = 1;
+				$array_offset = 1;
+				
+				if (isset($trace['args'])) while ($arg = array_shift($trace['args']))
+				{
+					if (is_array($arg))
+					{
+						$name = '$array_' . $array_offset++;
+						$args[] = $name;
+						$dumps[] = self::_dump($name, $arg, 1);
+					}
+					else if (is_object($arg))
+					{
+						$name = '$object_' . $object_offset++;
+						$args[] = $name;
+						$dumps[] = self::_dump($name, $arg, 1);
+					}
+					else if (is_numeric($arg))
+					{
+						$args[] = $arg;
+					}
+					else if ($arg === false)
+					{
+						$args[] = 'FALSE';
+					}
+					else if ($arg === true)
+					{
+						$args[] = 'TRUE';
+					}
+					else if ($arg === null)
+					{
+						$args[] = 'NULL';
+					}
+					else
+					{
+						$args[] = '"' . $arg . '"';
+					}
+				}
+				
+				$o.= '(' . implode(', ', $args) . ")\n" . implode('', $dumps) . "\n";
+			}
+		}
+		
+		return $o;
+	}
+	
+	public static function _dump($name, $object, $level = 0)
+	{
+		$prefix_0 = str_repeat(' ', $level * 4);
+		$prefix_1 = str_repeat(' ', ($level + 1) * 4);
+		
+		$o = "\n" . $prefix_0 . '--- Dump: ' . $name . "\n\n";
+		$o.= $prefix_1 . str_replace("\n", "\n" . $prefix_1, print_r($object, true));
+		$o.= (is_scalar($object) ? "\n" : '') . "\n" . $prefix_0 . "--- End of dump\n";
+		
+		return $o;
 	}
 
-	/*
-		Event handling
-	*/
+	// ============
+	// = Handlers =
+	// ============
 	
 	protected static $last_error;
 	
@@ -182,9 +306,9 @@ class aeLog
 		$_error =& self::$last_error;
 		
 		if (is_array($error) && is_array($_error)
-			&& $error['message'] === $_error['message']
-			&& $error['file'] === $_error['file']
-			&& $error['line'] === $_error['line'])
+		&& ($error['message'] !== $_error['message']
+			|| $error['file'] !== $_error['file']
+			|| $error['line'] !== $_error['line']))
 		{
 			self::onError($error);
 		}

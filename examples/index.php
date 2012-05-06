@@ -15,6 +15,9 @@
 		'Container' => 'container',
 		'Database' => 'database/example',
 		'Log' => 'log',
+		'Log (trigger error)' => 'log/error',
+		'Log (throw exception)' => 'log/exception',
+		'Log (critical error)' => 'log/critical',
 		'Options' => 'options',
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri'
