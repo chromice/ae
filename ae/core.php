@@ -132,6 +132,8 @@ final class ae
 			
 			return realpath($__path);
 		}
+		
+		throw new Exception('Could not resolve path: ' . $path);
 	}
 	
 	// ===================
