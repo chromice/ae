@@ -10,6 +10,7 @@
 		->set('header', 'Hello World!');
 		
 	ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true);
+	ae::log("Hello again. This is a string: ", "foo", "As you can see strings are not dumped.");
 	
 	$r = ae::request();
 	
