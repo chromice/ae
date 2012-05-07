@@ -148,23 +148,7 @@ class aeLog
 	{
 		$o = self::_horizontal_ruler() . "\n";
 		
-		switch ($class)
-		{
-			case 'exception':
-				$o.= 'Exception: ';
-				break;
-			case 'warning':
-				$o.= 'Warning: ';
-				break;
-			case 'error':
-				$o.= 'Error: ';
-				break;
-			case 'notice':
-				$o.= 'Notice: ';
-				break;
-		}
-		
-		$o.= $error['message'] . "\n";
+		$o.= ucfirst($class) . ': ' . $error['message'] . "\n";
 		
 		if (isset($error['code']))
 		{
@@ -212,6 +196,11 @@ class aeLog
 				$object_offset = 1;
 				$array_offset = 1;
 				
+				if (isset($trace['object']))
+				{
+					$dumps[] = self::_dump('$' . $trace['class'], $trace['object'], 1);
+				}
+				
 				if (isset($trace['args'])) while ($arg = array_shift($trace['args']))
 				{
 					if (is_array($arg))
@@ -251,6 +240,7 @@ class aeLog
 				$o.= '(' . implode(', ', $args) . ")\n" . implode('', $dumps) . "\n";
 			}
 		}
+		
 		
 		return $o;
 	}
