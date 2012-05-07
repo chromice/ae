@@ -139,7 +139,7 @@ class aeLog
 		}
 		else
 		{
-			echo "<!--\n" . $o . "\n-->";
+			echo "<!-- ae-log --\n" . $o . "\n-->";
 		}
 	}
 	
