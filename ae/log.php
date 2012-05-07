@@ -16,9 +16,10 @@
 # limitations under the License.
 # 
 
-// TODO: convert back to static class and always import from core.php
-
-ae::invoke('aeLog', ae::singleton);
+// Set up all handlers
+set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
+set_exception_handler(array('aeLog','_handleException'));
+register_shutdown_function(array('aeLog','_handleShutdown'));
 
 class aeLog
 /*
@@ -321,8 +322,3 @@ class aeLog
 		self::onShutdown();
 	}
 }
-
-// Set up all handlers
-set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
-set_exception_handler(array('aeLog','_handleException'));
-register_shutdown_function(array('aeLog','_handleShutdown'));
