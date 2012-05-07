@@ -196,7 +196,7 @@ class aeLog
 			while ($trace = array_shift($error['backtrace']))
 			{
 				$o.= $prefix . str_pad(($length - $offset++) . '.', 4, ' ', STR_PAD_RIGHT) .
-					'In "' . $trace['file'] . '" at line ' . $trace['line'] . "\n\n";
+					'In "' . $trace['file'] . '" at line ' . $trace['line'] . ":\n\n";
 				
 				$o.= $prefix . $prefix;
 				
@@ -265,6 +265,19 @@ class aeLog
 	{
 		$prefix_0 = str_repeat(' ', $level * 4);
 		$prefix_1 = str_repeat(' ', ($level + 1) * 4);
+		
+		if ($object === false)
+		{
+			$object = 'FALSE';
+		}
+		else if ($object === true)
+		{
+			$object = 'TRUE';
+		}
+		else if ($object === null)
+		{
+			$object = 'NULL';
+		}
 		
 		$o = "\n" . $prefix_0 . '--- Dump: ' . $name . "\n\n";
 		$o.= $prefix_1 . str_replace("\n", "\n" . $prefix_1, print_r($object, true));
