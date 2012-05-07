@@ -90,7 +90,7 @@ class aeLog
 	
 	protected static function onShutdown()
 	{
-		$o = self::_header();
+		$o = self::_environment();
 		
 		while ($message = array_shift(self::$log))
 		{
@@ -121,16 +121,32 @@ class aeLog
 			}
 		}
 		
-		echo "<!--\n";
-		echo $o;
-		echo "\n-->";
+		$o.= self::_horizontal_ruler();
+		
+		// Present the log to the user depending on the request method
+		$is_cli = defined('STDIN');
+		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
+			&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
+		
+		if ($is_cli)
+		{
+			echo "\n" . $o . "\n";
+		}
+		else if ($is_ajax && !headers_sent())
+		{
+			header('X-ae-log: ' . base64_encode($o));
+		}
+		else
+		{
+			echo "<!--\n" . $o . "\n-->";
+		}
 	}
 	
 	// ==================
 	// = Log formatting =
 	// ==================
 	
-	public static function _header()
+	public static function _environment()
 	{
 		$o = self::_horizontal_ruler();
 		
