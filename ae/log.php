@@ -126,15 +126,19 @@ class aeLog
 		echo "\n-->";
 	}
 	
+	// ==================
+	// = Log formatting =
+	// ==================
+	
 	public static function _header()
 	{
 		$o = self::_horizontal_ruler();
 		
-		if (isset($_SERVER)) $o.= self::_dump('$_SERVER', $_SERVER);
-		if (isset($_GET)) $o.= self::_dump('$_GET', $_GET);
-		if (isset($_POST)) $o.= self::_dump('$_POST', $_POST);
-		if (isset($_COOKIE)) $o.= self::_dump('$_COOKIE', $_COOKIE);
-		if (isset($_SESSION)) $o.= self::_dump('$_SESSION', $_SESSION);
+		if (!empty($_SERVER)) $o.= self::_dump('$_SERVER', $_SERVER);
+		if (!empty($_GET)) $o.= self::_dump('$_GET', $_GET);
+		if (!empty($_POST)) $o.= self::_dump('$_POST', $_POST);
+		if (!empty($_COOKIE)) $o.= self::_dump('$_COOKIE', $_COOKIE);
+		if (!empty($_SESSION)) $o.= self::_dump('$_SESSION', $_SESSION);
 		
 		return $o;
 	}
@@ -203,15 +207,10 @@ class aeLog
 				
 				if (isset($trace['args'])) while ($arg = array_shift($trace['args']))
 				{
-					if (is_array($arg))
+					if (is_array($arg) || is_object($arg))
 					{
-						$name = '$array_' . $array_offset++;
-						$args[] = $name;
-						$dumps[] = self::_dump($name, $arg, 1);
-					}
-					else if (is_object($arg))
-					{
-						$name = '$object_' . $object_offset++;
+						$name = is_array($arg) ? 
+							'$array_' . $array_offset++ : '$object_' . $object_offset++;
 						$args[] = $name;
 						$dumps[] = self::_dump($name, $arg, 1);
 					}
