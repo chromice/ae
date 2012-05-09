@@ -33,6 +33,39 @@ class aeRequest
 		$this->depth = $depth;
 		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
 	}
+	
+	public static function ip_address()
+	{
+		if (empty($_SERVER['REMOTE_ADDR']))
+		{
+			return;
+		}
+		
+		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+		{
+			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
+			$whitelist = ae::options('ae.request')->get('proxies',
+				!empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : ''
+			);
+			
+			if (empty($whitelist))
+			{
+				return $_SERVER['REMOTE_ADDR'];
+			}
+			
+			if (is_string($whitelist))
+			{
+				$whitelist = preg_split('/,\s+?/', trim($whitelist));
+			}
+			
+			if (in_array($_SERVER['REMOTE_ADDR'], $whitelist))
+			{
+				return array_shift($clientlist);
+			}
+		}
+		
+		return $_SERVER['REMOTE_ADDR'];
+	}
 		
 	public function is($what)
 	{

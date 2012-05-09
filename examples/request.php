@@ -11,6 +11,10 @@ $request = ae::request();
 	cli request: index.php segment-1 segment-2 segment-3
 */
 echo "<pre>\n";
+
+echo 'Client IP address: ' . aeRequest::ip_address() ."\n";
+echo 'Server IP address: ' . $_SERVER['SERVER_ADDR'] ."\n";
+
 if ($request->is('normal get')) // or 'cli', or 'normal'
 {
 	echo "Normal GET request\n";
