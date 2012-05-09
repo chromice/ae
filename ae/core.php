@@ -38,14 +38,34 @@ final class ae
 		Creates and/or switches to a new context. Context is defined by
 		its name and directory path.
 		
-			$context = new ae('module.examples','examples/');
+			// Announce and immediately destroy context,
+			// e.g. at the main script of your module.
+			new ae('module.examples','examples/');
+			
+			// Then, when you need it, use it. (Ideally it should be 
+			// created in a scope of a function and destroyed as soon
+			// as possible.)
+			$context1 = new ae('module.examples');
 			echo ae::resolve('foo.php'); // 'examples/foo.php'
 		
+			// Contexts are nestable, as long as 
+			// you destroy them correctly.
 			$context2 = new ae('module.samples', 'samples/')
+			
 			echo ae::resolve('foo.php'); // 'samples/foo.php'
+			
+			// Unsetting the second context pops up the first one.
+			// NB! Mind the order!
 			unset($context2);
 			
+			// This resolves in the right context
 			echo ae::resolve('foo.php'); // 'examples/foo.php'
+			
+			// Reverting back to original
+			unset($context1);
+			
+			echo ae::resolve('foo.php'); 
+			// e.g. 'original/context/path/foo.php'
 	*/
 	{
 		if (!isset(self::$contexts[$context]))
