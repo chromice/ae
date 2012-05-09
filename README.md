@@ -1,6 +1,6 @@
 æ [æʃ] is an web application development framework written in PHP. The primary goals are:
 
-1. To create a framework that the author — Hi. My name is Anton. Nice to meet you! — could use to solve his PHP/Web related problems quickly and efficiently.
+1. Create a framework that the author — Hi. My name is Anton. Nice to meet you! — could use to solve his PHP/Web related problems quickly and efficiently.
 2. Write a clean documentation and some tests to ensure high quality.
 3. Release into the wild.
 
