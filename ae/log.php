@@ -24,6 +24,13 @@ register_shutdown_function(array('aeLog','_handleShutdown'));
 class aeLog
 /*
 	Outputs a log of errors, notices, dumps, etc.
+	
+	Options ('log'):
+		enabled      = true
+		environment  = false
+		console      = true
+		ip_whitelist = 127.0.0.1
+		
 */
 {
 	protected static $log = array();
@@ -94,7 +101,7 @@ class aeLog
 		$request = ae::request();
 		$options = ae::options('ae.log');
 		
-		$enabled = $options->get('log.enabled', true);
+		$enabled = $options->get('enabled', true);
 		$ip = $request->ip_address();
 		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
 		
@@ -109,8 +116,12 @@ class aeLog
 			return;
 		}
 		
+		$o = '';
 		
-		$o = self::_environment();
+		if ($options->get('environment', false))
+		{
+			$o.= self::_environment();
+		}
 		
 		while ($message = array_shift(self::$log))
 		{
@@ -141,7 +152,7 @@ class aeLog
 			}
 		}
 		
-		$o.= trim(self::_horizontal_ruler(), "\n") . "\n\n";
+		$o.= self::_horizontal_ruler() . "\n";
 		
 		// Present the log to the user depending on the request method
 		$is_cli = defined('STDIN');
@@ -158,7 +169,7 @@ class aeLog
 		}
 		else
 		{
-			if (!$is_ajax && $options->get('log.console', true)):
+			if (!$is_ajax && $options->get('console', true)):
 ?>
 <script>
 var __ae_log_monitor = function (logs) {
@@ -180,7 +191,7 @@ var __ae_log_monitor = function (logs) {
 	this.logs = this.logs.concat(logs); 
 };
 
-// Init main script
+// Initialize main script
 (function(open) {
 	var script = document.createElement('script');
 	script.setAttribute('src', "/console/main.js");
