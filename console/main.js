@@ -1,0 +1,1 @@
+__ae_log_monitor(['foo']);

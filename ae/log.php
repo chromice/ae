@@ -91,6 +91,25 @@ class aeLog
 	
 	protected static function onShutdown()
 	{
+		$request = ae::request();
+		$options = ae::options('ae.log');
+		
+		$enabled = $options->get('log.enabled', true);
+		$ip = $request->ip_address();
+		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
+		
+		if (!is_array($whitelist))
+		{
+			$whitelist = explode(',', $whitelist);
+			$whitelist = array_map('trim', $whitelist);
+		}
+		
+		if (!$enabled || !in_array($ip, $whitelist))
+		{
+			return;
+		}
+		
+		
 		$o = self::_environment();
 		
 		while ($message = array_shift(self::$log))
@@ -122,7 +141,7 @@ class aeLog
 			}
 		}
 		
-		$o.= self::_horizontal_ruler();
+		$o.= trim(self::_horizontal_ruler(), "\n") . "\n\n";
 		
 		// Present the log to the user depending on the request method
 		$is_cli = defined('STDIN');
@@ -139,7 +158,57 @@ class aeLog
 		}
 		else
 		{
-			echo "<!-- ae-log --\n" . $o . "\n-->";
+			if (!$is_ajax && $options->get('log.console', true)):
+?>
+<script>
+var __ae_log_monitor = function (logs) {
+	if (this.logs === undefined) {
+		this.logs = [];
+	}
+	
+	if (logs === undefined || !typeof logs === 'array') {
+		logs = this.logs;
+		this.logs = [];
+		return logs;
+	}
+	
+	// Route all new logs to top window monitor
+	if (window !== window.top && typeof window.top.__ae_log_monitor === 'function') {
+		window.top.__ae_log_monitor(logs);
+	}
+	
+	this.logs = this.logs.concat(logs); 
+};
+
+// Init main script
+(function(open) {
+	var script = document.createElement('script');
+	script.setAttribute('src', "/console/main.js");
+	document.head.appendChild(script);
+})();
+
+// Process AJAX requests
+(function(open) {
+	XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+		this.addEventListener("readystatechange", function() {
+			if (this.readyState === 4) {
+				var log = this.getResponseHeader('X-ae-log');
+				
+				if (log) {
+					__ae_log_monitor([log]);
+				}
+			}
+			
+		}, false);
+		open.call(this, method, url, async, user, pass);
+	};
+})(XMLHttpRequest.prototype.open);
+</script>
+<?php endif; ?>
+<!-- ae-log
+<?= $o ?>
+-->
+<?
 		}
 	}
 	
