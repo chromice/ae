@@ -186,9 +186,14 @@ var __ae_log_monitor = function (logs) {
 	// Route all new logs to top window monitor
 	if (window !== window.top && typeof window.top.__ae_log_monitor === 'function') {
 		window.top.__ae_log_monitor(logs);
+		return;
 	}
 	
-	this.logs = this.logs.concat(logs); 
+	this.logs = this.logs.concat(logs);
+	
+	for (var i=0, log; log = logs[i]; i++){
+		console.log(log);
+	} 
 };
 
 // Initialize main script
@@ -242,7 +247,7 @@ var __ae_log_monitor = function (logs) {
 	
 	public static function _horizontal_ruler()
 	{
-		return "\n- - - - - - - -\n";
+		return "\n".str_repeat('- ', 40)."\n";
 	}
 	
 	public static function _error($class, $error)

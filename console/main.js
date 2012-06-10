@@ -26,10 +26,8 @@ function getAllCommentNodes(el) {
 var comments = getAllCommentNodes(document.getElementsByTagName("html")[0]);
 
 for (var i=0, comment; comment = comments[i]; i++){
-	console.log(comment)
+	__ae_log_monitor([comment]);
 }
-
-// __ae_log_monitor($log);
 
 // Enable button for the top window
 if (false && window === window.top) {
