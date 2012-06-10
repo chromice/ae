@@ -55,7 +55,7 @@ class aeDatabase
 
 		$this->db = new MySQLi($host, $user, $password, $database, $port, $socket);
 		
-		if (!empty($this->db->connect_error))
+		if ($this->db->connect_error)
 		{
 			throw new ErrorException($this->db->connect_error, $this->db->connect_errno, E_USER_ERROR);
 		}
