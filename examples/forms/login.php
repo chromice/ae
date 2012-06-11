@@ -4,24 +4,19 @@
 $form = ae::form('login-form');
 
 // Create fields
-$form['login'] = $form::text('Login')
-	->properties(
-		'label' => 'Username' // alter label
-	)
-	->attributes(array(
-		'class' => 'login',
-		'maxlength' => 20
-	));
+$form['login'] = $form::text('Login', array(
+	'class' => 'login',
+	'maxlength' => 20
+));
+$form['login']->label = 'User name';
 $form['pass'] = $form::password('Password');
-$form['remember'] = $form::checkbox('Remember me');
+$form['remember'] = $form::checkbox('remember me');
 
-// If form is lready posted...
+// if form is already posted...
 if ($form->is_posted())
 {
 	// ...process it here...
-	$values = $form->values();
-	
-	if ($values['login'] === 'user' && $values['password'] === 'password')
+	if ('user' === $form['login']->value && 'password' === $form['password']->value)
 	{
 		// login user
 	}
@@ -36,7 +31,7 @@ if ($form->is_posted())
 <div class="field">
 	<?= $form['user'] ?>
 	<?php // echo $form['user']->label() ?>
-	<?php // echo $form['user']->field() ?>
+	<?php // echo $form['user']->input() ?>
 	<?php // echo $form['user']->error('<em class="error">', '</em>') ?>
 </div>
 <?php custom_render_function($form['pass'], $form['remember']); ?>
@@ -52,9 +47,9 @@ function custom_render_function($field, $checbox)
 {
 ?>
 <div class="field with-checkbox">
-	<?php $field->label() ?>
-	<?php $field->field() ?> <?php $field->error() ?>
-	<?php $checkbox->field() ?> <?php $checkbox->error() ?>
+	<?= $field->label() ?>
+	<?= $field->input() ?> <?= $field->error() ?>
+	<?= $checkbox->input() ?> <?= $checkbox->error() ?>
 </div>
 <?php
 }

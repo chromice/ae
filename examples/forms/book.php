@@ -1,52 +1,44 @@
 <?php
 
-$form = ae::form('new-book');
 $controller = new BookFormController();
+$form = ae::form('new-book', $controller);
 
-$form->delegate($controller);
-
-class BookFormController implements aeFormController 
+class BookFormController implements aeFormControllerInterface 
 {
 	public function setup(&$form)
 	{
-		$form['title'] = $form::text('Book title')
-			->attributes(array(
+		if ($form->id() !== 'new-book')
+		{
+			return;
+		}
+		
+		$form['title'] = $form::text('Book title', array(
 				'class' => 'title'
-			));
-		$form['description'] = $form::textarea('Book description', 60, 20); // Label, Cols, Rows
+			))
+			->required('Please specify the title.')
+			->max_length(255, 'The title is too long.');
 		
-		$form->default(array('title' => '', 'description' => '')); // Just an example
-	}
-	
-	public function serialize($values)
-	{
-		return $values;
-	}
-	
-	public function unserialize($values)
-	{
-		return $values;
-	}
-	
-	public function validate($form)
-	{
-		$values = $form->values();
-		$errors = array();
+		$form['description'] = $form::textarea('Book description', array(
+				'cols' => 60,
+				'rows' => 20
+			))
+			->required('Please specify the description.')
+			->min_length(2, 'The description is too short.')
+			->max_length(5000, 'The description is too long.');
 		
-		if (empty($values['title']))
+		// Set default values
+		$form->values(array('title' => '', 'description' => ''));
+	}
+	
+	public function validate(&$form)
+	{
+		if (ucfirst($form['title']->value) === 'Title')
 		{
-			$errors['title'] = 'Please specify the title.';
+			$form['title']->error = 'Are you sure that is the title?';
 		}
-		
-		if (empty($values['description']))
-		{
-			$errors['description'] = 'Please specify the description.';
-		}
-		
-		return $errors;
 	}
 	
-	public function submit($form)
+	public function submit(&$form)
 	{
 		if ($form->id() === 'new-book')
 		{
@@ -60,7 +52,7 @@ class BookFormController implements aeFormController
 ?>
 <?= $form->open() ?>
 <?php foreach ($form->fields() as $field): ?>
-<div class="field <?= $field->attribute('class') ?>">
+<div class="field">
 	<?= $field ?>
 <?php endforeach ?>
 <div class="field button">
