@@ -13,7 +13,7 @@ $form['pass'] = $form::password('Password');
 $form['remember'] = $form::checkbox('remember me');
 
 // if form is already posted...
-if ($form->is_posted())
+if ($form->submitted())
 {
 	// ...process it here...
 	if ('user' === $form['login']->value && 'password' === $form['password']->value)

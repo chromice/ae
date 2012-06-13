@@ -5,7 +5,7 @@ $form = ae::form('new-book', $controller);
 
 class BookFormController implements aeFormControllerInterface 
 {
-	public function setup(&$form)
+	public function setup($form)
 	{
 		if ($form->id() !== 'new-book')
 		{
@@ -15,6 +15,7 @@ class BookFormController implements aeFormControllerInterface
 		$form['title'] = $form::text('Book title', array(
 				'class' => 'title'
 			))
+			->satisfy('is_not', 'foo', 'lorem')
 			->required('Please specify the title.')
 			->max_length(255, 'The title is too long.');
 		
@@ -30,15 +31,27 @@ class BookFormController implements aeFormControllerInterface
 		$form->values(array('title' => '', 'description' => ''));
 	}
 	
-	public function validate(&$form)
+	public function validate($form, $field, $rule = null, $attributes = null)
 	{
-		if (ucfirst($form['title']->value) === 'Title')
+		switch ($rule)
 		{
-			$form['title']->error = 'Are you sure that is the title?';
+			case 'is_not':
+				if (is_array($attributes) && in_array($field->value, $attributes))
+				{
+					$field->error = 'This cannot be a title of the book?';
+				} 
+				break;
+			
+			default:
+				if ($field->name === 'title' && ucfirst($field->value) === 'Title')
+				{
+					$field->error = 'Are you sure that is the title of the book?';
+				}
+				break;
 		}
 	}
 	
-	public function submit(&$form)
+	public function submit($form)
 	{
 		if ($form->id() === 'new-book')
 		{
