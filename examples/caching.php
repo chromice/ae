@@ -13,5 +13,5 @@
 ?>
 {'hello':'world'}
 <?php else: ?>
-<h1>hello Fuckers</h1>
+<h1>Hello World!</h1>
 <?php endif ?>
