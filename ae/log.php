@@ -99,7 +99,7 @@ class aeLog
 	protected static function onShutdown()
 	{
 		$request = ae::request();
-		$options = ae::options('ae.log');
+		$options = ae::options('log');
 		
 		$enabled = $options->get('enabled', true);
 		$ip = $request->ip_address();

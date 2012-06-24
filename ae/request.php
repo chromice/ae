@@ -44,7 +44,7 @@ class aeRequest
 		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 		{
 			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
-			$whitelist = ae::options('ae.request')->get('proxies',
+			$whitelist = ae::options('request')->get('proxies',
 				!empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : ''
 			);
 			
