@@ -44,7 +44,7 @@ if ($form->submitted()) // if submit button was used...
 )) ?>
 <ul>
 <?php foreach ($form['item'] as $i => $field): ?>
-	<li><?= $field ?> <?= $form->action('delete-form-item', $i, 'Delete', array(
+	<li><?= $field ?> <?= $form->button('delete-form-item', $i, 'Delete', array(
 		'class' => 'delete'
 	)) ?></li>
 <?php endforeach ?>

@@ -28,12 +28,12 @@ if ($form->submitted())
 
 ?>
 <?= $form->open() ?>
-<div class="field">
-	<?= $form['user'] ?>
+	<?= $form['user']->field('<div class="field type-{type}">', '</div>') ?>
+<?php // echo '<div class="field">' ?>
 	<?php // echo $form['user']->label() ?>
 	<?php // echo $form['user']->input() ?>
 	<?php // echo $form['user']->error('<em class="error">', '</em>') ?>
-</div>
+<?php // echo '</div>' ?>
 <?php custom_render_function($form['pass'], $form['remember']); ?>
 <div class="field button">
 	<?php // echo $form->submit('Login') ?>

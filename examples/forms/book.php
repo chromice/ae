@@ -19,6 +19,14 @@ class BookFormController implements aeFormControllerInterface
 			->required('Please specify the title.')
 			->max_length(255, 'The title is too long.');
 		
+		ae::options('form')->set('upload_dir', '/uploads/');
+		
+		$form['cover'] = $form::file('Book cover')
+			->max_size(2, 'The file is too big.') // Megabytes
+			->type(array('jpeg', 'png'), 'Only .png and .jpeg files are allowed.'); // Allow only images, but not GIFs
+			//->max_width(2000) // pixels
+			//->max_height(1000); // pixels
+		
 		$form['description'] = $form::textarea('Book description', array(
 				'cols' => 60,
 				'rows' => 20
@@ -51,6 +59,34 @@ class BookFormController implements aeFormControllerInterface
 		}
 	}
 	
+	// public function upload($form, $field)
+	// {
+	// 	$to = '/uploads/' . $field->file_hash . '.' . $field->file_extension;
+	// 	$moved = move_uploaded_file($field->file_path, $to);
+	// 	
+	// 	if (!$moved)
+	// 	{
+	// 		$field->error = "File could not be uploaded for an unknown reason. Sorry.";
+	// 		return;
+	// 	}
+	// 	
+	// 	// data is serialized and checksumed, so that no one can mess arround with it.
+	// 	$data = $field->data();
+	// 	
+	// 	if (!empty($data))
+	// 	{
+	// 		return;
+	// 	}
+	// 	
+	// 	$data = array(
+	// 		'path' => $to,
+	// 		'name' => $field->file_name
+	// 	);
+	// 	
+	// 	// Store data
+	// 	$field->data($data);
+	// }
+	
 	public function submit($form)
 	{
 		if ($form->id() === 'new-book')
@@ -58,15 +94,20 @@ class BookFormController implements aeFormControllerInterface
 			$values = $form->values();
 			
 			// do something useful
+			
+			echo $values['cover']['path'];
+			echo $values['cover']['size'];
+			echo $values['cover']['extension'];
 		}
+		
+		$form['cover']->remove();
 	}
 }
 
 ?>
 <?= $form->open() ?>
 <?php foreach ($form->fields() as $field): ?>
-<div class="field">
-	<?= $field ?>
+<?= $field->field('<div class="field {type}">', '</div>') ?>
 <?php endforeach ?>
 <div class="field button">
 	<?= $form->submit('Add book') ?>
