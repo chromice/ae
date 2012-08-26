@@ -77,6 +77,7 @@ class aeDatabase
 	protected $variables = array();
 	protected $values = array();
 	
+	// FIXME: Writing queries takes ages... We need some shorthands, e.g. select(), insert(), etc. 
 	public function query($query)
 	{
 		$this->query = $query;
@@ -672,6 +673,7 @@ abstract class aeDatabaseTable
 	private $transient = array();
 	private $related = array();
 	
+	// FIXME: Records are always dirty
 	private $is_dirty = false;
 	
 	public function __construct($values = null)
@@ -700,6 +702,7 @@ abstract class aeDatabaseTable
 	{
 		if ($accessor && $columns)
 		{
+			// FIXME: All transient properties are lost
 			$values = array_intersect_key($values, 
 				array_merge(
 					array_flip(static::accessor()), array_flip(static::columns())

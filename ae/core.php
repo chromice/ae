@@ -138,7 +138,7 @@ final class ae
 		$try[] = dirname(__FILE__) . '/' . $_path;
 		
 		if (!is_null(self::$current_context) 
-			&& isset(self::$contexts[self::$current_context]))
+		&& isset(self::$contexts[self::$current_context]))
 		{
 			$try[] = self::$contexts[self::$current_context] . '/' . $_path;
 		}

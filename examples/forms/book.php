@@ -98,9 +98,11 @@ class BookFormController implements aeFormControllerInterface
 			echo $values['cover']['path'];
 			echo $values['cover']['size'];
 			echo $values['cover']['extension'];
+			
+			// Remove file and data
+			$form['cover']->remove();
 		}
 		
-		$form['cover']->remove();
 	}
 }
 
