@@ -16,7 +16,6 @@
 # limitations under the License.
 # 
 
-// TODO: cached copy should be compressed if appropriate apache module is available.
 ae::invoke('aeResponse');
 
 class aeResponse
@@ -235,7 +234,7 @@ class aeResponse
 		$htaccess = ae::file($cache_path . '.htaccess');
 		$content = ae::file($cache_path . 'index.' . $ext);
 		
-		if (!$htaccess->open('c') || !$content->open('c')
+		if (!$htaccess->open('w') || !$content->open('w')
 		|| !$htaccess->lock(LOCK_EX | LOCK_NB) 
 		|| !$content->lock(LOCK_EX | LOCK_NB))
 		{
@@ -267,9 +266,22 @@ class aeResponse
 
 		$rules.= "\n</IfModule>";
 		
-		$htaccess->truncate(0);
-		$content->truncate(0);
+		// Add compression rules
+		if (ae::options('response')->get('compress', false))
+		{
+			$rules.= "\n<IfModule mod_deflate.c>
+	SetOutputFilter DEFLATE
 
+	BrowserMatch ^Mozilla/4 gzip-only-text/html
+	BrowserMatch ^Mozilla/4\.0[678] no-gzip
+	BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+
+	Header append Vary User-Agent env=!dont-vary\n";
+			
+			$rules.= "</IfModule>";
+		}
+		
+		// Write content to files
 		if (!$htaccess->write($rules) || !$content->write($output))
 		{
 			trigger_error('Coult not write to cache files.', E_USER_WARNING);
