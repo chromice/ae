@@ -277,6 +277,11 @@ final class ae
 		return ae::load('database.php', $name);
 	}
 	
+	public static function file($path)
+	{
+		return ae::load('file.php', $path);
+	}
+	
 	public static function log()
 	{
 		if (class_exists('aeLog'))

@@ -199,10 +199,11 @@ class aeResponse
 	
 	public function save($path)
 	/*
-		Saves reponse to disk.
+		Saves reponse to cache directory.
 	*/
 	{
-		if ($this->cache_ttl < 1 || $this->cache_private || !($cache_path = self::_cache_directory()))
+		if ($this->cache_ttl < 1 || $this->cache_private 
+		|| !($cache_path = self::_cache_directory()))
 		{
 			return $this;
 		}
@@ -231,24 +232,13 @@ class aeResponse
 		$output = $this->buffer->content();
 
 		// TODO: File open, close and lock must use ae::file()
-		$htaccess = fopen($cache_path . '.htaccess', "c");
-		$content = fopen($cache_path . 'index.' . $ext, "c");
-
-		// Try to lock .htaccess file
-		if (!flock($htaccess, LOCK_EX | LOCK_NB))
+		$htaccess = ae::file($cache_path . '.htaccess');
+		$content = ae::file($cache_path . 'index.' . $ext);
+		
+		if (!$htaccess->open('c') || !$content->open('c')
+		|| !$htaccess->lock(LOCK_EX | LOCK_NB) 
+		|| !$content->lock(LOCK_EX | LOCK_NB))
 		{
-			fclose($htaccess);
-			fclose($content);
-
-			return;
-		}
-
-		// Try to lock content file
-		if (!flock($content, LOCK_EX | LOCK_NB))
-		{
-			flock($htaccess, LOCK_UN); fclose($htaccess);
-			fclose($content);
-
 			return;
 		}
 
@@ -277,30 +267,24 @@ class aeResponse
 
 		$rules.= "\n</IfModule>";
 		
-		// Dump rules and headers into .htaccess file
-		ftruncate($htaccess, 0);
+		$htaccess->truncate(0);
+		$content->truncate(0);
 
-		if (fwrite($htaccess, $rules) === FALSE)
+		if (!$htaccess->write($rules) || !$content->write($output))
 		{
-			trigger_error('Coult not write cache rules file.', E_USER_WARNING);
+			trigger_error('Coult not write to cache files.', E_USER_WARNING);
+			
+			unset($htaccess, $content);
+			self::delete($cache_path);
 		}
-		
-		// Dump output into content file
-		ftruncate($content, 0);
-
-		if (fwrite($content, $output) === FALSE)
-		{
-			trigger_error('Coult not write content cache file.', E_USER_WARNING);
-		}
-
-		// Close files
-		flock($htaccess, LOCK_UN); fclose($htaccess);
-		flock($content, LOCK_UN); fclose($content);
 		
 		return $this;
 	}
 	
 	public static function delete($path)
+	/*
+		Deletes all matched responses.
+	*/
 	{
 		if (!($cache_path = self::_cache_directory()))
 		{
@@ -317,8 +301,11 @@ class aeResponse
 	}
 	
 	protected static function _cache_directory()
+	/*
+		Returns cache directory path and checks if it is writable.
+	*/
 	{
-		$cache_path = trim(ae::options('response')->get('directory', null), '/');
+		$cache_path = trim(ae::options('response')->get('directory', '/cache'), '/');
 		
 		if (empty($cache_path))
 		{
@@ -337,6 +324,9 @@ class aeResponse
 	}
 	
 	protected static function _remove_directory($path)
+	/*
+		Attempts to remove the directory. May fail silently, if a file is locked.
+	*/
 	{
 		foreach (scandir($path) as $file)
 		{
@@ -353,10 +343,10 @@ class aeResponse
 			}
 			else 
 			{
-				unlink($file);
+				@unlink($file);
 			}
 		}
 		
-		rmdir($path);
+		@rmdir($path);
 	}
 }
