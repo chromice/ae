@@ -34,7 +34,7 @@ class aeOptions
 	protected static $options;
 	protected $reference;
 	
-	public function __construct($namespace = null)
+	public function __construct($namespace)
 	{
 		if (is_string($namespace))
 		{

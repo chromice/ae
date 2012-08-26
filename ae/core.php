@@ -260,7 +260,7 @@ final class ae
 		
 		__ae_include__($path, $parameters);
 		
-		return $ob->output();
+		return $ob->content();
 	}
 	
 	// =================================
@@ -300,9 +300,9 @@ final class ae
 		return ae::load('request.php', $segments);
 	}
 
-	public static function response()
+	public static function response($type = null)
 	{
-		return ae::load('response.php');
+		return ae::load('response.php', $type);
 	}
 }
 
@@ -331,43 +331,35 @@ class aeBuffer
 */
 {
 	protected $level;
+	protected $content;
 	
 	public function __construct()
 	{
-		$this->level = ob_get_level();
 		ob_start();
+		$this->level = ob_get_level();
 	}
 	
 	public function __destruct()
 	{
-		if (is_null($this->level))
-		{
-			return;
-		}
-		
-		while ($this->level < ob_get_level())
+		while ($this->level < ob_get_level() - 1)
 		{
 			ob_end_clean();
 		}
-		
-		$this->level = null;
 	}
 	
-	public function output()
+	public function content()
 	{
-		if (is_null($this->level) || $this->level >= ob_get_level())
+		if (!is_null($this->content))
 		{
-			return ''; 
+			return $this->content;
 		}
 		
-		while ($this->level < ob_get_level() - 1)
+		if ($this->level != ob_get_level())
 		{
-			ob_end_flush();
+			trigger_error('Unexpected buffer level!', E_USER_ERROR);
 		}
-		
-		$this->level = null;
-		
-		return ob_get_clean();
+	
+		return $this->content = ob_get_clean();
 	}
 }
 
