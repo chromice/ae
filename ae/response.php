@@ -177,7 +177,7 @@ class aeResponse
 		$this->cache_ttl = $minutes;
 		$this->cache_private = (bool) $private;
 		
-		if ($this->cache_ttl > 0 && $this->status === 200)
+		if ($this->cache_ttl > 0)
 		{
 			$seconds = 60 * $this->cache_ttl;
 			
@@ -202,19 +202,8 @@ class aeResponse
 		Saves reponse to disk.
 	*/
 	{
-		if ($this->cache_ttl < 1 || $this->cache_private 
-		|| !($cache_path = ae::options('response')->get('directory', null)))
+		if ($this->cache_ttl < 1 || $this->cache_private || !($cache_path = self::_cache_directory()))
 		{
-			return $this;
-		}
-		
-		$cache_path = realpath(dirname($_SERVER['SCRIPT_FILENAME']) . '/' . trim($cache_path, '/'));
-		
-		// Check if directory is writable
-		if (!is_dir($cache_path) || !is_writable($cache_path))
-		{
-			trigger_error('Cache directory "' . $cache_path . '" is not writable.', E_USER_NOTICE);
-
 			return $this;
 		}
 		
@@ -313,21 +302,38 @@ class aeResponse
 	
 	public static function delete($path)
 	{
-		if (!($cache_path = ae::options('response')->get('directory', null)))
+		if (!($cache_path = self::_cache_directory()))
 		{
-			return $this;
+			return;
 		}
 		
 		$path = trim($path, '/');
-		$cache_path = realpath(dirname($_SERVER['SCRIPT_FILENAME']) . '/' . trim($cache_path, '/'));
 		$cache_path = $cache_path . '/' . (!empty($path) ? $path . '/' : '');
 		
 		if (is_dir($cache_path))
 		{
 			self::_remove_directory($cache_path);
 		}
+	}
+	
+	protected static function _cache_directory()
+	{
+		$cache_path = trim(ae::options('response')->get('directory', null), '/');
 		
-		return $this;
+		if (empty($cache_path))
+		{
+			return;
+		}
+		
+		$cache_path = realpath(dirname($_SERVER['SCRIPT_FILENAME']) . '/' . $cache_path);
+		
+		// Check if directory is writable
+		if (is_dir($cache_path) && is_writable($cache_path))
+		{
+			return $cache_path;
+		}
+		
+		trigger_error('Cache directory "' . $cache_path . '" is not writable.', E_USER_NOTICE);
 	}
 	
 	protected static function _remove_directory($path)
