@@ -16,6 +16,7 @@
 # limitations under the License.
 # 
 
+// TODO: Add support for table name prefixes.
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase
@@ -50,7 +51,7 @@ class aeDatabase
 	{
 		if (!is_null($port))
 		{
-			$port = (int)$port;
+			$port = (int) $port;
 		}
 
 		$this->db = new MySQLi($host, $user, $password, $database, $port, $socket);
@@ -152,7 +153,7 @@ class aeDatabase
 	
 	public function escape($value)
 	/*
-		Returns correctly escaped value.
+		Returns an escaped value.
 		
 		- Arrays are serialized into strings. 
 		- Objects are cast to string. 
@@ -206,14 +207,6 @@ class aeDatabase
 		Result
 	*/
 	
-	public function result($result = 'aeDatabaseResult')
-	/*
-		Runs current query and returns the result set.
-	*/
-	{
-		return $this->_result(null, $result, null);
-	}
-	
 	public function run()
 	/*
 		Runs current query and returns number of affected rows 
@@ -223,6 +216,14 @@ class aeDatabase
 		$this->result();
 		
 		return $this->db->affected_rows;
+	}
+	
+	public function result($result = 'aeDatabaseResult')
+	/*
+		Runs current query and returns the result set.
+	*/
+	{
+		return $this->_result(null, $result, null);
 	}
 	
 	protected function _result($class = null, $result = 'aeDatabaseResult', $related = null)
@@ -242,13 +243,14 @@ class aeDatabase
 	/*
 		Class binding
 	*/
+	
 	protected $using = array();
 	
 	public function one($class)
 	{
 		$result = $this->many($class);
 		
-		if ($result->length() > 0)
+		if ($result->count() > 0)
 		{
 			return $result->fetch();
 		}
@@ -472,7 +474,7 @@ class aeDatabaseResult
 			array_intersect_key($row, $this->columns)
 		));
 		
-		$object = $class::create($values);
+		$object = $class::create($values, false);
 		
 		foreach ($this->related as $name => $table)
 		{
@@ -483,15 +485,15 @@ class aeDatabaseResult
 				array_intersect_key($row, $table['columns'])
 			));
 			
-			$related = $class::create($values);
+			$related = $class::create($values, false);
 			
-			$object->attach($table['alias'], $related);
+			$object->_attach($table['alias'], $related);
 		}
 		
 		return $object;
 	}
 	
-	public function length()
+	public function count()
 	{
 		if (is_object($this->result))
 		{
@@ -511,7 +513,7 @@ class aeDatabaseResult
 	{
 		$all = array();
 		
-		if ($this->length() > 0)
+		if ($this->count() > 0)
 		{
 			while ($row = $this->fetch())
 			{
@@ -527,41 +529,11 @@ class aeDatabaseResult
 
 abstract class aeDatabaseTable
 {
-	// ==================
-	// = Static methods =
-	// ==================
+	/*
+		Entity configuration
+	*/
 	
 	private static $tables = array();
-
-	public static function create($values = null)
-	/*
-		Creates a new instance.
-		
-		Using this factory method is preferable to new operator.
-	*/
-	{
-		$class = get_called_class();
-		
-		return new $class($values);
-	}
-	
-	public static function find($ids)
-	{
-		$accessor = static::accessor();
-		
-		if (count($accessor) !== count($ids))
-		{
-			trigger_error(get_called_class() . '::find() failed, because accessor value' .
-				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
-			
-		}
-		
-		$object = static::create();
-		
-		$object->set($ids, true, false);
-		
-		return $object;
-	}
 	
 	public static function name()
 	{
@@ -579,14 +551,14 @@ abstract class aeDatabaseTable
 	
 	protected static function database()
 	{
-		static $database;
+		$class = get_called_class();
 		
-		if (empty($database))
+		if (!isset(self::$tables[$class]['database']))
 		{
-			$database = ae::database('default');
+			self::$tables[$class]['database'] = ae::database('default');
 		}
 		
-		return $database;
+		return self::$tables[$class]['database'];
 	}
 	
 	protected static function accessor()
@@ -651,86 +623,36 @@ abstract class aeDatabaseTable
 	}
 	
 	/*
-		Install/uninstall
+		Entity creation
 	*/
-
-	public static function install()
-	{
-		// CREATE TABLE IF NOT EXISTS {table} ( ... )
-	}
-
-	public static function uninstall()
-	{
-		// DROP TABLE IF EXISTS {table};
-	}
-
-	// ====================
-	// = Instance methods =
-	// ====================
 	
 	private $ids = array();
 	private $values = array();
 	private $transient = array();
 	private $related = array();
 	
-	// FIXME: Records are always dirty
 	private $is_dirty = false;
 	
 	public function __construct($values = null)
 	{
 		$table = static::name();
 		$accessor = static::accessor();
-		$columns = static::columns();
 		
 		if (empty($accessor))
 		{
 			trigger_error('Table "' . $table . '" has no accessor.', E_USER_ERROR);
 		}
 		
-		if (empty($columns))
-		{
-			trigger_error('Table "' .$table . '" has no columns.', E_USER_ERROR);
-		}
-		
-		if (is_array($values))
-		{
-			$this->set($values);
-		}
-	}
-	
-	public function set($values, $accessor = true, $columns = true)
-	{
-		if ($accessor && $columns)
-		{
-			// FIXME: All transient properties are lost
-			$values = array_intersect_key($values, 
-				array_merge(
-					array_flip(static::accessor()), array_flip(static::columns())
-				)
-			);
-		}
-		else if ($accessor)
-		{
-			$values = array_intersect_key($values,
-				array_flip(static::accessor())
-			);
-		}
-		else if ($columns)
-		{
-			$values = array_intersect_key($values, 
-				array_flip(static::columns())
-			);
-		}
-		
-		foreach ($values as $key => $value)
+		if (is_array($values)) foreach ($values as $key => $value)
 		{
 			$this->$key = $value;
 		}
-		
-		return $this;
 	}
 	
-	public function attach($related, $object)
+	public function _attach($related, $object)
+	/*
+		Attaches an instance of (usually) related entity.
+	*/
 	{
 		if (!is_a($object, 'aeDatabaseTable'))
 		{
@@ -806,7 +728,53 @@ abstract class aeDatabaseTable
 	/*
 		Basic CRUD methods.
 	*/
+	
+	public static function create($values = null, $_dirty = true)
+	/*
+		Creates a new instance.
+		
+		Using this factory method is preferable to `new` operator.
+	*/
+	{
+		$class = get_called_class();
+		
+		$entity = new $class($values);
+		
+		$entity->is_dirty = (bool) $_dirty;
+		
+		return $entity;
+	}
+	
+	public static function find($ids)
+	/*
+		Creates an instance pointing to a record. 
+		
+		Useful to save() or delete() records without loading the data. 
+		You should use load() to load the data.
+	*/
+	{
+		$accessor = static::accessor();
+		
+		if (is_scalar($ids) && count($accessor) === 1)
+		{
+			$ids = array(
+				array_pop($accessor) => $ids
+			);
+		}
+		else if (count($accessor) !== count($ids))
+		{
+			trigger_error(get_called_class() . '::find() failed, because accessor value' .
+				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+			
+		}
+		
+		return static::create($ids);
+	}
+	
 	public function load()
+	/*
+		(Re)load the current record values from the database
+	*/
 	{
 		$db = static::database();
 		$accessor = static::accessor();
@@ -819,20 +787,25 @@ abstract class aeDatabaseTable
 		
 		$values = $db->find(static::name(), $this->ids);
 		
-		if (is_null($values))
+		if (!is_array($values))
 		{
 			trigger_error(get_class($this) . '::load() failed, because accessor points ' .
 				'to nothing.', E_USER_ERROR);
 		}
 		
-		$this->set($values, false, true);
+		foreach ($values as $key => $value)
+		{
+			$this->$key = $value;
+		}
+		
+		$this->is_dirty = false;
 		
 		return $this;
 	}
 	
 	public function save()
 	/*
-		Intelegently saves or updates records in the database.
+		Intelegently saves or updates the record in the database.
 	*/
 	{
 		if (!$this->is_dirty || empty($this->values))
@@ -869,6 +842,9 @@ abstract class aeDatabaseTable
 	}
 	
 	public function delete()
+	/*
+		Deletes the current record from the database
+	*/
 	{
 		$db = static::database();
 		$accessor = static::accessor();

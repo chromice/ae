@@ -5,12 +5,12 @@ $options = ae::options('database.default')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
-	->set('database', 'ae_database');
+	->set('database', 'ae');
 
 // New context
 $example = new ae('examples.database', dirname(__FILE__));
 
-// Import tables
+// Import entity classes
 ae::import('authors.php');
 ae::import('books.php');
 
@@ -19,7 +19,7 @@ Books::install();
 Authors::install();
 
 
-// Create a new entity and save it to database
+// Create new entities and save them to database
 $author = Authors::create(array(
 	'name' => 'Jerome David Salinger',
 	'non_existant' => 'Property'
@@ -31,6 +31,7 @@ $book = Books::create(array(
 	'content' => '...',
 ))->save();
 
+// Retrieve all books
 $books = Books::many();
 
 while ($b = $books->fetch())
@@ -39,9 +40,7 @@ while ($b = $books->fetch())
 }
 
 // Create new instance of that book
-$_book = Books::find(array(
-	'id' => $book->id
-));
+$_book = Books::find($book->id);
 
 
 // Load data
