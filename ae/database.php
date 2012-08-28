@@ -21,9 +21,9 @@ ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase
 {
-	// ==============
-	// = Connection =
-	// ==============
+	/*
+		Connection
+	*/
 	
 	protected $db;
 	
@@ -67,23 +67,201 @@ class aeDatabase
 		$this->db->close();
 	}
 	
-	
-	// =========
-	// = Query =
-	// =========
+	/*
+		Query
+	*/
 	
 	protected $query;
+	
+	protected $sql_join;
+	protected $sql_where;
+	protected $sql_group_by;
+	protected $sql_having;
+	protected $sql_order_by;
+	protected $sql_limit;
+	
 	
 	protected $names = array();
 	protected $variables = array();
 	protected $values = array();
 	
-	// FIXME: Writing queries takes ages... We need some shorthands, e.g. select(), insert(), etc. 
 	public function query($query)
 	{
 		$this->query = $query;
 		
 		return $this;
+	}
+	
+	public function join($join, $type = '')
+	/*
+		Sets the `{sql:join}` part.
+		
+		Example:
+		
+			// LEFT JOIN b ON b.id = a.b_id
+ 			join('b ON b.id = a.b_id', 'left'); 
+		
+	*/
+	{
+		$type = strtoupper($type);
+		
+		if (empty($this->sql_join))
+		{
+			$this->sql_join = '';
+		}
+		else
+		{
+			$this->sql_join.= "\n";
+		}
+		
+		$this->sql_join.= trim($type . ' JOIN ' . $join);
+		
+		return $this;
+	}
+	
+	public function where($column, $value = null)
+	/*
+		Sets the `{sql:where}` part.
+		
+		Examples:
+			
+			// `id` = 2
+			where('id', 2);
+			
+			// `a` = 1 AND `b` = 2
+			where(array(
+				'a' => 1,
+				'b' => 2
+			));
+			
+			// `table`.`created_on` > NOW()
+			where('{table}.`created_on` > NOW()');
+	*/
+	{
+		if (empty($this->sql_where))
+		{
+			$this->sql_where = 'WHERE ';
+		}
+		else
+		{
+			$this->sql_where.= "\n\tAND ";
+		}
+		
+		$this->sql_where.= '(' . $this->_where($column, $value) . ')';
+		
+		return $this;
+	}
+	
+	public function group_by($clause)
+	/*
+		Sets the `{sql:group_by}` part. 
+		
+		Example:
+		
+			// GROUP BY `id`
+			group_by('id');
+	*/
+	{
+		if (empty($this->sql_group_by))
+		{
+			$this->sql_group_by = 'GROUP BY ' . $clause;
+		}
+		else
+		{
+			$this->sql_group_by.= ', ' . $clause;
+		}
+		
+		return $this;
+	}
+	
+	public function having($column, $value = null)
+	/*
+		Sets the `{sql:having}` part. 
+		
+		See where() for examples.
+	*/
+	{
+		if (empty($this->sql_having))
+		{
+			$this->sql_having = 'HAVING ';
+		}
+		else
+		{
+			$this->sql_having.= "\n\tAND ";
+		}
+		
+		$this->sql_having.= '(' . $this->_where($column, $value) . ')';
+		
+		return $this;
+	}
+	
+	public function order_by($clause)
+	/*
+		Sets the `{sql:order_by}` part. 
+		
+		Example:
+		
+			// ORDER BY `time` DESC
+			order_by('`time` DESC');
+	*/
+	{
+		if (empty($this->sql_order_by))
+		{
+			$this->sql_order_by = 'ORDER BY ' . $clause;
+		}
+		else
+		{
+			$this->sql_order_by.= ', ' . $clause;
+		}
+		
+		return $this;
+	}
+	
+	public function limit($limit, $offset = null)
+	/*
+		Sets the `{sql:limit}` part. 
+		
+		Examples:
+		
+			// LIMIT 10
+			limit(10);
+			
+			// LIMIT 10 OFFSET 20
+			limit(10, 20);
+	*/
+	{
+		$this->sql_limit = 'LIMIT ' . (int) $limit;
+		
+		if (!empty($offset))
+		{
+			$this->sql_limit.= ' OFFSET ' . (int) $offset;
+		}
+		
+		return $this;
+	}
+	
+	protected function _where($where, $value = null)
+	{
+		if (is_scalar($value) && is_scalar($where))
+		{
+			$where = array($where => $value);
+		}
+		
+		if (is_array($where))
+		{
+			$_where = array();
+
+			foreach ($where as $_key => $_value)
+			{
+				$_where[] = $this->protect($_key) . ' = ' . $this->escape($_value);
+			}
+
+			return implode(' AND ', $_where);
+		}
+		else
+		{
+			return $where;
+		}
 	}
 	
 	protected function _query()
@@ -93,10 +271,25 @@ class aeDatabase
 	{
 		if (empty($this->query))
 		{
-			trigger_error('Cannot execute an empty SQL query!', E_USER_ERROR);
+			return trigger_error('Cannot execute an empty SQL query!', E_USER_ERROR);
 		}
 		
-		$query = $this->query;
+		$query = str_replace(array(
+			'{sql:join}',
+			'{sql:where}',
+			'{sql:group_by}',
+			'{sql:having}',
+			'{sql:order_by}',
+			'{sql:limit}'
+		), array(
+			$this->sql_join,
+			$this->sql_where,
+			$this->sql_group_by,
+			$this->sql_having,
+			$this->sql_order_by,
+			$this->sql_limit
+		), $this->query);
+		
 		$placeholders = array();
 		
 		if (!empty($this->names))
@@ -136,19 +329,27 @@ class aeDatabase
 		);
 		
 		$this->query = null;
+		$this->parts = null;
 		$this->names = array();
 		$this->variables = array();
 		$this->values = array();
 		
+		$this->sql_join = null;
+		$this->sql_where = null;
+		$this->sql_group_by = null;
+		$this->sql_having = null;
+		$this->sql_order_by = null;
+		$this->sql_limit = null;
+		
 		return $query;
 	}
 	
-	public function protect($value)
+	public function protect($name)
 	/*
 		Protects an alias, table or column name.
 	*/
 	{
-		return '`' . str_replace('`', '``', $value) . '`';
+		return '`' . str_replace('`', '``', $name) . '`';
 	}
 	
 	public function escape($value)
@@ -381,25 +582,6 @@ class aeDatabase
 				'table' => $table
 			))
 			->run();
-	}
-	
-	protected function _where($where)
-	{
-		if (is_array($where))
-		{
-			$_where = array();
-
-			foreach ($where as $key => $value)
-			{
-				$_where[] = $this->protect($key) . ' = ' . $this->escape($value);
-			}
-
-			return implode(' AND ', $_where);
-		}
-		else
-		{
-			return $where;
-		}
 	}
 }
 
@@ -773,7 +955,7 @@ abstract class aeDatabaseTable
 	
 	public function load()
 	/*
-		(Re)load the current record values from the database
+		(Re)load the current record values from the database.
 	*/
 	{
 		$db = static::database();
@@ -843,7 +1025,7 @@ abstract class aeDatabaseTable
 	
 	public function delete()
 	/*
-		Deletes the current record from the database
+		Deletes the current record from the database.
 	*/
 	{
 		$db = static::database();

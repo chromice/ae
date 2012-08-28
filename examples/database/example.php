@@ -32,11 +32,11 @@ $book = Books::create(array(
 ))->save();
 
 // Retrieve all books
-$books = Books::many();
+$books = Books::many(5);
 
 while ($b = $books->fetch())
 {
-	echo $b->title . ' by ' . $b->author->name . '<br>';
+	echo 'Original: ' . $b->title . ' by ' . $b->author->name . '<br>';
 }
 
 // Create new instance of that book
@@ -46,7 +46,11 @@ $_book = Books::find($book->id);
 // Load data
 $_book->load();
 
-echo $_book->title . '<br>';
+// Custom query that does the same thing
+$__book = Books::one($book->id);
+
+echo 'Copy 1: ' . $_book->title . '<br>';
+echo 'Copy 2: ' . $__book->title . '<br>';
 
 // Update data
 $_book->title = 'The Catcher in the Rye';
@@ -59,7 +63,7 @@ $_book->save();
 // Reload original instance
 $book->load();
 
-echo $book->title . '<br>';
+echo 'Updated: ' . $book->title . '<br>';
 
 echo $_book->transient . ' ' . $_book->transient2 . '<br>';
 

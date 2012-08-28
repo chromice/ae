@@ -31,10 +31,11 @@ class Books extends aeDatabaseTable
 	
 	public static function one($id)
 	{
-		return static::database()->query("SELECT * 
-			FROM {books} 
-			JOIN {authors} ON {authors}.`id` = {books}.`author_id` 
-			WHERE {books}.`id` = {book_id}")
+		return static::database()
+			->query("SELECT * 
+				FROM {books} 
+				JOIN {authors} ON {authors}.`id` = {books}.`author_id` 
+				WHERE {books}.`id` = {book_id}")
 			->variables(array(
 				'book_id' => $id
 			))
@@ -46,23 +47,14 @@ class Books extends aeDatabaseTable
 			->one('Books');
 	}
 	
-	public static function many($limit = null, $offset = null)
+	public static function many($limit, $offset = null)
 	{
-		$query = "SELECT * 
-			FROM {books} 
-			JOIN {authors} ON {authors}.`id` = {books}.`author_id`";
-		
-		if (!is_null($limit))
-		{
-			$query = ' LIMIT {limit}';
-			
-			if (!is_null($offset))
-			{
-				$query = ' OFFSET {offset}';
-			}
-		}
-		
-		return static::database()->query($query)
+		return static::database()
+			->query('SELECT * 
+				FROM {books} 
+				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
+				{sql:limit}')
+			->limit($limit, $offset)
 			->names(array(
 				'books' => static::name(),
 				'authors' => Authors::name()
