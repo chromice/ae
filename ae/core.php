@@ -352,19 +352,28 @@ class aeBuffer
 		}
 	}
 	
-	public function content()
+	public function content($variables = null)
 	{
 		if (!is_null($this->content))
 		{
-			return $this->content;
+			$content = $this->content;
 		}
-		
-		if ($this->level != ob_get_level())
+		else if ($this->level != ob_get_level())
 		{
 			trigger_error('Unexpected buffer level!', E_USER_ERROR);
 		}
-	
-		return $this->content = ob_get_clean();
+		else
+		{
+			$content = $this->content = ob_get_clean();
+		}
+		
+		if (is_array($variables) && !empty($variables))
+		{
+			$tokens = preg_replace('/.+/', '{$0}', array_keys($variables));
+			$content = str_replace($tokens, $variables, $content);
+		}
+		
+		return $content;
 	}
 }
 
