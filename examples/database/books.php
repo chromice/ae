@@ -59,10 +59,6 @@ class Books extends aeDatabaseTable
 				'books' => static::name(),
 				'authors' => Authors::name()
 			))
-			->variables(array(
-				'limit' => $limit,
-				'offset' => $offset
-			))
 			->using('Authors', 'author')
 			->many('Books');
 	}
