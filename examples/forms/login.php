@@ -29,7 +29,7 @@ if ($form->submitted())
 ?>
 <?= $form->open() ?>
 	<?= $form['user']->field('<div class="field type-{type}">', '</div>') ?>
-<?php // echo '<div class="field">' ?>
+<?php // echo '<div class="field type-text">' ?>
 	<?php // echo $form['user']->label() ?>
 	<?php // echo $form['user']->input() ?>
 	<?php // echo $form['user']->error('<em class="error">', '</em>') ?>
