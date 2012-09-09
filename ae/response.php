@@ -31,6 +31,7 @@ class aeResponse
 	
 	public function __construct($type)
 	{
+		// FIXME: Add support for popular ones from https://en.wikipedia.org/wiki/Internet_media_type
 		$this->headers = array();
 		$this->buffer = new aeBuffer();
 
@@ -40,6 +41,8 @@ class aeResponse
 		}
 
 		$type = strtolower(trim($type));
+		// FIXME: Correctly detect text based formats
+		$text = true;
 		
 		switch ($type)
 		{
@@ -53,6 +56,7 @@ class aeResponse
 				break;
 			case 'js':
 			case 'javascript':
+				// FIXME: Obsolute mimetype in RFC 4329 
 				$type = 'text/javascript';
 				break;
 			case 'txt':
@@ -73,8 +77,16 @@ class aeResponse
 				break;
 		}
 		
-		// Set content type and character set
-		$this->header('Content-type', $type . '; charset=' . ae::options('response')->get('charset', 'utf-8'));
+		if (!empty($type))
+		{
+			if ($text)
+			{
+				// Append character set for text responses
+				$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
+			}
+			
+			$this->header('Content-type', $type);
+		}
 	}
 	
 	public function header($name, $value, $replace = true)
