@@ -21,8 +21,11 @@
 		'Options' => 'options',
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri'
-	) as $name => $uri): ?>
-	<li><a href="/<?= trim($uri,'/') ?>"><?= $name ?></a></li>
-<?php endforeach ?>
+	) as $name => $uri): $b = new aeBuffer(); ?> 
+	<li><a href="{uri}">{name}</a></li>
+<?php echo $b->content(array(
+		'uri' => '/' . trim($uri,'/'),
+		'name' => $name
+	));endforeach ?>
 </ul>
 
