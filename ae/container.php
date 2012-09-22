@@ -42,7 +42,7 @@ class aeContainer
 	{
 		$this->vars['content'] = $this->buffer->content();
 		
-		echo ae::render($this->path, $this->vars);
+		ae::render($this->path, $this->vars);
 	}
 	
 	public function set($name, $value)

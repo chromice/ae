@@ -6,7 +6,15 @@
 ?>
 <p>A simple nestable view heirarchy. Let&rsquo;s count:</p>
 <ul>
-<?php for ($i=1; $i <= 5; $i++): $b = new aeBuffer(); ?>
+<?php 
+	for ($i=1; $i <= 5; $i++):
+		$b = new aeBuffer(); 
+?>
 	<li>{number}</li>
-<?php echo $b->content(array('number' => $i)); endfor; ?>
+<?php
+		$b->render(array(
+			'number' => $i
+		)); 
+	endfor
+?>
 </ul>

@@ -16,7 +16,6 @@
 # limitations under the License.
 # 
 
-// TODO: Add support for table name prefixes.
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase

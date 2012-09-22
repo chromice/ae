@@ -31,7 +31,6 @@ class aeResponse
 	
 	public function __construct($type)
 	{
-		// FIXME: Add support for popular ones from https://en.wikipedia.org/wiki/Internet_media_type
 		$this->headers = array();
 		$this->buffer = new aeBuffer();
 
@@ -41,50 +40,48 @@ class aeResponse
 		}
 
 		$type = strtolower(trim($type));
-		// FIXME: Correctly detect text based formats
-		$text = true;
 		
 		switch ($type)
 		{
 			case 'html':
-			case 'text/html':
 				$type = 'text/html';
 				break;
 			case 'css':
 			case 'stylesheet':
 				$type = 'text/css';
 				break;
+			case 'csv':
+				$type = 'text/csv';
+				break;
 			case 'js':
 			case 'javascript':
-				// FIXME: Obsolute mimetype in RFC 4329 
+				// FIXME: Obsolete mimetype in RFC 4329 
 				$type = 'text/javascript';
 				break;
 			case 'txt':
 			case 'text':
 				$type = 'text/plain';
 				break;
-			case 'json':
-				$type = 'application/json';
-				break;
 			case 'atom':
 			case 'rdf':
 			case 'rss':
+			case 'soap':
 			case 'xhtml':
-				$type = 'application/'.$type.'+xml';
+				$type = 'application/' . $type . '+xml';
 				break;
+			case 'json':
+			case 'pdf':
+			case 'postscript':
 			case 'xml':
-				$type = 'application/xml';
+				$type = 'application/' . $type;
 				break;
 		}
 		
 		if (!empty($type))
 		{
-			if ($text)
-			{
-				// Append character set for text responses
-				$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
-			}
-			
+			// Append character set
+			$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
+
 			$this->header('Content-type', $type);
 		}
 	}
@@ -242,7 +239,6 @@ class aeResponse
 		// Get output
 		$output = $this->buffer->content();
 
-		// TODO: File open, close and lock must use ae::file()
 		$htaccess = ae::file($cache_path . '.htaccess');
 		$content = ae::file($cache_path . 'index.' . $ext);
 		

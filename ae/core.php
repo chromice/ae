@@ -260,7 +260,7 @@ final class ae
 		
 		__ae_include__($path, $parameters);
 		
-		return $ob->content();
+		$ob->render();
 	}
 	
 	// =================================
@@ -352,6 +352,11 @@ class aeBuffer
 		}
 	}
 	
+	public function render($variables = null)
+	{
+		echo $this->content($variables);
+	}
+	
 	public function content($variables = null)
 	{
 		if (!is_null($this->content))
@@ -361,6 +366,7 @@ class aeBuffer
 		else if ($this->level != ob_get_level())
 		{
 			trigger_error('Unexpected buffer level!', E_USER_ERROR);
+			$content = '';
 		}
 		else
 		{

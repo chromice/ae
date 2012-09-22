@@ -7,7 +7,8 @@
 <h1>æ</h1>
 <h2>Examples:</h2>
 <ul>
-<?php foreach (array(
+<?php 
+	foreach (array(
 		'Caching' => 'caching/test',
 		'Caching (html)' => 'caching/test.html',
 		'Caching (json)' => 'caching/test.json',
@@ -21,11 +22,15 @@
 		'Options' => 'options',
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri'
-	) as $name => $uri): $b = new aeBuffer(); ?> 
+	) as $name => $uri): $b = new aeBuffer(); 
+?> 
 	<li><a href="{uri}">{name}</a></li>
-<?php echo $b->content(array(
-		'uri' => '/' . trim($uri,'/'),
-		'name' => $name
-	));endforeach ?>
+<?php
+		$b->render(array(
+			'uri' => '/' . trim($uri,'/'),
+			'name' => $name
+		));
+	endforeach;
+?>
 </ul>
 

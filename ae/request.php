@@ -333,7 +333,7 @@ class aeRoute
 		$depth = self::$depth + $this->offset;
 		$ds = new aeSwitch(self::$depth, $depth);
 		
-		echo ae::render($this->path, $parameters);
+		ae::render($this->path, $parameters);
 	}
 	
 }
