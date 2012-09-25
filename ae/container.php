@@ -40,9 +40,9 @@ class aeContainer
 	
 	public function __destruct()
 	{
-		$this->vars['content'] = $this->buffer->content();
+		$this->vars['content'] = $this->buffer->render();
 		
-		ae::render($this->path, $this->vars);
+		ae::output($this->path, $this->vars);
 	}
 	
 	public function set($name, $value)

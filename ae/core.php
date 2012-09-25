@@ -250,7 +250,7 @@ final class ae
 	
 	public static function render($path, $parameters = null)
 	/*
-		Renders a script and returns the output.
+		Renders a script and its output.
 	*/
 	{
 		$path = self::resolve($path);
@@ -260,7 +260,15 @@ final class ae
 		
 		__ae_include__($path, $parameters);
 		
-		$ob->render();
+		return $ob->render();
+	}
+	
+	public static function output($path, $parameters = null)
+	/*
+		Renders a script and echoes its output.
+	*/
+	{
+		echo self::render($path, $parameters);
 	}
 	
 	// =================================
@@ -354,11 +362,6 @@ class aeBuffer
 	
 	public function render($variables = null)
 	{
-		echo $this->content($variables);
-	}
-	
-	public function content($variables = null)
-	{
 		if (!is_null($this->content))
 		{
 			$content = $this->content;
@@ -380,6 +383,11 @@ class aeBuffer
 		}
 		
 		return $content;
+	}
+	
+	public function output($variables = null)
+	{
+		echo $this->render($variables);
 	}
 }
 

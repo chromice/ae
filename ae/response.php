@@ -118,7 +118,7 @@ class aeResponse
 		}
 		
 		// Get buffered output and destroy the buffer
-		$output = $this->buffer->content();
+		$output = $this->buffer->render();
 		unset($this->buffer);
 		
 		// Compress output, if browser supports compression
@@ -237,7 +237,7 @@ class aeResponse
 		}
 		
 		// Get output
-		$output = $this->buffer->content();
+		$output = $this->buffer->render();
 
 		$htaccess = ae::file($cache_path . '.htaccess');
 		$content = ae::file($cache_path . 'index.' . $ext);

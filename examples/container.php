@@ -12,7 +12,7 @@
 ?>
 	<li>{number}</li>
 <?php
-		$b->render(array(
+		$b->output(array(
 			'number' => $i
 		)); 
 	endfor

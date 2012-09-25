@@ -43,7 +43,7 @@ if ($route->exists())
 }
 else
 {
-	echo ae::render('examples/request/views/404.php');
+	ae::output('examples/request/views/404.php');
 }
 
 // Redirect request to a file

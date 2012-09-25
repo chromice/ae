@@ -26,7 +26,7 @@
 ?> 
 	<li><a href="{uri}">{name}</a></li>
 <?php
-		$b->render(array(
+		$b->output(array(
 			'uri' => '/' . trim($uri,'/'),
 			'name' => $name
 		));

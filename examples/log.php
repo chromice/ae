@@ -17,18 +17,18 @@
 	switch ($r->segment(0, 'normal'))
 	{
 		case 'error':
-			ae::render('examples/log/trigger_error.php');
+			ae::output('examples/log/trigger_error.php');
 			break;
 
 		case 'exception':
-			ae::render('examples/log/throw_exception.php', array(
+			ae::output('examples/log/throw_exception.php', array(
 				'foo' => 'bar',
 				'bar' => 'foo'
 			));
 			break;
 		
 		case 'critical':
-			ae::render('examples/log/shutdown_error.php', array(
+			ae::output('examples/log/shutdown_error.php', array(
 				'foo' => 'bar',
 				'bar' => 'foo'
 			));
