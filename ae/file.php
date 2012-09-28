@@ -16,15 +16,16 @@
 # limitations under the License.
 # 
 
+// TODO: Should use chaining.
+// TODO: Should throw exceptions on errors.
+
 ae::invoke('aeFile');
 
 
 class aeFile
 /*
-	Abstracts common file operations mostly for the sake of
-	simplicity and exception safety.
-	
-	Most methods throw an Exception on error.
+	A thin wrapper that abstracts common file operations 
+	mostly for the sake of simplicity and exception safety.
 */
 {
 	protected $path;
@@ -38,11 +39,6 @@ class aeFile
 	
 	public function __destruct()
 	{
-		if ($this->is_locked)
-		{
-			$this->unlock();
-		}
-		
 		if ($this->file)
 		{
 			$this->close();
@@ -58,9 +54,14 @@ class aeFile
 	
 	public function close()
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return true;
+		}
+		
+		if ($this->is_locked)
+		{
+			$this->unlock();
 		}
 		
 		$result = fclose($this->file);
@@ -70,9 +71,9 @@ class aeFile
 		return $result;
 	}
 	
-	public function lock($mode)
+	public function lock($mode = null)
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return false;
 		}
@@ -82,7 +83,12 @@ class aeFile
 			$this->unlock();
 		}
 		
-		return flock($this->file, $mode);
+		if (is_null($mode))
+		{
+			$mode = LOCK_EX | LOCK_NB;
+		}
+		
+		return $this->is_locked = (flock($this->file, $mode) === true);
 	}
 	
 	public function unlock()
@@ -97,9 +103,9 @@ class aeFile
 		return flock($this->file, LOCK_UN);
 	}
 	
-	public function truncate($size)
+	public function truncate($size = 0)
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return false;
 		}
@@ -109,7 +115,7 @@ class aeFile
 	
 	public function write($content)
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return false;
 		}
@@ -119,7 +125,7 @@ class aeFile
 	
 	public function read($length)
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return false;
 		}
@@ -127,19 +133,19 @@ class aeFile
 		return fread($this->file, $length);
 	}
 	
-	public function seek($offset, $fixed = false)
+	public function seek($offset)
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return false;
 		}
 		
-		return fseek($this->file) === 0;
+		return fseek($this->file, $offset) === 0;
 	}
 	
 	public function offset()
 	{
-		if (!$this->file)
+		if (!is_resource($this->file))
 		{
 			return false;
 		}
