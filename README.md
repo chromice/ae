@@ -1,7 +1,5 @@
 # æ — a simple PHP framework
 
-## Introduction
-
 æ |aʃ| solves many backend development problems in a simple and efficient way. It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
 ## File structure
@@ -32,6 +30,8 @@ Contexts let you keep the code of your application or modules in their own direc
 In order to destroy the context manually, simply unset the variable:
 
 	unset($context);
+
+**TODO**: Add examples of how contexts can be used in modules.
 
 
 ### Libraries
@@ -113,7 +113,7 @@ Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 
 The switch will work even if an exception is thrown.
 
-*TODO*: Document core libraries.
+**TODO**: Document other libraries.
 
 
 	
