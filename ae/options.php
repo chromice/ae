@@ -42,7 +42,7 @@ class aeOptions
 		}
 		else
 		{
-			$this->reference =& self::$options;
+			$this->reference =& self::$options['__ae__'];
 		}
 	}
 	
