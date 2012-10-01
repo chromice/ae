@@ -77,7 +77,7 @@ ae::import('options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-æ does not "automagically" guess what class to use. You must use `ae::invoke` method at the beginning of the loaded file to tell æ how and when you want it to create an object:
+æ does not "automagically" guess what class to use. You must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to create an object:
 
 ```php
 ae::invoke('LibraryClassName');
@@ -124,7 +124,7 @@ unset($buffer);
 Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 
 ```html
-<?php $buffer = aeBuffer() ?>
+<?php $buffer = new aeBuffer() ?>
 <p><a href="{url}">{name}</a> has been views {visits} times.</p>
 <?php $buffer->output(array(
 	'url' => $article->url,
@@ -140,7 +140,7 @@ Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 ```php
 echo $foo; // echoes 'foo'
 
-$switch = aeSwitch($foo, 'bar');
+$switch = new aeSwitch($foo, 'bar');
 
 echo $foo; // echoes 'bar'
 
@@ -152,6 +152,8 @@ echo $foo; // echoes 'foo' again
 The switch will work even if an exception is thrown.
 
 **TODO**: Document other libraries.
+
+
 
 
 	
