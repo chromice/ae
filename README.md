@@ -21,22 +21,30 @@
 
 Before you can start using æ in your application, you must include `core.php` from the core directory:
 
-	include 'ae/core.php';
+```php
+include 'ae/core.php';
+```
 
 æ does not import any other code or libraries untill you explicitly tell it so:
 
-	ae::import('log.php'); // imports aeLog class from ae/log.php, so you can:
-	aeLog::log('Log a message.', 'Or dump a varible:', $_SERVER);
+```php
+ae::import('log.php'); // imports aeLog class from ae/log.php, so you can:
+aeLog::log('Log a message.', 'Or dump a varible:', $_SERVER);
+```
 
 ### Contexts
 
 Contexts let you keep the code of your application or modules in their own directories. By default æ will attempt to resolve relative file paths only against its core directory. You must manually create a new context, if you want it look for files in another directory first:
 
-	$context = new ae('modules.example', '/absolute/path/to/some/directory/');
+```php
+$context = new ae('modules.example', '/absolute/path/to/some/directory/');
+```
 
 In order to destroy the context manually, simply unset the variable:
 
-	unset($context);
+```php
+unset($context);
+```
 
 **TODO**: Add examples of how contexts can be used in modules.
 
@@ -45,37 +53,45 @@ In order to destroy the context manually, simply unset the variable:
 
 You can use `ae::import()` method to include any PHP script:
 
-	ae::import('path/to/library.php'); // resolves the path and includes the script, if it has not been included yet.
+```php
+ae::import('path/to/library.php'); // resolves the path and includes the script, if it has not been included yet.
+```
 
 In order to load a library you must use `ae::load()` method:
 
-	$options = ae::load('options.php'); // creates an instance of aeOptions class.
+```php
+$options = ae::load('options.php'); // creates an instance of aeOptions class.
 	
-	// Or you could write this: 
-	ae::import('options.php');
-	$options = new aeOptions();
+// Or you could write this: 
+ae::import('options.php');
+$options = new aeOptions();
+```
 
 You can configure library instance via second parameter of `ae::load()`:
 
-	$lib_options = ae::load('options.php', 'my_library_namespace');
+```php
+$lib_options = ae::load('options.php', 'my_library_namespace');
 	
-	// That is identical to:
-	ae::import('options.php');
-	$lib_options = new aeOptions('my_library_namespace');
+// That is identical to:
+ae::import('options.php');
+$lib_options = new aeOptions('my_library_namespace');
+```
 
 æ does not "automagically" guess what class to use. You must use `ae::invoke` method at the beginning of the loaded file to tell æ how and when you want it to create an object:
 
-	ae::invoke('LibraryClassName');
-	// æ will create a new instance of LibraryClassName, every time the library is loaded.
+```php
+ae::invoke('LibraryClassName');
+// æ will create a new instance of LibraryClassName, every time the library is loaded.
 
-	ae::invoke('SingletonClassName', ae::singleton);
-	// Only one instance of SingletonClassName will be created; all subsequent calls to ae::load() will return that instance.
+ae::invoke('SingletonClassName', ae::singleton);
+// Only one instance of SingletonClassName will be created; all subsequent calls to ae::load() will return that instance.
 
-	ae::invoke('a_factory_function`, ae::factory);
-	// a_factory_function() function will be used instead of a class constructor.
+ae::invoke('a_factory_function`, ae::factory);
+// a_factory_function() function will be used instead of a class constructor.
 
-	ae::invoke(array('AnotherSingletonClassName', 'factory'), ae::factory | ae:singleton);
-	// AnotherSingletonClassName::factory() method will be used to create and reuse a single instance of an object.
+ae::invoke(array('AnotherSingletonClassName', 'factory'), ae::factory | ae:singleton);
+// AnotherSingletonClassName::factory() method will be used to create and reuse a single instance of an object.
+```
 
 Please consult with the source code of the core libraries for real life examples.
 
@@ -83,48 +99,55 @@ Please consult with the source code of the core libraries for real life examples
 
 `aeBuffer` is a utility class for capturing output in a thread–safe manner:
 
-	$buffer = new aeBuffer(); 	// creates a buffer and start capturing output.
+```php
+$buffer = new aeBuffer(); 	// creates a buffer and start capturing output.
 
-	echo 'Hellow world!';
+echo 'Hellow world!';
 
-	$buffer->output();
-	// or
-	echo $buffer->render();
-	// echos the captured output.
+$buffer->output();
+// or
+echo $buffer->render();
+// echos the captured output.
+```
 
 All output is captured until you call `aeBuffer::output()` or `aeBuffer::render()` methods. If you do not use these methods, buffer's content will be discarded when its instance is destroyed, either manually or when execution leaves the scope:
 
-	// No output is produced by this script:
-	$buffer = new aeBuffer(); 
+```php
+// No output is produced by this script:
+$buffer = new aeBuffer(); 
 
-	echo 'Invisible text.';
+echo 'Invisible text.';
 
-	unset($buffer);
+unset($buffer);
+```
 
 Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 
-	<?php $buffer = aeBuffer() ?>
-	<p><a href="{url}">{name}</a> has been views {visits} times.</p>
-	<?php $buffer->output(array(
-		'url' => $article->url,
-		'name' => (strlen > 20 ? substr($article->name, 0, 19) $article->name),
-		'visits' => number_format($article->visits)
-	))?>
-	
+```html
+<?php $buffer = aeBuffer() ?>
+<p><a href="{url}">{name}</a> has been views {visits} times.</p>
+<?php $buffer->output(array(
+	'url' => $article->url,
+	'name' => (strlen > 20 ? substr($article->name, 0, 19) $article->name),
+	'visits' => number_format($article->visits)
+))?>
+```
 
 ### Switch
 
 `aeSwitch` is a utility class that lets you switch the value of a variable to something else:
-	
-	echo $foo; // echoes 'foo'
 
-	$switch = aeSwitch($foo, 'bar');
+```php
+echo $foo; // echoes 'foo'
 
-	echo $foo; // echoes 'bar'
+$switch = aeSwitch($foo, 'bar');
 
-	unset($switch);
+echo $foo; // echoes 'bar'
 
-	echo $foo; // echoes 'foo' again
+unset($switch);
+
+echo $foo; // echoes 'foo' again
+```
 
 The switch will work even if an exception is thrown.
 
