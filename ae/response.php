@@ -77,13 +77,10 @@ class aeResponse
 				break;
 		}
 		
-		if (!empty($type))
-		{
-			// Append character set
-			$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
+		// Append character set
+		$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
 
-			$this->header('Content-type', $type);
-		}
+		$this->header('Content-type', $type);
 	}
 	
 	public function header($name, $value, $replace = true)
