@@ -2,10 +2,17 @@
 
 æ |aʃ| solves many backend development problems in a simple and efficient way. It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
+- [File structure](#file-structure)
+- [Core](#core)
+	- [Contexts](#contexts)
+	- [Libraries](#libraries)
+	- [Buffer](#buffer)
+	- [Switch](#switch)
+
 ## File structure
 
 - `ae/` contains all framework code;
-- `cache/` is used for storing cached responses;
+- `cache/` is used for storage of cached responses;
 - `examples/` contains examples;
 - `.htaccess` enables request handling and response caching;
 - `index.php` initialises example application.
@@ -58,13 +65,17 @@ You can configure library instance via second parameter of `ae::load()`:
 
 æ does not "automagically" guess what class to use. You must use `ae::invoke` method at the beginning of the loaded file to tell æ how and when you want it to create an object:
 
-	ae::invoke('LibraryClassName');	// æ will create a new instance of LibraryClassName, every time the library is loaded.
+	ae::invoke('LibraryClassName');
+	// æ will create a new instance of LibraryClassName, every time the library is loaded.
 
-	ae::invoke('SingletonClassName', ae::singleton); // Only one instance of SingletonClassName will be created; all subsequent calls to ae::load() will return that instance.
+	ae::invoke('SingletonClassName', ae::singleton);
+	// Only one instance of SingletonClassName will be created; all subsequent calls to ae::load() will return that instance.
 
-	ae::invoke('a_factory_function`, ae::factory); // a_factory_function() function will be used instead of a class constructor.
+	ae::invoke('a_factory_function`, ae::factory);
+	// a_factory_function() function will be used instead of a class constructor.
 
-	ae::invoke(array('AnotherSingletonClassName', 'factory'), ae::factory | ae:singleton); // AnotherSingletonClassName::factory() method will be used to create and reuse a single instance of an object.
+	ae::invoke(array('AnotherSingletonClassName', 'factory'), ae::factory | ae:singleton);
+	// AnotherSingletonClassName::factory() method will be used to create and reuse a single instance of an object.
 
 Please consult with the source code of the core libraries for real life examples.
 
@@ -106,9 +117,13 @@ Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 `aeSwitch` is a utility class that lets you switch the value of a variable to something else:
 	
 	echo $foo; // echoes 'foo'
+
 	$switch = aeSwitch($foo, 'bar');
+
 	echo $foo; // echoes 'bar'
+
 	unset($switch);
+
 	echo $foo; // echoes 'foo' again
 
 The switch will work even if an exception is thrown.
