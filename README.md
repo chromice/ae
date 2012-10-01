@@ -128,9 +128,9 @@ Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 <p><a href="{url}">{name}</a> has been views {visits} times.</p>
 <?php $buffer->output(array(
 	'url' => $article->url,
-	'name' => (strlen > 20 ? substr($article->name, 0, 19) $article->name),
+	'name' => (strlen > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
 	'visits' => number_format($article->visits)
-))?>
+)) ?>
 ```
 
 ### Switch
