@@ -5,6 +5,7 @@
 - [File structure](#file-structure)
 - [Core](#core)
 	- [Contexts](#contexts)
+	- [Views](#views)
 	- [Libraries](#libraries)
 	- [Buffer](#buffer)
 	- [Switch](#switch)
@@ -28,7 +29,9 @@ include 'ae/core.php';
 æ does not import any other code or libraries untill you explicitly tell it so:
 
 ```php
-ae::import('log.php'); // imports aeLog class from ae/log.php, so you can:
+// Import aeLog class from ae/log.php:
+ae::import('log.php'); 
+// Now you can use it:
 aeLog::log('Log a message.', 'Or dump a varible:', $_SERVER);
 ```
 
@@ -37,7 +40,7 @@ aeLog::log('Log a message.', 'Or dump a varible:', $_SERVER);
 Contexts let you keep the code of your application or modules in their own directories. By default æ will attempt to resolve relative file paths only against its core directory. You must manually create a new context, if you want it look for files in another directory first:
 
 ```php
-$context = new ae('modules.example', '/absolute/path/to/some/directory/');
+$context = new ae('example', '/absolute/path/to/some/directory/');
 ```
 
 In order to destroy the context manually, simply unset the variable:
@@ -46,28 +49,81 @@ In order to destroy the context manually, simply unset the variable:
 unset($context);
 ```
 
-**TODO**: Add examples of how contexts can be used in modules.
+It is a good practice to declare the context of the module before the `ae::invoke()` statement without assigning it to a variable. This will declare a new context which will be immediately destroyed. You can recreate the context by its name whenever you actually need to use it:
 
+```php
+
+// Declare new context for the parent directory
+new ae('module.example');
+
+// Invoke this module as a singleton
+ae::invoke('ModuleExample', ae::singleton);
+
+class ModuleExample 
+{
+	function foo() 
+	{
+		$context = new ae('module.example');
+		
+		// Will load foo.php library in the module directory.
+		return ae::load('foo.php');
+
+		// $context is switched back to previous one at this point
+	}
+}
+```
+
+Many contexts can be created at the same time, but only the last one will be used. Once its destroyed æ will restore the previous one from the stack.
+
+### Views
+
+æ can return output of any script as a string:
+
+```php
+$output = æ::render('/your/page.php', array(
+	'title' => 'Example!',
+	'body' => '<h1>Hello world!</h1>'
+));
+
+// if content of /your/page.php is:
+// <title><?= $title ?></title><body><?= $body ?></body>
+
+echo $content;
+
+// will produce:
+// <title>Example!</title><body><h1>Hello world!</h1></body>
+```
+
+Or, to echo it straight away:
+
+```php
+æ::output('/your/page.php', array(
+	'title' => 'Example!',
+	'body' => '<h1>Hello world!</h1>'
+));
+```
 
 ### Libraries
 
 You can use `ae::import()` method to include any PHP script:
 
 ```php
-ae::import('path/to/library.php'); // resolves the path and includes the script, if it has not been included yet.
+ae::import('path/to/library.php'); 
+// æ will resolve the path and include the script, if it 
+// has not been included yet.
 ```
 
 In order to load a library you must use `ae::load()` method:
 
 ```php
-$options = ae::load('options.php'); // creates an instance of aeOptions class.
+$options = ae::load('options.php');
 	
 // Or you could write this: 
 ae::import('options.php');
 $options = new aeOptions();
 ```
 
-You can configure library instance via second parameter of `ae::load()`:
+You can configure library instance via second parameter of `ae::load()`. æ will pass its value to class constructor or object factory:
 
 ```php
 $lib_options = ae::load('options.php', 'my_library_namespace');
@@ -81,33 +137,40 @@ $lib_options = new aeOptions('my_library_namespace');
 
 ```php
 ae::invoke('LibraryClassName');
-// æ will create a new instance of LibraryClassName, every time the library is loaded.
+// æ will create a new instance of LibraryClassName, every
+// time the library is loaded.
 
 ae::invoke('SingletonClassName', ae::singleton);
-// Only one instance of SingletonClassName will be created; all subsequent calls to ae::load() will return that instance.
+// Only one instance of SingletonClassName will be created;
+// all subsequent calls to ae::load() will return that instance.
 
-ae::invoke('a_factory_function`, ae::factory);
-// a_factory_function() function will be used instead of a class constructor.
+ae::invoke('a_factory_function', ae::factory);
+// a_factory_function() function will be called.
 
-ae::invoke(array('AnotherSingletonClassName', 'factory'), ae::factory | ae:singleton);
-// AnotherSingletonClassName::factory() method will be used to create and reuse a single instance of an object.
+ae::invoke(
+	array('AnotherSingletonClassName', 'factory'), 
+	ae::factory | ae:singleton
+);
+// AnotherSingletonClassName::factory() method will be 
+// used to create and reuse a single instance of an object.
 ```
 
 Please consult with the source code of the core libraries for real life examples.
 
 ### Buffer
 
-`aeBuffer` is a utility class for capturing output in a thread–safe manner:
+`aeBuffer` is a utility class for capturing output in a thread–safe fasion:
 
 ```php
-$buffer = new aeBuffer(); 	// creates a buffer and start capturing output.
+// Create a buffer and start capturing output:
+$buffer = new aeBuffer();
 
 echo 'Hellow world!';
 
+// Now output the buffer:
 $buffer->output();
-// or
+// or you could:
 echo $buffer->render();
-// echos the captured output.
 ```
 
 All output is captured until you call `aeBuffer::output()` or `aeBuffer::render()` methods. If you do not use these methods, buffer's content will be discarded when its instance is destroyed, either manually or when execution leaves the scope:
