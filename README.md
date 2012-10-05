@@ -9,6 +9,7 @@
 	- [Libraries](#libraries)
 	- [Buffer](#buffer)
 	- [Switch](#switch)
+- [Licence](#licence)
 
 ## File structure
 
@@ -80,7 +81,7 @@ Many contexts can be created at the same time, but only the last one will be use
 æ can return output of any script as a string:
 
 ```php
-$output = æ::render('/your/page.php', array(
+$output = ae::render('/your/page.php', array(
 	'title' => 'Example!',
 	'body' => '<h1>Hello world!</h1>'
 ));
@@ -215,6 +216,15 @@ echo $foo; // echoes 'foo' again
 The switch will work even if an exception is thrown.
 
 **TODO**: Document other libraries.
+
+## Licence
+
+Copyright 2011–2012 Anton Muraviev <chromice@gmail.com>
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
+limitations under the License.
 
 
 
