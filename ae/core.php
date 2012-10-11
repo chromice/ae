@@ -116,7 +116,7 @@ final class ae
 		
 		ae would still fallback to the core directory:
 		
-			$request = ae::load('request.php');
+			$request = ae::load('ae/request.php');
 		
 	*/
 	{
@@ -135,7 +135,7 @@ final class ae
 		$_path = trim($_path, '/');
 		
 		$try[] = $path;
-		$try[] = dirname(__FILE__) . '/' . $_path;
+		$try[] = dirname(__DIR__) . '/' . $_path;
 		
 		if (!is_null(self::$current_context) 
 		&& isset(self::$contexts[self::$current_context]))
@@ -217,7 +217,7 @@ final class ae
 	/*
 		Loads a script and attempts to invoke an object defined in it:
 		
-			$image = ae::load('image.php','/path/to/image.png');
+			$image = ae::load('ae/image.php','/path/to/image.png');
 		
 	*/
 	{
@@ -277,17 +277,17 @@ final class ae
 	
 	public static function container($path)
 	{
-		return ae::load('container.php', $path);
+		return ae::load('ae/container.php', $path);
 	}
 	
 	public static function database($name)
 	{
-		return ae::load('database.php', $name);
+		return ae::load('ae/database.php', $name);
 	}
 	
 	public static function file($path)
 	{
-		return ae::load('file.php', $path);
+		return ae::load('ae/file.php', $path);
 	}
 	
 	public static function log()
@@ -300,22 +300,22 @@ final class ae
 	
 	public static function options($namespace = null)
 	{
-		return ae::load('options.php', $namespace);
+		return ae::load('ae/options.php', $namespace);
 	}
 	
 	public static function probe($name)
 	{
-		return ae::load('probe.php', $name);
+		return ae::load('ae/probe.php', $name);
 	}
 	
 	public static function request($segments = null)
 	{
-		return ae::load('request.php', $segments);
+		return ae::load('ae/request.php', $segments);
 	}
 
 	public static function response($type = null)
 	{
-		return ae::load('response.php', $type);
+		return ae::load('ae/response.php', $type);
 	}
 }
 

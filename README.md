@@ -67,7 +67,7 @@ class ModuleExample
 		$context = new ae('module.example');
 		
 		// Will load foo.php library in the module directory.
-		return ae::load('foo.php');
+		return ae::load('ae/foo.php');
 
 		// $context is switched back to previous one at this point
 	}
@@ -117,7 +117,7 @@ ae::import('path/to/library.php');
 In order to load a library you must use `ae::load()` method:
 
 ```php
-$options = ae::load('options.php');
+$options = ae::load('ae/options.php');
 	
 // Or you could write this: 
 ae::import('options.php');
@@ -127,7 +127,7 @@ $options = new aeOptions();
 You can configure library instance via second parameter of `ae::load()`. æ will pass its value to class constructor or object factory:
 
 ```php
-$lib_options = ae::load('options.php', 'my_library_namespace');
+$lib_options = ae::load('ae/options.php', 'my_library_namespace');
 	
 // That is identical to:
 ae::import('options.php');
@@ -214,6 +214,14 @@ echo $foo; // echoes 'foo' again
 ```
 
 The switch will work even if an exception is thrown.
+
+## Options
+
+...
+
+## Container
+
+...
 
 **TODO**: Document other libraries.
 

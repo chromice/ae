@@ -2,8 +2,6 @@
 
 include 'ae/core.php';
 
-$module = new ae('module.examples', dirname(__FILE__));
-
 $request = ae::request();
 $route = $request->route('/examples/');
 
