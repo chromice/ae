@@ -31,25 +31,50 @@ final class ae
 	private static $contexts = array();
 	private static $paths = array();
 	
-	public $path;
-	
-	public function __construct($context, $path = null)
+	public static function register($context, $path = null)
 	/*
-		Creates and/or switches to a new context. Context is defined by
-		its name and directory path.
+		Registers a new context for the script that is being imported, loaded 
+		or rendered. You can specify your own directory path via second parameter.
 		
-			// Announce and immediately destroy context,
-			// e.g. at the main script of your module.
-			new ae('module.examples','examples/');
+		See ae::__construct() for more details.
+	*/
+	{
+		if (isset(self::$contexts[$context]))
+		{
+			throw new Exception('Cannot re-register context "' . $context . '".');
+		}
+		
+		if (!is_null($path))
+		{
+			$path = self::resolve($path);
+		}
+		else if (!empty(self::$current_path))
+		{
+			$path = dirname(self::$current_path) . '/';
+		}
+		else
+		{
+			throw new Exception('Automatic path detection failed for context "' . $context . '".');
+		}
+		
+		self::$contexts[$context] = $path;
+	}
+	
+	public function __construct($context)
+	/*
+		Switches to a previously registered context. Paths will be attempted
+		
+			// First, register the context:
+			ae::register('module.examples','examples/');
 			
 			// Then, when you need it, use it. (Ideally it should be 
-			// created in a scope of a function and destroyed as soon
+			// created in the scope of a function and destroyed as soon
 			// as possible.)
 			$context1 = new ae('module.examples');
 			echo ae::resolve('foo.php'); // 'examples/foo.php'
 		
-			// Contexts are nestable, as long as 
-			// you destroy them correctly.
+			// You can nest contexts, as long as you destroy them correctly 
+			// in the correct (LIFO) order.
 			$context2 = new ae('module.samples', 'samples/')
 			
 			echo ae::resolve('foo.php'); // 'samples/foo.php'
@@ -70,24 +95,7 @@ final class ae
 	{
 		if (!isset(self::$contexts[$context]))
 		{
-			if (!is_null($path))
-			{
-				$this->path = self::resolve($path);
-			}
-			else if (!empty(self::$current_path))
-			{
-				$this->path = dirname(self::$current_path) . '/';
-			}
-			else
-			{
-				throw new Exception('Root path for context "'.$context.'" could not be detected.');
-			}
-
-			self::$contexts[$context] = $this->path;
-		}
-		else
-		{
-			$this->path = self::$contexts[$context];
+			throw new Exception('Context "'.$context.'" has not been registered.');
 		}
 		
 		$this->previous_context = self::$current_context;

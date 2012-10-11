@@ -1,5 +1,8 @@
 <?php
 
+// Register a context for this example
+ae::register('examples.database');
+
 // Set default database paramters
 $options = ae::options('database.default')
 	->set('host', 'localhost')
@@ -8,7 +11,7 @@ $options = ae::options('database.default')
 	->set('database', 'ae');
 
 // New context
-$example = new ae('examples.database', dirname(__FILE__));
+$example = new ae('examples.database');
 
 // Import entity classes
 ae::import('authors.php');
