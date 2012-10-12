@@ -33,10 +33,11 @@ final class ae
 	
 	public static function register($context, $path = null)
 	/*
-		Registers a new context for the script that is being imported, loaded 
-		or rendered. You can specify your own directory path via second parameter.
+		Registers a new context for the script that is being imported,
+		loaded or rendered. You can specify your own directory path via
+		second parameter.
 		
-		See ae::__construct() for more details.
+		See __construct() and __destruct() for more details.
 	*/
 	{
 		if (isset(self::$contexts[$context]))
@@ -62,7 +63,7 @@ final class ae
 	
 	public function __construct($context)
 	/*
-		Switches to a previously registered context. Paths will be attempted
+		Switches to a previously registered context.
 		
 			// First, register the context:
 			ae::register('module.examples','examples/');
@@ -113,16 +114,19 @@ final class ae
 	public static function resolve($path)
 	/*
 		Resolves a relative path to a directory or file. By default
-		'ae' directory is used for base:
+		the parent of 'ae' directory is used for base:
 		
-			echo ae::resolve('options.php'); // '.../ae/options.php'
+			echo ae::resolve('ae/options.php'); // '.../ae/options.php'
 		
 		You may create a context for a different directory:
 		
-			$context = new ae('module.foo','path/to/foo');
+			ae::register('module.foo','path/to/foo');
+			
+			$context = new ae('module.foo');
 			echo ae::resolve('bar.php'); // 'path/to/foo/bar.php'
 		
-		ae would still fallback to the core directory:
+		æ would fallback to the core directory, if it finds nothing in 
+		the current context directory:
 		
 			$request = ae::load('ae/request.php');
 		
@@ -175,14 +179,30 @@ final class ae
 	
 	public static function invoke($misc, $type = 0)
 	/*
-		Called from inside of the loaded or imported script to define 
-		class name or factory that load() method should use.
+		Call this method inside of the loaded or imported script to define 
+		class name or factory that load() method would use.
 		
-			ae::invoke('SomeClassName'); 
-			ae::invoke('SomeClassName', ae::singleton);
-			ae::invoke('some_function_name', ae::factory);
-			ae::invoke(array('SingletonClass','instance'), ae::factory | ae::singleton);
+			ae::invoke('LibraryClassName');
 		
+		æ will create a new instance of LibraryClassName, every
+		time the library is loaded.
+			
+			ae::invoke('SingletonClassName', ae::singleton);
+		
+		Only one instance of SingletonClassName will be created;
+		all subsequent calls to ae::load() will return that instance.
+			
+			ae::invoke('a_factory_function', ae::factory);
+		
+		a_factory_function() function will be called.
+			
+			ae::invoke(
+				array('AnotherSingletonClassName', 'factory'), 
+				ae::factory | ae:singleton
+			);
+		
+		AnotherSingletonClassName::factory() method will be 
+		used to create and reuse a single instance of an object.
 	*/
 	{
 		$data =& self::$paths[self::$current_path];
@@ -201,7 +221,7 @@ final class ae
 	
 	public static function import($path)
 	/*
-		Imports external script. Does not do anything else.
+		Imports external script. Does not do much else.
 		
 			ae::import('path/to/script.php');
 		
@@ -223,10 +243,15 @@ final class ae
 	
 	public static function load($path, $parameters = null)
 	/*
-		Loads a script and attempts to invoke an object defined in it:
+		Loads a script and attempts to invoke an object defined in it, 
+		using invoke() method:
 		
-			$image = ae::load('ae/image.php','/path/to/image.png');
+			$o = ae::load('ae/options.php', 'namespace');
+			
+		In this example, load() will return an instance of aeOptions.
 		
+		Please consult with the source code of the core libraries for 
+		more real life examples.
 	*/
 	{
 		ae::import($path);
@@ -258,7 +283,9 @@ final class ae
 	
 	public static function render($path, $parameters = null)
 	/*
-		Renders a script and its output.
+		Runs a script and returns the output as a string.
+		
+		You can pass some variables to the script via the second argument.
 	*/
 	{
 		$path = self::resolve($path);
@@ -273,7 +300,9 @@ final class ae
 	
 	public static function output($path, $parameters = null)
 	/*
-		Renders a script and echoes its output.
+		Renders a script and echoes the output.
+		
+		You can pass some variables to the script via the second argument.
 	*/
 	{
 		echo self::render($path, $parameters);
@@ -329,7 +358,8 @@ final class ae
 
 function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 /*
-	Includes an external script with nearly pristine namespace
+	Allows you to run an external script with nearly pristine namespace,
+	optionally passing some parameters to it via second argument.
 */
 {
 	if (is_array($__ae_secret_array__))
@@ -349,6 +379,37 @@ class aeBuffer
 	
 	It ensures that the scope output is always captured or discarded 
 	correctly, even when an exception is thrown.
+	
+		$buffer = new aeBuffer();
+		
+		echo 'Hello world!';
+		
+		echo $buffer->render();
+		
+	Buffered content may be used as a simple template:
+	
+		$buffer = new aeBuffer();
+		
+		echo '<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>';
+		
+		$buffer->output(array(
+			'url' => $article->url,
+			'name' => (
+				strlen($article->name) > 20 
+				? substr($article->name, 0, 19) . '&hellip;' 
+				: $article->name
+			),
+			'visits' => number_format($article->visits)
+		));
+	
+	If you don't call render() or output() methods, the captured content
+	will be discarded:
+	
+		$buffer = new aeBuffer(); 
+		
+		echo 'Invisible text.';
+		
+		unset($buffer);
 */
 {
 	protected $level;
@@ -369,6 +430,9 @@ class aeBuffer
 	}
 	
 	public function render($variables = null)
+	/*
+		Returns the captured output as a string and stops capturing.
+	*/
 	{
 		if (!is_null($this->content))
 		{
@@ -394,6 +458,9 @@ class aeBuffer
 	}
 	
 	public function output($variables = null)
+	/*
+		Echoes the captured output and stops capturing.
+	*/
 	{
 		echo $this->render($variables);
 	}
@@ -403,6 +470,17 @@ class aeSwitch
 /*
 	Provides an exception–safe way to swap the value of a variable 
 	for the lifetime of the switch object.
+	
+		$foo = 'foo';
+		echo $foo; // echoes 'foo'
+		
+		$switch = new aeSwitch($foo, 'bar');
+		
+		echo $foo; // echoes 'bar'
+		
+		unset($switch);
+		
+		echo $foo; // echoes 'foo' again
 */
 {
 	protected $var;

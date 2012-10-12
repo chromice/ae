@@ -31,7 +31,7 @@ include 'ae/core.php';
 
 ```php
 // Import aeLog class from ae/log.php:
-ae::import('log.php'); 
+ae::import('ae/log.php'); 
 // Now you can use it:
 aeLog::log('Log a message.', 'Or dump a varible:', $_SERVER);
 ```
@@ -98,7 +98,7 @@ echo $content;
 Or, to echo it straight away:
 
 ```php
-æ::output('/your/page.php', array(
+ae::output('/your/page.php', array(
 	'title' => 'Example!',
 	'body' => '<h1>Hello world!</h1>'
 ));
@@ -120,7 +120,7 @@ In order to load a library you must use `ae::load()` method:
 $options = ae::load('ae/options.php');
 	
 // Or you could write this: 
-ae::import('options.php');
+ae::import('ae/options.php');
 $options = new aeOptions();
 ```
 
@@ -166,7 +166,7 @@ Please consult with the source code of the core libraries for real life examples
 // Create a buffer and start capturing output:
 $buffer = new aeBuffer();
 
-echo 'Hellow world!';
+echo 'Hello world!';
 
 // Now output the buffer:
 $buffer->output();
