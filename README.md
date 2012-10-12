@@ -13,8 +13,6 @@
 	- [Switch](#switch)
 - [Licence](#licence)
 
-- - - - -
-
 ## Getting started
 
 In order to start using æ in your application, you must include **core.php** located in the **ae** directory:
@@ -144,8 +142,6 @@ ae::invoke(
 
 Please consult with the source code of the core libraries for real life examples.
 
-- - - - -
-
 ## Stock libraries
 
 ### Buffer
@@ -211,8 +207,6 @@ unset($switch);
 
 echo $foo; // echoes 'foo' again
 ```
-
-- - - - -
 
 ## Licence
 

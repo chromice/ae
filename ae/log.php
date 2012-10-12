@@ -25,11 +25,10 @@ class aeLog
 /*
 	Outputs a log of errors, notices, dumps, etc.
 	
-	Options ('log'):
-		enabled      = true
-		environment  = false
-		console      = true
-		ip_whitelist = 127.0.0.1
+	`log` options:
+		`enabled`		- output log: true (default) or false;
+		`environment`	- log env variables: true or false (default);
+		`ip_whitelist`	- an array or comma-separated list of IP addresses.
 		
 */
 {
@@ -102,13 +101,13 @@ class aeLog
 		$options = ae::options('log');
 		
 		$enabled = $options->get('enabled', true);
+		
 		$ip = $request->ip_address();
 		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
 		
-		if (!is_array($whitelist))
+		if (is_string($whitelist))
 		{
-			$whitelist = explode(',', $whitelist);
-			$whitelist = array_map('trim', $whitelist);
+			$whitelist = preg_split('/,\s+?/', trim($whitelist));
 		}
 		
 		if (!$enabled || !in_array($ip, $whitelist))
@@ -162,6 +161,7 @@ class aeLog
 		if ($is_cli)
 		{
 			echo "\n" . $o . "\n";
+
 		}
 		else if ($is_ajax && !headers_sent())
 		{
@@ -169,62 +169,7 @@ class aeLog
 		}
 		else
 		{
-			if (!$is_ajax && $options->get('console', true)):
-?>
-<script>
-var __ae_log_monitor = function (logs) {
-	if (this.logs === undefined) {
-		this.logs = [];
-	}
-	
-	if (logs === undefined || !typeof logs === 'array') {
-		logs = this.logs;
-		this.logs = [];
-		return logs;
-	}
-	
-	// Route all new logs to top window monitor
-	if (window !== window.top && typeof window.top.__ae_log_monitor === 'function') {
-		window.top.__ae_log_monitor(logs);
-		return;
-	}
-	
-	this.logs = this.logs.concat(logs);
-	
-	for (var i=0, log; log = logs[i]; i++){
-		console.log(log);
-	} 
-};
-
-// Initialize main script
-(function(open) {
-	var script = document.createElement('script');
-	script.setAttribute('src', "/console/main.js");
-	document.head.appendChild(script);
-})();
-
-// Process AJAX requests
-(function(open) {
-	XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
-		this.addEventListener("readystatechange", function() {
-			if (this.readyState === 4) {
-				var log = this.getResponseHeader('X-ae-log');
-				
-				if (log) {
-					__ae_log_monitor([log]);
-				}
-			}
-			
-		}, false);
-		open.call(this, method, url, async, user, pass);
-	};
-})(XMLHttpRequest.prototype.open);
-</script>
-<?php endif; ?>
-<!-- ae-log
-<?= $o ?>
--->
-<?
+			echo "\n<!-- ae-log\n" . $o . "\n-->\n";
 		}
 	}
 	

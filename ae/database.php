@@ -19,6 +19,18 @@
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase
+/*
+	A simple MySQL database abstraction layer.
+	
+	`database.[connection name]` options:
+		`class`		-	connection class: 'aeDatabase' by default;
+		`host`		-	connection host;
+		`port`		-	connection port;
+		`socket`	-	connection socket;
+		`user`		-	user name;
+		`password`	-	password;
+		`database`	-	database name.
+*/
 {
 	/*
 		Connection
@@ -33,7 +45,13 @@ class aeDatabase
 			$database = 'default';
 		}
 		
-		$params = ae::options('database.' . $database);
+		$params = ae::options('database.' . $database, false);
+		
+		if ($params === false)
+		{
+			throw new Exception('Unknown database connection: ' . $database);
+		}
+		
 		$class = $params->get('class', get_called_class());
 		
 		return new $class(

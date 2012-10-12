@@ -21,9 +21,9 @@ ae::invoke('aeResponse');
 class aeResponse
 /*
 	`response` options:
-		`directory`	-	path to directory to put cache files to;
-		`compress`	-	true | false; whether to gzip dispatched output;
-		`charset`	-	character set; utf-8 by default.
+		`directory`	-	path to directory to put cache files to: '/cache' by default;
+		`compress`	-	whether to gzip dispatched output: true or false (default);
+		`charset`	-	character set: 'utf-8' by default.
 */
 {
 	protected $headers;
