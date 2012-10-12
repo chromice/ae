@@ -2,46 +2,41 @@
 
 æ |aʃ| solves many backend development problems in a simple and efficient way. It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
-- [File structure](#file-structure)
-- [Core](#core)
-	- [Contexts](#contexts)
-	- [Views](#views)
-	- [Libraries](#libraries)
-	- [Buffer](#buffer)
-	- [Switch](#switch)
-- [Licence](#licence)
 
-## File structure
+## Getting started
 
-- `ae/` contains all framework code;
-- `cache/` is used for storage of cached responses;
-- `examples/` contains examples;
-- `.htaccess` enables request handling and response caching;
-- `index.php` initialises example application.
-
-## Core
-
-Before you can start using æ in your application, you must include `core.php` from the core directory:
+In order to start using æ in your application, you must include **core.php** located in the **ae** directory:
 
 ```php
 include 'ae/core.php';
 ```
 
-æ does not import any other code or libraries untill you explicitly tell it so:
+æ does not import any other code or libraries untill you explicitly tell it to do so:
 
 ```php
-// Import aeLog class from ae/log.php:
-ae::import('ae/log.php'); 
+// Load options object for my_app namespace:
+$options = ae::load('ae/options.php', 'my_app');
+
 // Now you can use it:
-aeLog::log('Log a message.', 'Or dump a varible:', $_SERVER);
+$options->set('foo', 'bar');
+$options->get('foo');
 ```
 
-### Contexts
+The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All file methods accepts both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains **ae** directory.
 
-Contexts let you keep the code of your application or modules in their own directories. By default æ will attempt to resolve relative file paths only against its core directory. You must manually create a new context, if you want it look for files in another directory first:
+If you want æ to look for a file in another directory, you can register a new context for it:
 
 ```php
-$context = new ae('example', '/absolute/path/to/some/directory/');
+ae::register('example', '/absolute/path/to/some/directory/');
+```
+
+Now you can create that context, whenever you want æ to look for files in that directory:
+
+```php
+$context = new ae('example');
+
+echo ae::resolve('foo.php');
+// will echo "/absolute/path/to/some/directory/foo.php", if the file exists.
 ```
 
 In order to destroy the context manually, simply unset the variable:
@@ -50,35 +45,22 @@ In order to destroy the context manually, simply unset the variable:
 unset($context);
 ```
 
-It is a good practice to declare the context of the module before the `ae::invoke()` statement without assigning it to a variable. This will declare a new context which will be immediately destroyed. You can recreate the context by its name whenever you actually need to use it:
+Many contexts can exist at the same time, but only the lastest one will be used. Once its destroyed æ will restore the previously active context. It is a generally a good idea to assign contexts to local variables and destroy them as soon as possible.
+
+
+### Importing code
+
+You can use `ae::import()` method to include any PHP script:
 
 ```php
-
-// Declare new context for the parent directory
-new ae('module.example');
-
-// Invoke this module as a singleton
-ae::invoke('ModuleExample', ae::singleton);
-
-class ModuleExample 
-{
-	function foo() 
-	{
-		$context = new ae('module.example');
-		
-		// Will load foo.php library in the module directory.
-		return ae::load('ae/foo.php');
-
-		// $context is switched back to previous one at this point
-	}
-}
+ae::import('path/to/library.php'); 
+// æ will resolve the path and include the script, if it 
+// has not been included yet.
 ```
 
-Many contexts can be created at the same time, but only the last one will be used. Once its destroyed æ will restore the previous one from the stack.
+### Running code
 
-### Views
-
-æ can return output of any script as a string:
+`ae::render()` can return output of any script as a string:
 
 ```php
 $output = ae::render('/your/page.php', array(
@@ -89,13 +71,13 @@ $output = ae::render('/your/page.php', array(
 // if content of /your/page.php is:
 // <title><?= $title ?></title><body><?= $body ?></body>
 
-echo $content;
+echo $output;
 
 // will produce:
 // <title>Example!</title><body><h1>Hello world!</h1></body>
 ```
 
-Or, to echo it straight away:
+Or you can use `ae::output()` to output the rendered content immediately:
 
 ```php
 ae::output('/your/page.php', array(
@@ -104,15 +86,7 @@ ae::output('/your/page.php', array(
 ));
 ```
 
-### Libraries
-
-You can use `ae::import()` method to include any PHP script:
-
-```php
-ae::import('path/to/library.php'); 
-// æ will resolve the path and include the script, if it 
-// has not been included yet.
-```
+### Loading libraries
 
 In order to load a library you must use `ae::load()` method:
 
@@ -124,17 +98,17 @@ ae::import('ae/options.php');
 $options = new aeOptions();
 ```
 
-You can configure library instance via second parameter of `ae::load()`. æ will pass its value to class constructor or object factory:
+You can configure library instance via second parameter of `ae::load()`. æ will pass it to class constructor or object factory by value:
 
 ```php
 $lib_options = ae::load('ae/options.php', 'my_library_namespace');
 	
 // That is identical to:
-ae::import('options.php');
+ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-æ does not "automagically" guess what class to use. You must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to create an object:
+æ does not "automagically" guess what class to use. You must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to instantiate an object:
 
 ```php
 ae::invoke('LibraryClassName');
@@ -158,9 +132,11 @@ ae::invoke(
 
 Please consult with the source code of the core libraries for real life examples.
 
+## Stock libraries
+
 ### Buffer
 
-`aeBuffer` is a utility class for capturing output in a thread–safe fasion:
+`aeBuffer` is a core utility class for capturing output in an exception–safe way:
 
 ```php
 // Create a buffer and start capturing output:
@@ -185,7 +161,7 @@ echo 'Invisible text.';
 unset($buffer);
 ```
 
-Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
+Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 ```html
 <?php $buffer = new aeBuffer() ?>
@@ -197,9 +173,18 @@ Buffer can also be used as a template, e.g. when mixing HTML and PHP code:
 )) ?>
 ```
 
+
+### Options
+
+...
+
+### Container
+
+...
+
 ### Switch
 
-`aeSwitch` is a utility class that lets you switch the value of a variable to something else:
+`aeSwitch` is a core utility class that lets you switch the value of a variable to something else:
 
 ```php
 echo $foo; // echoes 'foo'
@@ -212,18 +197,6 @@ unset($switch);
 
 echo $foo; // echoes 'foo' again
 ```
-
-The switch will work even if an exception is thrown.
-
-## Options
-
-...
-
-## Container
-
-...
-
-**TODO**: Document other libraries.
 
 ## Licence
 
