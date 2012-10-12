@@ -49,13 +49,13 @@ echo ae::resolve('foo.php');
 // will echo "/absolute/path/to/some/directory/foo.php", if the file exists.
 ```
 
-In order to destroy the context manually, simply unset the variable:
+In order to stop using the context, simply unset the variable:
 
 ```php
 unset($context);
 ```
 
-Many contexts can exist at the same time, but only the lastest one will be used. Once its destroyed æ will restore the previously active context. It is a generally a good idea to assign contexts to local variables and destroy them as soon as possible.
+Many contexts can exist at the same time, but only the lastest one will be used. Once it's destroyed æ will restore the previously active context. It is a generally a good idea to assign contexts to local variables and destroy them as soon as possible.
 
 
 ### Importing code
@@ -187,7 +187,7 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 Container library allows you to wrap output of a script with the output of another script. The container script is executed *after* the contained script, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
-Here's an example of HTML container (*container_html.php*):
+Here's an example of HTML container, e.g. *container_html.php*:
 
 ```php
 <html>
@@ -234,7 +234,7 @@ $options = ae::options('namespace');
 $options = ae::load('ae/options.php', 'namespace');
 ```
 
-For example, if you app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method, so that request library correct detects IP address of the client:
+For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method, so that request library correct detects IP address of the client:
 
 ```php
 $options = ae::options('request');
@@ -251,6 +251,10 @@ $proxies = $options->get('proxies', null);
 ```
 
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
+
+### Log
+
+
 
 ### Switch
 
