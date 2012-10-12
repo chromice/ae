@@ -342,7 +342,9 @@ class aeResponse
 	
 	protected static function _remove_directory($path)
 	/*
-		Attempts to remove the directory. May fail silently, if a file is locked.
+		Attempts to remove the directory. 
+		
+		NB! May fail silently, if a file is locked.
 	*/
 	{
 		foreach (scandir($path) as $file)
