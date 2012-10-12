@@ -20,7 +20,7 @@ ae::invoke('aeContainer');
 
 class aeContainer
 /*
-	Wraps output of a script into an HTML container.
+	Wraps output of a script with another script.
 */
 {
 	protected $path;

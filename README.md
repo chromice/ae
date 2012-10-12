@@ -8,8 +8,8 @@
 	- [Loading libraries](#loading-libraries)
 - [Stock libraries](#stock-libraries)
 	- [Buffer](#buffer)
-	- [Container](#container)
 	- [Options](#options)
+	- [Container](#container)
 	- [Switch](#switch)
 - [Licence](#licence)
 
@@ -29,7 +29,7 @@ $options = ae::load('ae/options.php', 'my_app');
 
 // Now you can use it:
 $options->set('foo', 'bar');
-$options->get('foo');
+echo $options->get('foo'); // echo 'bar'
 ```
 
 The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All file methods accepts both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains **ae** directory.
@@ -186,11 +186,72 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 ### Options
 
-...
+Options library is used by many stock libraries and allows you to change their behaviour. Options for each library are contained in a separate name space. In order to set or get option value, you must load options library for that namespace:
+
+```php
+$options = ae::options('namespace');
+// which is identical to
+$options = ae::load('ae/options.php', 'namespace');
+```
+
+For example, if you app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method, so that request library correct detects IP address of the client:
+
+```php
+$options = ae::options('request');
+
+$options->set('proxies', '83.14.1.1, 83.14.1.2');
+```
+
+Request library will use `aeRequest::get()` method to retrieve the value of that option:
+
+```php
+$options = ae::options('request');
+
+$proxies = $options->get('proxies', null);
+```
+
+`aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
+
 
 ### Container
 
-...
+Container library allows you to wrap output of a script with the output of another script. The container script is executed *after* the contained script, thus avoiding many problems of using separate header and footer scripts.
+
+Here's an example of HTML container:
+
+```php
+<html>
+<head>
+	<title><?= $title ?></title>
+</head>
+<body>
+	<?= $content ?>
+</body>
+</html>
+```
+
+Another script can use it like this:
+
+```php
+<?php $container = ae::container('path/to/container.php')
+	->set('title', 'Container example'); ?>
+<h1>Hello World!</h1>
+```
+
+This script will output this, when rendered:
+
+```html
+<html>
+<head>
+	<title>Container example</title>
+</head>
+<body>
+	<h1>Hello World!</h1>
+</body>
+</html>
+```
+
+Container library is format–agnostic and can help you keep your template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
 ### Switch
 
