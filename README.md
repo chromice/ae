@@ -2,6 +2,18 @@
 
 æ |aʃ| solves many backend development problems in a simple and efficient way. It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
+- [Getting started](#getting-started)
+	- [Importing code](#importing-code)
+	- [Running code](#running-code)
+	- [Loading libraries](#loading-libraries)
+- [Stock libraries](#stock-libraries)
+	- [Buffer](#buffer)
+	- [Container](#container)
+	- [Options](#options)
+	- [Switch](#switch)
+- [Licence](#licence)
+
+- - - - -
 
 ## Getting started
 
@@ -132,6 +144,8 @@ ae::invoke(
 
 Please consult with the source code of the core libraries for real life examples.
 
+- - - - -
+
 ## Stock libraries
 
 ### Buffer
@@ -197,6 +211,8 @@ unset($switch);
 
 echo $foo; // echoes 'foo' again
 ```
+
+- - - - -
 
 ## Licence
 
