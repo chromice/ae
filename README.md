@@ -8,8 +8,8 @@
 	- [Loading libraries](#loading-libraries)
 - [Stock libraries](#stock-libraries)
 	- [Buffer](#buffer)
-	- [Options](#options)
 	- [Container](#container)
+	- [Options](#options)
 	- [Switch](#switch)
 - [Licence](#licence)
 
@@ -183,6 +183,46 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 )) ?>
 ```
 
+### Container
+
+Container library allows you to wrap output of a script with the output of another script. The container script is executed *after* the contained script, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
+
+Here's an example of HTML container (*container_html.php*):
+
+```php
+<html>
+<head>
+	<title><?= $title ?></title>
+</head>
+<body>
+	<?= $content ?>
+</body>
+</html>
+```
+
+Another script (e.g. *hellow_world.php*) can use it like this:
+
+```php
+<?php 
+$container = ae::container('path/to/container_html.php')
+	->set('title', 'Container example'); 
+?>
+<h1>Hello World!</h1>
+```
+
+When rendered, it will produce this:
+
+```html
+<html>
+<head>
+	<title>Container example</title>
+</head>
+<body>
+	<h1>Hello World!</h1>
+</body>
+</html>
+```
+
 
 ### Options
 
@@ -211,47 +251,6 @@ $proxies = $options->get('proxies', null);
 ```
 
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
-
-
-### Container
-
-Container library allows you to wrap output of a script with the output of another script. The container script is executed *after* the contained script, thus avoiding many problems of using separate header and footer scripts.
-
-Here's an example of HTML container:
-
-```php
-<html>
-<head>
-	<title><?= $title ?></title>
-</head>
-<body>
-	<?= $content ?>
-</body>
-</html>
-```
-
-Another script can use it like this:
-
-```php
-<?php $container = ae::container('path/to/container.php')
-	->set('title', 'Container example'); ?>
-<h1>Hello World!</h1>
-```
-
-This script will output this, when rendered:
-
-```html
-<html>
-<head>
-	<title>Container example</title>
-</head>
-<body>
-	<h1>Hello World!</h1>
-</body>
-</html>
-```
-
-Container library is format–agnostic and can help you keep your template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
 ### Switch
 
