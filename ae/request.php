@@ -70,7 +70,7 @@ class aeRequest
 		return $_SERVER['REMOTE_ADDR'];
 	}
 		
-	public function is($what)
+	public static function is($what)
 	{
 		$is_cli = defined('STDIN');
 		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
