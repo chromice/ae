@@ -28,7 +28,8 @@ class aeLog
 	`log` options:
 		`enabled`		- output log: true (default) or false;
 		`environment`	- log env variables: true or false (default);
-		`ip_whitelist`	- an array or comma-separated list of IP addresses.
+		`ip_whitelist`	- an array or comma-separated list of IP addresses;
+		`directory`		- path to log directory.
 		
 */
 {
@@ -85,37 +86,41 @@ class aeLog
 		);
 	}
 	
-	protected static function _error_mask()
-	{
-		return E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR;
-	}
-	
-	protected static function _warning_mask()
-	{
-		return E_WARNING | E_CORE_WARNING | E_COMPILE_WARNING | E_USER_WARNING;
-	}
-	
 	protected static function onShutdown()
 	{
-		$request = ae::request();
 		$options = ae::options('log');
 		
-		$enabled = $options->get('enabled', true);
-		
-		$ip = $request->ip_address();
-		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
-		
-		if (is_string($whitelist))
-		{
-			$whitelist = preg_split('/,\s+?/', trim($whitelist));
-		}
-		
-		if (!$enabled || !in_array($ip, $whitelist))
+		if (!$options->get('enabled', true)) 
 		{
 			return;
 		}
 		
-		$o = '';
+		if ($path = $options->get('directory', false))
+		{
+			try {
+				
+				$path = ae::resolve($path);
+				
+				if (is_dir($path) && is_writable($path)) 
+				{
+					$log = ae::file($path . '/log_' . gmdate('Y_m_d'));
+					$log->open('a');
+				}
+				else
+				{
+					trigger_error('Log directory is not writable.', E_USER_ERROR);
+				}
+
+			} catch (Exception $e) {
+				trigger_error('Log directory does not exist.', E_USER_ERROR);
+			}			
+		}
+		
+		$o = self::_ruler('=', 40) 
+			. "Logged"
+			. (isset($_SERVER['REQUEST_URI']) ? ' for ' . $_SERVER['REQUEST_URI'] : '')
+			. ' at ' . gmdate('H:i:s', time()) . " GMT:"
+			. self::_ruler('=', 40);
 		
 		if ($options->get('environment', false))
 		{
@@ -137,7 +142,7 @@ class aeLog
 				case 'message':
 					if ($message['part'] === 1)
 					{
-						$o.= self::_horizontal_ruler();
+						$o.= self::_ruler();
 					}
 					
 					if ($message['class'] === 'message')
@@ -151,9 +156,28 @@ class aeLog
 			}
 		}
 		
-		$o.= self::_horizontal_ruler() . "\n";
+		$o.= self::_ruler() . "\n";
 		
-		// Present the log to the user depending on the request method
+		if ($log)
+		{
+			$log->write($o);
+		}
+		
+		// Is client's IP address in the whitelist?
+		$ip = ae::request()->ip_address();
+		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
+		
+		if (is_string($whitelist))
+		{
+			$whitelist = preg_split('/,\s+?/', trim($whitelist));
+		}
+		
+		if (!in_array($ip, $whitelist))
+		{
+			return;
+		}
+
+		// Choose presentation based on the request method
 		$is_cli = defined('STDIN');
 		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
 			&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
@@ -161,7 +185,6 @@ class aeLog
 		if ($is_cli)
 		{
 			echo "\n" . $o . "\n";
-
 		}
 		else if ($is_ajax && !headers_sent())
 		{
@@ -169,8 +192,18 @@ class aeLog
 		}
 		else
 		{
-			echo "\n<!-- ae-log\n" . $o . "\n-->\n";
+			echo "\n<!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
 		}
+	}
+	
+	protected static function _error_mask()
+	{
+		return E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR;
+	}
+	
+	protected static function _warning_mask()
+	{
+		return E_WARNING | E_CORE_WARNING | E_COMPILE_WARNING | E_USER_WARNING;
 	}
 	
 	// ==================
@@ -179,7 +212,7 @@ class aeLog
 	
 	public static function _environment()
 	{
-		$o = self::_horizontal_ruler();
+		$o = self::_ruler();
 		
 		if (!empty($_SERVER)) $o.= self::_dump('$_SERVER', $_SERVER);
 		if (!empty($_GET)) $o.= self::_dump('$_GET', $_GET);
@@ -190,14 +223,14 @@ class aeLog
 		return $o;
 	}
 	
-	public static function _horizontal_ruler()
+	public static function _ruler($char = '- ', $length = 40)
 	{
-		return "\n".str_repeat('- ', 40)."\n";
+		return "\n".str_repeat($char, $length)."\n";
 	}
 	
 	public static function _error($class, $error)
 	{
-		$o = self::_horizontal_ruler() . "\n";
+		$o = self::_ruler() . "\n";
 		
 		$o.= ucfirst($class) . ': ' . $error['message'] . "\n";
 		
@@ -225,10 +258,13 @@ class aeLog
 			
 			while ($trace = array_shift($error['backtrace']))
 			{
-				$o.= $prefix . str_pad(($length - $offset++) . '.', 4, ' ', STR_PAD_RIGHT) .
-					'In "' . $trace['file'] . '" at line ' . $trace['line'] . ":\n\n";
+				$o.= $prefix . str_pad(($length - $offset++) . '.', 4, ' ', STR_PAD_RIGHT);
 				
-				$o.= $prefix . $prefix;
+				if (!empty($trace['file']) && !empty($trace['line']) ) 
+				{
+					$o.= 'In "' . $trace['file'] . '" at line ' . $trace['line'] . ":\n\n";
+					$o.= $prefix . $prefix;
+				}
 				
 				if (isset($trace['type']) && $trace['type'] === '->')
 				{

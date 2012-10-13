@@ -1,5 +1,6 @@
 <?php
 	ae::import('ae/log.php');
+	// ae::options('log')->set('directory', '/examples/log');
 	
 	ae::log("Hello world");
 	
@@ -8,7 +9,7 @@
 	$c = ae::container('/examples/container/container_inner.php')
 		->set('title', 'Example: Container')
 		->set('header', 'Hello World!');
-		
+	
 	ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true);
 	ae::log("Hello again. This is a string: ", "foo", "As you can see strings are not dumped.");
 	
@@ -33,8 +34,11 @@
 				'bar' => 'foo'
 			));
 			break;
-	}
-?>
+			
+		default: ?>
 	<p>Team bravo.</p>
 	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/critical" frameborder="0" width="0" height="0"></iframe>
 	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/exception" frameborder="0" width="0" height="0"></iframe>
+<?php
+	}
+?>
