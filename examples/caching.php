@@ -20,6 +20,7 @@ if ($request->type() === 'json'):
 <?php endif ?>
 <?php
 
-	$response->cache(5, false)
+	$response
+		->cache(5)
 		->save('caching/test.' . ($request->type() === 'json' ? 'json' : 'html'))
 		->dispatch();

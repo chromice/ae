@@ -127,6 +127,8 @@ class aeResponse
 		// Copression affects "Content-Length"
 		$this->header('Content-Length', strlen($output));
 		
+		$this->_cache_headers('private');
+		
 		// Output headers
 		foreach ($this->headers as $name => $value)
 		{
@@ -170,17 +172,26 @@ class aeResponse
 	*/
 	
 	protected $cache_ttl;
-	protected $cache_private;
+	protected $cache_headers_set = false;
 	
-	public function cache($minutes, $private = true)
+	public function cache($minutes)
 	/*
-		Sets the "time to live" for client-side caching. 
-		
-		If `$private` is `false`, proxy caching is enabled.
+		Enables caching and sets "time to live".
 	*/
 	{
 		$this->cache_ttl = $minutes;
-		$this->cache_private = (bool) $private;
+		
+		return $this;
+	}
+	
+	protected function _cache_headers($cc = 'private')
+	{
+		if ($this->cache_headers_set) 
+		{
+			return;
+		}
+		
+		$this->cache_headers_set = true;
 		
 		if ($this->cache_ttl > 0)
 		{
@@ -188,7 +199,7 @@ class aeResponse
 			
 			$this->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
 				->header('Last-Modified', null)
-				->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($this->cache_private ? 'private' : 'public'))
+				->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($cc === 'private' ? $cc : 'public'))
 				->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
 		}
 		else
@@ -198,8 +209,6 @@ class aeResponse
 				->header('Cache-Control', 'no-store, no-cache, must-revalidate')
 				->header('Cache-Control', 'post-check=0, pre-check=0', false);
 		}
-		
-		return $this;
 	}
 	
 	public function save($path)
@@ -207,11 +216,12 @@ class aeResponse
 		Saves reponse to cache directory.
 	*/
 	{
-		if ($this->cache_ttl < 1 || $this->cache_private 
-		|| !($cache_path = self::_cache_directory()))
+		if ($this->cache_ttl < 1 || !($cache_path = self::_cache_directory()))
 		{
 			return $this;
 		}
+		
+		$this->_cache_headers('public');
 		
 		// Determine file path and extension
 		$path = trim($path, '/');
