@@ -412,18 +412,16 @@ class aeBuffer
 		unset($buffer);
 */
 {
-	protected $level;
 	protected $content;
 	
 	public function __construct()
 	{
 		ob_start();
-		$this->level = ob_get_level();
 	}
 	
 	public function __destruct()
 	{
-		while ($this->level < ob_get_level() - 1)
+		if (is_null($this->content))
 		{
 			ob_end_clean();
 		}
@@ -434,27 +432,19 @@ class aeBuffer
 		Returns the captured output as a string and stops capturing.
 	*/
 	{
-		if (!is_null($this->content))
+		if (is_null($this->content))
 		{
-			$content = $this->content;
-		}
-		else if ($this->level != ob_get_level())
-		{
-			trigger_error('Unexpected buffer level!', E_USER_ERROR);
-			$content = '';
-		}
-		else
-		{
-			$content = $this->content = ob_get_clean();
+			$this->content = ob_get_clean();
 		}
 		
 		if (is_array($variables) && !empty($variables))
 		{
 			$tokens = preg_replace('/.+/', '{$0}', array_keys($variables));
-			$content = str_replace($tokens, $variables, $content);
+			
+			return str_replace($tokens, $variables, $this->content);
 		}
 		
-		return $content;
+		return $this->content;
 	}
 	
 	public function output($variables = null)
