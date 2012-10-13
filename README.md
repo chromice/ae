@@ -70,7 +70,7 @@ ae::import('path/to/library.php');
 
 ### Running code
 
-`ae::render()` can return output of any script as a string:
+`ae::render()` returns output of any script as a string:
 
 ```php
 $output = ae::render('/your/page.php', array(
@@ -234,7 +234,7 @@ $options = ae::options('namespace');
 $options = ae::load('ae/options.php', 'namespace');
 ```
 
-For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method, so that request library correct detects IP address of the client:
+For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library to return correct IP address of the client:
 
 ```php
 $options = ae::options('request');
