@@ -10,6 +10,12 @@
 	- [Buffer](#buffer)
 	- [Container](#container)
 	- [Options](#options)
+	- [File](#file)
+	- [Log](#log)
+	- [Probe](#probe)
+	- [Request](#request)
+	- [Response](#response)
+	- [Database](#database)
 	- [Switch](#switch)
 - [Licence](#licence)
 
@@ -252,9 +258,29 @@ $proxies = $options->get('proxies', null);
 
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
 
+### File
+
+...
+
 ### Log
 
+...
 
+### Probe
+
+...
+
+### Request
+
+...
+
+### Response
+
+...
+
+### Database
+
+...
 
 ### Switch
 
