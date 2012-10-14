@@ -4,11 +4,12 @@
 		->set('directory', '/cache/')
 		->set('compress', true);
 	
-	// Work for 50ms or so...
-	$j = 0; while($j < 1000000) ++$j;
+	// Work for 1 seconds or so...
+	$j = 0; while($j < 10000000) ++$j;
 	
 	$request = ae::request();
-	$response = ae::response($request->type() === 'json' ? 'json' : 'html');
+	$type = $request->type() === 'json' ? 'json' : 'html';
+	$response = ae::response($type);
 	
 	// aeResponse::delete('caching/test');
 
@@ -22,5 +23,5 @@ if ($request->type() === 'json'):
 
 	$response
 		->cache(5)
-		->save('caching/test.' . ($request->type() === 'json' ? 'json' : 'html'))
+		->save('caching/test.' . $type)
 		->dispatch();
