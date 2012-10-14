@@ -15,7 +15,6 @@
 	- [Request](#request)
 	- [Response](#response)
 	- [Database](#database)
-	- [Switch](#switch)
 - [Licence](#licence)
 
 ## Getting started
@@ -277,7 +276,7 @@ ae::log("Here's a dump of $_SERVER:", $_SERVER);
 trigger_error("Everything goes according to the plan.", E_USER_NOTICE);
 ```
 
-In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list. You can configure the library, if your client IP address is not 127.0.0.1, a.k.a. localhost:
+In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
 
 ```php
 ae::options('log')->set('ip_whitelist', '127.0.0.1, 192.168.1.101');
@@ -332,22 +331,6 @@ foo finished. Timestamp: 14ms (+1.541ms). Footprint: 630084 bytes (-789120 bytes
 ### Database
 
 ...
-
-### Switch
-
-`aeSwitch` is a core utility class that lets you switch the value of a variable to something else:
-
-```php
-echo $foo; // echoes 'foo'
-
-$switch = new aeSwitch($foo, 'bar');
-
-echo $foo; // echoes 'bar'
-
-unset($switch);
-
-echo $foo; // echoes 'foo' again
-```
 
 ## Licence
 
