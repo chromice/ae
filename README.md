@@ -36,7 +36,7 @@ $options->set('foo', 'bar');
 echo $options->get('foo'); // echo 'bar'
 ```
 
-The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All file methods accepts both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains **ae** directory.
+The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains **ae** directory.
 
 If you want æ to look for a file in another directory, you can register a new context for it:
 
