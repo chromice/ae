@@ -261,7 +261,7 @@ $proxies = $options->get('proxies', null);
 
 ### Log
 
-Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
+Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
 
 ```php
 // You must import the library first
@@ -277,7 +277,7 @@ ae::log("Here's a dump of $_SERVER:", $_SERVER);
 trigger_error("Everything goes according to the plan.", E_USER_NOTICE);
 ```
 
-In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list. If can configure the library, if your client IP address is not 127.0.0.1, a.k.a. localhost:
+In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list. You can configure the library, if your client IP address is not 127.0.0.1, a.k.a. localhost:
 
 ```php
 ae::options('log')->set('ip_whitelist', '127.0.0.1, 192.168.1.101');
@@ -293,7 +293,33 @@ If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly 
 
 ### Probe
 
-...
+Probe library allows you to profile your code and see how much time and memory each part consumes. The results are logged via `ae::log()` method, so you have to have log library imported to see them.
+
+```php
+$probe = ae::probe('foo');
+
+usleep(3000);
+
+$probe->report('slept for 3ms');
+
+$a = array(); $j = 0; while($j < 10000) $a[] = ++$j;
+
+$probe->report('filled memory with some garbage');
+
+unset($a);
+```
+
+When this script is run, test probe will log the following messages:
+
+```
+foo started. Timestamp: 0ms (+0.000ms). Footprint: 632156 bytes (+0 bytes).
+
+foo slept for 3ms. Timestamp: 4ms (+3.566ms). Footprint: 632740 bytes (+1032 bytes).
+
+foo filled memory with some garbage. Timestamp: 13ms (+9.337ms). Footprint: 1419204 bytes (+786464 bytes).
+
+foo finished. Timestamp: 14ms (+1.541ms). Footprint: 630084 bytes (-789120 bytes).
+```
 
 ### Request
 

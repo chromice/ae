@@ -16,6 +16,8 @@
 # limitations under the License.
 #
 
+// FIXME: Object and method footprints must be dynamically calculated.
+
 ae::invoke('aeProbe');
 
 class aeProbe
@@ -23,7 +25,7 @@ class aeProbe
 	A very simple profiler.
 */
 {
-	const report_footprint = 92; // footprint of the report()
+	const report_footprint = 96; // footprint of the report()
 	const object_footprint = 448; // footprint of the aeProbe instance
 	
 	protected $name;
@@ -74,9 +76,9 @@ class aeProbe
 			$last_m = $m;
 		}
 		
-		$notice = '%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %d bytes (%+d bytes).';
+		$notice = sprintf('%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %d bytes (%+d bytes).', $this->name, $description, $ts * 1000, $dt * 1000, $m, $dm);
 		
-		ae::log(sprintf($notice, $this->name, $description, $ts * 1000, $dt * 1000, $m, $dm));
+		ae::log($notice);
 	}
 }
 
