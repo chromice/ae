@@ -26,7 +26,6 @@ class aeLog
 	Outputs a log of errors, notices, dumps, etc.
 	
 	`log` options:
-		`enabled`		- output log: true (default) or false;
 		`environment`	- log env variables: true or false (default);
 		`ip_whitelist`	- an array or comma-separated list of IP addresses;
 		`directory`		- path to log directory.
@@ -89,11 +88,6 @@ class aeLog
 	protected static function onShutdown()
 	{
 		$options = ae::options('log');
-		
-		if (!$options->get('enabled', true)) 
-		{
-			return;
-		}
 		
 		if ($path = $options->get('directory', false))
 		{
