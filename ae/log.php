@@ -97,8 +97,8 @@ class aeLog
 		
 		if ($path = $options->get('directory', false))
 		{
-			try {
-				
+			try 
+			{
 				$path = ae::resolve($path);
 				
 				if (is_dir($path) && is_writable($path)) 
@@ -110,10 +110,11 @@ class aeLog
 				{
 					trigger_error('Log directory is not writable.', E_USER_ERROR);
 				}
-
-			} catch (Exception $e) {
+			} 
+			catch (Exception $e)
+			{
 				trigger_error('Log directory does not exist.', E_USER_ERROR);
-			}			
+			}
 		}
 		
 		$o = self::_ruler('=', 40) 
@@ -172,11 +173,6 @@ class aeLog
 			$whitelist = preg_split('/,\s+?/', trim($whitelist));
 		}
 		
-		if (!in_array($ip, $whitelist))
-		{
-			return;
-		}
-
 		// Choose presentation based on the request method
 		$is_cli = defined('STDIN');
 		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
@@ -184,7 +180,11 @@ class aeLog
 		
 		if ($is_cli)
 		{
-			echo "\n" . $o . "\n";
+			fwrite(STDERR, "$o\n");
+		}
+		else if (!in_array($ip, $whitelist))
+		{
+			return;
 		}
 		else if ($is_ajax && !headers_sent())
 		{

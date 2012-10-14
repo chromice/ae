@@ -1,14 +1,14 @@
 <?php
 
-error_reporting(E_ALL);
+ae::import('ae/log.php');
 
 // class ProbeTest {
 // 	
 // 
 function probe_test()
 {
-	$probe = ae::probe('probe test');
-	echo memory_get_usage();
+	$probe = ae::probe('our little test');
+	echo memory_get_usage() . " \n";
 	$probe->report('initialized; did nothing');
 
 	// Declaring a variable would consume some memory

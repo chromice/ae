@@ -76,7 +76,7 @@ class aeProbe
 		
 		$notice = '%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %d bytes (%+d bytes).';
 		
-		trigger_error(sprintf($notice, $this->name, $description, $ts * 1000, $dt * 1000, $m, $dm), E_USER_NOTICE);
+		ae::log(sprintf($notice, $this->name, $description, $ts * 1000, $dt * 1000, $m, $dm));
 	}
 }
 
