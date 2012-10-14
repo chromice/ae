@@ -211,7 +211,8 @@ Another script (e.g. *hellow_world.php*) can use it like this:
 ```php
 <?php 
 $container = ae::container('path/to/container_html.php')
-	->set('title', 'Container example'); 
+	->set('title', 'Container example');
+	
 ?>
 <h1>Hello World!</h1>
 ```
@@ -258,13 +259,38 @@ $proxies = $options->get('proxies', null);
 
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
 
-### File
-
-...
 
 ### Log
 
-...
+Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
+
+```php
+// You must import the library first
+ae::import('ae/log.php');
+
+// Put all logs to /log directory (if it is writable)
+ae::options('log')->set('directory', '/log');
+
+// Now you can log a message and dump a variable
+ae::log("Here's a dump of $_SERVER:", $_SERVER);
+
+// All errors, notices will be logged too
+trigger_error("Everything goes according to the plan.", E_USER_NOTICE);
+```
+
+In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list. If can configure the library, if your client IP address is not 127.0.0.1, a.k.a. localhost:
+
+```php
+ae::options('log')->set('ip_whitelist', '127.0.0.1, 192.168.1.101');
+```
+
+You can also dump the environment variables for each request like this:
+
+```php
+ae::options('log')->set('environment', true);
+```
+
+If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it via `X-ae-log` header.
 
 ### Probe
 
@@ -304,8 +330,7 @@ Copyright 2011–2012 Anton Muraviev <chromice@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
-limitations under the License.
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 
 
