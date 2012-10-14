@@ -10,7 +10,6 @@
 	- [Buffer](#buffer)
 	- [Container](#container)
 	- [Options](#options)
-	- [File](#file)
 	- [Log](#log)
 	- [Probe](#probe)
 	- [Request](#request)
