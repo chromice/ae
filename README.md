@@ -362,7 +362,7 @@ echo $request->segment(1); // arbitrary
 echo $request->segment(99, 'default value'); // default value
 ```
 
-You could do the same with command line arguments for code portability reasons:
+For code portability reasons, you should probably do the same for command line arguments:
 
 ```php
 // php index.php separate arguments with spaces
@@ -372,7 +372,7 @@ echo $request->segment(0); // separate
 echo $request->segment(1); // arguments
 ```
 
-Requests can be re–route to a specific directory. For example, if you had index.php in the root directory, you could do the following:
+Requests can be re–routed to a specific directory. For example, if you had *index.php* in the root directory, you could do the following:
 
 ```php
 // GET /article/123 HTTP/1.1
@@ -390,7 +390,7 @@ if (!$route->exists())
 $route->follow();
 ```
 
-Now, if you have various request handlers in the handlers directory, e.g. article.php in this case, æ will run:
+Now, if you have various request handlers in the *handlers/* directory (*article.php* in this case), æ will run it:
 
 ```php
 // article.php
@@ -401,7 +401,7 @@ $id = $request->segment(0);
 
 echo "Article ID is $id. ";
 
-// The base and current uri parts are accessible via base() and uri() method respectively:
+// The base and current uri parts are accessible via base() and uri() methods respectively:
 echo "You can access it at " . $request->base() . "/" . $request->uri();
 ```
 
