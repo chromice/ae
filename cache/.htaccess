@@ -3,5 +3,5 @@
 	
 	# If no matching file redirect back to index.php
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*) /index.php?/$1 [L]
+	RewriteRule ^(.*) /index.php?/$1 [L,QSA]
 </IfModule>

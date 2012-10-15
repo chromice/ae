@@ -322,7 +322,81 @@ foo finished. Timestamp: 14ms (+1.541ms). Footprint: 630084 bytes (-789120 bytes
 
 ### Request
 
-...
+Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds requests using `aeRequest::is()` method:
+
+```php
+$request = ae::request();
+
+if ($request->is('cli'))
+{
+	echo "Hello World!";
+}
+else if ($request->is('ajax'))
+{
+	echo "{message:'Hello world'}";
+}
+else
+{
+	echo "<h1>Hello World!</h1>";
+	
+	if ($request->is('get'))
+	{
+		echo "<p>Nothing to get.</p>";
+	}
+	else
+	{
+		echo "<p>Nothing to post.</p>";
+	}
+}
+```
+
+You can access URI segments or command line arguments using `aeRequest::segment()`  method:
+
+```php
+// GET /some/arbitrary/request HTTP/1.1
+$request = ae::request();
+
+echo $request->segment(0); // some
+echo $request->segment(1); // arbitrary
+
+// php index.php separate arguments with spaces
+echo $request->segment(0); // separate
+echo $request->segment(1); // arguments
+
+echo $request->segment(99, 'default value'); // default value
+```
+
+You can also re–route the requests to a specific file or directory. E.g. if you have index.php in the root directory, you could do the following:
+
+```
+// GET /article/123 HTTP/1.1
+$request = ae::request();
+
+$route = $request->route('handlers/');
+
+if (!$route->exists())
+{
+	header('HTTP/1.1 404 Not Found');
+	echo "Page does not exist.";
+	exit;
+}
+
+$route->follow();
+```
+
+Now, if you have various request handlers in the handlers directory, e.g. article.php in this case, æ will run:
+
+```php
+// article.php
+$request = ae::request();
+
+// NB! The /article/ part is pushed out because of routing.
+$id = $request->segment(0);
+
+echo "Article ID is $id. ";
+
+echo "You can access it at " . $request->base() . "/" . $id;
+```
 
 ### Response
 

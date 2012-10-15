@@ -38,6 +38,11 @@ class aeRequest
 	}
 	
 	public static function ip_address()
+	/*
+		Returns IP address of the client. If the server is behind a proxy or
+		load balancer, this method will return its IP address, unless it has been
+		added to the list of known `proxies`.
+	*/
 	{
 		if (empty($_SERVER['REMOTE_ADDR']))
 		{
@@ -71,6 +76,15 @@ class aeRequest
 	}
 		
 	public static function is($what)
+	/*
+		Returns TRUE if request kind/type matches the criteria, e.g.:
+		
+			is('cli');
+			is('ajax');
+			is('get');
+			is('ajax post');
+		
+	*/
 	{
 		$is_cli = defined('STDIN');
 		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
@@ -80,21 +94,15 @@ class aeRequest
 			strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN';
 		
 		$result = true;
-		$what = preg_split('/\s+/', $what);
+		$what = preg_split('/\s+/', trim(strtolower($what)));
 		
 		foreach ($what as $_what) switch ($_what)
 		{
 			case 'ajax':
-			case 'remote':
 				$result &= $is_ajax;
 				break;
 			case 'cli':
-			case 'shell':
 				$result &= $is_cli;
-				break;
-			case 'normal':
-			case 'standard':
-				$result &= !$is_cli && !$is_ajax;
 				break;
 			default:
 				$result &= $method === strtoupper($_what);
@@ -291,7 +299,7 @@ class aeRoute
 		
 		if (!file_exists($base))
 		{
-			trigger_error('Routing failed. "'.$base.'" does not exist.', E_USER_ERROR);
+			throw new aeRequestException('Request could not be routed. Base directory "'.$base.'" does not exist.');
 		}
 		
 		if (is_file($base))
@@ -330,7 +338,7 @@ class aeRoute
 	{
 		if (is_null($this->path))
 		{
-			trigger_error('Route does not exist.', E_USER_ERROR);
+			throw new aeRequestException('Request could not be routed. No matching file exists.');
 		}
 		
 		$depth = self::$depth + $this->offset;
@@ -338,5 +346,6 @@ class aeRoute
 		
 		ae::output($this->path, $parameters);
 	}
-	
 }
+
+class aeRequestException extends Exception {}
