@@ -211,7 +211,7 @@ class aeResponse
 		}
 	}
 	
-	public function save($path)
+	public function save($uri)
 	/*
 		Saves reponse to cache directory.
 	*/
@@ -224,17 +224,17 @@ class aeResponse
 		$this->_cache_headers('public');
 		
 		// Determine file path and extension
-		$path = trim($path, '/');
+		$uri = trim($uri, '/');
 		$ext = 'html';
 		
-		if (!empty($path) && preg_match('/^(.*?)\.([a-z0-9_]+)$/', $path, $match) == 1)
+		if (!empty($uri) && preg_match('/^(.*?)\.([a-z0-9_]+)$/', $uri, $match) == 1)
 		{
-			$path = $match[1];
+			$uri = $match[1];
 			$ext = $match[2];
 		}
 		
 		$cache_path = $cache_path . '/' .
-			(!empty($path) ? $path . '/' : '') .
+			(!empty($uri) ? $uri . '/' : '') .
 			'index.' . $ext . '/';
 
 		// Create directory, if necessary
@@ -308,7 +308,7 @@ class aeResponse
 		return $this;
 	}
 	
-	public static function delete($path)
+	public static function delete($uri)
 	/*
 		Deletes all matched responses.
 	*/
@@ -318,8 +318,8 @@ class aeResponse
 			return;
 		}
 		
-		$path = trim($path, '/');
-		$cache_path = $cache_path . '/' . (!empty($path) ? $path . '/' : '');
+		$uri = trim($uri, '/');
+		$cache_path = $cache_path . '/' . (!empty($uri) ? $uri . '/' : '');
 		
 		if (is_dir($cache_path))
 		{

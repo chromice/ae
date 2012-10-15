@@ -16,8 +16,8 @@
 # limitations under the License.
 # 
 
-// TODO: Should use chaining.
-// TODO: Should throw exceptions on errors.
+// FIXME: Should use chaining.
+// FIXME: Should throw aeFileException on error.
 
 ae::invoke('aeFile');
 
@@ -152,3 +152,5 @@ class aeFile
 		return ftell($this->file);
 	}
 }
+
+class aeFileException extends Exception {}
