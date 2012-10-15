@@ -409,7 +409,29 @@ And, finally, use `aeRequest::ip_address()` to get the IP address of the client.
 
 ### Response
 
-...
+Response library allows you to create a response of a specific mime–type, set its headers, cache it on disk or even compress it using gzip.
+
+Here is the simplest example of fully cached and compressed response:
+
+```php
+<?php 
+	include 'ae/core.php';
+	
+	ae::options('response')
+		->set('compress', true); // turn compression on
+	
+	$response = ae::response('html')
+		->header('X-Header-Example', 'Some value');
+?>
+<h1>Hello world</h1>
+<?php 
+	$response
+		->cache(5) // cache for five minutes
+		->save('index.html') // Apache will dispatch this for us
+		->dispatch(); // 
+?>
+```
+
 
 ### Database
 

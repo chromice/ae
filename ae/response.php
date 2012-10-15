@@ -161,7 +161,8 @@ class aeResponse
 		$encoding = strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip') !== false ?
 			'x-gzip' : 'gzip';
 
-		$this->header('Vary', 'Accept-Encoding')
+		$this
+			->header('Vary', 'Accept-Encoding')
 			->header('Content-Encoding', $encoding);
 
 		return gzencode($output);
@@ -197,14 +198,16 @@ class aeResponse
 		{
 			$seconds = 60 * $this->cache_ttl;
 			
-			$this->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
+			$this
+				->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
 				->header('Last-Modified', null)
 				->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($cc === 'private' ? $cc : 'public'))
 				->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
 		}
 		else
 		{
-			$this->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
+			$this
+				->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
 				->header('Last-Modified', gmdate('D, d M Y H:i:s').' GMT')
 				->header('Cache-Control', 'no-store, no-cache, must-revalidate')
 				->header('Cache-Control', 'post-check=0, pre-check=0', false);
