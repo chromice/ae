@@ -343,14 +343,14 @@ else
 	{
 		echo "<p>Nothing to get.</p>";
 	}
-	else
+	else if ($request->is('post'))
 	{
 		echo "<p>Nothing to post.</p>";
 	}
 }
 ```
 
-You can access URI segments or command line arguments using `aeRequest::segment()`  method:
+You can access URI segments using `aeRequest::segment()`  method:
 
 ```php
 // GET /some/arbitrary/request HTTP/1.1
@@ -359,16 +359,22 @@ $request = ae::request();
 echo $request->segment(0); // some
 echo $request->segment(1); // arbitrary
 
-// php index.php separate arguments with spaces
-echo $request->segment(0); // separate
-echo $request->segment(1); // arguments
-
 echo $request->segment(99, 'default value'); // default value
 ```
 
-You can also re–route the requests to a specific file or directory. E.g. if you have index.php in the root directory, you could do the following:
+You could do the same with command line arguments for code portability reasons:
 
+```php
+// php index.php separate arguments with spaces
+$request = ae::request();
+
+echo $request->segment(0); // separate
+echo $request->segment(1); // arguments
 ```
+
+Requests can be re–route to a specific directory. For example, if you had index.php in the root directory, you could do the following:
+
+```php
 // GET /article/123 HTTP/1.1
 $request = ae::request();
 
@@ -395,8 +401,11 @@ $id = $request->segment(0);
 
 echo "Article ID is $id. ";
 
-echo "You can access it at " . $request->base() . "/" . $id;
+// The base and current uri parts are accessible via base() and uri() method respectively:
+echo "You can access it at " . $request->base() . "/" . $request->uri();
 ```
+
+And, finally, use `aeRequest::ip_address()` to get the IP address of the client.
 
 ### Response
 
