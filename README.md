@@ -19,7 +19,7 @@
 
 ## Getting started
 
-In order to start using æ in your application, you must include **core.php** located in the **ae** directory:
+In order to start using æ in your application, you must include *core.php* located in the *ae/* directory:
 
 ```php
 include 'ae/core.php';
@@ -36,7 +36,7 @@ $options->set('foo', 'bar');
 echo $options->get('foo'); // echo 'bar'
 ```
 
-The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains **ae** directory.
+The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains *ae/* directory.
 
 If you want æ to look for a file in another directory, you can register a new context for it:
 
@@ -359,6 +359,7 @@ $request = ae::request();
 echo $request->segment(0); // some
 echo $request->segment(1); // arbitrary
 
+echo $request->type(); // html
 echo $request->segment(99, 'default value'); // default value
 ```
 
@@ -370,6 +371,15 @@ $request = ae::request();
 
 echo $request->segment(0); // separate
 echo $request->segment(1); // arguments
+```
+
+All requests have a type ("html" by default), which is defined by the *file extension* part of the URI.
+
+```php
+// GET /some/arbitrary/request.json HTTP/1.1
+$request = ae::request();
+
+echo $request->type(); // json
 ```
 
 Requests can be re–routed to a specific directory. For example, if you had *index.php* in the root directory, you could do the following:
@@ -405,32 +415,49 @@ echo "Article ID is $id. ";
 echo "You can access it at " . $request->base() . "/" . $request->uri();
 ```
 
-And, finally, use `aeRequest::ip_address()` to get the IP address of the client.
+And, finally, use `aeRequest::ip_address()` to get the IP address of the client. If your app is running behind a reverse–proxy or load balancer, you need to specify its IP address via request options:
+
+```php
+ae::options('request')->set('proxies', '83.14.1.1, 83.14.1.2');
+
+$client_ip = ae::request()->ip_address();
+```
 
 ### Response
 
 Response library allows you to create a response of a specific mime–type, set its headers, cache it on disk or even compress it using gzip.
 
-Here is the simplest example of fully cached and compressed response:
+Here is an example of a compressed response with a custom header that is saved to disk and for the next 5 minutes dispatched solely by Apache:
 
 ```php
 <?php 
-	include 'ae/core.php';
-	
-	ae::options('response')
-		->set('compress', true); // turn compression on
-	
-	$response = ae::response('html')
-		->header('X-Header-Example', 'Some value');
+// GET /hello-world HTTP/1.1
+include 'ae/core.php';
+
+ae::options('response')
+	->set('compress', true); // turn compression on
+
+$response = ae::response('html')
+	->header('X-Header-Example', 'Some value');
 ?>
 <h1>Hello world</h1>
 <?php 
-	$response
-		->cache(5) // cache for five minutes
-		->save('index.html') // Apache will dispatch this for us
-		->dispatch(); // 
+$response
+	->cache(5) // cache for five minutes
+	->save('/hello-world.html') // save for this request
+	->dispatch(); // 
 ?>
 ```
+
+You must specify the type when you create a new response object. It should be either a valid mime–type or a shorthand like "html", "css", "javascript", "json", etc. 
+
+When response is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded.
+
+You can set header at any point via `aeResponse::header()` method, which accepts the same arguments as PHP's own `header()` function. 
+
+If you want the response to be cached client–side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
+
+Response library supports server–side caching as well. The responses are saved to *cache/* directory by default. Apache would first look for a cached response there, and only if it finds no valid response there, will it route the request to *index.php* in the root directory.
 
 
 ### Database
@@ -445,8 +472,4 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-
-
-
-	
 

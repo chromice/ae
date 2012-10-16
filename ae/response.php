@@ -127,7 +127,7 @@ class aeResponse
 		// Copression affects "Content-Length"
 		$this->header('Content-Length', strlen($output));
 		
-		$this->_cache_headers('private');
+		$this->_set_cache_headers('private');
 		
 		// Output headers
 		foreach ($this->headers as $name => $value)
@@ -185,7 +185,7 @@ class aeResponse
 		return $this;
 	}
 	
-	protected function _cache_headers($cc = 'private')
+	protected function _set_cache_headers($cc = 'private')
 	{
 		if ($this->cache_headers_set) 
 		{
@@ -214,7 +214,7 @@ class aeResponse
 		}
 	}
 	
-	public function save($uri)
+	public function save($uri = '')
 	/*
 		Saves reponse to cache directory.
 	*/
@@ -224,7 +224,7 @@ class aeResponse
 			return $this;
 		}
 		
-		$this->_cache_headers('public');
+		$this->_set_cache_headers('public');
 		
 		// Determine file path and extension
 		$uri = trim($uri, '/');
