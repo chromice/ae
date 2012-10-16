@@ -16,6 +16,8 @@
 # limitations under the License.
 # 
 
+// TODO: Documentation is missing for a lot of methods.
+
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase
@@ -282,7 +284,7 @@ class aeDatabase
 	
 	protected function _query()
 	/*
-		Returns a ready to execute query and resets the state.
+		Returns a query ready to execute and resets the state.
 	*/
 	{
 		if (empty($this->query))
@@ -362,7 +364,7 @@ class aeDatabase
 	
 	public function protect($name)
 	/*
-		Protects an alias, table or column name.
+		Protects an alias, table or column name with backticks.
 	*/
 	{
 		return '`' . str_replace('`', '``', $name) . '`';
@@ -521,19 +523,19 @@ class aeDatabase
 		return $columns;
 	}
 	
-	public function exists($table, $where)
+	public function count($table, $where = null)
 	{
-		$where = $this->_where($where);
-		
-		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table} WHERE $where")
+		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table}" . 
+				(!is_null($where) ? ' WHERE ' . $this->_where($where) : '')
+			)
 			->names(array(
 				'table' => $table
 			))
 			->result();
 		
-		$found = $result->fetch();
+		$result = $result->fetch();
 		
-		return $found['found'] > 0;
+		return $result['found'];
 	}
 	
 	public function find($table, $where)

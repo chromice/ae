@@ -21,7 +21,6 @@ ae::import('books.php');
 Books::install();
 Authors::install();
 
-
 // Create new entities and save them to database
 $author = Authors::create(array(
 	'name' => 'Jerome David Salinger',
@@ -69,6 +68,8 @@ $book->load();
 echo 'Updated: ' . $book->title . '<br>';
 
 echo $_book->transient . ' ' . $_book->transient2 . '<br>';
+
+echo 'Number of books: ' . ae::database()->count('books');
 
 // Delete data
 $book->delete();
