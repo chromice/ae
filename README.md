@@ -6,7 +6,7 @@
 	- [Importing code](#importing-code)
 	- [Running code](#running-code)
 	- [Loading libraries](#loading-libraries)
-- [Stock libraries](#stock-libraries)
+- [Core libraries](#core-libraries)
 	- [Buffer](#buffer)
 	- [Container](#container)
 	- [Options](#options)
@@ -36,7 +36,7 @@ $options->set('foo', 'bar');
 echo $options->get('foo'); // echo 'bar'
 ```
 
-The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains */ae* directory.
+The sole purpose of `ae` class is to manage code: import classes, run scripts and capture their output, and load core or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains */ae* directory.
 
 If you want æ to look for a file in another directory, you can register a new context for it:
 
@@ -44,7 +44,7 @@ If you want æ to look for a file in another directory, you can register a new c
 ae::register('example', '/absolute/path/to/some/directory/');
 ```
 
-Now you can create that context, whenever you want æ to look for files in that directory:
+Now you can create that context whenever you want æ to look for files in that directory:
 
 ```php
 $context = new ae('example');
@@ -146,7 +146,7 @@ ae::invoke(
 
 Please consult with the source code of the core libraries for real life examples.
 
-## Stock libraries
+## Core libraries
 
 ### Buffer
 
@@ -230,7 +230,7 @@ When rendered, it will produce this:
 
 ### Options
 
-Options library is used by many stock libraries and allows you to change their behaviour. Options for each library are contained in a separate name space. In order to set or get option value, you must load options library for that namespace:
+Options library is used by many core libraries and allows you to change their behaviour. Options for each library are contained in a separate name space. In order to set or get option value, you must load options library for that namespace:
 
 ```php
 $options = ae::options('namespace');
@@ -463,7 +463,148 @@ In order to save a response use `aeResponse::save()` method, passing the full re
 
 ### Database
 
-Database library
+Database library allows you make MySQL queries and exposes a simple active record style abstraction for tables.
+
+Before you can make queries to the database, you have to specify the connection parameters using the options library:
+
+```php
+// Configure the "default" database connection
+ae::options('database.default')
+	->set('host', 'localhost')
+	->set('user', 'root')
+	->set('password', 'root')
+	->set('database', 'ae');
+```
+
+Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
+
+```php
+$db = ae::database(); // same as ae::database("default");
+
+$db->query("SELECT 1")->make();
+```
+
+Let's create the "authors" table:
+
+```php
+$db->query("CREATE TABLE IF NOT EXISTS {table} (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`name` varchar(255) NOT NULL,
+		`nationality` varchar(255) NOT NULL,
+		PRIMARY KEY (`id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+	->names(array(
+		'table' => 'authors'
+	))
+	->make();
+```
+
+Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::names()` method. When before the query is made the library will wrap the name with backticks ("`") and replace the placeholder.
+
+While not particularly useful in this example, placeholders are generally a good way to keep you query code readable.
+
+Let's fill this table with some data:
+
+```php
+$db->query("INSERT INTO {table} ({keys}) VALUES ({values})")
+	->names(array(
+		'table' => 'authors'
+	))
+	->values(array(
+		'name' => 'Richar K. Morgan', // (sic)
+		'nationality' => 'British'
+	))
+	->make();
+
+$morgan_id = $db->insert_id();
+```
+
+In this example we are using `{keys}` and `{values}` placeholders and specify keys and values via `aeDatabase::values()` method. Now, I made a typo in the authors name, so let's updated it:
+
+```php
+$db->query("UPDATE {table} SET {keys_values} WHERE `id` = {author_id}")
+	->names(array(
+		'table' => 'authors'
+	))
+	->values(array(
+		'name' => 'Richard K. Morgan'
+	))
+	->variables(array(
+		'author_id' => $morgan_id
+	))
+	->make();
+```
+
+Here we used `{keys_values}` placeholder and specified its value via `aeDatabase::values()` method. And we also used `{author_id}` placeholder in conjunction with `aeDatabase::variables()` method that would escape the value of `$morgan_id`. 
+
+Of course, these are just examples, there is actually a less verbose way to insert and update records:
+
+```php
+$db->update('authors', array('nationality' => 'English'), array('id' => $morgan_id);
+$stephenson_id = $db->insert('authors', array(
+	'name' => 'Neal Stephenson',
+	'nationality' => 'American'
+)); 
+$gibson_id = $db->insert('authors', array(
+	'name' => 'William Ford Gibson',
+	'nationality' => 'Canadian'
+));
+```
+
+Now that we have some records in the table, let's retrive and display them:
+
+```php
+$authors = $db->query('SELECT * FROM `authors`')->result();
+$count = $authors->count();
+
+echo "There are $count authors in the database:\n"
+
+while ($author = $authors->fetch())
+{
+	echo "- {$author->name}\n";
+}
+```
+
+This will produce:
+
+```markdown
+There are 3 authors in the database:
+- Richard K. Morgan
+- Neal Stephenson
+- William Ford Gibson
+```
+
+Now, let's change the query so that authors are ordered alphabetically:
+
+```php
+$authors = $db->query('SELECT * FROM `authors` {sql:order_by}')
+	->order_by('`name` ASC')
+	->result()
+	->all();
+$count = $authors->count();
+
+echo "There are $count authors in the database:\n"
+
+foreach ($authors as $author):
+{
+	echo "- {$author->name}\n";
+}
+```
+
+Again, instead of specifying `ORDER BY` clause directly in the query we are using a placehodler for it, that will be filled in only if we specify the clause via `aeDatabase::order_by()` method. 
+
+> Dabatase library has other token/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source of the database library to learn more about them.
+
+Note that we are also using `aeDatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. This listing will produce a list of authors in alphabetical order:
+
+```markdown
+There are 3 authors in the database:
+- Neal Stephenson
+- Richard K. Morgan
+- William Ford Gibson
+```
+
+**TODO:** Active record example.
 
 ## Licence
 
