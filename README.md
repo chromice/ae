@@ -19,7 +19,7 @@
 
 ## Getting started
 
-In order to start using æ in your application, you must include *core.php* located in the *ae/* directory:
+In order to start using æ in your application, you must include *core.php* located in the */ae* directory:
 
 ```php
 include 'ae/core.php';
@@ -36,7 +36,7 @@ $options->set('foo', 'bar');
 echo $options->get('foo'); // echo 'bar'
 ```
 
-The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains *ae/* directory.
+The sole purpose of `ae` class is to enable you to import code, run scripts and capture their output, and load stock or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains */ae* directory.
 
 If you want æ to look for a file in another directory, you can register a new context for it:
 
@@ -210,7 +210,6 @@ Another script (e.g. *hellow_world.php*) can use it like this:
 <?php 
 $container = ae::container('path/to/container_html.php')
 	->set('title', 'Container example');
-	
 ?>
 <h1>Hello World!</h1>
 ```
@@ -400,7 +399,7 @@ if (!$route->exists())
 $route->follow();
 ```
 
-Now, if you have various request handlers in the *handlers/* directory (*article.php* in this case), æ will run it:
+Now, if you have various request handlers in the */handlers* directory (*article.php* in this case), æ will run it:
 
 ```php
 // article.php
@@ -425,9 +424,9 @@ $client_ip = ae::request()->ip_address();
 
 ### Response
 
-Response library allows you to create a response of a specific mime–type, set its headers, cache it on disk or even compress it using gzip.
+Response library allows you to create a response of a specific mime–type, set its headers and (optionally) cache and compress it.
 
-Here is an example of a compressed response with a custom header that is saved to disk and for the next 5 minutes dispatched solely by Apache:
+Here is an example of a simple application that creates gzip'ed response with a custom header that is cached for 5 minutes:
 
 ```php
 <?php 
@@ -444,27 +443,27 @@ $response = ae::response('html')
 <?php 
 $response
 	->cache(5) // cache for five minutes
-	->save('/hello-world.html') // save for this request
-	->dispatch(); // 
+	->save('/hello-world.html') // save response for /hello-world request
+	->dispatch();
 ?>
 ```
 
-You must specify the type when you create a new response object. It should be either a valid mime–type or a shorthand like "html", "css", "javascript", "json", etc. 
+You can specify the type when you create a new response object. It should be either a valid mime–type or a shorthand like "html", "css", "javascript", "json", etc. By default all requests are of type "text/html".
 
 When response is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded.
 
-You can set header at any point via `aeResponse::header()` method, which accepts the same arguments as PHP's own `header()` function. 
+You can set HTTP headers at any point via `aeResponse::header()` method, which accepts the same arguments as PHP's own `header()` function. 
 
 If you want the response to be cached client–side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
 
-Response library supports server–side caching as well. The responses are saved to *cache/* directory by default. Apache would first look for a cached response there, and only if it finds no valid response there, will it route the request to *index.php* in the root directory.
+Response library supports server–side caching as well. The responses are saved to */cache* directory by default. Apache would first look for a cached response there, and only if it finds no valid response, will it route the request to */index.php*.
 
 In order to save a response use `aeResponse::save()` method, passing the full request URI (including the file extension) via the first argument. You can delete any cached response using `aeResponse::delete()` method.
 
 
 ### Database
 
-...
+Database library
 
 ## Licence
 
