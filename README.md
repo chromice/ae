@@ -459,6 +459,8 @@ If you want the response to be cached client–side for a number of minutes, use
 
 Response library supports server–side caching as well. The responses are saved to *cache/* directory by default. Apache would first look for a cached response there, and only if it finds no valid response there, will it route the request to *index.php* in the root directory.
 
+In order to save a response use `aeResponse::save()` method, passing the full request URI (including the file extension) via the first argument. You can delete any cached response using `aeResponse::delete()` method.
+
 
 ### Database
 
