@@ -17,7 +17,7 @@ class Books extends aeDatabaseTable
 			->names(array(
 				'books' => static::name()
 			))
-			->run();
+			->make();
 	}
 
 	public static function uninstall()
@@ -26,7 +26,7 @@ class Books extends aeDatabaseTable
 			->names(array(
 				'books' => static::name()
 			))
-			->run();
+			->make();
 	}
 	
 	public static function one($id)

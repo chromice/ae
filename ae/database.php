@@ -97,7 +97,6 @@ class aeDatabase
 	protected $sql_order_by;
 	protected $sql_limit;
 	
-	
 	protected $names = array();
 	protected $variables = array();
 	protected $values = array();
@@ -425,7 +424,7 @@ class aeDatabase
 		Result
 	*/
 	
-	public function run()
+	public function make()
 	/*
 		Runs current query and returns number of affected rows 
 		or FALSE if query returned an error.
@@ -434,6 +433,14 @@ class aeDatabase
 		$this->result();
 		
 		return $this->db->affected_rows;
+	}
+	
+	public function insert_id()
+	/*
+		Returns the auto generated id used in the last query or zero.
+	*/
+	{
+		return $this->db->insert_id;
 	}
 	
 	public function result($result = 'aeDatabaseResult')
@@ -551,7 +558,7 @@ class aeDatabase
 				'table' => $table
 			))
 			->values($values)
-			->run() > 0 ? $this->db->insert_id : null;
+			->make() > 0 ? $this->db->insert_id : null;
 	}
 	
 	public function insert_or_update($table, $values, $where)
@@ -575,7 +582,7 @@ class aeDatabase
 				'table' => $table
 			))
 			->values($values)
-			->run();
+			->make();
 	}
 	
 	public function update($table, $values, $where)
@@ -587,7 +594,7 @@ class aeDatabase
 				'table' => $table
 			))
 			->values($values)
-			->run();
+			->make();
 	}
 	
 	public function delete($table, $where)
@@ -598,7 +605,7 @@ class aeDatabase
 			->names(array(
 				'table' => $table
 			))
-			->run();
+			->make();
 	}
 }
 

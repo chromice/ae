@@ -14,7 +14,7 @@ class Authors extends aeDatabaseTable
 			->names(array(
 				'authors' => static::name()
 			))
-			->run();
+			->make();
 	}
 
 	public static function uninstall()
@@ -23,6 +23,6 @@ class Authors extends aeDatabaseTable
 			->names(array(
 				'authors' => static::name()
 			))
-			->run();
+			->make();
 	}	
 }
