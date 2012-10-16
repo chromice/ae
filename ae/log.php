@@ -16,14 +16,12 @@
 # limitations under the License.
 # 
 
-// Set up all handlers
-set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
-set_exception_handler(array('aeLog','_handleException'));
-register_shutdown_function(array('aeLog','_handleShutdown'));
+aeLog::_setup();
 
 class aeLog
 /*
-	Outputs a log of errors, notices, dumps, etc.
+	Logs errors, notices, dumps, etc.,  outputs them in the response body 
+	or X-ae-log header, or appends them to a log file.
 	
 	`log` options:
 		`environment`	- log env variables: true or false (default);
@@ -350,7 +348,20 @@ class aeLog
 	// = Handlers =
 	// ============
 	
+	protected static $output;
 	protected static $last_error;
+	
+	public static function _setup()
+	{
+		// We need to capture output until shutdown to be able to 
+		// set `X-ae-log` header, when necessary.
+		self::$output = new aeBuffer();
+		
+		// Set up all handlers
+		set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
+		set_exception_handler(array('aeLog','_handleException'));
+		register_shutdown_function(array('aeLog','_handleShutdown'));
+	}
 	
 	public static function _handleError($type, $message, $file, $line, $context)
 	{
@@ -393,5 +404,7 @@ class aeLog
 		}
 		
 		self::onShutdown();
+		
+		self::$output->output();
 	}
 }
