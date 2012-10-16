@@ -537,7 +537,7 @@ $db->query("UPDATE {table} SET {keys_values} WHERE `id` = {author_id}")
 
 Here we used `{keys_values}` placeholder and specified its value via `aeDatabase::values()` method. And we also used `{author_id}` placeholder in conjunction with `aeDatabase::variables()` method that would escape the value of `$morgan_id`. 
 
-Of course, these are just examples, there is actually a less verbose way to insert and update records:
+Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 
 ```php
 $db->update('authors', array('nationality' => 'English'), array('id' => $morgan_id);
@@ -551,7 +551,10 @@ $gibson_id = $db->insert('authors', array(
 ));
 ```
 
-Now that we have some records in the table, let's retrive and display them:
+> There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source of the database library to learn more about them.
+
+
+Now that we have some rows in the table, let's retrieve and display them:
 
 ```php
 $authors = $db->query('SELECT * FROM `authors`')->result();
@@ -561,7 +564,7 @@ echo "There are $count authors in the database:\n"
 
 while ($author = $authors->fetch())
 {
-	echo "- {$author->name}\n";
+	echo "- {$author['name']}\n";
 }
 ```
 
@@ -579,15 +582,15 @@ Now, let's change the query so that authors are ordered alphabetically:
 ```php
 $authors = $db->query('SELECT * FROM `authors` {sql:order_by}')
 	->order_by('`name` ASC')
-	->result()
-	->all();
+	->result() // return an instance of aeDatabaseResult
+	->all(); // return an array of rows
 $count = $authors->count();
 
 echo "There are $count authors in the database:\n"
 
 foreach ($authors as $author):
 {
-	echo "- {$author->name}\n";
+	echo "- {$author['name']}\n";
 }
 ```
 
