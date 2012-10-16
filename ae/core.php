@@ -317,7 +317,7 @@ final class ae
 		return ae::load('ae/container.php', $path);
 	}
 	
-	public static function database($name)
+	public static function database($name = null)
 	{
 		return ae::load('ae/database.php', $name);
 	}
