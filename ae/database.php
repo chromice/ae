@@ -17,6 +17,7 @@
 # 
 
 // TODO: Documentation is missing for a lot of methods.
+// FIXME: insert_or_update() method's $where clause is different from the other functions.
 
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
@@ -51,7 +52,7 @@ class aeDatabase
 		
 		if ($params === false)
 		{
-			throw new Exception('Unknown database connection: ' . $database);
+			throw new aeDatabaseException('Unknown database connection: ' . $database);
 		}
 		
 		$class = $params->get('class', get_called_class());
@@ -77,7 +78,7 @@ class aeDatabase
 		
 		if ($this->db->connect_error)
 		{
-			throw new ErrorException($this->db->connect_error, $this->db->connect_errno, E_USER_ERROR);
+			throw new aeDatabaseException($this->db->connect_error);
 		}
 	}
 	
@@ -461,7 +462,7 @@ class aeDatabase
 		
 		if ($return === false)
 		{
-			throw new ErrorException($this->db->error, 0, E_USER_ERROR);
+			throw new aeDatabaseException($this->db->error);
 		}
 		
 		return new $result($return, $class, $related);
@@ -1074,3 +1075,5 @@ abstract class aeDatabaseTable
 		return $this;
 	}
 }
+
+class aeDatabaseException extends Exception {}
