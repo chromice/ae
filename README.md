@@ -15,6 +15,10 @@
 	- [Request](#request)
 	- [Response](#response)
 	- [Database](#database)
+		- [Making queries](#making-queries)
+		- [Retrieving data](#retrieving-data)
+		- [Active record](#active-record)
+		- [Relationships](#relationships)
 - [Licence](#licence)
 
 ## Getting started
@@ -193,7 +197,7 @@ Container library allows you to wrap output of a script with the output of anoth
 
 Here's an example of HTML container, e.g. *container_html.php*:
 
-```php
+```html
 <html>
 <head>
 	<title><?= $title ?></title>
@@ -484,6 +488,8 @@ $db = ae::database(); // same as ae::database("default");
 $db->query("SELECT 1")->make();
 ```
 
+#### Making queries 
+
 Let's create the "authors" table:
 
 ```php
@@ -554,6 +560,8 @@ $gibson_id = $db->insert('authors', array(
 > There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source of the database library to learn more about them.
 
 
+#### Retrieving data
+
 Now that we have some rows in the table, let's retrieve and display them:
 
 ```php
@@ -607,7 +615,82 @@ There are 3 authors in the database:
 - William Ford Gibson
 ```
 
-**TODO:** Active record example.
+#### Active record
+
+The database library has `aeDatabaseTable` abstract class that your table specific class must extend:
+
+```php
+class Authors extends aeDatabaseTable {}
+```
+
+This one line of code is enough to start performing basic CRUD operations for that table:
+
+```php
+// Create an instance of Authors pointed at Neal Stephenson 
+// record in the "authors" table:
+$stephenson = Authors::find($stephenson_id);
+
+// Load the data
+$stephenson->load();
+
+echo $stephenson->name; // Neal Stephenson
+echo $stephenson->nationality; // American
+```
+
+As you can see, finding a record does not actually load its data. In some cases you may  want to update some property of an existing record without loading its data:
+
+```php
+// Let's change William Gibson's nationality
+$gibson = Authors::find($gibson_id);
+
+$gibson->nationality = 'American';
+
+// Update the record in the database
+$gibson->save();
+```
+
+Let's create a new record and save it to the database:
+
+```php
+$shaky = Authors::create(array(
+	'name' => 'William Shakespeare',
+	'nationality' => 'English'
+));
+
+// Create a new record in the database
+$shaky->save();
+```
+
+In order to retrieve several records from the database, you would make a regular query, but instead of calling `aeDatabase::result()` method, you should call `aeDatabaseTable::many()` method with the name of the active record class as the first argument:
+
+```php
+$authors = $db
+	->query('SELECT * FROM `authors`')
+	->many('Authors');
+$count = $authors->count();
+
+echo "There are $count authors in the database:\n"
+
+while ($author = $authors->fetch())
+{
+	echo "- {$author->name}\n";
+}
+```
+
+```markdown
+There are 4 authors in the database:
+- Richard K. Morgan
+- Neal Stephenson
+- William Ford Gibson
+- William Shakespeare
+```
+
+Now, Shakespeare was a playwright, while the rest of the authors are book writers. Let's delete his record:
+
+```php
+$shaky->delete();
+```
+
 
 ## Licence
 
