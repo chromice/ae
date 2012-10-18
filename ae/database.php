@@ -865,7 +865,9 @@ abstract class aeDatabaseTable
 	{
 		if (!is_a($object, 'aeDatabaseTable'))
 		{
-			trigger_error('Cannot attach an instance of "' . get_class($object) . '" class.', E_USER_ERROR);
+			trigger_error('Cannot attach an instance of "' 
+				. get_class($object) 
+				. '" class.', E_USER_ERROR);
 		}
 		
 		$this->related[$related] = $object;
@@ -972,8 +974,10 @@ abstract class aeDatabaseTable
 		}
 		else if (count($accessor) !== count($ids))
 		{
-			trigger_error(get_called_class() . '::find() failed, because accessor value' .
-				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+			trigger_error(get_called_class() 
+				. '::find() failed, because accessor value'
+				. (count($accessor) > 1 ? 's are' : ' is') 
+				. ' not defined.', E_USER_ERROR);
 			
 		}
 		
@@ -990,16 +994,19 @@ abstract class aeDatabaseTable
 		
 		if (count($accessor) !== count($this->ids))
 		{
-			trigger_error(get_class($this) . '::load() failed, because accessor value' .
-				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+			trigger_error(get_class($this) 
+				. '::load() failed, because accessor value' 
+				. (count($accessor) > 1 ? 's are' : ' is') 
+				. ' not defined.', E_USER_ERROR);
 		}
 		
 		$values = $db->find(static::name(), $this->ids);
 		
 		if (!is_array($values))
 		{
-			trigger_error(get_class($this) . '::load() failed, because accessor points ' .
-				'to nothing.', E_USER_ERROR);
+			trigger_error(get_class($this) 
+				. '::load() failed, because accessor points ' 
+				. 'to nothing.', E_USER_ERROR);
 		}
 		
 		foreach ($values as $key => $value)
@@ -1043,8 +1050,10 @@ abstract class aeDatabaseTable
 		}
 		else
 		{
-			trigger_error(get_class($this) . '::save() failed, because accessor value' .
-				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+			trigger_error(get_class($this) 
+				. '::save() failed, because accessor value' 
+				. (count($accessor) > 1 ? 's are' : ' is') 
+				. ' not defined.', E_USER_ERROR);
 		}
 		
 		return $this;
@@ -1068,8 +1077,10 @@ abstract class aeDatabaseTable
 		}
 		else
 		{
-			trigger_error(get_class($this) . '::delete() failed, because accessor value' .
-				(count($accessor) > 1 ? 's are' : ' is') . ' not defined.', E_USER_ERROR);
+			trigger_error(get_class($this) 
+				. '::delete() failed, because accessor value' 
+				. (count($accessor) > 1 ? 's are' : ' is') 
+				. ' not defined.', E_USER_ERROR);
 		}
 		
 		return $this;
