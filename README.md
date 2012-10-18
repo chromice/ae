@@ -18,6 +18,7 @@
 		- [Making queries](#making-queries)
 		- [Retrieving data](#retrieving-data)
 		- [Active record](#active-record)
+		- [Relationships](#relationships)
 - [Licence](#licence)
 
 ## Getting started
@@ -690,6 +691,122 @@ Now, Shakespeare was a playwright, while the rest of the authors are book writer
 $shaky->delete();
 ```
 
+#### Relationships
+
+Let's make things more interesting by introducing a new class of objects: books. First, we need to create a table to store them:
+
+```php
+$db->query("CREATE TABLE IF NOT EXISTS `books` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`author_id` int(10) unsigned NOT NULL,
+	`title` varchar(255) NOT NULL,
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8")->make();
+```
+
+We also need a class to represent this table. To keep things interesting, we will name it `Novels`. Obviously `aeDatabaseTable` won't be able to guess the name of the table, so we will specify it manually by overriding the `aeDatabaseTable::name()` method:
+
+```php
+class Novels extends aeDatabaseTable
+{
+	public static function name()
+	{
+		return 'books'; // that is the real name of the table
+	}
+}
+```
+
+> There a several methods you can override like this: `aeDatabaseTable::database()` to return a different database connection object; `aeDatabaseTable::accessor()` to return an array of primary keys; `aeDatabaseTable::columns()` to return an array of data columns.
+
+We could start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
+
+```php
+class Authors extends aeDatabaseTable
+{
+	public function add_novel($title)
+	{
+		return Novel::create(array(
+			'author_id' => $this->id,
+			'title' => $title
+		))->save();
+	}
+}
+```
+
+Finally, let's add a few books to the database:
+
+```php
+$gibson->add_novel('Neuromancer');
+$gibson->add_novel('Count Zero');
+$gibson->add_novel('Mona Lisa Overdrive');
+
+$stephenson->add_novel('Snow Crash');
+$stephenson->add_novel('Cryptonomicon');
+$stephenson->add_novel('Reamde');
+
+// Note: we don't have to load author's data to add a novel.
+$morgan = Authors::find($morgan_id);
+
+$morgan->add_novel('Altered Carbon');
+$morgan->add_novel('Broken Angels');
+$morgan->add_novel('Woken Furies');
+```
+
+So far so good. Let's add a method to `Novels` class that will return all book records sorted alphabetically:
+
+```php
+class Novels extends aeDatabaseTable
+{
+	public static function name()
+	{
+		return 'books'; // that is the real name of the table
+	}
+	
+	public static function all()
+	{
+		return static::database()
+			->query('SELECT * 
+				FROM {books} 
+				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
+				ORDER BY {books}.`title`')
+			->names(array(
+				'books' => static::name(),
+				'authors' => Authors::name()
+			))
+			->using('Authors', 'author')
+			->many('Novels');
+	}
+}
+```
+
+Most of this code should be familiar to you. The only novelty is `aeDatabase::using()` method. The query will retrieve data from both "books" and "authors" tables, so we need to instruct the database driver to return "books" data as an instance of `Novels` class, and "authors" data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
+
+Let's inventory our novel collection:
+
+```php
+$novels = Novels::all()
+$count = $novels->count();
+
+echo "Here are all $count novels ordered alphabetically:\n"
+
+while ($novel = $novels->fetch())
+{
+	echo "- {$novel->title} by {$novel->author->name}\n";
+}
+```
+
+```markdown
+Here are all 9 novels ordered alphabetically:
+- Altered Carbon by Richard K. Morgan
+- Broken Angels by Richard K. Morgan
+- Count Zero by William Ford Gibson
+- Cryptonomicon by Neal Stephenson
+- Neuromancer by William Ford Gibson
+- Mona Lisa Overdrive by William Ford Gibson
+- Reamde by Neal Stephenson
+- Snow Crash by Neal Stephenson
+- Woken Furies by Richard K. Morgan
+```
 
 ## Licence
 
