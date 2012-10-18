@@ -80,6 +80,12 @@ class aeDatabase
 		{
 			throw new aeDatabaseException($this->db->connect_error);
 		}
+		
+		if ($this->db->set_charset('utf8') === false)
+		{
+			throw new aeDatabaseException('Could not set character set to utf8: ' 
+				. $this->db->error);
+		}
 	}
 	
 	public function __destruct()
@@ -743,6 +749,18 @@ abstract class aeDatabaseTable
 	*/
 	
 	private static $tables = array();
+
+	protected static function database()
+	{
+		$class = get_called_class();
+		
+		if (!isset(self::$tables[$class]['database']))
+		{
+			self::$tables[$class]['database'] = ae::database('default');
+		}
+		
+		return self::$tables[$class]['database'];
+	}
 	
 	public static function name()
 	{
@@ -757,20 +775,8 @@ abstract class aeDatabaseTable
 		
 		return self::$tables[$class]['name'];
 	}
-	
-	protected static function database()
-	{
-		$class = get_called_class();
-		
-		if (!isset(self::$tables[$class]['database']))
-		{
-			self::$tables[$class]['database'] = ae::database('default');
-		}
-		
-		return self::$tables[$class]['database'];
-	}
-	
-	protected static function accessor()
+
+	public static function accessor()
 	{
 		$class = get_called_class();
 		
@@ -782,7 +788,7 @@ abstract class aeDatabaseTable
 		return self::$tables[$class]['accessor'];
 	}
 	
-	protected static function columns()
+	public static function columns()
 	{
 		$class = get_called_class();
 		
@@ -794,7 +800,7 @@ abstract class aeDatabaseTable
 		return self::$tables[$class]['columns'];
 	}
 	
-	protected static function _load_columns()
+	private static function _load_columns()
 	{
 		$class = get_called_class();
 		
