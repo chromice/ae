@@ -18,7 +18,6 @@
 		- [Making queries](#making-queries)
 		- [Retrieving data](#retrieving-data)
 		- [Active record](#active-record)
-		- [Relationships](#relationships)
 - [Licence](#licence)
 
 ## Getting started
@@ -592,7 +591,7 @@ $authors = $db->query('SELECT * FROM `authors` {sql:order_by}')
 	->order_by('`name` ASC')
 	->result() // return an instance of aeDatabaseResult
 	->all(); // return an array of rows
-$count = $authors->count();
+$count = count($authors);
 
 echo "There are $count authors in the database:\n"
 
