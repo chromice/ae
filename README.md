@@ -568,7 +568,7 @@ Now that we have some rows in the table, let's retrieve and display them:
 $authors = $db->query('SELECT * FROM `authors`')->result();
 $count = $authors->count();
 
-echo "There are $count authors in the database:\n"
+echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
@@ -594,7 +594,7 @@ $authors = $db->query('SELECT * FROM `authors` {sql:order_by}')
 	->all(); // return an array of rows
 $count = count($authors);
 
-echo "There are $count authors in the database:\n"
+echo "There are $count authors in the database:\n";
 
 foreach ($authors as $author):
 {
@@ -669,7 +669,7 @@ $authors = $db
 	->many('Authors');
 $count = $authors->count();
 
-echo "There are $count authors in the database:\n"
+echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
@@ -744,7 +744,7 @@ $stephenson->add_novel('Snow Crash');
 $stephenson->add_novel('Cryptonomicon');
 $stephenson->add_novel('Reamde');
 
-// Note: we don't have to load author's data to add a novel.
+// Note: we don't have to load author's record to add a novel.
 $morgan = Authors::find($morgan_id);
 
 $morgan->add_novel('Altered Carbon');
@@ -784,10 +784,10 @@ Most of this code should be familiar to you. The only novelty is `aeDatabase::us
 Let's inventory our novel collection:
 
 ```php
-$novels = Novels::all()
+$novels = Novels::all();
 $count = $novels->count();
 
-echo "Here are all $count novels ordered alphabetically:\n"
+echo "Here are all $count novels ordered alphabetically:\n";
 
 while ($novel = $novels->fetch())
 {
