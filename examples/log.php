@@ -1,6 +1,6 @@
 <?php
 	ae::import('ae/log.php');
-	ae::options('log')->set('directory', '/examples/log');
+	// ae::options('log')->set('directory', '/examples/log');
 	
 	ae::log("Hello world");
 	

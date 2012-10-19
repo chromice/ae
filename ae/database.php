@@ -39,13 +39,18 @@ class aeDatabase
 		Connection
 	*/
 	
-	protected $db;
+	static protected $connections = array();
 	
 	public static function connection($database = null)
 	{
 		if (is_null($database))
 		{
 			$database = 'default';
+		}
+		
+		if (isset(self::$connections[$database]))
+		{
+			return;
 		}
 		
 		$params = ae::options('database.' . $database, false);
@@ -57,7 +62,7 @@ class aeDatabase
 		
 		$class = $params->get('class', get_called_class());
 		
-		return new $class(
+		return self::$connections[$database] = new $class(
 			$params->get('host'),
 			$params->get('user'),
 			$params->get('password'),
@@ -66,6 +71,12 @@ class aeDatabase
 			$params->get('socket')
 		);
 	}
+	
+	/*
+		Driver
+	*/
+	
+	protected $db;
 	
 	public function __construct($host, $user, $password, $database, $port, $socket)
 	{

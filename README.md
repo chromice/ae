@@ -556,7 +556,8 @@ $db->query("SELECT 1")->make();
 Let's create the "authors" table:
 
 ```php
-$db->query("CREATE TABLE IF NOT EXISTS {table} (
+ae::database()
+	->query("CREATE TABLE IF NOT EXISTS {table} (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`name` varchar(255) NOT NULL,
 		`nationality` varchar(255) NOT NULL,
@@ -575,7 +576,8 @@ While not particularly useful in this example, placeholders are generally a good
 Let's fill this table with some data:
 
 ```php
-$db->query("INSERT INTO {table} ({keys}) VALUES ({values})")
+ae::database()
+	->query("INSERT INTO {table} ({keys}) VALUES ({values})")
 	->names(array(
 		'table' => 'authors'
 	))
@@ -585,13 +587,14 @@ $db->query("INSERT INTO {table} ({keys}) VALUES ({values})")
 	))
 	->make();
 
-$morgan_id = $db->insert_id();
+$morgan_id = ae::database()->insert_id();
 ```
 
 In this example we are using `{keys}` and `{values}` placeholders and specify keys and values via `aeDatabase::values()` method. Now, I made a typo in the authors name, so let's updated it:
 
 ```php
-$db->query("UPDATE {table} SET {keys_values} WHERE `id` = {author_id}")
+ae::database()
+	->query("UPDATE {table} SET {keys_values} WHERE `id` = {author_id}")
 	->names(array(
 		'table' => 'authors'
 	))
@@ -609,12 +612,14 @@ Here we used `{keys_values}` placeholder and specified its value via `aeDatabase
 Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 
 ```php
-$db->update('authors', array('nationality' => 'English'), array('id' => $morgan_id);
-$stephenson_id = $db->insert('authors', array(
+ae::database()->update('authors', array(
+	'nationality' => 'English'
+), array('id' => $morgan_id);
+$stephenson_id = ae::database()->insert('authors', array(
 	'name' => 'Neal Stephenson',
 	'nationality' => 'American'
 )); 
-$gibson_id = $db->insert('authors', array(
+$gibson_id = ae::database()->insert('authors', array(
 	'name' => 'William Ford Gibson',
 	'nationality' => 'Canadian'
 ));
@@ -628,7 +633,7 @@ $gibson_id = $db->insert('authors', array(
 Now that we have some rows in the table, let's retrieve and display them:
 
 ```php
-$authors = $db->query('SELECT * FROM `authors`')->result();
+$authors = ae::database()->query('SELECT * FROM `authors`')->result();
 $count = $authors->count();
 
 echo "There are $count authors in the database:\n";
@@ -651,7 +656,8 @@ There are 3 authors in the database:
 Now, let's change the query so that authors are ordered alphabetically:
 
 ```php
-$authors = $db->query('SELECT * FROM `authors` {sql:order_by}')
+$authors = ae::database()
+	->query('SELECT * FROM `authors` {sql:order_by}')
 	->order_by('`name` ASC')
 	->result() // return an instance of aeDatabaseResult
 	->all(); // return an array of rows
@@ -727,7 +733,7 @@ $shaky->save();
 In order to retrieve several records from the database, you would make a regular query, but instead of calling `aeDatabase::result()` method, you should call `aeDatabaseTable::many()` method with the name of the active record class as the first argument:
 
 ```php
-$authors = $db
+$authors = ae::database()
 	->query('SELECT * FROM `authors`')
 	->many('Authors');
 $count = $authors->count();
@@ -759,7 +765,7 @@ $shaky->delete();
 Let's make things more interesting by introducing a new class of objects: books. First, we need to create a table to store them:
 
 ```php
-$db->query("CREATE TABLE IF NOT EXISTS `books` (
+ae::database()->query("CREATE TABLE IF NOT EXISTS `books` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`author_id` int(10) unsigned NOT NULL,
 	`title` varchar(255) NOT NULL,
