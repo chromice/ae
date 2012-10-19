@@ -1,8 +1,8 @@
-# æ — a simple PHP framework
+# æ
 
-æ |aʃ| solves many backend development problems in a simple and efficient way. It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
+æ is based on one core principle: *do as little as possible, but do it well, fast and get out of the way*. The actual code base is miniscule (2,480 lines of PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory. æ has very few 
 
-æ is based on one core principle: *do as little as possible, but do it well and fast*. The actual code base is miniscule (2,480 lines of PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
 - [Getting started](#getting-started)
 - [Core](#core)
@@ -36,7 +36,7 @@ Here is a very a simple æ application:
 ?>
 ```
 
-You should put this code into a file named *index.php* in the root web directory. */ae* directory containing all the core and libraries of the framework should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all URIs it cannot resolve to *index.php* by adding the following rules to *.htaccess* file:
+You should put this code into a file named *index.php* in the root web directory. */ae* directory containing all the core and libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all URIs it cannot resolve to *index.php* by adding the following rules to *.htaccess* file:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -61,7 +61,7 @@ If you change the address to *http://localhost/universe*, you should see:
 Hello universe!
 ```
 
-Congratulations! Now you should probably tinker with the example application and read the rest of this document to get a basic understanding of the framework capabilities.
+Congratulations! Now you should probably tinker with the example application and read the rest of this document to get a basic understanding of æ capabilities.
 
 
 ## Core
