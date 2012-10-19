@@ -353,7 +353,7 @@ foo filled memory with some garbage. Timestamp: 13ms (+9.337ms). Footprint: 1419
 foo finished. Timestamp: 14ms (+1.541ms). Footprint: 630084 bytes (-789120 bytes).
 ```
 
-### Request
+## Request
 
 Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds requests using `aeRequest::is()` method:
 
