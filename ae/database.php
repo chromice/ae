@@ -39,7 +39,7 @@ class aeDatabase
 		Connection
 	*/
 	
-	static protected $connections = array();
+	protected static $connections = array();
 	
 	public static function connection($database = null)
 	{
@@ -50,7 +50,7 @@ class aeDatabase
 		
 		if (isset(self::$connections[$database]))
 		{
-			return;
+			return self::$connections[$database];
 		}
 		
 		$params = ae::options('database.' . $database, false);
@@ -62,7 +62,7 @@ class aeDatabase
 		
 		$class = $params->get('class', get_called_class());
 		
-		return self::$connections[$database] = new $class(
+		self::$connections[$database] = new $class(
 			$params->get('host'),
 			$params->get('user'),
 			$params->get('password'),
@@ -70,6 +70,8 @@ class aeDatabase
 			$params->get('port'),
 			$params->get('socket')
 		);
+		
+		return self::$connections[$database];
 	}
 	
 	/*
