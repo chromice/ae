@@ -2,26 +2,69 @@
 
 æ |aʃ| solves many backend development problems in a simple and efficient way. It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
+æ is based on one core principle: *do as little as possible, but do it well and fast*. The actual code base is miniscule (2,480 lines of PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+
 - [Getting started](#getting-started)
+- [Core](#core)
 	- [Importing code](#importing-code)
 	- [Running code](#running-code)
 	- [Loading libraries](#loading-libraries)
-- [Core libraries](#core-libraries)
-	- [Buffer](#buffer)
-	- [Container](#container)
-	- [Options](#options)
-	- [Log](#log)
-	- [Probe](#probe)
-	- [Request](#request)
-	- [Response](#response)
-	- [Database](#database)
-		- [Making queries](#making-queries)
-		- [Retrieving data](#retrieving-data)
-		- [Active record](#active-record)
-		- [Relationships](#relationships)
+- [Buffer](#buffer)
+- [Container](#container)
+- [Options](#options)
+- [Log](#log)
+- [Probe](#probe)
+- [Request](#request)
+- [Response](#response)
+- [Database](#database)
+	- [Making queries](#making-queries)
+	- [Retrieving data](#retrieving-data)
+	- [Active record](#active-record)
+	- [Relationships](#relationships)
 - [Licence](#licence)
 
+
 ## Getting started
+
+Here is a very a simple æ application:
+
+```php
+<?php
+	include 'ae/core.php';
+	
+	echo 'Hello ' . ae::request()->segment(0, "world") . '!';
+?>
+```
+
+You should put this code into a file named *index.php* in the root web directory. */ae* directory containing all the core and libraries of the framework should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all URIs it cannot resolve to *index.php* by adding the following rules to *.htaccess* file:
+
+```apache
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteBase /
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*) index.php?/$1 [L,QSA]
+</IfModule>
+```
+
+Let's assume the address of this app is *http://localhost/*. If you enter that into the address bar of your web browser, you should see this:
+
+```markdown
+Hello world!
+```
+
+If you change the address to *http://localhost/universe*, you should see:
+
+```markdown
+Hello universe!
+```
+
+Congratulations! Now you should probably tinker with the example application and read the rest of this document to get a basic understanding of the framework capabilities.
+
+
+## Core
 
 In order to start using æ in your application, you must include *core.php* located in the */ae* directory:
 
@@ -29,18 +72,7 @@ In order to start using æ in your application, you must include *core.php* loca
 include 'ae/core.php';
 ```
 
-æ does not import any other code or libraries untill you explicitly tell it to do so:
-
-```php
-// Load options object for my_app namespace:
-$options = ae::load('ae/options.php', 'my_app');
-
-// Now you can use it:
-$options->set('foo', 'bar');
-echo $options->get('foo'); // echo 'bar'
-```
-
-The sole purpose of `ae` class is to manage code: import classes, run scripts and capture their output, and load core or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains */ae* directory.
+This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and load core or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains */ae* directory.
 
 If you want æ to look for a file in another directory, you can register a new context for it:
 
@@ -150,9 +182,7 @@ ae::invoke(
 
 Please consult with the source code of the core libraries for real life examples.
 
-## Core libraries
-
-### Buffer
+## Buffer
 
 `aeBuffer` is a core utility class for capturing output in an exception–safe way:
 
@@ -191,7 +221,7 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 )) ?>
 ```
 
-### Container
+## Container
 
 Container library allows you to wrap output of a script with the output of another script. The container script is executed *after* the contained script, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
@@ -232,7 +262,7 @@ When rendered, it will produce this:
 ```
 
 
-### Options
+## Options
 
 Options library is used by many core libraries and allows you to change their behaviour. Options for each library are contained in a separate name space. In order to set or get option value, you must load options library for that namespace:
 
@@ -261,7 +291,7 @@ $proxies = $options->get('proxies', null);
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
 
 
-### Log
+## Log
 
 Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
 
@@ -293,7 +323,7 @@ ae::options('log')->set('environment', true);
 
 If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it via `X-ae-log` header.
 
-### Probe
+## Probe
 
 Probe library allows you to profile your code and see how much time and memory each part consumes. The results are logged via `ae::log()` method, so you have to have log library imported to see them.
 
@@ -313,7 +343,7 @@ unset($a);
 
 When this script is run, test probe will log the following messages:
 
-```
+```markdown
 foo started. Timestamp: 0ms (+0.000ms). Footprint: 632156 bytes (+0 bytes).
 
 foo slept for 3ms. Timestamp: 4ms (+3.566ms). Footprint: 632740 bytes (+1032 bytes).
@@ -426,7 +456,7 @@ ae::options('request')->set('proxies', '83.14.1.1, 83.14.1.2');
 $client_ip = ae::request()->ip_address();
 ```
 
-### Response
+## Response
 
 Response library allows you to create a response of a specific mime–type, set its headers and (optionally) cache and compress it.
 
@@ -460,12 +490,45 @@ You can set HTTP headers at any point via `aeResponse::header()` method, which a
 
 If you want the response to be cached client–side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
 
-Response library supports server–side caching as well. The responses are saved to */cache* directory by default. Apache would first look for a cached response there, and only if it finds no valid response, will it route the request to */index.php*.
+Response library supports server–side caching as well. The responses are saved to */cache* directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
+
+Here are the rules that *.htaccess* file in the web root directory must contain:
+
+```apache
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteBase /
+
+	# Append ".html", if there is no extension...
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_URI} !\.\w+$
+	RewriteRule ^(.*?)$ /$1.html [L]
+
+	# ...and redirect to cache directory ("/cache")
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+</IfModule>
+```
+
+And here's what *.htaccess* file in */cache* directory must be like:
+
+```apache
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+
+	# If no matching file found, redirect back to index.php
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^(.*) /index.php?/$1 [L,QSA]
+</IfModule>
+```
+
+Apache would first look for a cached response, and only if it finds no valid response, will it route the request to */index.php*. No PHP code is actually involved in serving cached responses.
 
 In order to save a response use `aeResponse::save()` method, passing the full request URI (including the file extension) via the first argument. You can delete any cached response using `aeResponse::delete()` method.
 
 
-### Database
+## Database
 
 Database library allows you make MySQL queries and exposes a simple active record style abstraction for tables.
 
@@ -488,7 +551,7 @@ $db = ae::database(); // same as ae::database("default");
 $db->query("SELECT 1")->make();
 ```
 
-#### Making queries 
+### Making queries 
 
 Let's create the "authors" table:
 
@@ -560,7 +623,7 @@ $gibson_id = $db->insert('authors', array(
 > There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source of the database library to learn more about them.
 
 
-#### Retrieving data
+### Retrieving data
 
 Now that we have some rows in the table, let's retrieve and display them:
 
@@ -615,7 +678,7 @@ There are 3 authors in the database:
 - William Ford Gibson
 ```
 
-#### Active record
+### Active record
 
 The database library has `aeDatabaseTable` abstract class that your table specific class must extend:
 
@@ -691,7 +754,7 @@ Now, Shakespeare was a playwright, while the rest of the authors are book writer
 $shaky->delete();
 ```
 
-#### Relationships
+### Relationships
 
 Let's make things more interesting by introducing a new class of objects: books. First, we need to create a table to store them:
 
