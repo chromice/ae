@@ -57,7 +57,7 @@ class aeDatabase
 		
 		if ($params === false)
 		{
-			throw new aeDatabaseException('Unknown database connection: ' . $database);
+			trigger_error('Unknown database connection: ' . $database, E_USER_ERROR);
 		}
 		
 		$class = $params->get('class', get_called_class());
@@ -124,6 +124,12 @@ class aeDatabase
 	protected $values = array();
 	
 	public function query($query)
+	/*
+		Sets the query to run.
+		
+		The query may contain {placeholders} that are replaced by other methods.
+		See pretty much every method below.
+	*/
 	{
 		$this->query = $query;
 		
@@ -132,7 +138,7 @@ class aeDatabase
 	
 	public function join($join, $type = '')
 	/*
-		Sets the `{sql:join}` part.
+		Sets the `{sql:join}` placeholder.
 		
 		Example:
 		
@@ -159,7 +165,7 @@ class aeDatabase
 	
 	public function where($column, $value = null)
 	/*
-		Sets the `{sql:where}` part.
+		Sets the `{sql:where}` placeholder.
 		
 		Examples:
 			
@@ -192,7 +198,7 @@ class aeDatabase
 	
 	public function group_by($clause)
 	/*
-		Sets the `{sql:group_by}` part. 
+		Sets the `{sql:group_by}` placeholder. 
 		
 		Example:
 		
@@ -214,9 +220,9 @@ class aeDatabase
 	
 	public function having($column, $value = null)
 	/*
-		Sets the `{sql:having}` part. 
+		Sets the `{sql:having}` placeholder. 
 		
-		See where() for examples.
+		Works similarly to `where()` method.
 	*/
 	{
 		if (empty($this->sql_having))
@@ -235,7 +241,7 @@ class aeDatabase
 	
 	public function order_by($clause)
 	/*
-		Sets the `{sql:order_by}` part. 
+		Sets the `{sql:order_by}` placeholder. 
 		
 		Example:
 		
@@ -257,7 +263,7 @@ class aeDatabase
 	
 	public function limit($limit, $offset = null)
 	/*
-		Sets the `{sql:limit}` part. 
+		Sets the `{sql:limit}` placeholder. 
 		
 		Examples:
 		
@@ -304,7 +310,7 @@ class aeDatabase
 	
 	protected function _query()
 	/*
-		Returns a query ready to execute and resets the state.
+		Returns a query ready to be executed and resets the state.
 	*/
 	{
 		if (empty($this->query))
@@ -418,9 +424,6 @@ class aeDatabase
 		return $value;
 	}
 	
-	/*
-		Placeholders
-	*/
 	public function names($names)
 	{
 		$this->names = array_merge($this->names, $names);
@@ -448,7 +451,7 @@ class aeDatabase
 	
 	public function make()
 	/*
-		Runs current query and returns number of affected rows 
+		Runs current query and returns the number of affected rows 
 		or FALSE if query returned an error.
 	*/
 	{
@@ -459,10 +462,10 @@ class aeDatabase
 	
 	public function insert_id()
 	/*
-		Returns the auto generated id used in the last query or zero.
+		Returns the auto generated id used in the last query. Or NULL.
 	*/
 	{
-		return $this->db->insert_id;
+		return $this->db->insert_id !== 0 ? $this->db->insert_id : null;
 	}
 	
 	public function result($result = 'aeDatabaseResult')
@@ -481,7 +484,7 @@ class aeDatabase
 		
 		if ($return === false)
 		{
-			throw new aeDatabaseException($this->db->error);
+			throw new aeDatabaseException($this->db->error . ': "' . $query . '"');
 		}
 		
 		return new $result($return, $class, $related);
@@ -494,6 +497,9 @@ class aeDatabase
 	protected $using = array();
 	
 	public function one($class)
+	/*
+		Executes the query and returns an instance of table class.
+	*/
 	{
 		$result = $this->many($class);
 		
@@ -506,6 +512,9 @@ class aeDatabase
 	}
 	
 	public function many($class, $result = 'aeDatabaseResult')
+	/*
+		Executes the query and returns a instance of result class.
+	*/
 	{
 		$return = $this->_result($class, $result, $this->using);
 		
@@ -514,9 +523,13 @@ class aeDatabase
 		return $return;
 	}
 	
-	public function using($class, $alias = null)
+	public function using($class, $property = null)
+	/*
+		Specifies secondary/related table classes to use and what property 
+		of the primary instance to assign the instance to.
+	*/
 	{
-		$this->using[$class] = $alias;
+		$this->using[$class] = $property;
 		
 		return $this;
 	}
@@ -526,6 +539,10 @@ class aeDatabase
 	*/
 	
 	public function columns($table)
+	/*
+		Returns an associative array of column names as keys and whether 
+		they are primary keys as values.
+	*/
 	{
 		$result = $this->query("SHOW COLUMNS FROM {table}")
 			->names(array(
@@ -544,10 +561,16 @@ class aeDatabase
 	}
 	
 	public function count($table, $where = null)
+	/*
+		Returns the number of total or matching rows in the table.
+	*/
 	{
-		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table}" . 
-				(!is_null($where) ? ' WHERE ' . $this->_where($where) : '')
-			)
+		if (!is_null($where))
+		{
+			$this->where($where);
+		}
+		
+		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table} {sql:where}")
 			->names(array(
 				'table' => $table
 			))
@@ -559,13 +582,17 @@ class aeDatabase
 	}
 	
 	public function find($table, $where)
+	/*
+		Finds a particular row in the table.
+	*/
 	{
 		$where = $this->_where($where);
 		
-		$result = $this->query("SELECT * FROM {table} WHERE $where")
+		$result = $this->query("SELECT * FROM {table} {sql:where}")
 			->names(array(
 				'table' => $table
 			))
+			->where($where)
 			->result();
 			
 		$found = $result->fetch();
@@ -574,16 +601,24 @@ class aeDatabase
 	}
 	
 	public function insert($table, $values)
+	/*
+		Insert a new row and returns its autoincremented primary key or NULL.
+	*/
 	{
 		return $this->query("INSERT INTO {table} ({keys}) VALUES ({values})")
 			->names(array(
 				'table' => $table
 			))
 			->values($values)
-			->make() > 0 ? $this->db->insert_id : null;
+			->make() > 0 ? $this->insert_id() : null;
 	}
 	
 	public function insert_or_update($table, $values, $where)
+	/*
+		Updates the existing row or inserts a new one, if it does not exist.
+		
+		Unlike other methods, $where argument must be an associative array.
+	*/
 	{
 		$insert_keys = array();
 		$insert_values = array();
@@ -608,25 +643,29 @@ class aeDatabase
 	}
 	
 	public function update($table, $values, $where)
+	/*
+		Updates existing row(s) and returns the number of affected rows.
+	*/
 	{
-		$where = $this->_where($where);
-		
-		return $this->query("UPDATE {table} SET {keys_values} WHERE $where")
+		return $this->query("UPDATE {table} SET {keys_values} {sql:where}")
 			->names(array(
 				'table' => $table
 			))
 			->values($values)
+			->where($where)
 			->make();
 	}
 	
 	public function delete($table, $where)
+	/*
+		Deletes existing row(s) and returns the number of affected rows.
+	*/
 	{
-		$where = $this->_where($where);
-		
-		return $this->query("DELETE FROM {table} WHERE $where")
+		return $this->query("DELETE FROM {table} {sql:where}")
 			->names(array(
 				'table' => $table
 			))
+			->where($where)
 			->make();
 	}
 }
@@ -682,6 +721,10 @@ class aeDatabaseResult
 	}
 	
 	public function fetch()
+	/*
+		Fetches the next result as an associate array or instance of 
+		the table class.
+	*/
 	{
 		if (is_null($this->class))
 		{
@@ -722,6 +765,9 @@ class aeDatabaseResult
 	}
 	
 	public function count()
+	/*
+		Returns the number of results.
+	*/
 	{
 		if (is_object($this->result))
 		{
@@ -730,6 +776,9 @@ class aeDatabaseResult
 	}
 	
 	public function seek($offset)
+	/*
+		Sets the internal pointer to a particular result's offset.
+	*/
 	{
 		if (is_object($this->result))
 		{
@@ -738,6 +787,9 @@ class aeDatabaseResult
 	}
 
 	public function all()
+	/*
+		Returns an array of all results.
+	*/
 	{
 		$all = array();
 		
@@ -764,6 +816,9 @@ abstract class aeDatabaseTable
 	private static $tables = array();
 
 	protected static function database()
+	/*
+		Returns an instance of database connection.
+	*/
 	{
 		$class = get_called_class();
 		
@@ -776,6 +831,12 @@ abstract class aeDatabaseTable
 	}
 	
 	public static function name()
+	/*
+		Returns the actual name of the table.
+		
+		The default implementation derives the from the class name, e.g.:
+		Customers -> customers, CustomerOrders -> customer_orders, etc.
+	*/
 	{
 		$class = get_called_class();
 		
@@ -790,6 +851,9 @@ abstract class aeDatabaseTable
 	}
 
 	public static function accessor()
+	/*
+		Returns an array of primary key names.
+	*/
 	{
 		$class = get_called_class();
 		
@@ -802,6 +866,9 @@ abstract class aeDatabaseTable
 	}
 	
 	public static function columns()
+	/*
+		Returns an array of data column names.
+	*/
 	{
 		$class = get_called_class();
 		
@@ -841,11 +908,17 @@ abstract class aeDatabaseTable
 	*/
 	
 	public static function serialize($values)
+	/*
+		Processes values before they are sent to database.
+	*/
 	{
 		return $values;
 	}
 	
 	public static function unserialize($record)
+	/*
+		Processes values retrieved from database.
+	*/
 	{
 		return $record;
 	}
@@ -884,9 +957,7 @@ abstract class aeDatabaseTable
 	{
 		if (!is_a($object, 'aeDatabaseTable'))
 		{
-			trigger_error('Cannot attach an instance of "' 
-				. get_class($object) 
-				. '" class.', E_USER_ERROR);
+			trigger_error('Cannot attach an instance of "' . get_class($object) . '" class.', E_USER_ERROR);
 		}
 		
 		$this->related[$related] = $object;
@@ -977,10 +1048,7 @@ abstract class aeDatabaseTable
 	
 	public static function find($ids)
 	/*
-		Creates an instance pointing to a record. 
-		
-		Useful to save() or delete() records without loading the data. 
-		You should use load() to load the data.
+		Creates an instance pointing to a record.
 	*/
 	{
 		$accessor = static::accessor();
@@ -993,39 +1061,45 @@ abstract class aeDatabaseTable
 		}
 		else if (count($accessor) !== count($ids))
 		{
-			trigger_error(get_called_class() 
+			throw new aeDatabaseException(get_called_class() 
 				. '::find() failed, because accessor value'
 				. (count($accessor) > 1 ? 's are' : ' is') 
-				. ' not defined.', E_USER_ERROR);
-			
+				. ' not defined.');
 		}
 		
 		return static::create($ids);
 	}
 	
-	public function load()
+	public function ids()
 	/*
-		(Re)load the current record values from the database.
+		Returns an associative array of accessor values.
 	*/
 	{
-		$db = static::database();
 		$accessor = static::accessor();
 		
 		if (count($accessor) !== count($this->ids))
 		{
-			trigger_error(get_class($this) 
+			throw new aeDatabaseException(get_class($this) 
 				. '::load() failed, because accessor value' 
 				. (count($accessor) > 1 ? 's are' : ' is') 
-				. ' not defined.', E_USER_ERROR);
+				. ' not defined.');
 		}
 		
-		$values = $db->find(static::name(), $this->ids);
+		return $this->ids;
+	}
+	
+	public function load()
+	/*
+		(Re)load the record values from database.
+	*/
+	{
+		$values = static::database()->find(static::name(), $this->ids());
 		
 		if (!is_array($values))
 		{
-			trigger_error(get_class($this) 
+			throw new aeDatabaseException(get_class($this) 
 				. '::load() failed, because accessor points ' 
-				. 'to nothing.', E_USER_ERROR);
+				. 'to nothing.');
 		}
 		
 		foreach ($values as $key => $value)
@@ -1040,7 +1114,7 @@ abstract class aeDatabaseTable
 	
 	public function save()
 	/*
-		Intelegently saves or updates the record in the database.
+		Saves or updates the record data in database.
 	*/
 	{
 		if (!$this->is_dirty || empty($this->values))
@@ -1059,48 +1133,28 @@ abstract class aeDatabaseTable
 				static::serialize($this->values)
 			);
 		}
-		else if (count($accessor) === count($this->ids))
+		else
 		{
 			$db->insert_or_update(
 				static::name(), 
 				static::serialize($this->values), 
-				$this->ids
+				$this->ids()
 			);
 		}
-		else
-		{
-			trigger_error(get_class($this) 
-				. '::save() failed, because accessor value' 
-				. (count($accessor) > 1 ? 's are' : ' is') 
-				. ' not defined.', E_USER_ERROR);
-		}
-		
+
 		return $this;
 	}
 	
 	public function delete()
 	/*
-		Deletes the current record from the database.
+		Deletes the record from database.
 	*/
 	{
-		$db = static::database();
-		$accessor = static::accessor();
+		static::database()->delete(static::name(), $this->ids());
 		
-		if (count($accessor) === count($this->ids))
-		{
-			$db->delete(static::name(), $this->ids);
-			
-			$this->ids = array();
-			$this->values = array();
-			$this->transient = array();
-		}
-		else
-		{
-			trigger_error(get_class($this) 
-				. '::delete() failed, because accessor value' 
-				. (count($accessor) > 1 ? 's are' : ' is') 
-				. ' not defined.', E_USER_ERROR);
-		}
+		$this->ids = array();
+		$this->values = array();
+		$this->transient = array();
 		
 		return $this;
 	}

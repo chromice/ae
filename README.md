@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is miniscule (1,952 lines of PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is miniscule (1,943 lines of well–formated PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -268,8 +268,6 @@ Options library is used by many core libraries and allows you to change their be
 
 ```php
 $options = ae::options('namespace');
-// which is identical to
-$options = ae::load('ae/options.php', 'namespace');
 ```
 
 For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library to return correct IP address of the client:
@@ -341,7 +339,7 @@ $probe->report('filled memory with some garbage');
 unset($a);
 ```
 
-When this script is run, test probe will log the following messages:
+If you run this script, the probe will log the following messages:
 
 ```markdown
 foo started. Timestamp: 0ms (+0.000ms). Footprint: 632156 bytes (+0 bytes).
@@ -794,8 +792,10 @@ class Authors extends aeDatabaseTable
 {
 	public function add_novel($title)
 	{
+		$ids = $this->ids();
+		
 		return Novel::create(array(
-			'author_id' => $this->id,
+			'author_id' => $ids['id'],
 			'title' => $title
 		))->save();
 	}
