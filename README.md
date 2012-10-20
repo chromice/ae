@@ -213,7 +213,7 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 ```html
 <?php $buffer = new aeBuffer() ?>
-<p><a href="{url}">{name}</a> has been views {visits} times.</p>
+<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
 <?php $buffer->output(array(
 	'url' => $article->url,
 	'name' => (strlen($article->name) > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
@@ -783,7 +783,7 @@ class Novels extends aeDatabaseTable
 }
 ```
 
-> There a several methods you can override like this: `aeDatabaseTable::database()` to return a different database connection object; `aeDatabaseTable::accessor()` to return an array of primary keys; `aeDatabaseTable::columns()` to return an array of data columns.
+> There are several methods you can override like this: `aeDatabaseTable::database()` to return a different database connection object; `aeDatabaseTable::accessor()` to return an array of primary keys; `aeDatabaseTable::columns()` to return an array of data columns.
 
 We could start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
 
