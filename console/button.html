@@ -179,6 +179,44 @@
 	</style>
 </head>
 <body>
-	<a href="#" class="active" onclick="">æ<span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></a>
+	<a id="button" href="#" class="active" onclick="">æ<span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></a>
+	<script type="text/javascript">
+		var console, backlog = [];
+		
+		function consoleClosed() {
+			window.parent.consoleClosed();
+		};
+
+		function consoleOpened() {
+			window.parent.consoleOpened();
+		};
+		
+		function logs() {
+			unprocessed_logs();
+			return backlog;
+		};
+		
+		function unprocessed_logs() {
+			var unprocessed = window.parent.ae_log_monitor();
+			
+			backlog = backlog.concat(unprocessed);
+			
+			return unprocessed;
+		};
+
+		document
+			.getElementById("button")
+			.addEventListener('click',function(event) {
+				event.preventDefault();
+				var width = Math.max(500, window.screen.width / 3),
+					height = window.screen.height,
+					positionX = window.screen.width - width,
+					positionY = 0;
+				
+				console = window.open("/console/",
+					"Console",
+					"menubar=no,toolbar=no,status=no,location=no,personalbar=no,dependent=yes,resizable=yes,scrollbars=yes,width=" + width + ",height=" + height + ",left=" + positionX + ",top=" + positionY);
+			});
+	</script>
 </body>
 </html>

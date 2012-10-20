@@ -2,6 +2,9 @@
 
 ae::import('ae/log.php');
 
+ae::options('log')->set('console', true);
+
+
 // class ProbeTest {
 // 	
 // 

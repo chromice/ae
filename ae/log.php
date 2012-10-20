@@ -185,6 +185,11 @@ class aeLog
 		else
 		{
 			echo "\n<!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
+			
+			if ($options->get('console', false))
+			{
+				echo '<script charset="utf-8">' . ae::render('console/inject.js') . '</script>';
+			}
 		}
 	}
 	
