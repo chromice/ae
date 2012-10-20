@@ -16,9 +16,6 @@
 # limitations under the License.
 # 
 
-// TODO: Documentation is missing for a lot of methods.
-// FIXME: insert_or_update() method's $where clause is different from the other functions.
-
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase
