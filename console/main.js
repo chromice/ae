@@ -22,11 +22,21 @@ Zepto(function() {
 			.text(' ' + parseLogUri(parts.shift()) + ' ')
 			.prependTo(section);
 		
-		// Add time and source
+		// Add source
 		$('<small />')
 			.text(log.source)
 			.addClass(log.source)
 			.prependTo(header);
+		
+		// Add time
+		var time = new Date(log.time);
+		
+		$('<small />')
+			.text(double_digit(time.getHours()) + ':' 
+				+ double_digit(time.getMinutes()) + ':' 
+				+ double_digit(time.getSeconds()))
+			.addClass('time')
+			.appendTo(header);
 		
 		function double_digit(t) {
 			t += "";
@@ -38,28 +48,20 @@ Zepto(function() {
 			}
 		};
 		
-		var time = new Date(log.time);
-		
-		$('<small />')
-			.text(double_digit(time.getHours()) + ':' 
-				+ double_digit(time.getMinutes()) + ':' 
-				+ double_digit(time.getSeconds()))
-			.addClass('time')
-			.appendTo(header);
-		
-		
 		// Get rid of the last part
 		parts.pop();
 		
 		// Parse and append all log entries
-		$.each(parts, function(i, item) {
-			// console.log('- - - - -');
-			var messages = parseLogEntry(item),
-				listItem = $('<li />').appendTo(list),
-				paragraph = $('<p />').appendTo(listItem);
-			$.each(messages, function(i, m) {
+		$.each(parts, function(i, part) {
+			var listItem = $('<li />').appendTo(list),
+				id,
+				messageClass,
+				message = [];
+			
+			// Parse all entry messages
+			$.each(parseLogEntry(part), function(i, m) {
 				if (typeof m === 'string') {
-					paragraph.append($.trim(m) + ' ');
+					message.push($.trim(m));
 				} else if (m.Variable) {
 					var type = m.Variable.match(/\((\w+)\)/);
 					
@@ -67,82 +69,88 @@ Zepto(function() {
 						type = type[1];
 						
 						if (['boolean', 'integer', 'double', 'float', 'string', 'NULL', 'resource'].indexOf(type) > -1) {
-							$('<var />')
-								.addClass(type)
-								.text($.trim(m.Dump))
-								.appendTo(paragraph);
+							message.push('<var class="' + type + '">' 
+								+ $.trim(m.Dump) 
+								+ '</var>');
 						}
 					} else {
-						$('<var />')
-							.text($.trim(m.Variable))
-							.appendTo(paragraph);
+						id = uniqueID();
+						
+						message.push('<a class="dump" href="#' + id + '">' + $.trim(m.Variable) + '</a>');
 						$('<pre />')
-							.text(m.Dump)
+							.attr('id', id)
+							.text(parseDump(m.Dump))
 							.appendTo(listItem);
 					}
 				} else {
 					var _class, _text;
 					
 					if (m.Notice) {
-						_class = 'notice';
-						_text = m.Notice;
+						message.push($.trim(m.Notice));
+						messageClass = 'notice';
 					} else if (m.Warning) {
-						_class = 'warning';
-						_text = m.Warning;
+						message.push($.trim(m.Warning));
+						messageClass = 'warning';
 					} else if (m.Error) {
-						_class = 'error';
-						_text = m.Error;
+						message.push($.trim(m.Error));
+						messageClass = 'error';
 					} else if (m.Exception) {
-						_class = 'exception';
-						_text = m.Exception;
+						message.push($.trim(m.Exception));
+						messageClass = 'exception';
 					}
-					
-					if (_class && _text) {
-						paragraph
-							.addClass(_class)
-							.text($.trim(_text));
-					}
-					
+
 					if (m.File && m.Line) {
-						var source = $('<p />')
+						$('<p />')
+							.html('In <kbd class="file">' 
+								+ $.trim(m.File)
+								+ '</kbd> at line <kbd class="line">'
+								+ $.trim(m.Line)
+								+ '</kbd>')
 							.addClass('source')
 							.appendTo(listItem);
-						$('<kbd />')
-							.addClass('file')
-							.text(m.File)
-							.appendTo(source);
-						$('<kbd />')
-							.addClass('line')
-							.text(m.Line)
-							.appendTo(source);
 					}
 					
 					if (m.Context) {
-						$('<var />')
-							.text('Context')
-							.appendTo(paragraph);
+						id = uniqueID();
+						
+						message.push('<a class="context" href="#' + id + '">Context</a>');
 						$('<pre />')
-							.text(m.Context)
+							.attr('id', id)
+							.text(parseDump(m.Context))
 							.appendTo(listItem);
 					}
 					if (m.Backtrace) {
-						$('<var />')
-							.text('Backtrace')
-							.appendTo(paragraph);
-						$('<pre />')
-							.text(m.Backtrace)
+						id = uniqueID();
+						
+						message.push('<a class="backtrace" href="#' + id + '">Backtrace</a>');
+						$('<ol />')
+							.attr('id', id)
+							.addClass('backtrace')
+							.html(parseBacktrace(m.Backtrace))
 							.appendTo(listItem);
 					}
 				}
-				console.log(m);
 			});
+			
+			$('<p />').html(message.join(' ')).prependTo(listItem);
 		});
+	};
+	
+	function parseLogUri(header) {
+		var found = header.match(/Logged for (.+?) at/);
+		
+		if (found.length > 1) {
+			return found[1];
+		}
+		
+		return '';
 	};
 	
 	function parseLogEntry(item) {
 		var object = {},
 			property;
 		
+		// Parse the entry
 		var tokenizer = new Tokenizer(
 			[
 				/^(Backtrace|Context):/m,
@@ -176,6 +184,7 @@ Zepto(function() {
 			}
 		);
 		
+		// Get rid of all the noise
 		var parsed = [];
 		
 		$.each(tokenizer.parse(item), function(i, o) {
@@ -187,16 +196,92 @@ Zepto(function() {
 		}
 		
 		return parsed;
-	}
+	};
 	
-	function parseLogUri(header) {
-		var found = header.match(/Logged for (.+?) at/);
+	function parseDump(dump) {
+		return dump
+			.replace(/\n\s*\n/, '')
+			.replace(/^ {4}/mg, '');
+	};
+
+	function parseBacktrace(backtrace) {
+		// Remove padding
+		backtrace = backtrace
+			.replace(/\n\s*\n/, '')
+			.replace(/^ {4}/mg, '');
 		
-		if (found.length > 1) {
-			return found[1];
+		// Parse the entry
+		var parts = [],
+			dumps = [],
+			dumpID = '',
+			source = '',
+			code = '';
+		
+		var tokenizer = new Tokenizer(
+			[
+				/^\d+\.\s*/m,
+				/In "(.+?)" at line (\d+):/,
+				/^--- Dump: (.+)/m, 
+				/^--- End of dump/m
+			],
+			function(text, isToken, regex) {
+				if (isToken) {
+					if (text.substring(0, 8) === '--- Dump') {
+						dumpID = uniqueID();
+						var variable = text.match(regex)[1];
+						
+						code = code.replace(variable, '<a href="#' + dumpID + '">' + variable + '</a>');
+					} else if (text === '--- End of dump') {
+						dumpID = '';
+					} else if (text.match(/\d+\./)) {
+						wrapItem();
+						parts.push('<li>');
+					} else {
+						var _source = text.match(regex);
+						source = 'In <kbd class="file">' 
+							+ _source[1]
+							+ '</kbd> at line <kbd class="line">'
+							+ _source[2]
+							+ '</kbd>:';
+					}
+				} else if (dumpID) {
+					dumps.push('<pre id="' + dumpID + '">' + parseDump(text) + '</pre>');
+				} else if (!code) {
+					code = '<pre class="code">' + $.trim(text) + '</pre>';
+				}
+				
+				return text;
+			}
+		);
+		
+		function wrapItem() {
+			if (dumps.length > 0 || code || source) {
+				parts.push(source);
+				parts.push(code);
+				parts.push(dumps.join(''));
+				parts.push('</li>');
+				
+				source = '';
+				code = '';
+				dumps = [];
+			}
+		};
+		
+		tokenizer.parse(backtrace);
+		
+		wrapItem();
+		
+		return parts.join(' ');
+	};
+	
+	function uniqueID () {
+		var delim = "-";
+	
+		function S4() {
+			return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 		}
-		
-		return '';
+	
+		return (S4() + S4() + delim + S4() + delim + S4() + delim + S4() + delim + S4() + S4() + S4());
 	};
 });
 

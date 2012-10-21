@@ -28,7 +28,7 @@
 			ae::output('examples/log/throw_exception.php', array(
 				'foo' => 'bar',
 				'bar' => 'foo'
-			));
+			), new stdclass);
 			break;
 		
 		case 'critical':
