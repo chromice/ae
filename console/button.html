@@ -204,19 +204,23 @@
 			return unprocessed;
 		};
 
-		document
-			.getElementById("button")
-			.addEventListener('click',function(event) {
-				event.preventDefault();
-				var width = Math.max(500, window.screen.width / 3),
-					height = window.screen.height,
-					positionX = window.screen.width - width,
-					positionY = 0;
-				
-				console = window.open("/console/",
-					"Console",
-					"menubar=no,toolbar=no,status=no,location=no,personalbar=no,dependent=yes,resizable=yes,scrollbars=yes,width=" + width + ",height=" + height + ",left=" + positionX + ",top=" + positionY);
-			});
+		document.getElementById("button").addEventListener('click',function(e) {
+			e.preventDefault();
+			var width = Math.max(500, window.screen.width / 3),
+				height = window.screen.height,
+				positionX = window.screen.width - width,
+				positionY = 0;
+			
+			console = window.open("/console/",
+				"Console",
+				"menubar=no,toolbar=no,status=no,location=no,personalbar=no,"
+				+ "dependent=yes,resizable=yes,scrollbars=yes" 
+				+ ",width=" + width + ",height=" + height 
+				+ ",left=" + positionX + ",top=" + positionY);
+		});
+		window.addEventListener('unload', function() {
+			console.close();
+		})
 	</script>
 </body>
 </html>

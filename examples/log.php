@@ -2,9 +2,10 @@
 	ae::import('ae/log.php');
 	ae::options('log')
 		// ->set('directory', '/examples/log')
+		->set('environment', true)
 		->set('console', true);
 	
-	ae::log("Hello world");
+	ae::log("Error: This is not really an error!", array());
 	
 	trigger_error("This is some notice.", E_USER_NOTICE);
 	
@@ -12,7 +13,7 @@
 		->set('title', 'Example: Container')
 		->set('header', 'Hello World!');
 	
-	ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true);
+	ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true, ' And a bit of void: ', NULL);
 	ae::log("Hello again. This is a string: ", "foo", "As you can see strings are not dumped.");
 	
 	$r = ae::request();

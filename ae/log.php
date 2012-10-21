@@ -109,11 +109,11 @@ class aeLog
 			}
 		}
 		
-		$o = self::_ruler('=', 40) 
+		$o = self::_ruler('=', 79) 
 			. "Logged"
 			. (isset($_SERVER['REQUEST_URI']) ? ' for ' . $_SERVER['REQUEST_URI'] : '')
 			. ' at ' . gmdate('H:i:s', time()) . " GMT:"
-			. self::_ruler('=', 40);
+			. self::_ruler('=', 79);
 		
 		if ($options->get('environment', false))
 		{
@@ -140,7 +140,7 @@ class aeLog
 					
 					if ($message['class'] === 'message')
 					{
-						$o.= "\n" . $message['object'] . "\n";
+						$o.= "\n" . str_repeat(' ', 4) . str_replace(array("\n","\r"), ' ', $message['object']) . "\n";
 					}
 					else
 					{
@@ -229,7 +229,8 @@ class aeLog
 	{
 		$o = self::_ruler() . "\n";
 		
-		$o.= ucfirst($class) . ': ' . $error['message'] . "\n";
+		$o.= ucfirst($class) . ': ' 
+			. str_replace(array("\n","\r"), ' ', $error['message']) . "\n";
 		
 		if (isset($error['code']))
 		{
@@ -242,7 +243,7 @@ class aeLog
 		if (!empty($error['context']))
 		{
 			$o.= "\nContext:\n";
-			$o.= self::_dump('(array)', $error['context']);
+			$o.= self::_dump(null, $error['context']);
 		}
 		
 		if (!empty($error['backtrace']))
@@ -342,9 +343,9 @@ class aeLog
 			$object = 'NULL';
 		}
 		
-		$o = "\n" . $prefix_0 . '--- Dump: ' . $name . "\n\n";
+		$o = is_null($name) ? "\n" : "\n" . $prefix_0 . '--- Dump: ' . $name . "\n\n";
 		$o.= $prefix_1 . str_replace("\n", "\n" . $prefix_1, print_r($object, true));
-		$o.= (is_scalar($object) ? "\n" : '') . "\n" . $prefix_0 . "--- End of dump\n";
+		$o.= (is_scalar($object) ? "\n" : '') . (is_null($name) ? '' : "\n" . $prefix_0 . "--- End of dump\n");
 		
 		return $o;
 	}

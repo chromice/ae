@@ -12,12 +12,15 @@ var ae_log_monitor = function (log, source) {
 	}
 
 	// Route all new logs to top window monitor
-	if (window !== window.top && typeof window.top.ae_log_monitor === 'function') {
-		window.top.ae_log_monitor(log, 'iframe');
+	if (window !== window.top) {
+		if (typeof window.top.ae_log_monitor === 'function') {
+			window.top.ae_log_monitor(log, source === 'document' ? 'iframe' : source);
+		} 
 		return;
 	}
 	
 	this.logs.push({
+		time: Date.now(),
 		'source': source,
 		'log': log
 	});
