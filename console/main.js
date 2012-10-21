@@ -65,18 +65,16 @@ Zepto(function() {
 				} else if (m.Variable) {
 					var type = m.Variable.match(/\((\w+)\)/);
 					
-					if (type) {
-						type = type[1];
+					if (type && ['boolean', 'integer', 'double', 'float', 'string', 'NULL', 'resource'].indexOf(type[1]) > -1) {
 						
-						if (['boolean', 'integer', 'double', 'float', 'string', 'NULL', 'resource'].indexOf(type) > -1) {
-							message.push('<var class="' + type + '">' 
-								+ $.trim(m.Dump) 
-								+ '</var>');
-						}
+						message.push('<var class="' + type[1] + '">' 
+							+ $.trim(m.Dump) 
+							+ '</var>');
 					} else {
 						id = uniqueID();
 						
-						message.push('<a class="dump" href="#' + id + '">' + $.trim(m.Variable) + '</a>');
+						message.push('<a class="dump" href="#' + id + '">' 
+							+ (type ? type[1] : $.trim(m.Variable)) + '</a>');
 						$('<pre />')
 							.attr('id', id)
 							.text(parseDump(m.Dump))
