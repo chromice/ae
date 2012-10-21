@@ -9,9 +9,9 @@ Zepto(function() {
 	
 	function appendLog(log) {
 		var section = $('<section />')
-				.addClass(log.source)
 				.appendTo('body'),
 			list = $('<ol />')
+				.addClass('log')
 				.appendTo(section);
 		
 		// Break into parts
@@ -26,7 +26,7 @@ Zepto(function() {
 		$('<small />')
 			.text(log.source)
 			.addClass(log.source)
-			.prependTo(header);
+			.appendTo(header);
 		
 		// Add time
 		var time = new Date(log.time);
@@ -55,7 +55,7 @@ Zepto(function() {
 		$.each(parts, function(i, part) {
 			var listItem = $('<li />').appendTo(list),
 				id,
-				messageClass,
+				messageClass = '',
 				message = [];
 			
 			// Parse all entry messages
@@ -98,20 +98,17 @@ Zepto(function() {
 					}
 
 					if (m.File && m.Line) {
-						$('<p />')
-							.html('In <kbd class="file">' 
+						message.push('<small class="source">In <kbd class="file">' 
 								+ $.trim(m.File)
 								+ '</kbd> at line <kbd class="line">'
 								+ $.trim(m.Line)
-								+ '</kbd>')
-							.addClass('source')
-							.appendTo(listItem);
+								+ '</kbd></small>')
 					}
 					
 					if (m.Context) {
 						id = uniqueID();
 						
-						message.push('<a class="context" href="#' + id + '">Context</a>');
+						message.unshift('<a class="context" href="#' + id + '">Context</a>');
 						$('<pre />')
 							.attr('id', id)
 							.text(parseDump(m.Context))
@@ -120,7 +117,7 @@ Zepto(function() {
 					if (m.Backtrace) {
 						id = uniqueID();
 						
-						message.push('<a class="backtrace" href="#' + id + '">Backtrace</a>');
+						message.unshift('<a class="backtrace" href="#' + id + '">Backtrace</a>');
 						$('<ol />')
 							.attr('id', id)
 							.addClass('backtrace')
@@ -130,7 +127,10 @@ Zepto(function() {
 				}
 			});
 			
-			$('<p />').html(message.join(' ')).prependTo(listItem);
+			$('<p />')
+				.addClass('message ' + messageClass)
+				.html(message.join(' '))
+				.prependTo(listItem);
 		});
 	};
 	
