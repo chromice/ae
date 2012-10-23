@@ -26,7 +26,7 @@ Zepto(function() {
 		$('<small />')
 			.text(log.source)
 			.addClass(log.source)
-			.appendTo(header);
+			.prependTo(header);
 		
 		// Add time
 		var time = new Date(log.time);
@@ -36,7 +36,7 @@ Zepto(function() {
 				+ double_digit(time.getMinutes()) + ':' 
 				+ double_digit(time.getSeconds()))
 			.addClass('time')
-			.appendTo(header);
+			.prependTo(header);
 		
 		function double_digit(t) {
 			t += "";
@@ -77,6 +77,7 @@ Zepto(function() {
 							+ (type ? type[1] : $.trim(m.Variable)) + '</a>');
 						$('<pre />')
 							.attr('id', id)
+							.addClass('dump')
 							.text(parseDump(m.Dump))
 							.appendTo(listItem);
 					}
@@ -98,11 +99,11 @@ Zepto(function() {
 					}
 
 					if (m.File && m.Line) {
-						message.push('<small class="source">In <kbd class="file">' 
+						message.push('<a href="' + sourceLink(m.File, m.Line) + '" class="source">In <kbd class="file">' 
 								+ $.trim(m.File)
 								+ '</kbd> at line <kbd class="line">'
 								+ $.trim(m.Line)
-								+ '</kbd></small>')
+								+ '</kbd></a>')
 					}
 					
 					if (m.Context) {
@@ -111,6 +112,7 @@ Zepto(function() {
 						message.unshift('<a class="context" href="#' + id + '">Context</a>');
 						$('<pre />')
 							.attr('id', id)
+							.addClass('dump')
 							.text(parseDump(m.Context))
 							.appendTo(listItem);
 					}
@@ -118,10 +120,18 @@ Zepto(function() {
 						id = uniqueID();
 						
 						message.unshift('<a class="backtrace" href="#' + id + '">Backtrace</a>');
+						var counter = 1, backtrace = parseBacktrace(m.Backtrace);
+						
+						for (var i=0; i < backtrace.length; i++) 
+						{ 
+							if ('</li>' == backtrace.substr(i, 5)) counter++; 
+						} 
+						
 						$('<ol />')
 							.attr('id', id)
+							.css('counter-reset', 'backtrace ' + counter)
 							.addClass('backtrace')
-							.html(parseBacktrace(m.Backtrace))
+							.html(backtrace)
 							.appendTo(listItem);
 					}
 				}
@@ -199,6 +209,8 @@ Zepto(function() {
 	function parseDump(dump) {
 		return dump
 			.replace(/\n\s*\n/, '')
+			.replace(/^\n+/, '')
+			.replace(/\n+$/, '')
 			.replace(/^ {4}/mg, '');
 	};
 
@@ -228,7 +240,7 @@ Zepto(function() {
 						dumpID = uniqueID();
 						var variable = text.match(regex)[1];
 						
-						code = code.replace(variable, '<a href="#' + dumpID + '">' + variable + '</a>');
+						code = code.replace(variable, '<a class="dump" href="#' + dumpID + '">' + variable + '</a>');
 					} else if (text === '--- End of dump') {
 						dumpID = '';
 					} else if (text.match(/\d+\./)) {
@@ -236,14 +248,16 @@ Zepto(function() {
 						parts.push('<li>');
 					} else {
 						var _source = text.match(regex);
-						source = 'In <kbd class="file">' 
+						source = '<a href="' 
+							+ sourceLink(_source[1], _source[2]) 
+							+ '" class="source">In <kbd class="file">' 
 							+ _source[1]
 							+ '</kbd> at line <kbd class="line">'
 							+ _source[2]
-							+ '</kbd>:';
+							+ '</kbd>:</a>';
 					}
 				} else if (dumpID) {
-					dumps.push('<pre id="' + dumpID + '">' + parseDump(text) + '</pre>');
+					dumps.push('<pre id="' + dumpID + '" class="dump">' + parseDump(text) + '</pre>');
 				} else if (!code) {
 					code = '<pre class="code">' + $.trim(text) + '</pre>';
 				}
@@ -270,6 +284,10 @@ Zepto(function() {
 		wrapItem();
 		
 		return parts.join(' ');
+	};
+	
+	function sourceLink () {
+		return '#';
 	};
 	
 	function uniqueID () {
