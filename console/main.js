@@ -1,8 +1,21 @@
 Zepto(function() {
+	function sourceLink(file, line) {
+		var link = 'txmt://open?url=file://' + $.trim(file) + '&line=' + $.trim(line);
+		return link;
+	};
+	
 	window.opener.consoleOpened();
+	
 	$(window).on('unload', function() {
 		window.opener.consoleClosed();
 	});
+	
+	$(document).on('click', 'a.dump, a.backtrace, a.context', function(e) {
+		var id = $(this).attr('href');
+		$(id).toggleClass('visible');
+		return false;
+	});
+	
 	$.each(window.opener.logs(), function(i, log) {
 		appendLog(log);
 	});
@@ -99,9 +112,9 @@ Zepto(function() {
 					}
 
 					if (m.File && m.Line) {
-						message.push('<a href="' + sourceLink(m.File, m.Line) + '" class="source">In <kbd class="file">' 
+						message.push('<a href="' + sourceLink(m.File, m.Line) + '" class="source">In&nbsp;<kbd class="file">' 
 								+ $.trim(m.File)
-								+ '</kbd> at line <kbd class="line">'
+								+ '</kbd> at line&nbsp;<kbd class="line">'
 								+ $.trim(m.Line)
 								+ '</kbd></a>')
 					}
@@ -250,9 +263,9 @@ Zepto(function() {
 						var _source = text.match(regex);
 						source = '<a href="' 
 							+ sourceLink(_source[1], _source[2]) 
-							+ '" class="source">In <kbd class="file">' 
+							+ '" class="source">In&nbsp;<kbd class="file">' 
 							+ _source[1]
-							+ '</kbd> at line <kbd class="line">'
+							+ '</kbd> at line&nbsp;<kbd class="line">'
 							+ _source[2]
 							+ '</kbd>:</a>';
 					}
@@ -284,10 +297,6 @@ Zepto(function() {
 		wrapItem();
 		
 		return parts.join(' ');
-	};
-	
-	function sourceLink () {
-		return '#';
 	};
 	
 	function uniqueID () {

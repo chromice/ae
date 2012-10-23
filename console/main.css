@@ -84,7 +84,7 @@ h1 .iframe, h1 .ajax, h1 .time {
 	font-size: .7em;
 	line-height: 1.7143;
 }
-h1 .ajax, h1 .time {
+h1 .iframe, h1 .ajax {
 	margin-right: 0.5em
 }
 h1 .time {
@@ -104,6 +104,14 @@ h1 .time {
 */
 .message {
 	padding: 0.75em 10px;
+}
+.message a.backtrace, .message a.context {
+	float: right;
+	margin-top: 0.70em;
+	margin-left: 0.5em;
+	font-size: 0.75em;
+	line-height: 1;
+	color: #666;
 }
 
 /* 
@@ -133,7 +141,7 @@ a.dump {
 	color: inherit;
 }
 pre.dump {
-	padding: 2em 10px;
+	padding: 1em 10px;
 	font-size: 0.75em;
 	line-height: 2;
 	background: #333;
@@ -141,8 +149,9 @@ pre.dump {
 	white-space: pre-wrap;
 }
 ol.backtrace pre.dump {
-	padding: 1em 10px;
-	margin: 0 -10px;
+	padding-left: 30px;
+	padding-right: 30px;
+	margin: 0 -30px;
 }
 
 /* 
@@ -150,21 +159,40 @@ ol.backtrace pre.dump {
 */
 ol.backtrace {
 	overflow: hidden;
-	padding: 1.5em 10px 0;
-	background: #444;
+	padding: 0.75em 30px 0;
+	background: #3f3f3f;
 	color: #eee;
+}
+ol.backtrace > li {
+	counter-increment: backtrace -1;
+	position: relative;
+}
+ol.backtrace > li:before {
+	content: counter(backtrace) '.';
+	display: block;
+	width: 20px;
+	position: absolute;
+	top: 0.1667em;
+	left: -25px;
+	font-size: 0.75em;
+	line-height: 2;
+	text-align: right;
 }
 pre.code {
 	margin-bottom: 1em;
 	font-size: 0.75em;
 	line-height: 2;
+	white-space: pre-wrap;
 }
 
 
 /* Temp */
-a.backtrace, a.context {
+pre.dump, ol.backtrace {
 	display: none;
 }
 h1 small.time {
 	display: inline;
+}
+pre.dump.visible, ol.backtrace.visible {
+	display: block;
 }
