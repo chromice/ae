@@ -186,9 +186,9 @@ class aeLog
 		{
 			echo "\n<!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
 			
-			if ($options->get('console', false))
+			if ($options->get('inspector', false))
 			{
-				echo '<script charset="utf-8">' . ae::render('console/inject.js') . '</script>';
+				echo '<script charset="utf-8">' . ae::render('inspector/inject.js') . '</script>';
 			}
 		}
 	}

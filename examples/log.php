@@ -3,7 +3,7 @@
 	ae::options('log')
 		// ->set('directory', '/examples/log')
 		->set('environment', true)
-		->set('console', true);
+		->set('inspector', true);
 	
 	ae::log("Error: This is not really an error!", array());
 	
