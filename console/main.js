@@ -11,14 +11,44 @@ Zepto(function() {
 	});
 	
 	$(document).on('click', 'a.dump, a.backtrace, a.context', function(e) {
-		var id = $(this).attr('href');
-		$(id).toggleClass('visible');
+		var link = $(this),
+			id = link.attr('href'),
+			el = $(id),
+			bt = link.closest('ol.backtrace');
+		
+		if (el.hasClass('visible')) {
+			el.removeClass('visible');
+			link.removeClass('active');
+			return false;
+		}
+		
+		var oldTop = link.offset().top;
+		
+		if (bt.length > 0) {
+			bt.find('pre.dump').removeClass('visible');
+			bt.find('a.dump').removeClass('active');
+		} else {
+			$('pre.dump, ol.backtrace').removeClass('visible');
+			$('a.dump, a.backtrace, a.context').removeClass('active');
+		}
+		
+		el.addClass('visible');
+		link.addClass('active');
+		
+		window.scrollTo(0, window.scrollY - (oldTop - link.offset().top));
+		
 		return false;
 	});
 	
 	$.each(window.opener.logs(), function(i, log) {
 		appendLog(log);
 	});
+	
+	setInterval(function() {
+		$.each(window.opener.unprocessed_logs(), function(i, log) {
+			appendLog(log);
+		});
+	}, 1000);
 	
 	function appendLog(log) {
 		var section = $('<section />')
@@ -68,7 +98,6 @@ Zepto(function() {
 		$.each(parts, function(i, part) {
 			var listItem = $('<li />').appendTo(list),
 				id,
-				messageClass = '',
 				message = [];
 			
 			// Parse all entry messages
@@ -98,17 +127,13 @@ Zepto(function() {
 					var _class, _text;
 					
 					if (m.Notice) {
-						message.push($.trim(m.Notice));
-						messageClass = 'notice';
+						message.push('<span class="text notice">' + $.trim(m.Notice) + '</span>');
 					} else if (m.Warning) {
-						message.push($.trim(m.Warning));
-						messageClass = 'warning';
+						message.push('<span class="text warning">' + $.trim(m.Warning) + '</span>');
 					} else if (m.Error) {
-						message.push($.trim(m.Error));
-						messageClass = 'error';
+						message.push('<span class="text error">' + $.trim(m.Error) + '</span>');
 					} else if (m.Exception) {
-						message.push($.trim(m.Exception));
-						messageClass = 'exception';
+						message.push('<span class="text exception">' + $.trim(m.Exception) + '</span>');
 					}
 
 					if (m.File && m.Line) {
@@ -151,7 +176,7 @@ Zepto(function() {
 			});
 			
 			$('<p />')
-				.addClass('message ' + messageClass)
+				.addClass('message ')
 				.html(message.join(' '))
 				.prependTo(listItem);
 		});
