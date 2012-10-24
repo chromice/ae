@@ -321,6 +321,12 @@ ae::options('log')->set('environment', true);
 
 If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it via `X-ae-log` header.
 
+æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, as well iframes or AJAX requests. Just make sure that */inspector* directory is located in the web root and instruct the log library to use it:
+
+```php
+ae::options('log')->set('inspector', true);
+```
+
 ## Probe
 
 Probe library allows you to profile your code and see how much time and memory each part consumes. The results are logged via `ae::log()` method, so you have to have log library imported to see them.
