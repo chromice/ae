@@ -4,10 +4,10 @@ Zepto(function() {
 		return link;
 	};
 	
-	window.opener.consoleOpened();
+	window.opener.inspectorOpened();
 	
 	$(window).on('unload', function() {
-		window.opener.consoleClosed();
+		window.opener.inspectorClosed();
 	});
 	
 	$(document).on('click', 'a.dump, a.backtrace, a.context', function(e) {

@@ -181,14 +181,14 @@
 <body>
 	<a id="button" href="#" class="active" onclick="">æ<span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></a>
 	<script type="text/javascript">
-		var console, backlog = [];
+		var inspector, backlog = [];
 		
-		function consoleClosed() {
-			window.parent.consoleClosed();
+		function inspectorClosed() {
+			window.parent.inspectorClosed();
 		};
 
-		function consoleOpened() {
-			window.parent.consoleOpened();
+		function inspectorOpened() {
+			window.parent.inspectorOpened();
 		};
 		
 		function logs() {
@@ -211,15 +211,15 @@
 				positionX = window.screen.width - width,
 				positionY = 0;
 			
-			console = window.open("/console/",
-				"Console",
+			inspector = window.open("/inspector/",
+				"inspector",
 				"menubar=no,toolbar=no,status=no,location=no,personalbar=no,"
 				+ "dependent=yes,resizable=yes,scrollbars=yes" 
 				+ ",width=" + width + ",height=" + height 
 				+ ",left=" + positionX + ",top=" + positionY);
 		});
 		window.addEventListener('unload', function() {
-			console.close();
+			inspector.close();
 		})
 	</script>
 </body>

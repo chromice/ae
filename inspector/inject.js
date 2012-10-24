@@ -59,7 +59,7 @@ var ae_log_monitor = function (log, source) {
 	};
 })(XMLHttpRequest.prototype.open);
 
-// Parse body and inject console button.
+// Parse body and inject inspector button.
 (function() {
 
 	// Find the HTML comment node with the log
@@ -95,8 +95,8 @@ var ae_log_monitor = function (log, source) {
 	
 		var button = document.createElement('iframe');
 		
-		button.setAttribute('id', "ae-console-button");
-		button.setAttribute('src', "/console/button.html");
+		button.setAttribute('id', "ae-inspector-button");
+		button.setAttribute('src', "/inspector/button.html");
 		button.setAttribute('style', "position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px");
 		button.setAttribute('frameborder', "0");
 	
@@ -104,10 +104,10 @@ var ae_log_monitor = function (log, source) {
 	}
 })();
 
-// Hide button when console window is open.
-function consoleOpened() {
-	document.getElementById("ae-console-button").style.display = "none";
+// Hide button when inspector window is open.
+function inspectorOpened() {
+	document.getElementById("ae-inspector-button").style.display = "none";
 };
-function consoleClosed() {
-	document.getElementById("ae-console-button").style.display = "block";
+function inspectorClosed() {
+	document.getElementById("ae-inspector-button").style.display = "block";
 };
