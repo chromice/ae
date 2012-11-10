@@ -7,8 +7,8 @@
 	
 	ae::log("Error: This is not really an error!", array());
 	
-	trigger_error("This is some notice.", E_USER_NOTICE);
-	trigger_error("This is some warning.", E_USER_WARNING);
+	trigger_error("This is a notice.", E_USER_NOTICE);
+	trigger_error("This is a warning.", E_USER_WARNING);
 	
 	$c = ae::container('/examples/container/container_inner.php')
 		->set('title', 'Example: Container')

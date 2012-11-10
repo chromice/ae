@@ -16,6 +16,7 @@
 # limitations under the License.
 #
 
+// TODO: Improved memory and time presentation in inspector.
 // FIXME: Object and method footprints must be dynamically calculated.
 
 ae::invoke('aeProbe');

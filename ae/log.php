@@ -16,6 +16,8 @@
 # limitations under the License.
 # 
 
+// TODO: Logs files be viewable in the browser should use inspector app if it's available.
+
 aeLog::_setup();
 
 class aeLog
@@ -24,13 +26,18 @@ class aeLog
 	or X-ae-log header, or appends them to a log file.
 	
 	`log` options:
+		`level`			- aeLog::everything or aeLog::problems (default).
 		`environment`	- log env variables: true or false (default);
 		`ip_whitelist`	- an array or comma-separated list of IP addresses;
 		`directory`		- path to log directory.
 		
 */
 {
+	const everything = 1;
+	const problems = 2;
+	
 	protected static $log = array();
+	protected static $problem = false;
 	
 	public static function log()
 	{
@@ -69,6 +76,11 @@ class aeLog
 			$class = 'notice';
 		}
 		
+		if ($class !== 'notice')
+		{
+			self::$problem = true;
+		}
+		
 		// Notices do not have a backtrace
 		if ($class !== 'notice' && !is_null($backtrace))
 		{
@@ -86,6 +98,11 @@ class aeLog
 	protected static function onShutdown()
 	{
 		$options = ae::options('log');
+		
+		if ($options->get('level', aeLog::problems) !== aeLog::everything && !self::$problem) 
+		{
+			return;
+		}
 		
 		if ($path = $options->get('directory', false))
 		{
