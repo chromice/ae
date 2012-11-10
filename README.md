@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is miniscule (1,948 lines of well–formated PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is miniscule (1,959 lines of well–formated PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -270,7 +270,7 @@ Options library is used by many core libraries and allows you to change their be
 $options = ae::options('namespace');
 ```
 
-For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library to return correct IP address of the client:
+For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library be able to return the correct IP address of the client:
 
 ```php
 $options = ae::options('request');
@@ -293,6 +293,16 @@ $proxies = $options->get('proxies', null);
 
 Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
 
+*NB!* The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
+
+Only logs containing errors are displayed and preserved by default. In order to display and preserve all logs, you should configure the library like this:
+
+```php
+ae::options('log')->set('level', aeLog::everything);
+```
+
+Here's a short example of how the library should be used:
+
 ```php
 // You must import the library first
 ae::import('ae/log.php');
@@ -303,8 +313,8 @@ ae::options('log')->set('directory', '/log');
 // Now you can log a message and dump a variable
 ae::log("Here's a dump of $_SERVER:", $_SERVER);
 
-// All errors, notices will be logged too
-trigger_error("Everything goes according to the plan.", E_USER_NOTICE);
+// Trigger an error artificially.
+trigger_error("Everything goes according to the plan.", E_USER_ERROR);
 ```
 
 In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
@@ -321,7 +331,7 @@ ae::options('log')->set('environment', true);
 
 If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it via `X-ae-log` header.
 
-æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, as well iframes or AJAX requests. Just make sure that */inspector* directory is located in the web root and instruct the log library to use it:
+æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, as well iframes or AJAX requests. Just make sure that */inspector* directory is located in the web root and instruct the log library to display inspect button on the page:
 
 ```php
 ae::options('log')->set('inspector', true);
@@ -486,7 +496,7 @@ $response
 ?>
 ```
 
-You can specify the type when you create a new response object. It should be either a valid mime–type or a shorthand like "html", "css", "javascript", "json", etc. By default all requests are of type "text/html".
+You can specify the type when you create a new response object. It should be either a valid mime–type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html".
 
 When response is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded.
 
@@ -734,7 +744,7 @@ $shaky = Authors::create(array(
 $shaky->save();
 ```
 
-In order to retrieve several records from the database, you would make a regular query, but instead of calling `aeDatabase::result()` method, you should call `aeDatabaseTable::many()` method with the name of the active record class as the first argument:
+In order to retrieve several records from the database, you would make a regular query, but instead of calling `aeDatabase::result()` method, you should call `aeDatabaseTable::many()` method with the name of the table class as the first argument:
 
 ```php
 $authors = ae::database()
