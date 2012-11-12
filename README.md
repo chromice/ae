@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is miniscule (1,959 lines of well–formated PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule (1,959 lines of well–formatted PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -95,7 +95,7 @@ In order to stop using the context, simply unset the variable:
 unset($context);
 ```
 
-Many contexts can exist at the same time, but only the lastest one will be used. Once it's destroyed æ will restore the previously active context. It is a generally a good idea to assign contexts to local variables and destroy them as soon as possible.
+Many contexts can exist at the same time, but only the latest one will be used. Once it's destroyed æ will restore the previously active context. It is a generally a good idea to assign contexts to local variables and destroy them as soon as possible.
 
 
 ### Importing code
@@ -685,9 +685,9 @@ foreach ($authors as $author):
 }
 ```
 
-Again, instead of specifying `ORDER BY` clause directly in the query we are using a placehodler for it, that will be filled in only if we specify the clause via `aeDatabase::order_by()` method. 
+Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `aeDatabase::order_by()` method. 
 
-> Dabatase library has other token/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source of the database library to learn more about them.
+> Database library has other token/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source of the database library to learn more about them.
 
 Note that we are also using `aeDatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. This listing will produce a list of authors in alphabetical order:
 
