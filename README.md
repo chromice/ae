@@ -21,7 +21,6 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 	- [Retrieving data](#retrieving-data)
 	- [Active record](#active-record)
 	- [Relationships](#relationships)
-- [Licence](#licence)
 
 
 ## Getting started
