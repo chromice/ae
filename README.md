@@ -627,7 +627,7 @@ Of course, these are just examples, there is actually a less verbose way to inse
 ```php
 ae::database()->update('authors', array(
 	'nationality' => 'English'
-), array('id' => $morgan_id);
+), array('id' => $morgan_id));
 $stephenson_id = ae::database()->insert('authors', array(
 	'name' => 'Neal Stephenson',
 	'nationality' => 'American'
