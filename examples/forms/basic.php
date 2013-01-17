@@ -1,27 +1,24 @@
 <?php 
 
-// FIXME: How can I retrieve all submitted values as an array?
-// FIXME: Validating, if user tempered with the options, is tedious.
-
 $form = ae::form('form-id');
 
 $form->set_data(array('select' => 'bar'));
 
 if ($form->is_submitted()) 
 {
-	$form->validate('text', 0) // name, depth
+	$form->validate('text', 0) // name, dimensions = 0
 		->required('Please enter some text')
 		->max_length(140, 'Let\'s keep it short, shall we?');
 		
 	$form->validate('textarea');
 	
-	$form->validate('select') // name, depth = 0
-		->options(array('foo','bar'))
+	$form->validate('select') // name, dimensions = 0
+		->options(array('foo','bar')) // prevent user from supplying wrong values
 		->required('How did you manage to select nothing?!');
-
-	$form->validate('check', 1) // name, depth = 1
-		->options(array('foo','bar'))
-		->required('Please check both boxes!');
+	
+	$form->validate('check', 1) // name, dimensions = 1
+		->options(array('foo' => 'Foo', 'bar' => 'Bar')) // keys are used here
+		->required('Please check at least one box!');
 		
 	if ($form->is_valid())
 	{
@@ -65,8 +62,8 @@ if ($form->is_submitted())
 <div class="field">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
-		<option value="foo" <?php $form->selected('select', 'foo') ?>>foo</option>
-		<option value="bar" <?php $form->selected('select', 'bar') ?>>bar</option>
+		<option value="foo" <?php $form->selected('select', 'foo') ?>>Foo</option>
+		<option value="bar" <?php $form->selected('select', 'bar') ?>>Bar</option>
 	</select>
 	<?php $form->error('select') ?>
 </div>
