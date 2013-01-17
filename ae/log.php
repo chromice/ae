@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-// TODO: Logs files be viewable in the browser should use inspector app if it's available.
+// TODO: Logs files should use inspector app when viewed in the browser.
 
 aeLog::_setup();
 
