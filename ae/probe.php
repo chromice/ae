@@ -35,7 +35,7 @@ class aeProbe
 	{
 		if (is_null($name))
 		{
-			trigger_error("Probe must have a name.", E_USER_ERROR);
+			trigger_error("Probe must have a name.", E_USER_WARNING);
 		}
 		
 		$this->name = $name;

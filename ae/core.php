@@ -179,12 +179,12 @@ final class ae
 	
 	public static function invoke($misc, $type = 0)
 	/*
-		Call this method inside of the loaded or imported script to define 
-		class name or factory that load() method would use.
+		Call this method at the top of the loaded or imported file 
+		to define class name or factory that load() method should use.
 		
 			ae::invoke('LibraryClassName');
 		
-		æ will create a new instance of LibraryClassName, every
+		æ will create a new instance of LibraryClassName every
 		time the library is loaded.
 			
 			ae::invoke('SingletonClassName', ae::singleton);
