@@ -17,7 +17,7 @@
 # 
 
 // FIXME: Should use chaining.
-// FIXME: Should throw aeFileException on error.
+// FIXME: Should throw an exception on error.
 
 ae::invoke('aeFile');
 
