@@ -15,6 +15,7 @@
 		'Caching (direct)' => 'cache/caching/test/index.html/index.html',
 		'Container' => 'container',
 		'Database' => 'database/example',
+		'Image' => 'image',
 		'Log' => 'log',
 		'Log (trigger error)' => 'log/error',
 		'Log (throw exception)' => 'log/exception',

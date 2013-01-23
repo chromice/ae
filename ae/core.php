@@ -327,6 +327,11 @@ final class ae
 		return ae::load('ae/file.php', $path);
 	}
 	
+	public static function image($path)
+	{
+		return ae::load('ae/image.php', $path);
+	}
+	
 	public static function log()
 	{
 		if (class_exists('aeLog'))
