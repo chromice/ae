@@ -26,7 +26,7 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 
 ## Acknowledgments
 
-This project is born out of love and respect for PHP, the language of weird insanity, learning which helped me build beautiful things.
+This project is born out of love and respect for PHP, a language of insanity, learning which helped me build beautiful things.
 
 Respect to Rick Ellis for CodeIgniter and shifting the perception of how big the framework should be and what it should do towards smaller and focused.
 
