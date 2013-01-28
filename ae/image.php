@@ -17,6 +17,7 @@
 # 
 
 // TODO: Add ability to change background color of the destination image (including opacity).
+// TODO: Add ability to not scale smaller images to fit() and cover().
 // TODO: Add ability to change quality of the output JPEG.
 // FIXME: scale() and fit() must accept NULL as one parameter.
 
@@ -109,16 +110,10 @@ class aeImage
 		return $this;
 	}
 	
-	public function cover($width, $height)
-	{
-		$this->_load();
-		
-		return $this;
-	}
-	
 	public function crop($width, $height)
 	{
 		$this->_load();
+		list($width, $height) = $this->_dimensions($width, $height);
 		
 		$destination = imagecreatetruecolor($width, $height);
 		$success = imagecopyresampled(
@@ -147,14 +142,10 @@ class aeImage
 		return $this;
 	}
 	
-	public function fit($width, $height)
-	{
-		return $this;
-	}
-	
 	public function scale($width, $height)
 	{
 		$this->_load();
+		list($width, $height) = $this->_dimensions($width, $height);
 		
 		$destination = imagecreatetruecolor($width, $height);
 		$success = imagecopyresampled(
@@ -182,6 +173,46 @@ class aeImage
 		return $this;
 	}
 	
+	public function cover($width, $height)
+	{
+		$this->_load();
+		list($width, $height) = $this->_dimensions($width, $height);
+		
+		$target_ratio = $width / $height;
+		$source_ratio = $this->source_width / $this->source_height;
+		
+		if ($target_ratio > $source_ratio)
+		{
+			$this->scale($width, null);
+		}
+		else 
+		{
+			$this->scale(null, $heigh);
+		}
+		
+		return $this->crop($width, $height);
+	}
+	
+	public function fit($width, $height)
+	{
+		$this->_load();
+		list($width, $height) = $this->_dimensions($width, $height);
+		
+		$target_ratio = $width / $height;
+		$source_ratio = $this->source_width / $this->source_height;
+		
+		if ($target_ratio > $source_ratio)
+		{
+			$this->scale(null, $width);
+		}
+		else 
+		{
+			$this->scale($heigh, null);
+		}
+		
+		return $this;
+	}
+	
 	public function apply($filter, $arg_1 = null, $arg_2 = null, $arg_3 = null, $arg_4 = null)
 	{
 		$this->_load();
@@ -189,6 +220,26 @@ class aeImage
 		imagefilter($this->source, $filter, $arg_1, $arg_2, $arg_3, $arg_4);
 		
 		return $this;
+	}
+	
+	protected function _dimensions($width, $height)
+	{
+		if ((empty($width) || $width < 0)
+		&& (empty($height) || $height < 0))
+		{
+			throw new Exception('At least one dimension must be greater than 0.');
+		}
+		
+		if (empty($width) || $width < 0)
+		{
+			$width = $height * $this->source_width / $this->source_height;
+		}
+		else if (empty($height) || $height < 0)
+		{
+			$height = $width * $this->source_height / $this->source_width;
+		}
+		
+		return array(round($width), round($height));
 	}
 	
 	protected function _load()
@@ -252,6 +303,58 @@ class aeImage
 	
 	public function save($name = null)
 	{
+		$this->_load();
+		list($path, $type) = $this->_path_type($name);
+		
+		switch ($type)
+		{
+			case IMAGETYPE_GIF:
+				$success = imagegif($this->source, $path);
+				break;
+			case IMAGETYPE_PNG:
+				$success = imagepng($this->source, $path);
+				break;
+			case IMAGETYPE_JPEG:
+				$success = imagejpeg($this->source, $path);
+				break;
+		}
+		
+		if (!$success) 
+		{
+			throw new Exception('Failed to save the image: ' . $path);
+		}
+		
+		$this->_unload();
+		
+		return new aeImage($path);
+	}
+
+	public function dispatch($name = null)
+	{
+		$this->_load();
+		list($path, $type) = $this->_path_type($name);
+		
+		while(ob_get_level()) ob_end_clean();
+		
+		switch ($type)
+		{
+			case IMAGETYPE_GIF:
+				header('Content-Type: image/gif');
+				imagegif($this->source);
+				exit;
+			case IMAGETYPE_PNG:
+				header('Content-Type: image/png');
+				imagepng($this->source);
+				exit;
+			case IMAGETYPE_JPEG:
+				header('Content-Type: image/jpeg');
+				imagejpeg($this->source);
+				exit;
+		}
+	}
+	
+	protected function _path_type($name)
+	{
 		$type = $this->type;
 		$parts = pathinfo($this->path);
 		
@@ -276,29 +379,6 @@ class aeImage
 				. '.' . $parts['extension'];
 		}
 		
-		switch ($type)
-		{
-			case IMAGETYPE_GIF:
-				$success = imagegif($this->source, $path);
-				break;
-			case IMAGETYPE_PNG:
-				$success = imagepng($this->source, $path);
-				break;
-			case IMAGETYPE_JPEG:
-				$success = imagejpeg($this->source, $path);
-				break;
-		}
-		
-		if (!$success) 
-		{
-			throw new Exception('Failed to save the image: ' . $this->path);
-		}
-		
-		return $this;
-	}
-
-	public function dispatch()
-	{
-		exit;
+		return array($path, $type);
 	}
 }
