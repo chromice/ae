@@ -2,4 +2,6 @@
 cache/*
 !cache/.htaccess
 examples/log/log_*
-
+examples/image/cropped_test_small.jpg
+examples/image/cropped_test.jpg
+examples/image/tiny_bit.png
