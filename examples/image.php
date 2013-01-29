@@ -30,8 +30,7 @@ $image
 // Apply colorize filter
 // using http://uk3.php.net/manual/en/function.imagefilter.php
 $image
-	// ->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->suffix('_red') // that is meaninless without save()
+	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
 	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
 
 ?>
