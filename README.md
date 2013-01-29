@@ -28,7 +28,7 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 
 This project is born out of love and respect for PHP, a language of insanity, learning which helped me build beautiful things.
 
-Respect to Rick Ellis for CodeIgniter and shifting the perception of how big the framework should be and what it should do towards smaller and focused.
+Respect to Rick Ellis for CodeIgniter and for shifting the perception of how big the framework should be and what it should do towards smaller and more focused.
 
 Big respect to the MODx community. MODx template syntax and architecture is even uglier than PHP, but out of your love for the platform many great ideas were born. Some of those — expressed in slightly better PHP — found new home here.
 
