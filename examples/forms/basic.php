@@ -49,17 +49,22 @@ if ($form->is_submitted())
 // Generate HTML of the form 
 ?>
 <?php $form->open() ?>
-<div class="field">
+<div class="field <?php $form->classes('text') ?>">
 	<label for="text-input">Text input:</label>
 	<input name="text" id="text-input" type="text" value="<?php $form->value('text') ?>">
 	<?php $form->error('text') ?>
 </div>
-<div class="field">
+<?php $group = $form->group('a_lot_of_text'); ?>
+<?php while ($group->lasts()): ?>
+<div class="field <?php $form->classes('textarea') ?>">
 	<label for="textarea-input">Text input:</label>
-	<textarea name="textarea" id="textarea"><?php $form->value('textarea') ?></textarea>
 	<?php $form->error('textarea') ?>
+	<textarea name="textarea" id="textarea"><?php $form->value('textarea') ?></textarea>
 </div>
-<div class="field">
+<?php endwhile ?>
+<p class="ae-more"><?php $group->add('Add one more') ?> text input.</p>
+<?php unset($group) ?>
+<div class="field <?php $form->classes('text') ?>">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
 		<option value="foo" <?php $form->selected('select', 'foo') ?>>Foo</option>
