@@ -5,18 +5,6 @@
 		->set('environment', true)
 		->set('inspector', true);
 	
-	ae::log("Error: This is not really an error!", array());
-	
-	trigger_error("This is a notice.", E_USER_NOTICE);
-	trigger_error("This is a warning.", E_USER_WARNING);
-	
-	$c = ae::container('/examples/container/container_inner.php')
-		->set('title', 'Example: Container')
-		->set('header', 'Hello World!');
-	
-	ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true, ' And a bit of void: ', NULL);
-	ae::log("Hello again. This is a string: ", "foo", "As you can see strings are not dumped.");
-	
 	$r = ae::request();
 	
 	switch ($r->segment(0, 'normal'))
@@ -29,7 +17,7 @@
 			ae::output('examples/log/throw_exception.php', array(
 				'foo' => 'bar',
 				'bar' => 'foo'
-			), new stdclass);
+			));
 			break;
 		
 		case 'critical':
@@ -38,8 +26,19 @@
 				'bar' => 'foo'
 			));
 			break;
+		default:
+			ae::log("Error: This is not really an error!", array());
 			
-		default: ?>
+			trigger_error("This is a notice.", E_USER_NOTICE);
+			trigger_error("This is a warning.", E_USER_WARNING);
+			
+			$c = ae::container('/examples/container/container_inner.php')
+				->set('title', 'Example: Container')
+				->set('header', 'Hello World!');
+			
+			ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true, ' And a bit of void: ', NULL);
+			ae::log("Hello again. This is a string: ", "foo", "As you can see strings are not dumped.");
+?>
 	<p>Team bravo.</p>
 	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/critical" frameborder="0" width="0" height="0"></iframe>
 	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/exception" frameborder="0" width="0" height="0"></iframe>
