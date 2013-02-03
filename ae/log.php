@@ -224,7 +224,7 @@ class aeLog
 	// = Log formatting =
 	// ==================
 	
-	public static function _environment()
+	protected static function _environment()
 	{
 		$o = self::_ruler();
 		
@@ -237,12 +237,12 @@ class aeLog
 		return $o;
 	}
 	
-	public static function _ruler($char = '- ', $length = 40)
+	protected static function _ruler($char = '- ', $length = 40)
 	{
 		return "\n".str_repeat($char, $length)."\n";
 	}
 	
-	public static function _error($class, $error)
+	protected static function _error($class, $error)
 	{
 		$o = self::_ruler() . "\n";
 		
@@ -342,7 +342,7 @@ class aeLog
 		return $o;
 	}
 	
-	public static function _dump($name, $object, $level = 0)
+	protected static function _dump($name, $object, $level = 0)
 	{
 		$prefix_0 = str_repeat(' ', $level * 4);
 		$prefix_1 = str_repeat(' ', ($level + 1) * 4);
