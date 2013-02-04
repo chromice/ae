@@ -10,13 +10,13 @@ if ($form->is_submitted())
 		->required('Please enter some text')
 		->max_length(140, 'Let\'s keep it short, shall we?');
 		
-	$form->validate('textarea', 1);  // name, dimensions = 1
+	$form->validate('textarea', aeField::multiple);
 	
-	$form->validate('select') // name, dimensions = 0
+	$form->validate('select', aeField::single)
 		->options(array('foo','bar')) // prevent user from supplying wrong values
 		->required('How did you manage to select nothing?!');
 	
-	$form->validate('check', 1) // name, dimensions = 1
+	$form->validate('check', aeField::multiple)
 		->options(array('foo' => 'Foo', 'bar' => 'Bar')) // keys are used here
 		->required('Please check at least one box!');
 		
@@ -24,8 +24,8 @@ if ($form->is_submitted())
 	{
 		$values = $form->valid_data();
 				
-		echo '<h1>' . $values['a_lot_of_text']['text'] . '</h1>';
-		echo '<p>' . implode('</p><p>', $values['a_lot_of_text']['textarea']) . '</p>';
+		echo '<h1>' . $values['text'] . '</h1>';
+		echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
 		echo '<dl>';
 		echo '<dt>Selected:</dt>';
 		echo '<dd>' . $values['select'] . '</dd>';
@@ -39,7 +39,7 @@ if ($form->is_submitted())
 		
 		// $errors = array(
 		// 	'text' => '...',
-		// 	'textarea' => null,
+		// 	'textarea' => array(...),
 		// 	'select' => '...',
 		// 	'check' => array(0 => '...', 1 => null)
 		// );
@@ -49,22 +49,20 @@ if ($form->is_submitted())
 // Generate HTML of the form 
 ?>
 <?php $form->open() ?>
-<?php $group = $form->group('a_lot_of_text'); ?>
-<div class="field <?php $group->classes('text') ?>">
+<div class="field <?php $form->classes('text') ?>">
 	<label for="text-input">Text input:</label>
-	<input name="text" id="text-input" type="text" value="<?php $group->value('text') ?>">
-	<?php $group->error('text') ?>
+	<input name="text" id="text-input" type="text" value="<?php $form->value('text') ?>">
+	<?php $form->error('text') ?>
 </div>
-<?php while ($group->has('textarea', 1)): /* Show at least one, which is the default behaviour */ ?>
-<div class="field <?php $group->classes('textarea') ?>">
+<?php while ($form->has('textarea', 1)): ?>
+<div class="field <?php $form->classes('textarea') ?>">
 	<label for="textarea-input">Text input:</label>
-	<?php $group->error('textarea') ?>
-	<textarea name="textarea" id="textarea"><?php $group->value('textarea') ?></textarea>
+	<?php $form->error('textarea') ?>
+	<textarea name="textarea" id="textarea"><?php $form->value('textarea') ?></textarea>
 </div>
 <?php endwhile ?>
-<p class="ae-more"><?php $group->add('textarea', 'Add one more') ?> text input.</p>
-<?php unset($group) ?>
-<div class="field <?php $form->classes('text') ?>">
+<p class="ae-more"><?php $form->add('textarea', 'Add one more') ?> text input.</p>
+<div class="field <?php $form->classes('select') ?>">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
 		<option value="foo" <?php $form->selected('select', 'foo') ?>>Foo</option>
@@ -72,7 +70,7 @@ if ($form->is_submitted())
 	</select>
 	<?php $form->error('select') ?>
 </div>
-<div class="field">
+<div class="field<?php $form->classes('check') ?>">
 	<label>Checkboxes:</label>
 	<label><input type="checkbox" name="check[]" value="foo" <?php $form->checked('check', 'foo') ?>>foo</label>
 	<label><input type="checkbox" name="check[]" value="bar" <?php $form->checked('check', 'bar') ?>>bar</label>
