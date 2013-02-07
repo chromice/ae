@@ -17,6 +17,7 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 - [Probe](#probe)
 - [Request](#request)
 - [Response](#response)
+- [Image](#image)
 - [Database](#database)
 	- [Making queries](#making-queries)
 	- [Retrieving data](#retrieving-data)
@@ -550,6 +551,48 @@ And here's what *.htaccess* file in */cache* directory must be like:
 Apache would first look for a cached response, and only if it finds no valid response, will it route the request to */index.php*. No PHP code is actually involved in serving cached responses.
 
 In order to save a response use `aeResponse::save()` method, passing the full request URI (including the file extension) via the first argument. You can delete any cached response using `aeResponse::delete()` method.
+
+## Image
+
+Image library is very light OO wrapper around standard PHP GD functions:
+
+```php
+$image = ae::image('examples/image/test.jpg');
+
+// Get meta data
+$width = $image->width();
+$height = $image->height();
+$type = $image->type(); // png, jpeg or gif
+$mimetype = $image->mimetype();
+
+// Blow one pixel up.
+$cropped = $image
+	->crop(1,1)
+	->scale($width, $height) // or scale($width, null) to scale proportionately.
+	->save('tiny_bit.png');
+
+// save() resets state to default, i.e. no crop, scale prefix, suffix, etc.
+
+// Crop to cover
+$image
+	->align(aeImage::center, aeImage::top) // same as align(0.5, 0.5)
+	->cover(100, 100) // or cover(100, null), which is same as crop(100, [image height])
+	->prefix('cropped_')
+	->save(); // save as 'cropped_test.jpg'
+
+// Resize to 
+$image
+	->fit(320, 320) // or fit(320, null) to fit only width; same for height
+	->suffix('_small')
+	->save();  // save as 'test_small.jpg'
+
+// Apply colorise filter
+// using http://uk3.php.net/manual/en/function.imagefilter.php
+$image
+	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
+	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+
+```
 
 
 ## Database
