@@ -154,12 +154,12 @@ In order to load a library you must use `ae::load()` method:
 ```php
 $options = ae::load('ae/options.php');
 	
-// Or you could write this: 
+// ...which is the same as...
 ae::import('ae/options.php');
 $options = new aeOptions();
 ```
 
-You can configure library instance via second parameter of `ae::load()`. æ will pass it to class constructor or object factory by value:
+You can configure the library instance via second parameter of `ae::load()`. æ will pass it to class constructor or object factory by value:
 
 ```php
 $lib_options = ae::load('ae/options.php', 'my_library_namespace');
@@ -304,7 +304,7 @@ $proxies = $options->get('proxies', null);
 
 Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
 
-*NB!* The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
+**NB!** The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
 
 Only logs containing errors are displayed and preserved by default. In order to display and preserve all logs, you should configure the library like this:
 
@@ -340,7 +340,7 @@ You can also dump the environment variables for each request like this:
 ae::options('log')->set('environment', true);
 ```
 
-If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it via `X-ae-log` header.
+If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
 
 æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, as well iframes or AJAX requests. Just make sure that */inspector* directory is located in the web root and instruct the log library to display inspect button on the page:
 
@@ -458,7 +458,7 @@ if (!$route->exists())
 $route->follow();
 ```
 
-Now, if you have various request handlers in the */handlers* directory (*article.php* in this case), æ will run it:
+Now, if you have a matching request handler in the */handlers* directory (article.php in this case), æ will run it:
 
 ```php
 // article.php
@@ -554,7 +554,7 @@ In order to save a response use `aeResponse::save()` method, passing the full re
 
 ## Image
 
-Image library is very light OO wrapper around standard PHP GD functions:
+Image library is a very light wrapper around standard GD library functions:
 
 ```php
 $image = ae::image('examples/image/test.jpg');
@@ -636,7 +636,7 @@ ae::database()
 	->make();
 ```
 
-Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::names()` method. When before the query is made the library will wrap the name with backticks ("`") and replace the placeholder.
+Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::names()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
 
 While not particularly useful in this example, placeholders are generally a good way to keep you query code readable.
 
@@ -674,7 +674,7 @@ ae::database()
 	->make();
 ```
 
-Here we used `{keys_values}` placeholder and specified its value via `aeDatabase::values()` method. And we also used `{author_id}` placeholder in conjunction with `aeDatabase::variables()` method that would escape the value of `$morgan_id`. 
+In this example we are using `{keys_values}` placeholder and specifying its value via `aeDatabase::values()` method, while `{author_id}` placeholder in conjunction with `aeDatabase::variables()` will escape the value of `$morgan_id`. 
 
 Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 
@@ -692,7 +692,7 @@ $gibson_id = ae::database()->insert('authors', array(
 ));
 ```
 
-> There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source of the database library to learn more about them.
+> There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
 
 
 ### Retrieving data
@@ -740,9 +740,11 @@ foreach ($authors as $author):
 
 Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `aeDatabase::order_by()` method. 
 
-> Database library has other token/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source of the database library to learn more about them.
+> Database library has other token/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source code of the database library to learn more about them.
 
-Note that we are also using `aeDatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. This listing will produce a list of authors in alphabetical order:
+Note that we are also using `aeDatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. Please note that `aeDatabaseResult::fetch()` method is the most memory efficient way of retrieving results.
+
+The example above will produce a list of authors in alphabetical order:
 
 ```markdown
 There are 3 authors in the database:
@@ -753,7 +755,7 @@ There are 3 authors in the database:
 
 ### Active record
 
-The database library has `aeDatabaseTable` abstract class that your table specific class must extend:
+The database library has `aeDatabaseTable` abstract class that your table specific class can extend:
 
 ```php
 class Authors extends aeDatabaseTable {}
