@@ -16,6 +16,8 @@
 # limitations under the License.
 # 
 
+// FIXME: is() and type() methods should be deprecated. Use class constants instead.
+
 ae::invoke(array('aeRoute','request'), ae::factory);
 
 class aeRequest
