@@ -23,7 +23,7 @@ $image
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
 
-// Resize to 
+// Resize to fit
 $image
 	->fit(320, 320) // or fit(320, null) to fit only width; same for height
 	->suffix('_small')

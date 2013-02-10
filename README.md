@@ -32,9 +32,9 @@ This project is born out of love and respect for PHP, a language of insanity, le
 
 Respect to Rick Ellis for CodeIgniter and for shifting the perception of how big the framework should be and what it should do towards smaller and more focused.
 
-Big respect to the MODx community. MODx template syntax and architecture is even uglier than PHP, but out of your love for the platform many great ideas were born. A few of those — expressed in slightly better PHP — found new home here, some inspired to come up with better ones.
+Big respect to the MODx community. MODx template syntax and architecture is even uglier than PHP, but out of your love for the platform many great ideas were born. A few of those — expressed in slightly better PHP — found new home here; some inspired me to come up with better ones.
 
-Wordress project, which I've learned to love to hate as a developer, but respect as a platform user.
+Wordpress project, which I've learned to love to hate as a developer, but respect as a platform user.
 
 ## Getting started
 
@@ -581,7 +581,7 @@ $image
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
 
-// Resize to 
+// Resize to fit
 $image
 	->fit(320, 320) // or fit(320, null) to fit only width; same for height
 	->suffix('_small')
@@ -866,7 +866,7 @@ class Authors extends aeDatabaseTable
 	{
 		$ids = $this->ids();
 		
-		return Novel::create(array(
+		return Novels::create(array(
 			'author_id' => $ids['id'],
 			'title' => $title
 		))->save();
