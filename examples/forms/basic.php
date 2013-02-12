@@ -48,35 +48,35 @@ if ($form->is_submitted())
 
 // Generate HTML of the form 
 ?>
-<?php $form->open() ?>
-<div class="field <?php $form->classes('text') ?>">
+<?= $form->open() ?>
+<div class="field <?= $form->classes('text') ?>">
 	<label for="text-input">Text input:</label>
-	<input name="text" id="text-input" type="text" value="<?php $form->value('text') ?>">
-	<?php $form->error('text') ?>
+	<input name="text" id="text-input" type="text" value="<?= $form->value('text') ?>">
+	<?= $form->error('text') ?>
 </div>
 <?php while ($form->has('textarea', 0)): ?>
-<div class="field <?php $form->classes('textarea') ?>">
+<div class="field <?= $form->classes('textarea') ?>">
 	<label for="textarea-input">Text area:</label>
-	<?php $form->error('textarea') ?>
-	<textarea name="textarea" id="textarea"><?php $form->value('textarea') ?></textarea>
+	<textarea name="textarea[<?= $form->current('textarea') ?>]" id="textarea"><?= $form->value('textarea') ?></textarea>
+	<?= $form->error('textarea') ?>
 </div>
 <?php endwhile ?>
-<p><?php $form->add('textarea', 'Add', 'Add one more') ?> text area.</p>
-<div class="field <?php $form->classes('select') ?>">
+<p><?= $form->add('textarea', 'Add', 'Add one more') ?> text area.</p>
+<div class="field <?= $form->classes('select') ?>">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
-		<option value="foo" <?php $form->selected('select', 'foo') ?>>Foo</option>
-		<option value="bar" <?php $form->selected('select', 'bar') ?>>Bar</option>
+		<option value="foo" <?= $form->selected('select', 'foo') ?>>Foo</option>
+		<option value="bar" <?= $form->selected('select', 'bar') ?>>Bar</option>
 	</select>
-	<?php $form->error('select') ?>
+	<?= $form->error('select') ?>
 </div>
-<div class="field <?php $form->classes('check') ?>">
+<div class="field <?= $form->classes('check') ?>">
 	<label>Checkboxes:</label>
-	<label><input type="checkbox" name="check[]" value="foo" <?php $form->checked('check', 'foo') ?>>foo</label>
-	<label><input type="checkbox" name="check[]" value="bar" <?php $form->checked('check', 'bar') ?>>bar</label>
-	<?php $form->error('check') ?>
+	<label><input type="checkbox" name="check[]" value="foo" <?= $form->checked('check', 'foo') ?>>foo</label>
+	<label><input type="checkbox" name="check[]" value="bar" <?= $form->checked('check', 'bar') ?>>bar</label>
+	<?= $form->error('check') ?>
 </div>
 <div class="field">
-	<?php $form->submit('Submit') ?>
+	<?= $form->submit('Submit') ?>
 </div>
-<?php $form->close() ?>
+<?= $form->close() ?>

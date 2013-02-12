@@ -27,7 +27,8 @@ if ($form->is_submitted())
 
 	$form->validate('permissions', aeForm::multiple)
 		->options($permissions)
-		->required('Please specify two permissions.', 2, 2);
+		/* required(error message, minimum number, maximum number) */
+		->required('Please specify two permissions.', 2, 2); 
 		
 	if ($form->is_valid())
 	{
@@ -50,31 +51,31 @@ if ($form->is_submitted())
 }
 
 ?>
-<?php $form->open() ?>
+<?= $form->open() ?>
 <?php while ($form->has('user')): ?>
 <fieldset>
-	<legend>User #123</legend>
-	<div class="field <?php $form->classes('name') ?>">
-		<label for="text-input">Text input:</label>
-		<input name="text" id="text-input" type="text" value="<?php $form->value('name') ?>">
-		<?php $form->error('name') ?>
+	<legend>User</legend>
+	<div class="field <?= $form->classes('name') ?>">
+		<label for="name-input">Text input:</label>
+		<input name="name[<?= $form->current('user') ?>]" id="name-input" type="text" value="<?= $form->value('name') ?>">
+		<?= $form->error('name') ?>
 	</div>
-	<div class="field <?php $form->classes('email') ?>">
-		<label for="text-input">Text input:</label>
-		<input name="text" id="text-input" type="text" value="<?php $form->value('email') ?>">
-		<?php $form->error('email') ?>
+	<div class="field <?= $form->classes('email') ?>">
+		<label for="email-input">Text input:</label>
+		<input name="email[<?= $form->current('user') ?>]" id="email-input" type="text" value="<?= $form->value('email') ?>">
+		<?= $form->error('email') ?>
 	</div>
-	<div class="field <?php $form->classes('permissions') ?>">
+	<div class="field <?= $form->classes('permissions') ?>">
 		<label>Checkboxes:</label>
 <?php 	foreach($permissions as $option => $label): ?>
-		<label><input type="checkbox" name="permissions[]" value="<?= $option ?>" <?php $form->checked('permissions', $option) ?>> <?= $label ?></label>
+		<label><input type="checkbox" name="permissions[<?= $form->current('user') ?>][]" value="<?= $option ?>" <?= $form->checked('permissions', $option) ?>> <?= $label ?></label>
 <?php 	endforeach ?>
-<?php $form->error('permissions') ?>
+		<?= $form->error('permissions') ?>
 	</div>
 </fieldset>
 <?php endwhile ?>
-<p><?php $form->add('user', 'Add one more') ?> user.</p>
+<p><?= $form->add('user', 'Add one more') ?> user.</p>
 <div class="field">
-	<?php $form->submit('Submit') ?>
+	<?= $form->submit('Submit') ?>
 </div>
-<?php $form->close() ?>
+<?= $form->close() ?>
