@@ -39,7 +39,7 @@
 			ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true, ' And a bit of void: ', NULL);
 			ae::log("Hello again. This is a string: ", "foo", "As you can see strings are not dumped.");
 ?>
-	<p>Team bravo.</p>
+	<p>You should see an inspector button in the bottom left corner. You ip address is: <?= $r::ip_address() ?>. It should be in whitelist, unless it's 127.0.0.1</p>
 	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/critical" frameborder="0" width="0" height="0"></iframe>
 	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/exception" frameborder="0" width="0" height="0"></iframe>
 	<script type="text/javascript" charset="utf-8">
