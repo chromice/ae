@@ -67,4 +67,19 @@ class Novels extends aeDatabaseTable
 			->using('Authors', 'author')
 			->many('Novels');
 	}
+	
+	public static function all()
+	{
+		return static::database()
+			->query('SELECT * 
+				FROM {books} 
+				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
+				ORDER BY {books}.`title`')
+			->names(array(
+				'books' => static::name(),
+				'authors' => Authors::name()
+			))
+			->using('Authors', 'author')
+			->many('Novels');
+	}
 }

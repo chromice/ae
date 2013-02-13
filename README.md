@@ -733,7 +733,7 @@ $count = count($authors);
 
 echo "There are $count authors in the database:\n";
 
-foreach ($authors as $author):
+foreach ($authors as $author)
 {
 	echo "- {$author['name']}\n";
 }
@@ -773,6 +773,7 @@ $stephenson = Authors::find($stephenson_id);
 $stephenson->load();
 
 echo $stephenson->name; // Neal Stephenson
+echo ' -- ';
 echo $stephenson->nationality; // American
 ```
 

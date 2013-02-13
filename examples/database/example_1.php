@@ -75,7 +75,7 @@ echo 'Number of books: ' . ae::database()->count('books');
 // Delete data
 $book->delete();
 
-// Install
+// Uninstall
 Novels::uninstall();
 Authors::uninstall();
 
