@@ -3,8 +3,13 @@
 ae::import('ae/database.php');
 ae::import('authors.php');
 
-class Books extends aeDatabaseTable
-{	
+class Novels extends aeDatabaseTable
+{
+	public static function name()
+	{
+		return 'books'; // that is the real name of the table
+	}
+	
 	public static function install()
 	{
 		static::database()->query("CREATE TABLE IF NOT EXISTS {books} (
@@ -44,7 +49,7 @@ class Books extends aeDatabaseTable
 				'authors' => Authors::name()
 			))
 			->using('Authors', 'author')
-			->one('Books');
+			->one('Novels');
 	}
 	
 	public static function many($limit, $offset = null)
@@ -60,6 +65,6 @@ class Books extends aeDatabaseTable
 				'authors' => Authors::name()
 			))
 			->using('Authors', 'author')
-			->many('Books');
+			->many('Novels');
 	}
 }
