@@ -31,7 +31,7 @@ class aeContainer
 	{
 		if (empty($path))
 		{
-			throw new Exception('Container must be initialized with a path to the container file.');
+			throw new Exception('Container must be initialized with a path to the container script.');
 		}
 		
 		$this->path = $path;

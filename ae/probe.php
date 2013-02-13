@@ -17,6 +17,7 @@
 #
 
 // TODO: Improved memory and time presentation in inspector.
+// TODO: Memory footprint should be more readable (b, kb, mb, etc.)
 // FIXME: Object and method footprints must be dynamically calculated.
 
 ae::invoke('aeProbe');

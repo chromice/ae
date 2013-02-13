@@ -55,7 +55,7 @@ class aeResponse
 				break;
 			case 'js':
 			case 'javascript':
-				// FIXME: Obsolete mimetype in RFC 4329 
+				// FIXME: Obsolete mimetype according to RFC 4329 
 				$type = 'text/javascript';
 				break;
 			case 'txt':

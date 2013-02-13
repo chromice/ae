@@ -96,7 +96,7 @@ final class ae
 	{
 		if (!isset(self::$contexts[$context]))
 		{
-			throw new Exception('Context "'.$context.'" has not been registered.');
+			throw new Exception('Context "' . $context . '" has not been registered.');
 		}
 		
 		$this->previous_context = self::$current_context;

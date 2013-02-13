@@ -16,6 +16,7 @@
 # limitations under the License.
 # 
 
+// TODO: File resource should be loaded lazily.
 // FIXME: Should use chaining.
 // FIXME: Should throw an exception on error.
 
