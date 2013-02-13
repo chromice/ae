@@ -14,7 +14,7 @@
 		'Caching (json)' => 'caching/test.json',
 		'Caching (direct)' => 'cache/caching/test/index.html/index.html',
 		'Container' => 'container',
-		'Database' => 'database/example',
+		'Database: Basic entity test' => 'database/example_1',
 		'Image' => 'image',
 		'Log' => 'log',
 		'Log (trigger error)' => 'log/error',
