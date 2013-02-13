@@ -54,7 +54,12 @@ if ($form->is_submitted())
 <?= $form->open() ?>
 <?php while ($form->has('user')): ?>
 <fieldset>
-	<legend>User</legend>
+	<legend>
+		User
+<?php 	if ($form->current('user') > 0): ?>
+		<?= $form->remove('user', 'Remove') ?>
+<?php 	endif ?>
+	</legend>
 	<div class="field <?= $form->classes('name') ?>">
 		<label for="name-input">Text input:</label>
 		<input name="name[<?= $form->current('user') ?>]" id="name-input" type="text" value="<?= $form->value('name') ?>">

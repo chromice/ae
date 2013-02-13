@@ -61,7 +61,7 @@ if ($form->is_submitted())
 	<?= $form->error('textarea') ?>
 </div>
 <?php endwhile ?>
-<p><?= $form->add('textarea', 'Add', 'Add one more') ?> text area.</p>
+<p><?= $form->add('textarea', 'Add') ?> text area.</p>
 <div class="field <?= $form->classes('select') ?>">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
