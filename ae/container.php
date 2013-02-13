@@ -25,7 +25,8 @@ class aeContainer
 {
 	protected $path;
 	protected $buffer;
-	protected $vars = array();
+	protected static $vars = array();
+	protected static $stack = array();
 	
 	public function __construct($path)
 	{
@@ -36,18 +37,22 @@ class aeContainer
 		
 		$this->path = $path;
 		$this->buffer = new aeBuffer();
+		
+		array_push(self::$stack, self::$vars);
 	}
 	
 	public function __destruct()
 	{
-		$this->vars['content'] = $this->buffer->render();
+		self::$vars['content'] = $this->buffer->render();
 		
-		ae::output($this->path, $this->vars);
+		ae::output($this->path, self::$vars);
+		
+		self::$vars = array_pop(self::$stack);
 	}
 	
 	public function set($name, $value)
 	{
-		$this->vars[$name] = $value;
+		self::$vars[$name] = $value;
 		
 		return $this;
 	}
