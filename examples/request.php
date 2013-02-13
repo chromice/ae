@@ -13,20 +13,11 @@ $request = ae::request();
 echo "<pre>\n";
 
 echo 'Client IP address: ' . aeRequest::ip_address() . "\n";
-echo 'Server IP address: ' . $_SERVER['SERVER_ADDR'] . "\n";
+echo 'Server IP address: ' . $_SERVER['SERVER_ADDR'] . "\n\n";
 
-if (aeRequest::is('normal get')) // or 'cli', or 'normal'
-{
-	echo "Normal GET request\n";
-	
-	var_dump($_GET);
-}
-else if (aeRequest::is('cli'))
-{
-	echo "CLI request\n";
-	
-	var_dump($_SERVER['argv']);
-}
+echo 'Request method: ' . aeRequest::method . "\n";
+echo 'Is CLI: ' . (aeRequest::cli ? 'Yes' : 'No') . "\n";
+echo 'Is AJAX: ' . (aeRequest::ajax ? 'Yes' : 'No') . "\n\n";
 
 echo $request->type();
 echo "\n";

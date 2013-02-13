@@ -381,16 +381,16 @@ foo finished. Timestamp: 14ms (+1.541ms). Footprint: 630084 bytes (-789120 bytes
 
 ## Request
 
-Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds requests using `aeRequest::is()` method:
+Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds requests using `aeRequest::cli`, `aeRequest::ajax` and `aeRequest::method` constants:
 
 ```php
-$request = ae::request();
+ae::import('ae/request.php');
 
-if ($request->is('cli'))
+if (aeRequest::cli)
 {
 	echo "Hello World!";
 }
-else if ($request->is('ajax'))
+else if (aeRequest::ajax)
 {
 	echo "{message:'Hello world'}";
 }
@@ -398,11 +398,11 @@ else
 {
 	echo "<h1>Hello World!</h1>";
 	
-	if ($request->is('get'))
+	if (aeRequest::method === 'GET')
 	{
 		echo "<p>Nothing to get.</p>";
 	}
-	else if ($request->is('post'))
+	else if (aeRequest::method === 'POST')
 	{
 		echo "<p>Nothing to post.</p>";
 	}

@@ -16,9 +16,14 @@
 # limitations under the License.
 # 
 
-// FIXME: is() sould use class constants instead of strings.
-
 ae::invoke(array('aeRoute','request'), ae::factory);
+
+// Calculate request type and method constants.
+define('__ae_request_cli__', defined('STDIN'));
+define('__ae_request_ajax__', isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
+	&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST');
+define('__ae_request_method__', isset($_SERVER['REQUEST_METHOD']) ? 
+	strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN');
 
 class aeRequest
 /*
@@ -28,6 +33,10 @@ class aeRequest
 		`proxies`	-	an array or comma-separated list of IP addresses.
 */
 {
+	const cli = __ae_request_cli__;
+	const ajax = __ae_request_ajax__;
+	const method = __ae_request_method__;
+	
 	protected $type = 'html';
 	protected $depth = 0;
 	protected $segments = array();
@@ -77,42 +86,6 @@ class aeRequest
 		return $_SERVER['REMOTE_ADDR'];
 	}
 		
-	public static function is($what)
-	/*
-		Returns TRUE if request kind/type matches the criteria, e.g.:
-		
-			is('cli');
-			is('ajax');
-			is('get');
-			is('ajax post');
-		
-	*/
-	{
-		$is_cli = defined('STDIN');
-		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
-			&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
-		
-		$method = isset($_SERVER['REQUEST_METHOD']) ? 
-			strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN';
-		
-		$result = true;
-		$what = preg_split('/\s+/', trim(strtolower($what)));
-		
-		foreach ($what as $_what) switch ($_what)
-		{
-			case 'ajax':
-				$result &= $is_ajax;
-				break;
-			case 'cli':
-				$result &= $is_cli;
-				break;
-			default:
-				$result &= $method === strtoupper($_what);
-		}
-		
-		return $result;
-	}
-	
 	public function type()
 	/*
 		Returns the file type of the request, `html` by default. Top level 
