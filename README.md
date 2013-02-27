@@ -825,7 +825,7 @@ There are 4 authors in the database:
 - William Shakespeare
 ```
 
-Now, Shakespeare was a playwright, while the rest of the authors are book writers. Let's delete his record:
+Now, Shakespeare was a playwright, while the rest of the authors are novelists. Let's delete his record:
 
 ```php
 $shaky->delete();
@@ -952,7 +952,7 @@ Here are all 9 novels ordered alphabetically:
 
 ## License
 
-Copyright 2011–2012 Anton Muraviev <chromice@gmail.com>
+Copyright 2011-2013 Anton Muraviev <chromice@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
