@@ -33,8 +33,8 @@ class aeRequest
 		`proxies`	-	an array or comma-separated list of IP addresses.
 */
 {
-	const cli = __ae_request_cli__;
-	const ajax = __ae_request_ajax__;
+	const is_cli = __ae_request_cli__;
+	const is_ajax = __ae_request_ajax__;
 	const method = __ae_request_method__;
 	
 	protected $type = 'html';
@@ -46,6 +46,14 @@ class aeRequest
 		$this->type = $type;
 		$this->depth = $depth;
 		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
+	}
+	
+	public function is_routed()
+	/*
+		Returs TRUE if requested was routed
+	*/
+	{
+		return $this->depth > 0;
 	}
 	
 	public static function ip_address()
