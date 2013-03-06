@@ -465,6 +465,11 @@ Now, if you have a matching request handler in the */handlers* directory (articl
 // article.php
 $request = ae::request();
 
+if (!$request->is_routed())
+{
+	die('Direct request is not allowed!');
+}
+
 // NB! The /article/ part is pushed out because of routing.
 $id = $request->segment(0);
 
