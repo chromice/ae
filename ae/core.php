@@ -359,6 +359,29 @@ final class ae
 	{
 		return ae::load('ae/response.php', $type);
 	}
+	
+	/*
+		HTML
+	*/
+	
+	const html = 0; // don't escape
+	const text = 1; // escape all HTML code, preserve entities
+	const tag = 2; // save for tag or attribute name
+	const attribute = 3; // safe for attribute value
+	
+	public static function escape($value, $as = ae::text)
+	{
+		switch ($as) 
+		{
+			case ae::tag:
+				return strtolower(preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value));
+			case ae::attribute:
+			case ae::text:
+				return preg_replace('/&amp;([a-z\d]+|#\d+|#x[a-f\d]+);/i', '&$1;', htmlspecialchars($value, ENT_QUOTES));
+		}
+		
+		return $value;
+	}
 }
 
 function __ae_include__($__ae_path__, $__ae_secret_array__ = null)

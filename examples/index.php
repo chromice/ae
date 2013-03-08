@@ -6,6 +6,7 @@
 ?>
 <h1>æ</h1>
 <h2>Examples:</h2>
+<p><?= ae::escape('This framework is <em>&ldquo;awesome&rdquo;</em>!') ?></p>
 <ul>
 <?php 
 	foreach (array(
@@ -35,4 +36,3 @@
 	endforeach;
 ?>
 </ul>
-
