@@ -8,7 +8,7 @@ if ($form->is_submitted())
 {
 	$form->validate('text')
 		->required('Please enter some text')
-		->max_length(140, 'Let\'s keep it short, shall we?');
+		->length('Let\'s keep it short, shall we?', 140);
 		
 	$form->validate('textarea', aeForm::sequence); // the last field is validated only if not empty
 	
@@ -54,14 +54,16 @@ if ($form->is_submitted())
 	<input name="text" id="text-input" type="text" value="<?= $form->value('text') ?>">
 	<?= $form->error('text') ?>
 </div>
-<?php while ($form->has('textarea', 0)): ?>
+<?php while ($form->has('textarea', 0, 5)): ?>
 <div class="field <?= $form->classes('textarea') ?>">
 	<label for="textarea-input">Text area:</label>
-	<textarea name="textarea[<?= $form->current('textarea') ?>]" id="textarea"><?= $form->value('textarea') ?></textarea>
+	<textarea name="textarea[<?= $form->index('textarea') ?>]" id="textarea"><?= $form->value('textarea') ?></textarea>
 	<?= $form->error('textarea') ?>
 </div>
 <?php endwhile ?>
-<p><?= $form->add('textarea', 'Add') ?> text area.</p>
+<?php if ($form->index('textarea') < 5): ?>
+<p><?= $form->add('textarea', 'Add', 'Add one more') ?> text area.</p>
+<?php endif ?>
 <div class="field <?= $form->classes('select') ?>">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
