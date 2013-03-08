@@ -364,12 +364,21 @@ final class ae
 		HTML
 	*/
 	
-	const html = 0; // don't escape
-	const text = 1; // escape all HTML code, preserve entities
-	const tag = 2; // save for tag or attribute name
-	const attribute = 3; // safe for attribute value
+	const html = 0;
+	const text = 1;
+	const tag = 2;
+	const attribute = 3;
 	
 	public static function escape($value, $as = ae::text)
+	/*
+		Escape the string to be used in the selected context:
+		
+		ae::html - don't escape
+		ae::text - escape all HTML code, but preserve entities
+		ae::tag - safe for tag or attribute name
+		ae::attribute - safe for attribute value
+		
+	*/
 	{
 		switch ($as) 
 		{
