@@ -294,7 +294,7 @@ class aeDatabase
 
 			foreach ($where as $_key => $_value)
 			{
-				$_where[] = $this->protect($_key) . ' = ' . $this->escape($_value);
+				$_where[] = $this->identifier($_key) . ' = ' . $this->value($_value);
 			}
 
 			return implode(' AND ', $_where);
@@ -335,12 +335,12 @@ class aeDatabase
 		
 		if (!empty($this->names))
 		{
-			$placeholders = array_map(array($this, 'protect'), $this->names);
+			$placeholders = array_map(array($this, 'identifier'), $this->names);
 		}
 		
 		if (!empty($this->variables))
 		{
-			$placeholders = array_merge($placeholders, array_map(array($this, 'escape'), $this->variables));
+			$placeholders = array_merge($placeholders, array_map(array($this, 'value'), $this->variables));
 		}
 		
 		if (!empty($this->values))
@@ -351,8 +351,8 @@ class aeDatabase
 			
 			foreach ($this->values as $key => $value)
 			{
-				$keys[] = $key = $this->protect($key);
-				$values[] = $value = $this->escape($value);
+				$keys[] = $key = $this->identifier($key);
+				$values[] = $value = $this->value($value);
 				$keys_values[] = $key . ' = ' . $value;
 			}
 			
@@ -385,7 +385,7 @@ class aeDatabase
 		return $query;
 	}
 	
-	public function protect($name)
+	public function identifier($name)
 	/*
 		Protects an alias, table or column name with backticks.
 	*/
@@ -393,7 +393,7 @@ class aeDatabase
 		return '`' . str_replace('`', '``', $name) . '`';
 	}
 	
-	public function escape($value)
+	public function value($value)
 	/*
 		Returns an escaped value.
 		
@@ -622,8 +622,8 @@ class aeDatabase
 		
 		foreach ($where as $key => $value)
 		{
-			$insert_keys[] = $this->protect($key);
-			$insert_values[] = $this->escape($value);
+			$insert_keys[] = $this->identifier($key);
+			$insert_values[] = $this->value($value);
 		}
 		
 		$insert_keys = implode(', ', $insert_keys);
