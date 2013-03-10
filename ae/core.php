@@ -373,10 +373,10 @@ final class ae
 	/*
 		Escape the string to be used in the selected context:
 		
-		ae::html - don't escape
-		ae::text - escape all HTML code, but preserve entities
-		ae::tag - safe for tag or attribute name
-		ae::attribute - safe for attribute value
+		ae::html - don't escape;
+		ae::text - escape all HTML code, but preserve entities;
+		ae::tag - safe for tag or attribute names;
+		ae::attribute - safe for attribute values.
 		
 	*/
 	{
