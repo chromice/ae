@@ -17,6 +17,7 @@
 # 
 
 // TODO: File resource should be loaded lazily.
+// TODO: Mode should be detected based on the first operation(s).
 // FIXME: Should use chaining.
 // FIXME: Should throw an exception on error.
 
