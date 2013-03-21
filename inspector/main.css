@@ -60,6 +60,11 @@ h1, a.dump, .message a.backtrace, .message a.context, pre, code, kbd, var {
 body {
 	background: #ccc;
 }
+.log > li:after {
+	display: block;
+	clear: both;
+	content: "";
+}
 
 /* 
 	Log
@@ -153,6 +158,34 @@ h1 .time {
 }
 ol.backtrace .source {
 	color: #aaa;
+}
+
+/* 
+	Metrics
+*/
+table {
+	margin-left: -1px ;
+	margin-top: -0.75em;
+	border-left: 1px solid #ddd;
+	color: #555;
+	font-size: 0.75em;
+	line-height: 2;
+	text-decoration: none;
+}
+table td {
+	padding: 0.5em 10px;
+}
+table {
+	margin-right: 1em;
+	float: left;	
+}
+table .metric {
+	color: #666;
+	text-transform: none;
+}
+table .absolute, table .relative {
+	min-width: 5em;
+	text-align: right;
 }
 
 /* 

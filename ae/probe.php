@@ -78,10 +78,27 @@ class aeProbe
 			$last_m = $m;
 		}
 		
-		$notice = sprintf('%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %d bytes (%+d bytes).', $this->name, $description, $ts * 1000, $dt * 1000, $m, $dm);
+		$notice = sprintf('%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %s (%s).', 
+			$this->name, $description, 
+			$ts * 1000, $dt * 1000, 
+			self::_format($m, 0), 
+			($dm < 0 ? '-' : '+') . self::_format(abs($dm), 0));
 		
 		ae::log($notice);
 	}
+	
+	private static function _format($bytes, $precision = 2)
+	{ 
+		$units = array('b', 'kb', 'mb', 'gb', 'tb'); 
+	
+		$bytes = max($bytes, 0); 
+		$pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 
+		$pow = min($pow, count($units) - 1); 
+		
+		$bytes /= pow(1024, $pow);
+	
+		return round($bytes, $precision) . $units[$pow]; 
+	} 
 }
 
 

@@ -2,7 +2,7 @@ Zepto(function() {
 	function sourceLink(file, line) {
 		var link = 'txmt://open?url=file://' + $.trim(file) + '&line=' + $.trim(line);
 		return link;
-	};
+	}
 	
 	window.opener.inspectorOpened();
 	
@@ -89,7 +89,7 @@ Zepto(function() {
 			} else {
 				return t;
 			}
-		};
+		}
 		
 		// Get rid of the last part
 		parts.pop();
@@ -103,7 +103,9 @@ Zepto(function() {
 			// Parse all entry messages
 			$.each(parseLogEntry(part), function(i, m) {
 				if (typeof m === 'string') {
-					message.push($.trim(m));
+					var parts = parseMessageParts($.trim(m));
+					message.push(parts.pop());
+					while (parts.length > 0) $(parts.pop()).appendTo(listItem);
 				} else if (m.Variable) {
 					var type = m.Variable.match(/\((\w+)\)/);
 					
@@ -138,10 +140,10 @@ Zepto(function() {
 
 					if (m.File && m.Line) {
 						message.push('<a href="' + sourceLink(m.File, m.Line) + '" class="source">In&nbsp;<kbd class="file">' 
-								+ $.trim(m.File)
-								+ '</kbd> at line&nbsp;<kbd class="line">'
-								+ $.trim(m.Line)
-								+ '</kbd></a>')
+							+ $.trim(m.File)
+							+ '</kbd> at line&nbsp;<kbd class="line">'
+							+ $.trim(m.Line)
+							+ '</kbd></a>');
 					}
 					
 					if (m.Context) {
@@ -180,7 +182,23 @@ Zepto(function() {
 				.html(message.join(' '))
 				.prependTo(listItem);
 		});
-	};
+	}
+	
+	function parseMessageParts(text) {
+		var parts = [];
+		
+		parts.push(text.replace(/([a-z\s]+): (\d+\s?\w+)\s\(([+\-]\d+(?:\.\d+)?\s?\w+)\)\./ig, function (match, metric, absolute, relative) {
+			metric = $.trim(metric);
+			parts.push('<table class="' + metric.replace(/\s+/,'-').toLowerCase() + '"><tr>' 
+				+ '<td class="metric">' + metric + '</td>'
+				+ '<td class="absolute">' + absolute + '</td>'
+				+ '<td class="relative">' + relative + '</td>'
+			+ '</tr></table>');
+			return '';
+		}));
+		
+		return parts;
+	}
 	
 	function parseLogUri(header) {
 		var found = header.match(/Logged for (.+?) at/);
@@ -190,7 +208,7 @@ Zepto(function() {
 		}
 		
 		return '';
-	};
+	}
 	
 	function parseLogEntry(item) {
 		var object = {},
@@ -242,7 +260,7 @@ Zepto(function() {
 		}
 		
 		return parsed;
-	};
+	}
 	
 	function parseDump(dump) {
 		return dump
@@ -250,7 +268,7 @@ Zepto(function() {
 			.replace(/^\n+/, '')
 			.replace(/\n+$/, '')
 			.replace(/^ {4}/mg, '');
-	};
+	}
 
 	function parseBacktrace(backtrace) {
 		// Remove padding
@@ -302,7 +320,7 @@ Zepto(function() {
 				
 				return text;
 			}
-		);
+		)
 		
 		function wrapItem() {
 			if (dumps.length > 0 || code || source) {
@@ -315,14 +333,14 @@ Zepto(function() {
 				code = '';
 				dumps = [];
 			}
-		};
+		}
 		
 		tokenizer.parse(backtrace);
 		
 		wrapItem();
 		
 		return parts.join(' ');
-	};
+	}
 	
 	function uniqueID () {
 		var delim = "-";
@@ -332,7 +350,7 @@ Zepto(function() {
 		}
 	
 		return (S4() + S4() + delim + S4() + delim + S4() + delim + S4() + delim + S4() + S4() + S4());
-	};
+	}
 });
 
 /**
@@ -363,7 +381,7 @@ Zepto(function() {
 			this.src = src;
 			this.ended = false;
 			this.tokens = [ ];
-			do this.next(); while( !this.ended );
+			do { this.next(); } while( !this.ended );
 			return this.tokens;
 		},
 		build:function( src, real ){
