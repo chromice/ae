@@ -22,7 +22,7 @@ $cropped = $image
 	->scale($width, null) // scale proportionately.
 	->save('tiny_bit.png');
 
-// save() resets state to default, i.e. no crop, scale prefix, suffix, etc.
+// save() resets state to default, i.e. no crop, scale, prefix, suffix, etc.
 
 // Crop to cover
 $image
