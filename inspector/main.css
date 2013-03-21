@@ -180,6 +180,7 @@ table {
 	float: left;	
 }
 table .metric {
+	min-width: 5em;
 	color: #666;
 	text-transform: none;
 }
