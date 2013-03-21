@@ -16,8 +16,6 @@
 # limitations under the License.
 # 
 
-// TODO: Logs files should use inspector app when viewed in the browser.
-
 aeLog::_setup();
 
 class aeLog

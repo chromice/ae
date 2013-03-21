@@ -16,17 +16,12 @@
 # limitations under the License.
 # 
 
-// TODO: File resource should be loaded lazily.
-// TODO: Mode should be detected based on the first operation(s).
-// FIXME: Should use chaining.
-// FIXME: Should throw an exception on error.
-
 ae::invoke('aeFile');
 
 class aeFile
 /*
 	A thin wrapper that abstracts common file operations 
-	mostly for the sake of simplicity and exception safety.
+	mostly for the sake of exception safety.
 */
 {
 	protected $path;
@@ -44,6 +39,11 @@ class aeFile
 		{
 			$this->close();
 		}
+	}
+	
+	public function exists()
+	{
+		return file_exists($this->path);
 	}
 	
 	public function open($mode)
@@ -154,5 +154,3 @@ class aeFile
 		return ftell($this->file);
 	}
 }
-
-class aeFileException extends Exception {}
