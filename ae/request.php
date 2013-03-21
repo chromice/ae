@@ -156,7 +156,7 @@ class aeRoute
 		// Who wants to deal with magic quotes?
 		if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 		{
-		   trigger_error('Magic quotes must be turned off!', E_USER_ERROR);
+			trigger_error('Magic quotes must be turned off!', E_USER_ERROR);
 		}
 		
 		// Custom request

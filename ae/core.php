@@ -360,16 +360,16 @@ final class ae
 		return ae::load('ae/response.php', $type);
 	}
 	
-	/*
-		HTML
-	*/
+	// ========
+	// = HTML =
+	// ========
 	
 	const html = 0;
 	const text = 1;
 	const tag = 2;
 	const attribute = 3;
 	
-	public static function escape($value, $as = ae::text)
+	public static function escape($value, $context = ae::text)
 	/*
 		Escape the string to be used in the selected context:
 		
@@ -380,7 +380,7 @@ final class ae
 		
 	*/
 	{
-		switch ($as) 
+		switch ($context) 
 		{
 			case ae::tag:
 				return strtolower(preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value));

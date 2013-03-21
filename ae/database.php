@@ -32,9 +32,9 @@ class aeDatabase
 		`database`	-	database name.
 */
 {
-	/*
-		Connection
-	*/
+	// ==============
+	// = Connection =
+	// ==============
 	
 	protected static $connections = array();
 	
@@ -71,10 +71,6 @@ class aeDatabase
 		return self::$connections[$database];
 	}
 	
-	/*
-		Driver
-	*/
-	
 	protected $db;
 	
 	public function __construct($host, $user, $password, $database, $port, $socket)
@@ -103,9 +99,9 @@ class aeDatabase
 		$this->db->close();
 	}
 	
-	/*
-		Query
-	*/
+	// =========
+	// = Query =
+	// =========
 	
 	protected $query;
 	
@@ -442,9 +438,9 @@ class aeDatabase
 		return $this;
 	}
 	
-	/*
-		Result
-	*/
+	// ==========
+	// = Result =
+	// ==========
 	
 	public function make()
 	/*
@@ -487,9 +483,9 @@ class aeDatabase
 		return new $result($return, $class, $related);
 	}
 	
-	/*
-		Class binding
-	*/
+	// =================
+	// = Class binding =
+	// =================
 	
 	protected $using = array();
 	
@@ -531,9 +527,9 @@ class aeDatabase
 		return $this;
 	}
 	
-	/*
-		Helper queries
-	*/
+	// ==================
+	// = Helper queries =
+	// ==================
 	
 	public function columns($table)
 	/*
@@ -806,9 +802,9 @@ class aeDatabaseResult
 
 abstract class aeDatabaseTable
 {
-	/*
-		Entity configuration
-	*/
+	// ========================
+	// = Entity configuration =
+	// ========================
 	
 	private static $tables = array();
 
@@ -900,9 +896,9 @@ abstract class aeDatabaseTable
 		}
 	}
 	
-	/*
-		Data serialization
-	*/
+	// ======================
+	// = Data serialization =
+	// ======================
 	
 	public static function serialize($values)
 	/*
@@ -920,9 +916,9 @@ abstract class aeDatabaseTable
 		return $record;
 	}
 	
-	/*
-		Entity creation
-	*/
+	// ===================
+	// = Entity creation =
+	// ===================
 	
 	private $ids = array();
 	private $values = array();
@@ -962,9 +958,9 @@ abstract class aeDatabaseTable
 		return $this;
 	}
 	
-	/*
-		Setters and getters
-	*/
+	// =======================
+	// = Setters and getters =
+	// =======================
 	
 	public function __set($name, $value)
 	{
@@ -1023,9 +1019,9 @@ abstract class aeDatabaseTable
 		}
 	}
 	
-	/*
-		Basic CRUD methods.
-	*/
+	// =======================
+	// = Basic CRUD methods. =
+	// =======================
 	
 	public static function create($values = null, $_dirty = true)
 	/*

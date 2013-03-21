@@ -168,9 +168,9 @@ class aeResponse
 		return gzencode($output);
 	}
 	
-	/*
-		Caching
-	*/
+	// ===========
+	// = Caching =
+	// ===========
 	
 	protected $cache_ttl;
 	protected $cache_headers_set = false;

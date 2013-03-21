@@ -50,9 +50,9 @@ class aeImage
 		$this->_unload();
 	}
 
-	/*
-		Image data
-	*/
+	// ==============
+	// = Image data =
+	// ==============
 	
 	protected $width;
 	protected $height;
@@ -84,9 +84,9 @@ class aeImage
 		return $this->mimetype;
 	}
 	
-	/*
-		Manipulation
-	*/
+	// ================
+	// = Manipulation =
+	// ================
 	
 	const left = 0;
 	const center = 0.5;
@@ -294,9 +294,10 @@ class aeImage
 		$this->source = null;
 	}
 	
-	/*
-		Output
-	*/
+	// ==========
+	// = Output =
+	// ==========
+	
 	protected $suffix;
 	protected $prefix;
 	
