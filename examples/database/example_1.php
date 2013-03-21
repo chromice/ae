@@ -1,7 +1,7 @@
 <?php
 
-// Register a context for this example
-ae::register('examples.database');
+// Register a new context for this example
+ae::register('examples/database');
 
 // Set default database paramters
 $options = ae::options('database.default')

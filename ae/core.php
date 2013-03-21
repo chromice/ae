@@ -26,89 +26,23 @@ final class ae
 	// = Context switching =
 	// =====================
 	
-	private $previous_context;
-	private static $current_context;
-	private static $contexts = array();
+	private static $modules = array();
 	private static $paths = array();
 	
-	public static function register($context, $path = null)
+	public static function register($path)
 	/*
-		Registers a new context for the script that is being imported,
-		loaded or rendered. You can specify your own directory path via
-		second parameter.
-		
-		See __construct() and __destruct() for more details.
+		Registers a directory as a source of libraries.
 	*/
 	{
-		if (isset(self::$contexts[$context]))
+		$path = self::resolve($path);
+		
+		if (isset(self::$modules[$path]))
 		{
-			throw new Exception('Cannot re-register context "' . $context . '".');
+			trigger_error('Cannot register "' . $path . '" again.', E_USER_ERROR);
 		}
 		
-		if (!is_null($path))
-		{
-			$path = self::resolve($path);
-		}
-		else if (!empty(self::$current_path))
-		{
-			$path = dirname(self::$current_path) . '/';
-		}
-		else
-		{
-			throw new Exception('Automatic path detection failed for context "' . $context . '".');
-		}
-		
-		self::$contexts[$context] = $path;
-	}
-	
-	public function __construct($context)
-	/*
-		Switches to a previously registered context.
-		
-			// First, register the context:
-			ae::register('module.examples','examples/');
-			
-			// Then, when you need it, use it. (Ideally it should be 
-			// created in the scope of a function and destroyed as soon
-			// as possible.)
-			$context1 = new ae('module.examples');
-			echo ae::resolve('foo.php'); // 'examples/foo.php'
-		
-			// You can nest contexts, as long as you destroy them correctly 
-			// in the correct (LIFO) order.
-			$context2 = new ae('module.samples', 'samples/')
-			
-			echo ae::resolve('foo.php'); // 'samples/foo.php'
-			
-			// Unsetting the second context pops up the first one.
-			// NB! Mind the order!
-			unset($context2);
-			
-			// This resolves in the right context
-			echo ae::resolve('foo.php'); // 'examples/foo.php'
-			
-			// Reverting back to original
-			unset($context1);
-			
-			echo ae::resolve('foo.php'); 
-			// e.g. 'original/context/path/foo.php'
-	*/
-	{
-		if (!isset(self::$contexts[$context]))
-		{
-			throw new Exception('Context "' . $context . '" has not been registered.');
-		}
-		
-		$this->previous_context = self::$current_context;
-		self::$current_context = $context;
-	}
-	
-	public function __destruct()
-	/*
-		Restores previous context.
-	*/
-	{
-		self::$current_context = $this->previous_context;
+		self::$modules[$path] = true;
+		self::$paths[] = $path;
 	}
 	
 	public static function resolve($path)
@@ -118,15 +52,14 @@ final class ae
 		
 			echo ae::resolve('ae/options.php'); // '.../ae/options.php'
 		
-		You may create a context for a different directory:
+		You may register a different directory to look in as well:
 		
-			ae::register('module.foo','path/to/foo');
+			ae::register('path/to/foo');
 			
-			$context = new ae('module.foo');
 			echo ae::resolve('bar.php'); // 'path/to/foo/bar.php'
 		
 		æ would fallback to the core directory, if it finds nothing in 
-		the current context directory:
+		registered module directories:
 		
 			$request = ae::load('ae/request.php');
 		
@@ -149,15 +82,14 @@ final class ae
 		$try[] = $path;
 		$try[] = dirname(__DIR__) . '/' . $_path;
 		
-		if (!is_null(self::$current_context) 
-		&& isset(self::$contexts[self::$current_context]))
+		foreach (self::$paths as $module)
 		{
-			$try[] = self::$contexts[self::$current_context] . '/' . $_path;
+			$try[] = $module . '/' . $_path;
 		}
 		
 		while ($__path = array_pop($try))
 		{
-			if (!file_exists($__path) || self::$current_path == $__path)
+			if (!file_exists($__path))
 			{
 				continue;
 			}
@@ -371,7 +303,7 @@ final class ae
 	
 	public static function escape($value, $context = ae::text)
 	/*
-		Escape the string to be used in the selected context:
+		Escape the string to be used in the selected module:
 		
 		ae::html - don't escape;
 		ae::text - escape all HTML code, but preserve entities;

@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule (2,285 lines of well–formatted PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule (2,259 lines of well–formatted PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -84,31 +84,20 @@ In order to start using æ in your application, you must include *core.php* loca
 include 'ae/core.php';
 ```
 
-This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and load core or custom libraries. All these methods accept both absolute and relative file paths. By default non–absolute paths must be relative to the directory that contains */ae* directory.
+This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and register modules and load libraries. All these methods accept both absolute and relative file paths.
 
-If you want æ to look for a file in another directory, you can register a new context for it:
+If you want æ to look for a file in a specific directory, you can register it:
 
 ```php
-ae::register('example', '/absolute/path/to/some/directory/');
+ae::register('/absolute/path/to/module/directory/');
 ```
 
-Now you can create that context whenever you want æ to look for files in that directory:
+Now æ will look for files in that directory as well as *ae* and root directories:
 
 ```php
-$context = new ae('example');
-
 echo ae::resolve('foo.php');
-// will echo "/absolute/path/to/some/directory/foo.php", if the file exists.
+// will echo "/absolute/path/to/module/directory/foo.php", if the file exists.
 ```
-
-In order to stop using the context, simply unset the variable:
-
-```php
-unset($context);
-```
-
-Many contexts can exist at the same time, but only the latest one will be used. Once it's destroyed æ will restore the previously active context. It is a generally a good idea to assign contexts to local variables and destroy them as soon as possible.
-
 
 ### Importing code
 
