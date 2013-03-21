@@ -16,14 +16,15 @@
 # limitations under the License.
 # 
 
-// TODO: Add ability to change background color of the destination image (including opacity).
-// TODO: Add ability to not scale smaller images to fit() and cover().
-// TODO: Add ability to change quality of the output JPEG.
-// FIXME: scale() and fit() must accept NULL as one parameter.
-
 ae::invoke('aeImage');
 
 class aeImage
+/*
+	A very simple image manipulation library.
+	
+	`image` options:
+		`quality`	-	JPEG quality
+*/
 {
 	protected $path;
 	
@@ -116,6 +117,13 @@ class aeImage
 		list($width, $height) = $this->_dimensions($width, $height);
 		
 		$destination = imagecreatetruecolor($width, $height);
+		
+		if ($this->type === IMAGETYPE_PNG) 
+		{
+			imagealphablending($destination, false);
+			imagesavealpha($destination, true);
+		}
+		
 		$success = imagecopyresampled(
 			$destination,
 			$this->source,
@@ -148,6 +156,13 @@ class aeImage
 		list($width, $height) = $this->_dimensions($width, $height);
 		
 		$destination = imagecreatetruecolor($width, $height);
+		
+		if ($this->type === IMAGETYPE_PNG) 
+		{
+			imagealphablending($destination, false);
+			imagesavealpha($destination, true);
+		}
+		
 		$success = imagecopyresampled(
 			$destination,
 			$this->source,
@@ -176,7 +191,6 @@ class aeImage
 	public function cover($width, $height)
 	{
 		$this->_load();
-		list($width, $height) = $this->_dimensions($width, $height);
 		
 		$target_ratio = $width / $height;
 		$source_ratio = $this->source_width / $this->source_height;
@@ -187,7 +201,7 @@ class aeImage
 		}
 		else 
 		{
-			$this->scale(null, $heigh);
+			$this->scale(null, $height);
 		}
 		
 		return $this->crop($width, $height);
@@ -196,7 +210,6 @@ class aeImage
 	public function fit($width, $height)
 	{
 		$this->_load();
-		list($width, $height) = $this->_dimensions($width, $height);
 		
 		$target_ratio = $width / $height;
 		$source_ratio = $this->source_width / $this->source_height;
@@ -315,7 +328,7 @@ class aeImage
 				$success = imagepng($this->source, $path);
 				break;
 			case IMAGETYPE_JPEG:
-				$success = imagejpeg($this->source, $path);
+				$success = imagejpeg($this->source, $path, ae::options('image')->get('quality', 75));
 				break;
 		}
 		
@@ -325,6 +338,9 @@ class aeImage
 		}
 		
 		$this->_unload();
+		
+		$this->prefix = null;
+		$this->suffix = null;
 		
 		return new aeImage($path);
 	}
@@ -348,7 +364,7 @@ class aeImage
 				exit;
 			case IMAGETYPE_JPEG:
 				header('Content-Type: image/jpeg');
-				imagejpeg($this->source);
+				imagejpeg($this->source, null, ae::options('image')->get('quality', 75));
 				exit;
 		}
 	}
