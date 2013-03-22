@@ -34,7 +34,7 @@ final class ae
 		Registers a directory as a source of libraries.
 	*/
 	{
-		$path = self::resolve($path);
+		$path = self::resolve($path, false);
 		
 		if (isset(self::$modules[$path]))
 		{
@@ -45,7 +45,7 @@ final class ae
 		self::$paths[] = $path;
 	}
 	
-	public static function resolve($path)
+	public static function resolve($path, $all_contexts = true)
 	/*
 		Resolves a relative path to a directory or file. By default
 		the parent of 'ae' directory is used for base:
@@ -80,16 +80,20 @@ final class ae
 		$_path = trim($_path, '/');
 		
 		$try[] = $path;
-		$try[] = dirname(__DIR__) . '/' . $_path;
 		
-		foreach (self::$paths as $module)
+		if (true === $all_contexts)
 		{
-			$try[] = $module . '/' . $_path;
+			$try[] = dirname(__DIR__) . '/' . $_path;
+			
+			foreach (self::$paths as $module)
+			{
+				$try[] = $module . '/' . $_path;
+			}
 		}
 		
 		while ($__path = array_pop($try))
 		{
-			if (!file_exists($__path))
+			if (!file_exists($__path) && in_array($__path, $stack))
 			{
 				continue;
 			}
@@ -107,7 +111,7 @@ final class ae
 	const factory = 1;
 	const singleton = 2;
 	
-	private static $current_path;
+	private static $stack = array();
 	
 	public static function invoke($misc, $type = 0)
 	/*
@@ -137,7 +141,7 @@ final class ae
 		used to create and reuse a single instance of an object.
 	*/
 	{
-		$data =& self::$paths[self::$current_path];
+		$data =& self::$paths[end(self::$stack)];
 		
 		if (ae::factory & $type)
 		{
@@ -166,7 +170,7 @@ final class ae
 			return;
 		}
 		
-		$ps = new aeSwitch(self::$current_path, $path);
+		$ps = new aeStack(self::$stack, $path);
 		
 		self::$paths[$path] = array();
 		
@@ -222,7 +226,7 @@ final class ae
 	{
 		$path = self::resolve($path);
 		
-		$ps = new aeSwitch(self::$current_path, $path);
+		$ps = new aeStack(self::$stack, $path);
 		$ob = new aeBuffer();
 		
 		__ae_include__($path, $parameters);
@@ -422,6 +426,36 @@ class aeBuffer
 	*/
 	{
 		echo $this->render($variables);
+	}
+}
+
+
+class aeStack
+/*
+	Provides an exception–safe way to push/pop values to/from stack.
+
+		$stack = array('foo');
+
+		$item = new aeStack($stack, 'bar');
+
+		var_dump($stack); // array('foo','bar');
+
+		unset($item);
+
+		var_dump($stack); // array('foo');
+*/
+{
+	protected $stack;
+
+	public function __construct(&$stack, $value)
+	{
+		$this->stack =& $stack;
+		array_push($this->stack, $value);
+	}
+
+	public function __destruct()
+	{
+		array_pop($this->stack);
 	}
 }
 
