@@ -18,13 +18,6 @@
 
 ae::invoke(array('aeRoute','request'), ae::factory);
 
-// Calculate request type and method constants.
-define('__ae_request_cli__', defined('STDIN'));
-define('__ae_request_ajax__', isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
-	&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST');
-define('__ae_request_method__', isset($_SERVER['REQUEST_METHOD']) ? 
-	strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN');
-
 class aeRequest
 /*
 	Simple request abstration.
@@ -332,3 +325,10 @@ class aeRoute
 }
 
 class aeRequestException extends Exception {}
+
+// Calculate request type and method constants.
+define('__ae_request_cli__', defined('STDIN'));
+define('__ae_request_ajax__', isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
+	&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST');
+define('__ae_request_method__', isset($_SERVER['REQUEST_METHOD']) ? 
+	strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN');
