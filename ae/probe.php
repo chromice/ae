@@ -16,10 +16,6 @@
 # limitations under the License.
 #
 
-// TODO: Improved memory and time presentation in inspector.
-// TODO: Memory footprint should be more readable (b, kb, mb, etc.)
-// FIXME: Object and method footprints must be dynamically calculated.
-
 ae::invoke('aeProbe');
 
 class aeProbe
@@ -47,7 +43,7 @@ class aeProbe
 	
 	public function report($description)
 	/*
-		Triggers a notice with performance mertrics in both absolute and delta terms.
+		Triggers a notice with performance mertrics in both absolute and relative terms.
 	*/
 	{
 		static $initial_time, $last_t, $last_m;
