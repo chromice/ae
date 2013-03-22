@@ -46,22 +46,21 @@ class aeProbe
 		Triggers a notice with performance mertrics in both absolute and relative terms.
 	*/
 	{
-		static $initial_time, $last_t, $last_m;
+		static $initial_time, $initial_memory, $last_t, $last_m;
 		
 		$t = microtime(true);
 		$m = memory_get_usage();
 
 		if (!isset($initial_time))
 		{
-			$initial_time = $t;
-			
-			$last_t = $t;
-			$last_m = $m;
+			$last_t = $initial_time = $t;
+			$last_m = $initial_memory = $m;
 		} 
 			
 		$dt = $t - $last_t;
 		$dm = $m - $last_m;
 		$ts = $t - $initial_time;
+		$ms = $m - $initial_memory;
 		
 		$last_t = $t;
 		$last_m = $m;
@@ -69,7 +68,7 @@ class aeProbe
 		$notice = sprintf('%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %s (%s).', 
 			$this->name, $description, 
 			$ts * 1000, $dt * 1000, 
-			self::_format($m, 0), 
+			self::_format($ms, 0), 
 			($dm < 0 ? '-' : '+') . self::_format(abs($dm), 0));
 		
 		ae::log($notice);
