@@ -12,16 +12,16 @@ ae::options('log')
 // 
 function probe_test()
 {
-	$probe = ae::probe('our little test');
-	echo memory_get_usage() . " \n";
-	$probe->report('initialized; did nothing');
+	$probe = ae::probe('Test probe');
+
+	$probe->report('did nothing');
 
 	// Declaring a variable would consume some memory
 	$string = "Hello";
-
+	
 	echo $string;
 
-	$probe->report('declared and echoed a string');
+	$probe->report('was declared and echoed a string');
 
 	$string2 = " world";
 

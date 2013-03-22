@@ -27,9 +27,6 @@ class aeProbe
 	A very simple profiler.
 */
 {
-	const report_footprint = 96; // footprint of the report()
-	const object_footprint = 448; // footprint of the aeProbe instance
-	
 	protected $name;
 	
 	public function __construct($name)
@@ -40,12 +37,12 @@ class aeProbe
 		}
 		
 		$this->name = $name;
-		$this->report('started');
+		$this->report('was created');
 	}
 	
 	public function __destruct()
 	{
-		$this->report('finished');
+		$this->report('was destroyed');
 	}
 	
 	public function report($description)
@@ -56,27 +53,22 @@ class aeProbe
 		static $initial_time, $last_t, $last_m;
 		
 		$t = microtime(true);
-		$m = memory_get_usage() - self::report_footprint;
-		$ts = 0.0;
+		$m = memory_get_usage();
 
 		if (!isset($initial_time))
 		{
-			$dt = 0;
-			$dm = 0;
 			$initial_time = $t;
-
-			$last_t = $t;
-			$last_m = $m - self::object_footprint;
-		}
-		else
-		{
-			$dt = $t - $last_t;
-			$dm = $m - $last_m;
-			$ts = $t - $initial_time;
 			
 			$last_t = $t;
 			$last_m = $m;
-		}
+		} 
+			
+		$dt = $t - $last_t;
+		$dm = $m - $last_m;
+		$ts = $t - $initial_time;
+		
+		$last_t = $t;
+		$last_m = $m;
 		
 		$notice = sprintf('%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %s (%s).', 
 			$this->name, $description, 

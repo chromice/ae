@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule (2,259 lines of well–formatted PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule (2,251 lines of well–formatted PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -354,18 +354,22 @@ $a = array(); $j = 0; while($j < 10000) $a[] = ++$j;
 $probe->report('filled memory with some garbage');
 
 unset($a);
+
+$probe->report('cleaned the garbage');
 ```
 
 If you run this script, the probe will log the following messages:
 
 ```markdown
-foo started. Timestamp: 0ms (+0.000ms). Footprint: 632156 bytes (+0 bytes).
+foo was created. Timestamp: 0ms (+0.000ms). Footprint: 683kb (+0b).
 
-foo slept for 3ms. Timestamp: 4ms (+3.566ms). Footprint: 632740 bytes (+1032 bytes).
+foo slept for 3ms. Timestamp: 3ms (+3.379ms). Footprint: 684kb (+572b).
 
-foo filled memory with some garbage. Timestamp: 13ms (+9.337ms). Footprint: 1419204 bytes (+786464 bytes).
+foo filled memory with some garbage. Timestamp: 10ms (+6.561ms). Footprint: 1mb (+768kb).
 
-foo finished. Timestamp: 14ms (+1.541ms). Footprint: 630084 bytes (-789120 bytes).
+foo cleaned the garbage. Timestamp: 11ms (+1.203ms). Footprint: 685kb (-767kb).
+
+foo was destroyed. Timestamp: 11ms (+0.095ms). Footprint: 686kb (+696b).
 ```
 
 ## Request
