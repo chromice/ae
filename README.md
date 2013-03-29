@@ -416,7 +416,7 @@ foo was destroyed. Timestamp: 11ms (+0.095ms). Footprint: 686kb (+696b).
 
 ## Request
 
-Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds requests using `aeRequest::cli`, `aeRequest::ajax` and `aeRequest::method` constants:
+Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `aeRequest::cli`, `aeRequest::ajax` and `aeRequest::method` constants:
 
 ```php
 ae::import('ae/request.php');
@@ -621,7 +621,7 @@ $image
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
 
-// Resize to fit (and preserve for next operation)
+// Resize to fit (and preserve the result for next operation)
 $small = $image
 	->fit(320, 320)
 	->suffix('_small')
