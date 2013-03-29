@@ -105,9 +105,9 @@ You can use `ae::import()` method to include any PHP script:
 
 ```php
 ae::import('path/to/library.php'); 
-// æ will resolve the path and include the script, if it 
-// has not been included yet.
 ```
+
+æ will resolve the path and include the script, if it has not been included yet.
 
 ### Running code
 
@@ -143,8 +143,11 @@ In order to load a library you must use `ae::load()` method:
 
 ```php
 $options = ae::load('ae/options.php');
-	
-// ...which is the same as...
+```
+
+Which is the same as:
+
+```php
 ae::import('ae/options.php');
 $options = new aeOptions();
 ```
@@ -153,32 +156,42 @@ You can configure the library instance via second parameter of `ae::load()`. æ 
 
 ```php
 $lib_options = ae::load('ae/options.php', 'my_library_namespace');
-	
-// That is identical to:
+```
+
+That is identical to:
+
+```php
 ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-æ does not "automagically" guess what class to use. You must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to instantiate an object:
+æ does not "automagically" guess what class to use. You must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to instantiate an object.
+
+In order to create a new instance of `LibraryClassName`, every time the library is loaded, you should pass the class name as the first argument:
 
 ```php
 ae::invoke('LibraryClassName');
-// æ will create a new instance of LibraryClassName, every
-// time the library is loaded.
+```
 
+If you want to have one and only one instance of the class, you can instruct æ to follow the singleton pattern:
+
+```php
 ae::invoke('SingletonClassName', ae::singleton);
-// Only one instance of SingletonClassName will be created;
-// all subsequent calls to ae::load() will return that instance.
+```
 
+You can also use the factory pattern, and delegate creating the instance to a function:
+
+```php
 ae::invoke('a_factory_function', ae::factory);
-// a_factory_function() function will be called.
+```
 
+Both patterns can be combined (note the usage of a static class method as a factory):
+
+```php
 ae::invoke(
 	array('AnotherSingletonClassName', 'factory'), 
 	ae::factory | ae:singleton
 );
-// AnotherSingletonClassName::factory() method will be 
-// used to create and reuse a single instance of an object.
 ```
 
 Please consult with the source code of the core libraries for real life examples.
