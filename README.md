@@ -48,7 +48,7 @@ Here is a very a simple æ application:
 ?>
 ```
 
-You should put this code into a file named *index.php* in the root web directory. */ae* directory containing all the core and libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all URIs it cannot resolve to *index.php* by adding the following rules to *.htaccess* file:
+You should put this code into a file named *index.php* in the root web directory. */ae* directory containing all the core and libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -73,7 +73,7 @@ If you change the address to *http://localhost/universe*, you should see:
 Hello universe!
 ```
 
-Congratulations! Now you should probably tinker with the example application and read the rest of this document to get a basic understanding of æ capabilities.
+Congratulations! You may tinker with the examples (see */examples* directory) or read the rest of this document to get a basic understanding of æ capabilities.
 
 
 ## Core
@@ -84,7 +84,7 @@ In order to start using æ in your application, you must include *core.php* loca
 include 'ae/core.php';
 ```
 
-This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and register modules and load libraries. All these methods accept both absolute and relative file paths.
+This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, register modules and load libraries. All these methods accept both absolute and relative file paths.
 
 If you want æ to look for a file in a specific directory, you can register it:
 
@@ -92,7 +92,7 @@ If you want æ to look for a file in a specific directory, you can register it:
 ae::register('/absolute/path/to/module/directory/');
 ```
 
-Now æ will look for files in that directory as well as *ae* and root directories:
+Now æ will look for files in that directory as well as */ae* and root directories:
 
 ```php
 echo ae::resolve('foo.php');
@@ -118,17 +118,21 @@ $output = ae::render('/your/page.php', array(
 	'title' => 'Example!',
 	'body' => '<h1>Hello world!</h1>'
 ));
-
-// if content of /your/page.php is:
-// <title><?= $title ?></title><body><?= $body ?></body>
-
-echo $output;
-
-// will produce:
-// <title>Example!</title><body><h1>Hello world!</h1></body>
 ```
 
-Or you can use `ae::output()` to output the rendered content immediately:
+Provided the content of */your/page.php* is:
+
+```php
+<title><?= $title ?></title><body><?= $body ?></body>
+```
+
+The `$output` variable would contain:
+
+```html
+<title>Example!</title><body><h1>Hello world!</h1></body>
+```
+
+In order to echo the output of a script, you can use `ae::output()` method:
 
 ```php
 ae::output('/your/page.php', array(
@@ -158,31 +162,49 @@ You can configure the library instance via second parameter of `ae::load()`. æ 
 $lib_options = ae::load('ae/options.php', 'my_library_namespace');
 ```
 
-That is identical to:
+That would be identical to:
 
 ```php
 ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-æ does not "automagically" guess what class to use. You must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to instantiate an object.
+æ does not "automagically" guess what class to use, when you are using `ae::load()` method. Instead, you must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to instantiate an object.
 
 In order to create a new instance of `LibraryClassName`, every time the library is loaded, you should pass the class name as the first argument:
 
 ```php
 ae::invoke('LibraryClassName');
+
+class LibraryClassName
+{
+	function __construct($parameters = null) {}
+}
 ```
 
 If you want to have one and only one instance of the class, you can instruct æ to follow the singleton pattern:
 
 ```php
 ae::invoke('SingletonClassName', ae::singleton);
+
+class SingletonClassName
+{
+	function __construct() {}
+}
 ```
 
-You can also use the factory pattern, and delegate creating the instance to a function:
+**NB!** For the sake of behaviour consistency singletons are not configurable via the `ae::load()` method.
+
+You can also use the factory pattern and delegate the creation of the instance to a function:
 
 ```php
 ae::invoke('a_factory_function', ae::factory);
+
+function a_factory_function($parameters = null)
+{
+	return new STDClass();
+}
+
 ```
 
 Both patterns can be combined (note the usage of a static class method as a factory):
@@ -192,6 +214,16 @@ ae::invoke(
 	array('AnotherSingletonClassName', 'factory'), 
 	ae::factory | ae:singleton
 );
+
+class AnotherSingletonClassName
+{
+	public static function factory()
+	{
+		$class = get_called_class();
+		
+		return new $class;
+	}
+}
 ```
 
 Please consult with the source code of the core libraries for real life examples.
@@ -200,22 +232,15 @@ Please consult with the source code of the core libraries for real life examples
 
 `aeBuffer` is a core utility class for capturing output in an exception–safe way:
 
+You must create a buffer and assign it to a variable, in order to start capturing output:
+
 ```php
-// Create a buffer and start capturing output:
 $buffer = new aeBuffer();
-
-echo 'Hello world!';
-
-// Now output the buffer:
-$buffer->output();
-// or you could:
-echo $buffer->render();
 ```
 
-All output is captured until you call `aeBuffer::output()` or `aeBuffer::render()` methods. If you do not use these methods, buffer's content will be discarded when its instance is destroyed, either manually or when execution leaves the scope:
+All output is captured until you  either call `aeBuffer::output()` method to echo its content or `aeBuffer::render()` method to return its content as a string. If you do not use these methods, buffer's content will be discarded when the instance is destroyed, either manually or when execution leaves the scope. For example, no output is produced by this script:
 
 ```php
-// No output is produced by this script:
 $buffer = new aeBuffer(); 
 
 echo 'Invisible text.';
@@ -324,11 +349,11 @@ ae::import('ae/log.php');
 // Put all logs to /log directory (if it is writable)
 ae::options('log')->set('directory', '/log');
 
-// Now you can log a message and dump a variable
-ae::log("Here's a dump of $_SERVER:", $_SERVER);
-
 // Trigger an error artificially.
 trigger_error("Everything goes according to the plan.", E_USER_ERROR);
+	
+// You can log a message and dump a variable
+ae::log("Let's dump something:", $_SERVER);
 ```
 
 In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
@@ -343,13 +368,17 @@ You can also dump the environment variables for each request like this:
 ae::options('log')->set('environment', true);
 ```
 
-If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (commonly known as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
+If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
 
 æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, as well iframes or AJAX requests. Just make sure that */inspector* directory is located in the web root and instruct the log library to display inspect button on the page:
 
 ```php
 ae::options('log')->set('inspector', true);
 ```
+
+Pressing the inspect button would open a new window, which will look something like this:
+
+![](inspector/example.png)
 
 ## Probe
 
@@ -447,7 +476,7 @@ $request = ae::request();
 echo $request->type(); // json
 ```
 
-Requests can be re–routed to a specific directory. For example, if you had *index.php* in the root directory, you could do the following:
+Requests can be re–routed to a specific directory:
 
 ```php
 // GET /article/123 HTTP/1.1
@@ -505,7 +534,7 @@ Here is an example of a simple application that creates gzip'ed response with a 
 include 'ae/core.php';
 
 ae::options('response')
-	->set('compress', true); // turn compression on
+	->set('compress', true); // turn on the g-zip compression
 
 $response = ae::response('html')
 	->header('X-Header-Example', 'Some value');
@@ -578,7 +607,7 @@ $type = $image->type(); // png, jpeg or gif
 $mimetype = $image->mimetype();
 
 // Blow one pixel up.
-$cropped = $image
+$image
 	->crop(1,1)
 	->scale($width, null) // scale proportionately.
 	->save('tiny_bit.png');
@@ -592,15 +621,15 @@ $image
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
 
-// Resize to fit
-$image
+// Resize to fit (and preserve for next operation)
+$small = $image
 	->fit(320, 320)
 	->suffix('_small')
 	->save();  // save as 'test_small.jpg'
 
 // Apply colorize filter
 // using http://uk3.php.net/manual/en/function.imagefilter.php
-$image
+$small
 	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
 	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
 ```
