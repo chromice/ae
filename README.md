@@ -701,7 +701,7 @@ In this example we are using `{keys}` and `{values}` placeholders and specify ke
 
 ```php
 ae::database()
-	->query("UPDATE {table} SET {keys_values} WHERE `id` = {author_id}")
+	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
 	->names(array(
 		'table' => 'authors'
 	))
@@ -714,7 +714,7 @@ ae::database()
 	->make();
 ```
 
-In this example we are using `{keys_values}` placeholder and specifying its value via `aeDatabase::values()` method, while `{author_id}` placeholder in conjunction with `aeDatabase::variables()` will escape the value of `$morgan_id`. 
+In this example we are using `{keys=values}` placeholder and specifying its value via `aeDatabase::values()` method, while `{author_id}` placeholder in conjunction with `aeDatabase::variables()` will escape the value of `$morgan_id`. 
 
 Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 

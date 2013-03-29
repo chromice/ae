@@ -41,7 +41,7 @@ $morgan_id = ae::database()->insert_id();
 
 // EXAMPLE: Update
 ae::database()
-	->query("UPDATE {table} SET {keys_values} WHERE `id` = {author_id}")
+	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
 	->names(array(
 		'table' => 'authors'
 	))

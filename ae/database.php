@@ -354,7 +354,7 @@ class aeDatabase
 			
 			$placeholders['keys'] = implode(', ', $keys);
 			$placeholders['values'] = implode(', ', $values);
-			$placeholders['keys_values'] = implode(', ', $keys_values);
+			$placeholders['keys=values'] = implode(', ', $keys_values);
 		}
 
 		$tokens = preg_replace('/.+/', '{$0}', array_keys($placeholders));
@@ -627,7 +627,7 @@ class aeDatabase
 		
 		return $this->query("INSERT INTO {table} ({keys}, $insert_keys) 
 				VALUES ({values}, $insert_values) 
-				ON DUPLICATE KEY UPDATE {keys_values}")
+				ON DUPLICATE KEY UPDATE {keys=values}")
 			->names(array(
 				'table' => $table
 			))
@@ -640,7 +640,7 @@ class aeDatabase
 		Updates existing row(s) and returns the number of affected rows.
 	*/
 	{
-		return $this->query("UPDATE {table} SET {keys_values} {sql:where}")
+		return $this->query("UPDATE {table} SET {keys=values} {sql:where}")
 			->names(array(
 				'table' => $table
 			))
