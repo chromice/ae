@@ -200,6 +200,11 @@ final class ae
 			return $data['instance'];
 		}
 		
+		if (!empty($data['singleton']))
+		{
+			$parameters = null;
+		}
+		
 		if (isset($data['callback']))
 		{
 			$instance = call_user_func($data['callback'], $parameters);
