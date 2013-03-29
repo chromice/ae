@@ -91,16 +91,8 @@ var ae_log_monitor = function (log, source) {
 	}
 	
 	// Enable button for the top window
-	if (window === window.top) {
-	
-		var button = document.createElement('iframe');
-		
-		button.setAttribute('id', "ae-inspector-button");
-		button.setAttribute('src', "/inspector/button.html");
-		button.setAttribute('style', "position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px");
-		button.setAttribute('frameborder', "0");
-	
-		document.body.appendChild(button);
+	if (window === window.top) {	
+		document.write('<iframe id="ae-inspector-button" src="/inspector/button.html" style="position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px" frameborder="0"></iframe>');
 	}
 })();
 
