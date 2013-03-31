@@ -57,7 +57,7 @@ else
 	<?= $text->error('<em class="error">', '</em>') ?>
 </div>
 <?php foreach ($textarea as $_ta): ?>
-<div class="field <?= $_ta>classes() ?>">
+<div class="field <?= $_ta->classes() ?>">
 	<label>Text area:</label>
 	<textarea name="<?= $_ta->name() ?>[<?= $_ta->index() ?>]"><?= $_ta->value() ?></textarea>
 	<?= $_ta->error() ?>
