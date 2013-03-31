@@ -4,16 +4,28 @@ $form = ae::form('form-id');
 
 $form->values(array('select' => 'bar'));
 
-$text = $form->single('text')
-	->required('Please enter some text')
-	->length('Let\'s keep it short, shall we?', 140);
+$number = $form->single('text')
+	->required('Please enter some number.')
+	->format('Please enter a valid integer number.', aeForm::valid_integer)
+	// ->format('Please enter a valid octal number.', aeForm::valid_octal)
+	// ->format('Please enter a valid hexadecimal number.', aeForm::valid_hexadecimal)
+	// ->format('Please enter a valid decimal number.', aeForm::valid_decimal)
+	// ->format('Please enter a valid float number.', aeForm::valid_float)
+	// ->format('Please enter a valid number.', aeForm::valid_number)
+	->min_value('Cannot be less then zero.', 0)
+	->max_value('Cannot be higher then a thousand.', 1000);
 
-$textarea = $form->sequence('textarea', 0, 5); // the last field is validated only if not empty
 
-if ($form->value('action') === 'add')
-{
-	$textarea->increment();
-}
+$textarea = $form->sequence('textarea', 0, 5) // the last field is validated only if not empty
+	->required('Please enter some text.')
+	// ->format('Must be a valid email, e.g. "some.dude@example.com".', aeForm::valid_email)
+	// ->format('Must be a valid URL with path and query components.', aeForm::valid_url | aeForm::valid_url_path | aeForm::valid_url_query)
+	// ->format('Must be a valid IP address.', aeForm::valid_ip)
+	// ->format('Must be a valid IP address (IPv4 or IPv6).', aeForm::valid_ipv4 | aeForm::valid_ipv6)
+	// ->format('Must be a valid private IP address.', aeForm::valid_pivate_ip)
+	// ->format('Must be a valid public IP address.', aeForm::valid_public_ip)
+	->min_length('Just type a few characters!', 2)
+	->max_length('Let\'s keep it short, shall we?', 140);
 
 $select = $form->single('select')
 	->required('How did you manage to select nothing?!')
@@ -22,51 +34,91 @@ $select = $form->single('select')
 $checkboxes = $form->multiple('check') // field is validated only if not empty
 	->required('Please check at least one box!') // at least one value is required by default
 	->options(array('foo' => 'Foo', 'bar' => 'Bar')); // keys are used here
-	
-if ($form->is_valid())
+
+// Process special actions
+if ($form->value('add'))
 {
-	$values = $form->values();
-			
-	echo '<h1>' . $values['text'] . '</h1>';
-	echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
-	echo '<dl>';
-	echo '<dt>Selected:</dt>';
-	echo '<dd>' . $values['select'] . '</dd>';
-	echo '<dt>Checked:</dt>';
-	echo '<dd>' . implode(', ', $values['checked']) . '</dd>';
-	echo '</dl>';
+	$textarea[] = ''; // Empty by default
 }
-else
+else if ($index = $form->value('remove'))
 {
-	$errors = $form->errors();
-	
-	// $errors = array(
-	// 	'text' => '...',
-	// 	'textarea' => array(...),
-	// 	'select' => '...',
-	// 	'check' => array(0 => '...', 1 => null)
-	// );
+	unset($textarea[$index]);
 }
+// Process the form only if no other actions are made
+else if ($form->is_posted())
+{
+	$is_valid = $form->validate();
+	
+	if (empty($text->error) && $form->value('number') === '666')
+	{
+		$text->error = 'Devils are not allowed!';
+		
+		$is_valid = false;
+	}
+	
+	if ($is_valid)
+	{
+		$values = $form->values();
+				
+		echo '<h1>' . $values['text'] . '</h1>';
+		echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
+		echo '<dl>';
+		echo '<dt>Selected:</dt>';
+		echo '<dd>' . $values['select'] . '</dd>';
+		echo '<dt>Checked:</dt>';
+		echo '<dd>' . implode(', ', $values['checked']) . '</dd>';
+		echo '</dl>';
+		
+	}
+	else
+	{
+		$errors = $form->errors();
+		
+		// $errors = array(
+		// 	'text' => '...',
+		// 	'textarea' => array(...),
+		// 	'select' => '...',
+		// 	'check' => array(0 => '...', 1 => null)
+		// );
+	}
+}
+
 
 // Generate HTML of the form 
 ?>
 <?= $form->open() ?>
-<div class="field <?= $text->classes() ?>">
-	<label for="text-input">Text input:</label>
-	<input name="<?= $text->name() ?>" id="text-input" type="text" value="<?= $text->value() ?>">
-	<?= $text->error('<em class="error">', '</em>') ?>
+<!-- <form action="" method="post">
+	<input type="hidden" name="__ae_form_id__" value="form-id">
+	<input type="submit" tabindex="-1" style="position:absolute;left:-9999px;"> -->
+<div class="field">
+	<label for="text-input">Number input:</label>
+	<input name="<?= $number->name() ?>" id="text-input" type="number" value="<?= $number->value() ?>">
+	<?= $number->error('<em class="error">', '</em>') ?>
 </div>
-<?php foreach ($textarea as $_ta): ?>
-<div class="field <?= $_ta->classes() ?>">
-	<label>Text area:</label>
-	<textarea name="<?= $_ta->name() ?>[<?= $_ta->index() ?>]"><?= $_ta->value() ?></textarea>
+<?php foreach ($textarea as $k => $_ta):
+	// You could use fields from other sequences in the same loop like this:
+	
+	// if (empty($sequence[$k]))
+	// {
+	// 	$sequence[$k] = 'Default value';
+	// }
+	// 
+	// $_other = $sequence[$k];
+	// $_another = $another_sequence[$k];
+?>
+<div class="field">
+	<label form="textarea-<?= $_ta->index() ?>">Text area:</label>
+	<textarea name="<?= $_ta->name() ?>[<?= $_ta->index() ?>]" id="textarea-<?= $_ta->index() ?>"><?= $_ta->value() ?></textarea>
+<?php if ($_ta->index() > 0): ?>
+	<button type="submit" name="remove" value="<?= $_ta->index() ?>">Remove</button>
+<?php endif ?>
 	<?= $_ta->error() ?>
 </div>
 <?php endforeach ?>
 <?php if ($textarea->count() < 5): ?>
-<p><button type="submit" name="action" value="add">Add</button> textarea.</p>
+<p><button type="submit" name="add" value="textarea">Add</button> textarea.</p>
 <?php endif ?>
-<div class="field <?= $select->classes() ?>">
+<div class="field">
 	<label for="select-input">Select something:</label>
 	<select name="<?= $select->name() ?>" id="select-input">
 		<option value="foo" <?= $select->selected('foo') ?>>Foo</option>
@@ -74,7 +126,7 @@ else
 	</select>
 	<?= $select->error() ?>
 </div>
-<div class="field <?= $checkboxes->classes() ?>">
+<div class="field">
 	<label>Checkboxes:</label>
 	<label><input type="checkbox" name="<?= $checkboxes->name() ?>[]" value="foo" <?= $checkboxes->checked('foo') ?>>foo</label>
 	<label><input type="checkbox" name="<?= $checkboxes->name() ?>[]" value="bar" <?= $checkboxes->checked('bar') ?>>bar</label>
