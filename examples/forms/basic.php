@@ -2,81 +2,78 @@
 
 $form = ae::form('form-id');
 
-$form->set_data(array('select' => 'bar'));
+$form->values(array('select' => 'bar'));
 
-if ($form->is_submitted()) 
+$text = $form->field('text')
+	->required('Please enter some text')
+	->length('Let\'s keep it short, shall we?', 140);
+	
+$textareas = $form->sequence('textarea', 0, 5); // the last field is validated only if not empty
+
+$select = $form->field('select')
+	->options(array('foo','bar')) // prevent user from supplying wrong values
+	->required('How did you manage to select nothing?!');
+
+$checkboxes = $form->multiple('check') // field is validated only if not empty
+	->options(array('foo' => 'Foo', 'bar' => 'Bar')) // keys are used here
+	->required('Please check at least one box!'); // at least one value is required by default
+	
+if ($form->is_valid())
 {
-	$form->validate('text')
-		->required('Please enter some text')
-		->length('Let\'s keep it short, shall we?', 140);
-		
-	$form->validate('textarea', aeForm::sequence); // the last field is validated only if not empty
+	$values = $form->values();
+			
+	echo '<h1>' . $values['text'] . '</h1>';
+	echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
+	echo '<dl>';
+	echo '<dt>Selected:</dt>';
+	echo '<dd>' . $values['select'] . '</dd>';
+	echo '<dt>Checked:</dt>';
+	echo '<dd>' . implode(', ', $values['checked']) . '</dd>';
+	echo '</dl>';
+}
+else
+{
+	$errors = $form->errors();
 	
-	$form->validate('select', aeForm::single)
-		->options(array('foo','bar')) // prevent user from supplying wrong values
-		->required('How did you manage to select nothing?!');
-	
-	$form->validate('check', aeForm::multiple) // field is validated only if not empty
-		->options(array('foo' => 'Foo', 'bar' => 'Bar')) // keys are used here
-		->required('Please check at least one box!'); // at least one value is required by default
-		
-	if ($form->is_valid())
-	{
-		$values = $form->valid_data();
-				
-		echo '<h1>' . $values['text'] . '</h1>';
-		echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
-		echo '<dl>';
-		echo '<dt>Selected:</dt>';
-		echo '<dd>' . $values['select'] . '</dd>';
-		echo '<dt>Checked:</dt>';
-		echo '<dd>' . implode(', ', $values['checked']) . '</dd>';
-		echo '</dl>';
-	}
-	else
-	{
-		$errors = $form->errors();
-		
-		// $errors = array(
-		// 	'text' => '...',
-		// 	'textarea' => array(...),
-		// 	'select' => '...',
-		// 	'check' => array(0 => '...', 1 => null)
-		// );
-	}
+	// $errors = array(
+	// 	'text' => '...',
+	// 	'textarea' => array(...),
+	// 	'select' => '...',
+	// 	'check' => array(0 => '...', 1 => null)
+	// );
 }
 
 // Generate HTML of the form 
 ?>
 <?= $form->open() ?>
-<div class="field <?= $form->classes('text') ?>">
+<div class="field <?= $text->classes() ?>">
 	<label for="text-input">Text input:</label>
-	<input name="text" id="text-input" type="text" value="<?= $form->value('text') ?>">
-	<?= $form->error('text') ?>
+	<input name="text" id="text-input" type="text" value="<?= $text->value() ?>">
+	<?= $text->error('<em class="error">', '</em>') ?>
 </div>
-<?php while ($form->has('textarea', 0, 5)): ?>
-<div class="field <?= $form->classes('textarea') ?>">
+<?php while ($textarea = $textareas->next()): ?>
+<div class="field <?= $textarea>classes() ?>">
 	<label for="textarea-input">Text area:</label>
-	<textarea name="textarea[<?= $form->index('textarea') ?>]" id="textarea"><?= $form->value('textarea') ?></textarea>
-	<?= $form->error('textarea') ?>
+	<textarea name="textarea[<?= $textarea->index() ?>]" id="textarea"><?= $textarea->value() ?></textarea>
+	<?= $textarea->error() ?>
 </div>
 <?php endwhile ?>
-<?php if ($form->index('textarea') < 5): ?>
+<?php if ($textareas->count() < 5): ?>
 <p><?= $form->add('textarea', 'Add', 'Add one more') ?> text area.</p>
 <?php endif ?>
-<div class="field <?= $form->classes('select') ?>">
+<div class="field <?= $select->classes() ?>">
 	<label for="select-input">Select something:</label>
 	<select name="select" id="select-input">
-		<option value="foo" <?= $form->selected('select', 'foo') ?>>Foo</option>
-		<option value="bar" <?= $form->selected('select', 'bar') ?>>Bar</option>
+		<option value="foo" <?= $select->selected('foo') ?>>Foo</option>
+		<option value="bar" <?= $select->selected('bar') ?>>Bar</option>
 	</select>
-	<?= $form->error('select') ?>
+	<?= $select->error() ?>
 </div>
-<div class="field <?= $form->classes('check') ?>">
+<div class="field <?= $checkboxes->classes() ?>">
 	<label>Checkboxes:</label>
-	<label><input type="checkbox" name="check[]" value="foo" <?= $form->checked('check', 'foo') ?>>foo</label>
-	<label><input type="checkbox" name="check[]" value="bar" <?= $form->checked('check', 'bar') ?>>bar</label>
-	<?= $form->error('check') ?>
+	<label><input type="checkbox" name="check[]" value="foo" <?= $checkboxes->checked('foo') ?>>foo</label>
+	<label><input type="checkbox" name="check[]" value="bar" <?= $checkboxes->checked('bar') ?>>bar</label>
+	<?= $checkboxes->error() ?>
 </div>
 <div class="field">
 	<?= $form->submit('Submit') ?>
