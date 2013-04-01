@@ -24,6 +24,10 @@ var ae_log_monitor = function (log, source) {
 		'source': source,
 		'log': log
 	});
+	
+	if (!document.getElementById('ae-inspector-button')) {
+		document.write('<iframe id="ae-inspector-button" src="/inspector/button.html" style="position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px" frameborder="0"></iframe>');
+	}
 };
 
 // Intercept all AJAX calls.
@@ -88,11 +92,6 @@ var ae_log_monitor = function (log, source) {
 	
 	for (var i=0, comment; comment = comments[i]; i++){
 		ae_log_monitor(comment, 'document');
-	}
-	
-	// Enable button for the top window
-	if (window === window.top) {	
-		document.write('<iframe id="ae-inspector-button" src="/inspector/button.html" style="position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px" frameborder="0"></iframe>');
 	}
 })();
 
