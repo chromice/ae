@@ -99,6 +99,19 @@ class aeDatabase
 		$this->db->close();
 	}
 	
+	// ===============
+	// = Transaction =
+	// ===============
+
+	public function transaction()
+	/*
+		Returns a transaction object, which opens up a new transaction, and 
+		rollsback it back unless it has been explicitly committed.
+	*/
+	{
+		return new aeDatabaseTransaction($this->db);
+	}
+	
 	// =========
 	// = Query =
 	// =========
@@ -660,6 +673,29 @@ class aeDatabase
 			))
 			->where($where)
 			->make();
+	}
+}
+
+class aeDatabaseTransaction
+{
+	protected $db;
+	
+	public function __construct($db)
+	{
+		$this->db = $db;
+		
+		$this->db->autocommit(false);
+	}
+	
+	public function __destruct()
+	{
+		$this->db->rollback();
+		$this->db->autocommit(true);
+	}
+	
+	public function commit()
+	{
+		$this->db->commit();
 	}
 }
 

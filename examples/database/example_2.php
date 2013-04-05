@@ -39,6 +39,8 @@ ae::database()
 
 $morgan_id = ae::database()->insert_id();
 
+$transaction = ae::database()->transaction();
+
 // EXAMPLE: Update
 ae::database()
 	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
@@ -53,10 +55,17 @@ ae::database()
 	))
 	->make();
 
+// Commit previous insert statement.
+$transaction->commit();
+
 // EXAMPLE: Shortcuts
 ae::database()->update('authors', array(
 	'nationality' => 'English'
 ), array('id' => $morgan_id));
+
+// Rollback previous update
+unset($transaction);
+
 $stephenson_id = ae::database()->insert('authors', array(
 	'name' => 'Neal Stephenson',
 	'nationality' => 'American'
@@ -65,6 +74,7 @@ $gibson_id = ae::database()->insert('authors', array(
 	'name' => 'William Ford Gibson',
 	'nationality' => 'Canadian'
 ));
+
 
 echo '<p>Seems to work pretty well so far&hellip;</p>';
 
@@ -81,7 +91,7 @@ echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
-	echo "- {$author['name']}\n";
+	echo "- {$author['name']} ({$author['nationality']})\n";
 }
 
 echo '</pre>';

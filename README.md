@@ -20,6 +20,7 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 - [Image](#image)
 - [Database](#database)
 	- [Making queries](#making-queries)
+	- [Transactions](#transactions)
 	- [Retrieving data](#retrieving-data)
 	- [Active record](#active-record)
 	- [Relationships](#relationships)
@@ -733,6 +734,30 @@ $gibson_id = ae::database()->insert('authors', array(
 ```
 
 > There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
+
+### Transactions
+
+A sequence of dependant database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
+
+```php
+// Open transaction
+$transaction = ae::database()->transaction();
+
+// ...perform a series of queries...
+
+$transaction->commit();
+
+// ...perform another series of queries...
+
+$transaction->commit();
+
+// Close transaction (rolling back any uncommitted queries)
+unset($transaction);
+```
+
+This way, if one of your SQL queries fails, it will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
+
+**NB!** Only one transaction can exist at a time.
 
 
 ### Retrieving data
