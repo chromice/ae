@@ -394,6 +394,17 @@ class aeDatabase
 		return $query;
 	}
 	
+	public function prepare()
+	/*
+		Returns a raw MySQLi prepared statement and resets the query.
+	*/
+	{
+		$query = $this->_query();
+		$query = str_replace($this->value('?'), '?', $query);
+		
+		return $this->db->prepare($query);
+	}
+	
 	public function identifier($name)
 	/*
 		Protects an alias, table or column name with backticks.
