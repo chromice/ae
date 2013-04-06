@@ -309,6 +309,7 @@ final class ae
 	const text = 1;
 	const tag = 2;
 	const attribute = 3;
+	const identifier = 4;
 	
 	public static function escape($value, $context = ae::text)
 	/*
@@ -317,7 +318,8 @@ final class ae
 		ae::html - don't escape;
 		ae::text - escape all HTML code, but preserve entities;
 		ae::tag - safe for tag or attribute names;
-		ae::attribute - safe for attribute values.
+		ae::attribute - safe for attribute values;
+		ae::identifier - alphnumerics, dashes and underscores only.
 		
 	*/
 	{
@@ -325,6 +327,8 @@ final class ae
 		{
 			case ae::tag:
 				return strtolower(preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value));
+			case ae::identifier:
+				return strtolower(preg_replace('/[^a-zA-Z0-9_\-]/', '', $value));
 			case ae::attribute:
 			case ae::text:
 				return preg_replace('/&amp;([a-z\d]+|#\d+|#x[a-f\d]+);/i', '&$1;', htmlspecialchars($value, ENT_QUOTES));
@@ -336,8 +340,9 @@ final class ae
 
 function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 /*
-	Allows you to run an external script with nearly pristine namespace,
-	optionally passing some parameters to it via second argument.
+	Allows you to run an external script with nearly pristine stack
+	and no $this, optionally passing some parameters to it via the
+	second argument.
 */
 {
 	if (is_array($__ae_secret_array__))
