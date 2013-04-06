@@ -20,6 +20,9 @@ echo 'Is CLI: ' . (aeRequest::is_cli ? 'Yes' : 'No') . "\n";
 echo 'Is AJAX: ' . (aeRequest::is_ajax ? 'Yes' : 'No') . "\n";
 echo 'Is Routed: ' . ($request->is_routed() ? 'Yes' : 'No') . "\n\n";
 
+$segments = aeRequest::segments();
+var_dump($segments);
+
 echo $request->type();
 echo "\n";
 echo $request->segment(0); // 'segment-1'

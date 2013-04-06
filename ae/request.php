@@ -39,6 +39,10 @@ class aeRequest
 		$this->type = $type;
 		$this->depth = $depth;
 		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
+		
+		$this->segments = array_map(function($segment) {
+			return ae::escape($segment, ae::identifier);
+		}, $this->segments);
 	}
 	
 	public function is_routed()
@@ -115,6 +119,11 @@ class aeRequest
 		return implode('/', array_slice($this->segments, 0, $this->depth));
 	}
 	
+	public function slice($offset, $length = null)
+	{
+		return array_slice($this->segments, $offset + $this->depth, $length);
+	}
+	
 	public function segment($offset, $default = false)
 	/*
 		Returns segment or default value, if segment does not exist.
@@ -131,6 +140,71 @@ class aeRequest
 	*/
 	{
 		return new aeRoute($this->uri(), $base);
+	}
+	
+	public static function segments()
+	/*
+		Returns an array of URI segments
+	*/
+	{
+		static $segments;
+		
+		if (!empty($segments))
+		{
+			return $segments;
+		}
+		
+		// Parse uri
+		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
+		$uri = '';
+		
+		// Determine the uri path
+		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
+		{
+			$uri = isset($_SERVER[$var]) ? $_SERVER[$var] : @getenv($var);
+		
+			if ($var === 'REQUEST_URI' && false !== ($pos = strpos($uri, '?')))
+			{
+				if (count($_GET) == 0)
+				{
+					// Query string has not been parsed. We do it ourselves.
+					parse_str(substr($uri, $pos + 1), $_GET);
+				}
+				
+				$uri = substr($uri, 0, $pos);
+			}
+			
+			if ($var !== 'PATH_INFO')
+			{
+				$uri = str_replace($script_name, '', $uri);
+			}
+		
+			if ($uri)
+			{
+				break;
+			}
+		}
+		
+		$segments = explode('/', trim($uri, '/'));
+		$segments = array_map('urldecode', $segments);
+		
+		return $segments;
+	}
+	
+	public static function arguments()
+	/*
+		Returns an array of command line arguments.
+	*/
+	{
+		if (empty($_SERVER['argv']))
+		{
+			return array();
+		}
+		
+		$segments = $_SERVER['argv'];
+		array_shift($segments);
+		
+		return $segments;
 	}
 }
 
@@ -167,7 +241,7 @@ class aeRoute
 		if (empty(self::$segments))
 		{
 			self::$depth = 0;
-			self::$segments = defined('STDIN') ? self::_parse_args() : self::_parse_uri();
+			self::$segments = aeRequest::is_cli ? aeRequest::arguments() : aeRequest::segments();
 		}
 		
 		if (empty(self::$type))
@@ -198,71 +272,6 @@ class aeRoute
 		}
 		
 		return $type;
-	}
-	
-	protected static function _parse_uri()
-	/*
-		Returns current uri as an array of segments.
-	*/
-	{
-		static $segments;
-		
-		if (!empty($segments))
-		{
-			return $segments;
-		}
-		
-		// Parse uri
-		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
-		$uri = '';
-		
-		// Determine the uri path
-		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
-		{
-			$uri = isset($_SERVER[$var]) ? $_SERVER[$var] : @getenv($var);
-
-			if ($var === 'REQUEST_URI' && false !== ($pos = strpos($uri, '?')))
-			{
-				if (count($_GET) == 0)
-				{
-					// Query string has not been parsed. We do it ourselves.
-					parse_str(substr($uri, $pos + 1), $_GET);
-				}
-				
-				$uri = substr($uri, 0, $pos);
-			}
-			
-			if ($var !== 'PATH_INFO')
-			{
-				$uri = str_replace($script_name, '', $uri);
-			}
-
-			if ($uri)
-			{
-				break;
-			}
-		}
-		
-		$segments = explode('/', trim($uri, '/'));
-		$segments = array_map('urldecode', $segments);
-		
-		return $segments;
-	}
-	
-	protected static function _parse_args()
-	/*
-		Returns current arguments as an array of segments.
-	*/
-	{
-		if (empty($_SERVER['argv']))
-		{
-			return array();
-		}
-		
-		$segments = $_SERVER['argv'];
-		array_shift($segments);
-		
-		return $segments;
 	}
 	
 	protected $uri;
