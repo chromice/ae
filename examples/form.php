@@ -37,19 +37,19 @@ $textarea = $form->sequence('textarea', 0, 5) // the last field is validated onl
 // Create a single field, that accepts only 'foo' and 'bar' values
 $select = $form->single('select')
 	->required('How did you manage to select nothing?!')
-	->options(array('foo','bar')); // prevent user from supplying wrong values
+	->options('Wrong option selected.', array('foo','bar')); // prevent user from supplying wrong values
 
 // Create a single field, that accepts an array of 'foo' and 'bar' values
 $checkboxes = $form->multiple('check') // field is validated only if not empty
 	->required('Please check at least one box!') // at least one value is required by default
-	->options(array('foo' => 'Foo', 'bar' => 'Bar')); // keys are used here
+	->options('Wrong option selected.', array('foo' => 'Foo', 'bar' => 'Bar')); // keys are used here
 
 // Try processing all special actions first
-if ($form->value('add'))
+if ($form->value('add') === 'textarea')
 {
 	$textarea[] = ''; // Empty by default
 }
-else if ($index = $form->value('remove'))
+else if ($index = $form->value('remove')) // NB! intentionally does not work for 0.
 {
 	unset($textarea[$index]);
 }
@@ -119,7 +119,7 @@ else if ($form->is_posted())
 	// $_another = $another_sequence[$k];
 ?>
 <div class="field">
-	<label form="textarea-<?= $_ta->index() ?>">Text area:</label>
+	<label form="textarea-<?= $_ta->index() ?>">Text area <?= $_ta->index() ?>:</label>
 	<textarea name="<?= $_ta->name() ?>[<?= $_ta->index() ?>]" id="textarea-<?= $_ta->index() ?>"><?= $_ta->value() ?></textarea>
 <?php if ($_ta->index() > 0): ?>
 	<button type="submit" name="remove" value="<?= $_ta->index() ?>">Remove</button>
