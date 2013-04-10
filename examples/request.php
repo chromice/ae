@@ -15,7 +15,7 @@ echo "<pre>\n";
 echo 'Client IP address: ' . aeRequest::ip_address() . "\n";
 echo 'Server IP address: ' . $_SERVER['SERVER_ADDR'] . "\n\n";
 
-echo 'Request method: ' . aeRequest::method . "\n";
+echo aeRequest::method . ' ' . aeRequest::uri() . ' ' . aeRequest::protocol . "\n";
 echo 'Is CLI: ' . (aeRequest::is_cli ? 'Yes' : 'No') . "\n";
 echo 'Is AJAX: ' . (aeRequest::is_ajax ? 'Yes' : 'No') . "\n";
 echo 'Is Routed: ' . ($request->is_routed() ? 'Yes' : 'No') . "\n\n";

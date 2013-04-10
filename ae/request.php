@@ -29,6 +29,7 @@ class aeRequest
 	const is_cli = __ae_request_cli__;
 	const is_ajax = __ae_request_ajax__;
 	const method = __ae_request_method__;
+	const protocol = __ae_request_protocol__;
 	
 	protected $type = 'html';
 	protected $depth = 0;
@@ -47,7 +48,7 @@ class aeRequest
 	
 	public function is_routed()
 	/*
-		Returs TRUE if requested was routed
+		Returs TRUE if requested was routed.
 	*/
 	{
 		return $this->depth > 0;
@@ -99,29 +100,12 @@ class aeRequest
 		return $this->type;
 	}
 	
-	public function uri($offset = 0, $length = null)
+	public function base()
 	/*
-		Returns current uri or a slice of it.
+		Returns the base URI for the redirected request.
 	*/
 	{
-		$offset += $this->depth;
-		
-		if (is_null($length) || ($length + $offset) > count($this->segments))
-		{
-			$length = count($this->segments) - $offset;
-		}
-		
-		return implode('/', array_slice($this->segments, $offset, $length));
-	}
-	
-	public function base()
-	{
 		return implode('/', array_slice($this->segments, 0, $this->depth));
-	}
-	
-	public function slice($offset, $length = null)
-	{
-		return array_slice($this->segments, $offset + $this->depth, $length);
 	}
 	
 	public function segment($offset, $default = false)
@@ -139,24 +123,31 @@ class aeRequest
 		Returns an instance of aeRoute for base path and current uri.
 	*/
 	{
-		return new aeRoute($this->uri(), $base);
-	}
-	
-	public static function segments()
-	/*
-		Returns an array of URI segments
-	*/
-	{
-		static $segments;
+		$offset += $this->depth;
 		
-		if (!empty($segments))
+		if (is_null($length) || ($length + $offset) > count($this->segments))
 		{
-			return $segments;
+			$length = count($this->segments) - $offset;
 		}
 		
-		// Parse uri
+		$uri = implode('/', array_slice($this->segments, $offset, $length));
+		
+		return new aeRoute($uri, $base);
+	}
+	
+	public static function uri()
+	/*
+		Returns current URI string.
+	*/
+	{
+		static $uri;
+		
+		if (!empty($uri))
+		{
+			return $uri;
+		}
+		
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
-		$uri = '';
 		
 		// Determine the uri path
 		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
@@ -185,7 +176,24 @@ class aeRequest
 			}
 		}
 		
-		$segments = explode('/', trim($uri, '/'));
+		$uri = '/' . trim($uri, '/');
+		
+		return $uri;
+	}
+	
+	public static function segments()
+	/*
+		Returns an array of current URI segments.
+	*/
+	{
+		static $segments;
+		
+		if (!empty($segments))
+		{
+			return $segments;
+		}
+		
+		$segments = explode('/', trim(self::uri(), '/'));
 		$segments = array_map('urldecode', $segments);
 		
 		return $segments;
@@ -220,12 +228,6 @@ class aeRoute
 		Returns are an instance of aeRequest object.
 	*/
 	{
-		// Who wants to deal with magic quotes?
-		if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
-		{
-			trigger_error('Magic quotes must be turned off!', E_USER_ERROR);
-		}
-		
 		// Custom request
 		if (!is_null($segments))
 		{
@@ -315,11 +317,17 @@ class aeRoute
 	}
 		
 	public function exists()
+	/*
+		Returns true if the path can be routed.
+	*/
 	{
 		return !is_null($this->path);
 	}
 	
 	public function follow($parameters = array())
+	/*
+		Attempts to follow the path. Throws aeRequestException on error.
+	*/
 	{
 		if (is_null($this->path))
 		{
@@ -335,9 +343,11 @@ class aeRoute
 
 class aeRequestException extends Exception {}
 
-// Calculate request type and method constants.
+// Calculate class constants.
 define('__ae_request_cli__', defined('STDIN'));
 define('__ae_request_ajax__', isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
 	&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST');
 define('__ae_request_method__', isset($_SERVER['REQUEST_METHOD']) ? 
 	strtoupper($_SERVER['REQUEST_METHOD']) : 'UNKNOWN');
+define('__ae_request_protocol__', isset($_SERVER['SERVER_PROTOCOL']) ? 
+	strtoupper($_SERVER['SERVER_PROTOCOL']) : 'UNKNOWN');

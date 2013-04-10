@@ -510,9 +510,7 @@ if (!$request->is_routed())
 $id = $request->segment(0);
 
 echo "Article ID is $id. ";
-
-// The base and current uri parts are accessible via base() and uri() methods respectively:
-echo "You can access it at " . $request->base() . "/" . $request->uri();
+echo "You can access it at " . aeRequest::uri();
 ```
 
 And, finally, use `aeRequest::ip_address()` to get the IP address of the client. If your app is running behind a reverse–proxy or load balancer, you need to specify its IP address via request options:
@@ -553,7 +551,7 @@ You can specify the type when you create a new response object. It should be eit
 
 When response is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded.
 
-You can set HTTP headers at any point via `aeResponse::header()` method, which accepts the same arguments as PHP's own `header()` function. 
+You can set HTTP headers at any point via `aeResponse::header()` method. 
 
 If you want the response to be cached client–side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
 
