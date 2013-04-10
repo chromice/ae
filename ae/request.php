@@ -16,6 +16,7 @@
 # limitations under the License.
 # 
 
+// TODO: Shall we have aeRequest::argument(s) method for $_GET and custom requests?
 ae::invoke(array('aeRoute','request'), ae::factory);
 
 class aeRequest
