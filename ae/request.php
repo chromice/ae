@@ -21,7 +21,7 @@ ae::invoke(array('aeRoute','request'), ae::factory);
 
 class aeRequest
 /*
-	Simple request abstration.
+	Request abstration.
 	
 	`request` options:
 		`proxies`	-	an array or comma-separated list of IP addresses.

@@ -20,7 +20,7 @@ ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase
 /*
-	A simple MySQL database abstraction layer.
+	A MySQL database abstraction layer.
 	
 	`database.[connection name]` options:
 		`class`		-	connection class: 'aeDatabase' by default;
@@ -694,7 +694,6 @@ class aeDatabaseTransaction
 	public function __construct($db)
 	{
 		$this->db = $db;
-		
 		$this->db->autocommit(false);
 	}
 	

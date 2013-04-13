@@ -364,7 +364,7 @@ class aeBuffer
 		
 		echo $buffer->render();
 		
-	Buffered content may be used as a simple template:
+	Buffered content may be used as a template:
 	
 		$buffer = new aeBuffer();
 		

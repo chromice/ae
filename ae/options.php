@@ -20,7 +20,7 @@ ae::invoke('aeOptions');
 
 class aeOptions
 /*
-	Provides simple interface for library and module configuration.
+	Provides an interface for library and module configuration.
 	
 		$lib_options = ae::options('library');
 		

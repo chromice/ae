@@ -20,7 +20,7 @@ ae::invoke('aeProbe');
 
 class aeProbe
 /*
-	A very simple profiler.
+	Allows you to monitor memory and execution time.
 */
 {
 	protected $name;
