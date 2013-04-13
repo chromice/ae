@@ -124,7 +124,7 @@ class aeResponse
 			$output = $this->_compress($output);
 		}
 		
-		// Copression affects "Content-Length"
+		// Compression affects "Content-Length"
 		$this->header('Content-Length', strlen($output));
 		
 		$this->_set_cache_headers('private');
