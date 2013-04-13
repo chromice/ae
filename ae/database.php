@@ -394,17 +394,6 @@ class aeDatabase
 		return $query;
 	}
 	
-	public function prepare()
-	/*
-		Returns a raw MySQLi prepared statement and resets the query.
-	*/
-	{
-		$query = $this->_query();
-		$query = str_replace($this->value('?'), '?', $query);
-		
-		return $this->db->prepare($query);
-	}
-	
 	public function identifier($name)
 	/*
 		Protects an alias, table or column name with backticks.
@@ -462,9 +451,16 @@ class aeDatabase
 		return $this;
 	}
 	
-	// ==========
-	// = Result =
-	// ==========
+	public function prepare()
+	/*
+		Returns a raw MySQLi prepared statement and resets the query.
+	*/
+	{
+		$query = $this->_query();
+		$query = str_replace($this->value('?'), '?', $query);
+		
+		return $this->db->prepare($query);
+	}
 	
 	public function make()
 	/*
@@ -472,7 +468,7 @@ class aeDatabase
 		or FALSE if query returned an error.
 	*/
 	{
-		$this->result();
+		$this->_result(null);
 		
 		return $this->db->affected_rows;
 	}
@@ -490,10 +486,10 @@ class aeDatabase
 		Runs current query and returns the result set.
 	*/
 	{
-		return $this->_result(null, $result, null);
+		return $this->_result($result);
 	}
 	
-	protected function _result($class = null, $result = 'aeDatabaseResult', $related = null)
+	protected function _result($result = 'aeDatabaseResult', $class = null, $related = null)
 	{
 		$query = $this->_query();
 		
@@ -504,7 +500,10 @@ class aeDatabase
 			throw new aeDatabaseException($this->db->error . ': "' . $query . '"');
 		}
 		
-		return new $result($return, $class, $related);
+		if (class_exists($result))
+		{
+			return new $result($return, $class, $related);
+		}
 	}
 	
 	// =================
@@ -533,7 +532,7 @@ class aeDatabase
 		Executes the query and returns a instance of result class.
 	*/
 	{
-		$return = $this->_result($class, $result, $this->using);
+		$return = $this->_result($result, $class, $this->using);
 		
 		$this->using = array();
 		
@@ -753,10 +752,7 @@ class aeDatabaseResult
 	
 	public function __destruct()
 	{
-		if (is_object($this->result))
-		{
-			$this->result->free();
-		}
+		$this->result->free();
 	}
 	
 	public function fetch()
@@ -808,10 +804,7 @@ class aeDatabaseResult
 		Returns the number of results.
 	*/
 	{
-		if (is_object($this->result))
-		{
-			return $this->result->num_rows;
-		}
+		return $this->result->num_rows;
 	}
 	
 	public function seek($offset)
@@ -819,10 +812,7 @@ class aeDatabaseResult
 		Sets the internal pointer to a particular result's offset.
 	*/
 	{
-		if (is_object($this->result))
-		{
-			return $this->result->data_seek($offset);
-		}
+		return $this->result->data_seek($offset);
 	}
 
 	public function all()
