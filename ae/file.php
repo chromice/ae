@@ -16,6 +16,7 @@
 # limitations under the License.
 # 
 
+// FIXME: Refactor all PHP legacy out.
 ae::invoke('aeFile');
 
 class aeFile

@@ -20,7 +20,7 @@ ae::invoke('aeImage');
 
 class aeImage
 /*
-	A very simple image manipulation library.
+	An image manipulation library.
 	
 	`image` options:
 		`quality`	-	JPEG quality
