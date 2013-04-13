@@ -16,6 +16,7 @@
 # limitations under the License.
 # 
 
+// FIXME: Refactor, abstract and add support for PostreSQL.
 ae::invoke(array('aeDatabase', 'connection'), ae::factory);
 
 class aeDatabase

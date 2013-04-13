@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-// TODO: Shall we have aeRequest::argument(s) method for $_GET and custom requests?
+// FIXME: Refactor these aeRequest and aeRoute to do what documentation says.
 ae::invoke(array('aeRoute','request'), ae::factory);
 
 class aeRequest
@@ -199,22 +199,6 @@ class aeRequest
 		
 		return $segments;
 	}
-	
-	public static function arguments()
-	/*
-		Returns an array of command line arguments.
-	*/
-	{
-		if (empty($_SERVER['argv']))
-		{
-			return array();
-		}
-		
-		$segments = $_SERVER['argv'];
-		array_shift($segments);
-		
-		return $segments;
-	}
 }
 
 
@@ -229,6 +213,11 @@ class aeRoute
 		Returns are an instance of aeRequest object.
 	*/
 	{
+		if (aeRequest::is_cli)
+		{
+			trigger_error("Cannot handle non-HTTP requests.", E_USER_ERROR);
+		}
+		
 		// Custom request
 		if (!is_null($segments))
 		{
@@ -244,7 +233,7 @@ class aeRoute
 		if (empty(self::$segments))
 		{
 			self::$depth = 0;
-			self::$segments = aeRequest::is_cli ? aeRequest::arguments() : aeRequest::segments();
+			self::$segments = aeRequest::segments();
 		}
 		
 		if (empty(self::$type))
@@ -276,6 +265,10 @@ class aeRoute
 		
 		return $type;
 	}
+	
+	// ===========
+	// = Routing =
+	// ===========
 	
 	protected $uri;
 	protected $offset;
