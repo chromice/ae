@@ -25,7 +25,7 @@ class aeLog
 	
 	`log` options:
 		`level`			- aeLog::everything or aeLog::problems (default).
-		`environment`	- log env variables: true or false (default);
+		`environment`	- log $_* variables: true or false (default);
 		`ip_whitelist`	- an array or comma-separated list of IP addresses;
 		`directory`		- path to log directory.
 		
@@ -35,7 +35,7 @@ class aeLog
 	const problems = 2;
 	
 	protected static $log = array();
-	protected static $problem = false;
+	protected static $has_problems = false;
 	
 	public static function log()
 	{
@@ -76,7 +76,7 @@ class aeLog
 		
 		if ($class !== 'notice')
 		{
-			self::$problem = true;
+			self::$has_problems = true;
 		}
 		
 		// Notices do not have a backtrace
@@ -97,12 +97,11 @@ class aeLog
 	{
 		$options = ae::options('log');
 		
-		if ($options->get('level', aeLog::problems) !== aeLog::everything && !self::$problem) 
-		{
-			return;
-		}
+		$path = $options->get('directory', false);
+		$save = $options->get('level', aeLog::problems) === aeLog::everything 
+			|| self::$has_problems;
 		
-		if ($path = $options->get('directory', false))
+		if ($path && $save)
 		{
 			try 
 			{
@@ -172,7 +171,9 @@ class aeLog
 		}
 		
 		// Is client's IP address in the whitelist?
-		$ip = ae::request()->ip_address();
+		ae::import('ae/request.php');
+		
+		$ip = aeRequest::ip_address();
 		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
 		
 		if (is_string($whitelist))
@@ -180,12 +181,7 @@ class aeLog
 			$whitelist = preg_split('/,\s+?/', trim($whitelist));
 		}
 		
-		// Choose presentation based on the request method
-		$is_cli = defined('STDIN');
-		$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) 
-			&& strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
-		
-		if ($is_cli)
+		if (aeRequest::is_cli)
 		{
 			fwrite(STDERR, "$o\n");
 		}
@@ -193,7 +189,7 @@ class aeLog
 		{
 			return;
 		}
-		else if ($is_ajax && !headers_sent())
+		else if (aeRequest::is_ajax && !headers_sent())
 		{
 			header('X-ae-log: ' . base64_encode($o));
 		}

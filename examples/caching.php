@@ -8,7 +8,7 @@
 	$j = 0; while($j < 10000000) ++$j;
 	
 	$request = ae::request();
-	$type = $request->type() === 'json' ? 'json' : 'html';
+	$type = $request::type() === 'json' ? 'json' : 'html';
 	$response = ae::response($type);
 	
 	// aeResponse::delete('caching/test');
@@ -23,5 +23,5 @@ if ($type === 'json'):
 
 	$response
 		->cache(5)
-		->save(aeRequest::uri())
+		->save($request::uri())
 		->dispatch();

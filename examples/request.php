@@ -23,11 +23,13 @@ echo 'Is Routed: ' . ($request->is_routed() ? 'Yes' : 'No') . "\n\n";
 $segments = aeRequest::segments();
 var_dump($segments);
 
-echo $request->type();
+echo aeRequest::type();
 echo "\n";
 echo $request->segment(0); // 'segment-1'
 echo "\n";
 echo $request->segment(1, 'default'); // 'segment-2'
+echo "\n";
+echo $request->segment(2, 'default'); // 'default'
 echo "\n";
 echo $request->segment(3, 'default'); // 'default'
 echo "\n";

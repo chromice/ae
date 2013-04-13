@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule (2,310 lines of well–formatted PHP code across all libraries) and only what you are actively using is loaded and being kept in the memory.
+æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule and only what you are actively using is loaded and being kept in memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 

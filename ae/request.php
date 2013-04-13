@@ -16,7 +16,6 @@
 # limitations under the License.
 # 
 
-// FIXME: Refactor these aeRequest and aeRoute to do what documentation says.
 ae::invoke(array('aeRoute','request'), ae::factory);
 
 class aeRequest
@@ -29,22 +28,17 @@ class aeRequest
 {
 	const is_cli = __ae_request_cli__;
 	const is_ajax = __ae_request_ajax__;
-	const method = __ae_request_method__;
-	const protocol = __ae_request_protocol__;
 	
-	protected $type = 'html';
+	const protocol = __ae_request_protocol__;
+	const method = __ae_request_method__;
+	
 	protected $depth = 0;
 	protected $segments = array();
 	
-	public function __construct($depth, $segments, $type)
+	public function __construct($depth, $segments)
 	{
-		$this->type = $type;
 		$this->depth = $depth;
 		$this->segments = is_array($segments) ? $segments : explode('/', trim($segments, '/'));
-		
-		$this->segments = array_map(function($segment) {
-			return ae::escape($segment, ae::identifier);
-		}, $this->segments);
 	}
 	
 	public function is_routed()
@@ -53,6 +47,77 @@ class aeRequest
 	*/
 	{
 		return $this->depth > 0;
+	}
+	
+	public function base()
+	/*
+		Returns the base URI for the redirected request.
+	*/
+	{
+		return implode('/', array_slice($this->segments, 0, $this->depth));
+	}
+	
+	public function segment($offset, $default = false)
+	/*
+		Returns segment or default value, if segment does not exist.
+	*/
+	{
+		$offset += $this->depth;
+		
+		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
+	}
+	
+	public function route($base)
+	/*
+		Returns an instance of aeRoute for base path and current uri.
+	*/
+	{
+		if (is_null($length) || ($length + $this->depth) > count($this->segments))
+		{
+			$length = count($this->segments) - $this->depth;
+		}
+		
+		$uri = implode('/', array_slice($this->segments, $this->depth, $length));
+		
+		return new aeRoute($uri, $base);
+	}
+	
+	// =======================
+	// = General information =
+	// =======================
+	
+	protected static $_uri;
+	protected static $_type;
+	protected static $_segments;
+	
+	public static function uri()
+	/*
+		Returns current URI string.
+	*/
+	{
+		self::_parse_request();
+		
+		return self::$_uri;
+	}
+	
+	public static function type()
+	/*
+		Returns the type of the requested resource.
+	*/
+	{
+		self::_parse_request();
+		
+		return self::$_type;
+	}
+	
+	public static function segments()
+	/*
+		Returns an array of URI segments.
+	*/
+	{
+		self::_parse_request();
+		
+		return self::$_segments;
 	}
 	
 	public static function ip_address()
@@ -92,65 +157,16 @@ class aeRequest
 		
 		return $_SERVER['REMOTE_ADDR'];
 	}
-		
-	public function type()
-	/*
-		Returns the file type of the request, `html` by default. Top level 
-	*/
-	{
-		return $this->type;
-	}
 	
-	public function base()
-	/*
-		Returns the base URI for the redirected request.
-	*/
+	protected static function _parse_request()
 	{
-		return implode('/', array_slice($this->segments, 0, $this->depth));
-	}
-	
-	public function segment($offset, $default = false)
-	/*
-		Returns segment or default value, if segment does not exist.
-	*/
-	{
-		$offset += $this->depth;
-		
-		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
-	}
-	
-	public function route($base)
-	/*
-		Returns an instance of aeRoute for base path and current uri.
-	*/
-	{
-		$offset += $this->depth;
-		
-		if (is_null($length) || ($length + $offset) > count($this->segments))
+		if (!empty(self::$_uri)) 
 		{
-			$length = count($this->segments) - $offset;
-		}
-		
-		$uri = implode('/', array_slice($this->segments, $offset, $length));
-		
-		return new aeRoute($uri, $base);
-	}
-	
-	public static function uri()
-	/*
-		Returns current URI string.
-	*/
-	{
-		static $uri;
-		
-		if (!empty($uri))
-		{
-			return $uri;
+			return;
 		}
 		
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
 		
-		// Determine the uri path
 		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
 		{
 			$uri = isset($_SERVER[$var]) ? $_SERVER[$var] : @getenv($var);
@@ -177,34 +193,25 @@ class aeRequest
 			}
 		}
 		
-		$uri = '/' . trim($uri, '/');
+		$type = 'html';
+		$uri = trim($uri, '/');
 		
-		return $uri;
-	}
-	
-	public static function segments()
-	/*
-		Returns an array of current URI segments.
-	*/
-	{
-		static $segments;
-		
-		if (!empty($segments))
+		if (preg_match('/\.([a-z0-9_]+)$/', $uri, $match) == 1)
 		{
-			return $segments;
+			$type = $match[1];
+			$uri = substr($uri, 0, strlen($uri) - strlen($type) - 1);
 		}
 		
-		$segments = explode('/', trim(self::uri(), '/'));
-		$segments = array_map('urldecode', $segments);
 		
-		return $segments;
+		self::$_uri = '/' . $uri . '.' . $type;
+		self::$_type = $type;
+		self::$_segments = array_map('urldecode', explode('/', $uri));
 	}
 }
 
 
 class aeRoute
 {
-	protected static $type;
 	protected static $depth = 0;
 	protected static $segments = array();
 	
@@ -215,60 +222,16 @@ class aeRoute
 	{
 		if (aeRequest::is_cli)
 		{
-			trigger_error("Cannot handle non-HTTP requests.", E_USER_ERROR);
+			throw new aeRequestException("Cannot handle a non-HTTP request.");
 		}
 		
-		// Custom request
 		if (!is_null($segments))
 		{
-			if (empty(self::$type))
-			{
-				$type = self::_parse_type($segments);
-			}
-			
-			return new aeRequest(0, $segments, $type);
+			return new aeRequest(0, $segments);
 		}
 		
-		// Obtain segments
-		if (empty(self::$segments))
-		{
-			self::$depth = 0;
-			self::$segments = aeRequest::segments();
-		}
-		
-		if (empty(self::$type))
-		{
-			self::$type = self::_parse_type(self::$segments);
-		}
-		
-		return new aeRequest(self::$depth, self::$segments, self::$type);
+		return new aeRequest(self::$depth, aeRequest::segments());
 	}
-	
-	protected static function _parse_type(&$segments)
-	/*
-		Returns the type of the requested resource.
-	*/
-	{
-		$last = array_pop($segments);
-		$type = 'html';
-		
-		if (!is_null($last))
-		{
-			if (preg_match('/\.([a-z0-9_]+)$/', $last, $match) == 1)
-			{
-				$type = $match[1];
-				$last = substr($last, 0, strlen($last) - strlen($type) - 1);
-			}
-			
-			array_push($segments, $last);
-		}
-		
-		return $type;
-	}
-	
-	// ===========
-	// = Routing =
-	// ===========
 	
 	protected $uri;
 	protected $offset;
@@ -325,7 +288,7 @@ class aeRoute
 	{
 		if (is_null($this->path))
 		{
-			throw new aeRequestException('Request could not be routed. No matching file exists.');
+			throw new aeRequestException('Request could not be routed. No matches found.');
 		}
 		
 		$depth = self::$depth + $this->offset;
