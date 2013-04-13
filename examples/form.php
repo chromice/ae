@@ -101,6 +101,7 @@ else if ($form->is_posted())
 <?= $form->open() ?>
 <!-- <form action="" method="post">
 	<input type="hidden" name="__ae_form_id__" value="form-id">
+	<input type="hidden" name="__ae_form_nonce__" value="1">
 	<input type="submit" tabindex="-1" style="position:absolute;left:-9999px;"> -->
 <div class="field">
 	<label for="text-input">Number input:</label>
