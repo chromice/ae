@@ -24,10 +24,8 @@ var ae_log_monitor = function (log, source) {
 		'source': source,
 		'log': log
 	});
-	
-	if (!document.getElementById('ae-inspector-button')) {
-		document.write('<iframe id="ae-inspector-button" src="/inspector/button.html" style="position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px" frameborder="0"></iframe>');
-	}
+
+	document.getElementById("ae-inspector-button").style.left = "40px";
 };
 
 // Intercept all AJAX calls.
@@ -60,11 +58,14 @@ var ae_log_monitor = function (log, source) {
 			 }
 		}
 		return r;
-	};
+	}
 })(XMLHttpRequest.prototype.open);
 
 // Parse body and inject inspector button.
 (function() {
+	if (window === window.top && !document.getElementById('ae-inspector-button')) {
+		document.write('<iframe id="ae-inspector-button" src="/inspector/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px" frameborder="0"></iframe>');
+	}
 
 	// Find the HTML comment node with the log
 	function getAllCommentNodes(el) {
@@ -98,7 +99,7 @@ var ae_log_monitor = function (log, source) {
 // Hide button when inspector window is open.
 function inspectorOpened() {
 	document.getElementById("ae-inspector-button").style.display = "none";
-};
+}
 function inspectorClosed() {
 	document.getElementById("ae-inspector-button").style.display = "block";
-};
+}
