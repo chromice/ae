@@ -23,12 +23,16 @@ final class ae
 	Holds everything together.
 */
 {
-	// =====================
-	// = Context switching =
-	// =====================
+	// ===================
+	// = Code management =
+	// ===================
+	
+	const factory = 1;
+	const singleton = 2;
 	
 	private static $modules = array();
 	private static $paths = array();
+	private static $stack = array();	
 	
 	public static function register($path)
 	/*
@@ -37,16 +41,15 @@ final class ae
 	{
 		$path = self::resolve($path, false);
 		
-		if (isset(self::$modules[$path]))
+		if (in_array($path, self::$modules))
 		{
 			trigger_error('Cannot register "' . $path . '" again.', E_USER_ERROR);
 		}
 		
-		self::$modules[$path] = true;
-		self::$paths[] = $path;
+		self::$modules[] = $path;
 	}
 	
-	public static function resolve($path, $all_contexts = true)
+	public static function resolve($path, $modules = true)
 	/*
 		Resolves a relative path to a directory or file. By default
 		the parent of 'ae' directory is used for base:
@@ -82,11 +85,11 @@ final class ae
 		
 		$try[] = $path;
 		
-		if (true === $all_contexts)
+		if (true === $modules)
 		{
 			$try[] = dirname(__DIR__) . '/' . $_path;
 			
-			foreach (self::$paths as $module)
+			foreach (self::$modules as $module)
 			{
 				$try[] = $module . '/' . $_path;
 			}
@@ -104,15 +107,6 @@ final class ae
 		
 		throw new Exception('Could not resolve path: ' . $path);
 	}
-	
-	// ===================
-	// = Code management =
-	// ===================
-	
-	const factory = 1;
-	const singleton = 2;
-	
-	private static $stack = array();
 	
 	public static function invoke($misc, $type = 0)
 	/*
@@ -144,7 +138,7 @@ final class ae
 	{
 		$data =& self::$paths[end(self::$stack)];
 		
-		if (ae::factory & $type)
+		if (ae::factory & $type || is_a($misc, 'Closure'))
 		{
 			$data['callback'] = $misc;
 		} 
@@ -443,7 +437,7 @@ class aeBuffer
 
 class aeStack
 /*
-	Provides an exception–safe way to push/pop values to/from stack.
+	Provides an exception-safe way to push/pop values to/from stack.
 
 		$stack = array('foo');
 
@@ -472,7 +466,7 @@ class aeStack
 
 class aeSwitch
 /*
-	Provides an exception–safe way to swap the value of a variable 
+	Provides an exception-safe way to swap the value of a variable 
 	for the lifetime of the switch object.
 	
 		$foo = 'foo';
