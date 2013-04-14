@@ -261,6 +261,11 @@ final class ae
 		return ae::load('ae/file.php', $path);
 	}
 	
+	public static function form($id)
+	{
+		return ae::load('ae/form.php', $id);
+	}
+	
 	public static function image($path)
 	{
 		return ae::load('ae/image.php', $path);

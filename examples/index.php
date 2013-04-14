@@ -17,6 +17,7 @@
 		'Container' => 'container',
 		'Database: Entity basics' => 'database/example_1',
 		'Database: Full–on test' => 'database/example_2',
+		'Form' => 'form',
 		'Image' => 'image',
 		'Log' => 'log',
 		'Log (trigger error)' => 'log/error',
