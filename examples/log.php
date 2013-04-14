@@ -2,8 +2,7 @@
 	ae::import('ae/log.php');
 	ae::options('log')
 		// ->set('directory', '/examples/log')
-		->set('environment', true)
-		->set('inspector', true);
+		->set('environment', true);
 	
 	$r = ae::request();
 	
@@ -27,7 +26,7 @@
 			));
 			break;
 		default:
-			ae::log("Error: This is not really an error!", array());
+			ae::log('Let\'s dump $_ENV:', $_ENV);
 			
 			trigger_error("This is a notice.", E_USER_NOTICE);
 			trigger_error("This is a warning.", E_USER_WARNING);
@@ -39,8 +38,8 @@
 			ae::log("Hello again. This is a string: ", "foo", "As you can see, strings are not dumped.");
 ?>
 	<p>You should see an inspector button in the bottom left corner. You ip address is: <?= $r::ip_address() ?>. It should be in whitelist, unless it's 127.0.0.1</p>
-	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/critical" frameborder="0" width="0" height="0"></iframe>
-	<iframe style="position: fixed; bottom: 20px; left: 20px; z-index: -1" src="/log/exception" frameborder="0" width="0" height="0"></iframe>
+	<iframe style="width: 50%;float:left;height:400px;" src="/log/critical" frameborder="0"></iframe>
+	<iframe style="width: 50%;float:right;height:400px;" src="/log/exception" frameborder="0"></iframe>
 	<script type="text/javascript" charset="utf-8">
 		setTimeout(function() {
 			var xhr = new XMLHttpRequest();

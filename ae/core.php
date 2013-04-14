@@ -108,8 +108,8 @@ final class ae
 	
 	public static function invoke($misc, $type = 0)
 	/*
-		Call this method at the top of the loaded or imported file 
-		to define class name or factory that load() method should use.
+		Call this method from the loaded or imported file to define 
+		class name or factory that load() method should use.
 		
 			ae::invoke('LibraryClassName');
 		

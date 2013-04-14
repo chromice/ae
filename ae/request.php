@@ -72,12 +72,7 @@ class aeRequest
 		Returns an instance of aeRoute for base path and current uri.
 	*/
 	{
-		if (is_null($length) || ($length + $this->depth) > count($this->segments))
-		{
-			$length = count($this->segments) - $this->depth;
-		}
-		
-		$uri = implode('/', array_slice($this->segments, $this->depth, $length));
+		$uri = implode('/', array_slice($this->segments, $this->depth));
 		
 		return new aeRoute($uri, $base);
 	}

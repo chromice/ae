@@ -96,6 +96,12 @@ class aeLog
 	protected static function onShutdown()
 	{
 		$options = ae::options('log');
+		$show_environment = $options->get('environment', false);
+		
+		if (!$show_environment && count(self::$log) === 0)
+		{
+			return;
+		}
 		
 		$path = $options->get('directory', false);
 		$save = $options->get('level', aeLog::problems) === aeLog::everything 
@@ -129,7 +135,7 @@ class aeLog
 			. ' at ' . gmdate('H:i:s', time()) . " GMT:"
 			. self::_ruler('=', 79);
 		
-		if ($options->get('environment', false))
+		if ($show_environment)
 		{
 			$o.= self::_environment();
 		}
@@ -196,11 +202,7 @@ class aeLog
 		else
 		{
 			echo "\n<!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
-			
-			if ($options->get('inspector', false))
-			{
-				echo '<script charset="utf-8">' . ae::render('inspector/inject.js') . '</script>';
-			}
+			echo '<script charset="utf-8">' . ae::render('inspector/inject.js') . '</script>';
 		}
 	}
 	
@@ -378,6 +380,9 @@ class aeLog
 		set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
 		set_exception_handler(array('aeLog','_handleException'));
 		register_shutdown_function(array('aeLog','_handleShutdown'));
+		
+		// Turn off error reporting
+		error_reporting(0);
 	}
 	
 	public static function _handleError($type, $message, $file, $line, $context)

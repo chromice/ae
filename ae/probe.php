@@ -87,6 +87,3 @@ class aeProbe
 		return round($bytes, $precision) . $units[$pow]; 
 	} 
 }
-
-
-?>
