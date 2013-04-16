@@ -5,7 +5,10 @@ $form = ae::form('form-id');
 // Set default values
 if (!$form->is_posted())
 {
-	$form->values(array('select' => 'bar'));
+	$form->values(array(
+		'text' => '1',
+		'select' => 'bar'
+	));
 }
 
 // Create a single field that accepts integers from 0 to 1000
@@ -71,14 +74,14 @@ else if ($form->is_posted())
 	if ($is_valid)
 	{
 		$values = $form->values();
-				
+
 		echo '<h1>' . $values['text'] . '</h1>';
 		echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
 		echo '<dl>';
 		echo '<dt>Selected:</dt>';
 		echo '<dd>' . $values['select'] . '</dd>';
 		echo '<dt>Checked:</dt>';
-		echo '<dd>' . implode(', ', $values['checked']) . '</dd>';
+		echo '<dd>' . implode(', ', $values['check']) . '</dd>';
 		echo '</dl>';
 		
 	}
@@ -120,7 +123,7 @@ else if ($form->is_posted())
 	// $_another = $another_sequence[$k];
 ?>
 <div class="field">
-	<label form="textarea-<?= $_ta->index() ?>">Text area <?= $_ta->index() ?>:</label>
+	<label for="textarea-<?= $_ta->index() ?>">Text area <?= $_ta->index() + 1 ?>:</label>
 	<textarea name="<?= $_ta->name() ?>[<?= $_ta->index() ?>]" id="textarea-<?= $_ta->index() ?>"><?= $_ta->value() ?></textarea>
 <?php if ($_ta->index() > 0): ?>
 	<button type="submit" name="remove" value="<?= $_ta->index() ?>">Remove</button>
