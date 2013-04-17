@@ -21,23 +21,22 @@ ae::invoke('aeForm');
 class aeForm
 {
 	// Numbers
-	const valid_number = 0;
-	const valid_integer = 1;
-	const valid_octal = 2;
-	const valid_hexadecimal = 3;
-	const valid_decimal = 4;
-	const valid_float = 5;
+	const valid_number = 1;
+	const valid_integer = 3;
+	const valid_octal = 5;
+	const valid_hexadecimal = 9;
+	const valid_decimal = 17;
+	const valid_float = 33;
 	
-	// Formats
-	const valid_email = 0;
-	const valid_url = 0;
-	const valid_url_path = 0;
-	const valid_url_query = 0;
-	const valid_ip = 0;
-	const valid_ipv4 = 0;
-	const valid_ipv6 = 0;
-	const valid_pivate_ip = 0;
-	const valid_public_ip = 0;
+	// Misc
+	const valid_email = 64;
+	const valid_url = 128;
+	const valid_url_path = 384;
+	const valid_url_query = 640;
+	const valid_ip = 1024;
+	const valid_ipv4 = 3072;
+	const valid_ipv6 = 5120;
+	const valid_public_ip = 9216;
 	
 	protected $id;
 	protected $fields = array();
@@ -133,45 +132,143 @@ class aeForm
 
 class aeFormValidator
 {
-	protected $validators;
+	protected $required;
+	protected $validators = array();
 	
-	public function validate($value)
+	protected function _validate($value)
 	{
+		if (!empty($this->required) && empty($value))
+		{
+			return $this->required;
+		}
 		
+		foreach ($this->validators as $func)
+		{
+			if ($error = $func($value))
+			{
+				return $error;
+			}
+		}
 	}
 	
 	public function required($message)
 	{
+		$this->required = $message;
+		
 		return $this;
 	}
 	
 	public function format($message, $format)
 	{
+		$filter = FILTER_DEFAULT;
+		$options = null;
+		
+		if (is_string($format))
+		{
+			$filter = FILTER_VALIDATE_REGEXP;
+			$options = array('options' => array('regexp' => $format));
+		}
+		else if ($format & aeForm::valid_number)
+		{
+			switch ($format)
+			{
+				case aeForm::valid_number:
+					$this->validators[] = function($value) use ($message) {
+						return !is_numeric($value) ? $message : null;
+					};
+					return $this;
+				case aeForm::valid_integer:
+					$filter = FILTER_VALIDATE_INT;
+					break;
+				case aeForm::valid_octal:
+					$filter = FILTER_VALIDATE_INT;
+					$options = FILTER_FLAG_ALLOW_OCTAL;
+					break;
+				case aeForm::valid_hexadecimal:
+					$filter = FILTER_VALIDATE_INT;
+					$options = FILTER_FLAG_ALLOW_HEX;
+					break;
+				case aeForm::valid_decimal:
+					$filter = FILTER_VALIDATE_FLOAT;
+					$options = array('options' => array('decimal' => '.'));
+					break;
+				case aeForm::valid_float:
+					$filter = FILTER_VALIDATE_FLOAT;
+					break;
+			}
+		}
+		else if ($format === aeForm::valid_email)
+		{
+			$filter = FILTER_VALIDATE_EMAIL;
+		}
+		else if ($format & aeForm::valid_url)
+		{
+			$filter = FILTER_VALIDATE_URL;
+			$options = ($format & aeForm::valid_url_query ? FILTER_FLAG_QUERY_REQUIRED : 0)
+				| ($format & aeForm::valid_url_path ? FILTER_FLAG_PATH_REQUIRED : 0);
+		}
+		else if ($format & aeForm::valid_ip)
+		{
+			$filter = FILTER_VALIDATE_IP;
+			$options = ($format & aeForm::valid_ipv4 ? FILTER_FLAG_IPV4 : 0)
+				| ($format & aeForm::valid_ipv6 ? FILTER_FLAG_IPV6 : 0)
+				| ($format & aeForm::valid_public_ip ? FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE : 0);
+		}
+		
+		$this->validators[] = function($value) use ($message, $filter, $options) {
+			return filter_var($value, $filter, $options) === false ? $message : null;
+		};
+		
 		return $this;
 	}
 	
 	public function min_length($message, $length)
 	{
+		$this->validators[] = function($value) use ($message, $length) {
+			return strlen($value) < $length ? $message : null;
+		};
+
 		return $this;
 	}
 	
 	public function max_length($message, $length)
 	{
+		$this->validators[] = function($value) use ($message, $length) {
+			return strlen($value) > $length ? $message : null;
+		};
+
 		return $this;
 	}
 	
 	public function min_value($message, $limit)
 	{
+		$this->validators[] = function($value) use ($message, $limit) {
+			return $value < $limit ? $message : null;
+		};
+
 		return $this;
 	}
 	
 	public function max_value($message, $limit)
 	{
+		$this->validators[] = function($value) use ($message, $limit) {
+			return $value > $limit ? $message : null;
+		};
+
 		return $this;
 	}
 
 	public function options($message, $options)
 	{
+		if (array_values($options) !== $options)
+		{
+			$options = array_keys($options);
+		}
+		
+		$this->validators[] = function($value) use ($message, $options) {
+			return !in_array($value, $options) ? $message : null;
+		};
+		
 		return $this;
 	}
 }
@@ -225,7 +322,9 @@ class aeFormField extends aeFormValidator
 	
 	public function validate()
 	{
-		return true;
+		$this->error = $this->_validate($this->value);
+		
+		return empty($this->error);
 	}
 	
 	public function error($before = '<em class="error">', $after = '</em>')
@@ -248,9 +347,23 @@ class aeFormFieldMultiple extends aeFormField
 		$this->value = !is_array($this->value) ? array() : array_values($this->value);
 	}
 	
-	public function validate()
+	protected function _validate($values)
 	{
-		return true;
+		if (!empty($this->required) && empty($values))
+		{
+			return $this->required;
+		}
+		
+		foreach ($values as $value)
+		{
+			foreach ($this->validators as $func)
+			{
+				if ($error = $func($value))
+				{
+					return $error;
+				}
+			}
+		}
 	}
 	
 	protected function _matches($value)
@@ -301,7 +414,16 @@ class aeFormFieldSequence extends aeFormValidator implements ArrayAccess, Iterat
 	
 	public function validate()
 	{
-		return true;
+		$result = true;
+		$errors = array_map(array($this, '_validate'), $this->values);
+		
+		foreach ($errors as $key => $error) 
+		{
+			$result &= empty($error);
+			$this->errors[$key] = $error;
+		}
+		
+		return $result;
 	}
 	
 	// ==============================
@@ -323,13 +445,16 @@ class aeFormFieldSequence extends aeFormValidator implements ArrayAccess, Iterat
 		if (is_null($offset)) 
 		{
 			$offset = empty($this->fields) ? 0 : max(array_keys($this->fields)) + 1;
-			$this->values[$offset] = $value;
-			$this->fields[$offset] = new aeFormField($this->name, $offset, $this->values[$offset], $this->errors[$offset]);
 		}
-		else
+		else if (isset($this->fields[$offset]))
 		{
 			$this->fields[$offset]->value($value);
+			
+			return;
 		}
+		
+		$this->values[$offset] = $value;
+		$this->fields[$offset] = new aeFormField($this->name, $offset, $this->values[$offset], $this->errors[$offset]);
 	}
 	
 	public function offsetUnset($offset)
@@ -363,6 +488,6 @@ class aeFormFieldSequence extends aeFormValidator implements ArrayAccess, Iterat
 	
 	public function valid()
 	{
-		return current($this->fields) !== false;
+		return !is_null(key($this->fields));
 	}
 }

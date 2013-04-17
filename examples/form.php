@@ -7,7 +7,8 @@ if (!$form->is_posted())
 {
 	$form->values(array(
 		'text' => '1',
-		'select' => 'bar'
+		'select' => 'bar',
+		// 'textarea' => array(123, 124)
 	));
 }
 
@@ -25,9 +26,9 @@ $number = $form->single('text')
 
 
 // Create a sequence of 0 to 5 fields that accept tweet size chunks of text
-$textarea = $form->sequence('textarea', 0, 5) // the last field is validated only if not empty
+$textarea = $form->sequence('textarea', 1, 5) // the last field is validated only if not empty
 	->required('Please enter some text.')
-	->format('Letters only please.','/^[a-z\s]/i')
+	->format('Letters only please.','/^[a-z\s]+$/i')
 	// ->format('Must be a valid email, e.g. "some.dude@example.com".', aeForm::valid_email)
 	// ->format('Must be a valid URL with path and query components.', aeForm::valid_url | aeForm::valid_url_path | aeForm::valid_url_query)
 	// ->format('Must be a valid IP address.', aeForm::valid_ip)
