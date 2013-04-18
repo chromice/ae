@@ -43,7 +43,7 @@ class aeRequest
 	
 	public function is_routed()
 	/*
-		Returs TRUE if requested was routed.
+		Returns TRUE if requested was routed.
 	*/
 	{
 		return $this->depth > 0;
@@ -87,7 +87,7 @@ class aeRequest
 	
 	public static function uri()
 	/*
-		Returns current URI string.
+		Returns URI as a string.
 	*/
 	{
 		self::_parse_request();
