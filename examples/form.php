@@ -109,7 +109,7 @@ else if ($form->is_posted())
 	<input type="submit" tabindex="-1" style="position:absolute;left:-9999px;"> -->
 <div class="field">
 	<label for="text-input">Number input:</label>
-	<input name="<?= $number->name() ?>" id="text-input" type="number" value="<?= $number->value() ?>">
+	<input name="<?= $number->name ?>" id="text-input" type="number" value="<?= $number->value ?>">
 	<?= $number->error('<em class="error">', '</em>') ?>
 </div>
 <?php foreach ($textarea as $k => $_ta):
@@ -124,10 +124,10 @@ else if ($form->is_posted())
 	// $_another = $another_sequence[$k];
 ?>
 <div class="field">
-	<label for="textarea-<?= $_ta->index() ?>">Text area <?= $_ta->index() + 1 ?>:</label>
-	<textarea name="<?= $_ta->name() ?>[<?= $_ta->index() ?>]" id="textarea-<?= $_ta->index() ?>"><?= $_ta->value() ?></textarea>
-<?php if ($_ta->index() > 0): ?>
-	<button type="submit" name="remove" value="<?= $_ta->index() ?>">Remove</button>
+	<label for="textarea-<?= $_ta->index ?>">Text area <?= $_ta->index + 1 ?>:</label>
+	<textarea name="<?= $_ta->name ?>[<?= $_ta->index ?>]" id="textarea-<?= $_ta->index ?>"><?= $_ta->value ?></textarea>
+<?php if ($_ta->index > 0): ?>
+	<button type="submit" name="remove" value="<?= $_ta->index ?>">Remove</button>
 <?php endif ?>
 	<?= $_ta->error() ?>
 </div>
@@ -137,7 +137,7 @@ else if ($form->is_posted())
 <?php endif ?>
 <div class="field">
 	<label for="select-input">Select something:</label>
-	<select name="<?= $select->name() ?>" id="select-input">
+	<select name="<?= $select->name ?>" id="select-input">
 		<option value="foo" <?= $select->selected('foo') ?>>Foo</option>
 		<option value="bar" <?= $select->selected('bar') ?>>Bar</option>
 	</select>
@@ -145,8 +145,8 @@ else if ($form->is_posted())
 </div>
 <div class="field">
 	<label>Checkboxes:</label>
-	<label><input type="checkbox" name="<?= $checkboxes->name() ?>[]" value="foo" <?= $checkboxes->checked('foo') ?>>foo</label>
-	<label><input type="checkbox" name="<?= $checkboxes->name() ?>[]" value="bar" <?= $checkboxes->checked('bar') ?>>bar</label>
+	<label><input type="checkbox" name="<?= $checkboxes->name ?>[]" value="foo" <?= $checkboxes->checked('foo') ?>>foo</label>
+	<label><input type="checkbox" name="<?= $checkboxes->name ?>[]" value="bar" <?= $checkboxes->checked('bar') ?>>bar</label>
 	<?= $checkboxes->error() ?>
 </div>
 <div class="field">

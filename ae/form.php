@@ -93,7 +93,7 @@ class aeForm
 
 	public function open($action = '')
 	{
-		return '<form action="' . $action . '" method="post">'
+		return '<form id="' . $this->id . '" action="' . $action . '" method="post">'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />';
 	}
 
@@ -110,8 +110,6 @@ class aeForm
 		}
 		
 		$this->values[$name] = $value;
-		
-		return $this;
 	}
 
 	public function values($values = null)
@@ -125,8 +123,6 @@ class aeForm
 		{
 			$this->values = array_merge($this->values, $values);
 		}
-		
-		return $this;
 	}
 }
 
@@ -137,7 +133,7 @@ class aeFormValidator
 	
 	protected function _validate($value)
 	{
-		if (!empty($this->required) && empty($value))
+		if (!empty($this->required) && strlen($value) === 0)
 		{
 			return $this->required;
 		}
@@ -282,34 +278,60 @@ class aeFormField extends aeFormValidator
 	
 	public function __construct($name, $index, &$value, &$error)
 	{
-		$this->name = $name;
-		$this->index = $index;
+		$this->name = ae::escape($name, ae::identifier);
+		$this->index = ae::escape($index, ae::identifier);
 		$this->value =& $value;
 		$this->error =& $error;
 	}
 	
-	public function name()
+	public function __get($name)
 	{
-		return $this->name;
-	}
-	
-	public function index()
-	{
-		return $this->index;
-	}
-	
-	public function value($value = null)
-	{
-		if (is_null($value))
+		switch ($name) 
 		{
-			return $this->value;
+			case 'name':
+			case 'index':
+				return $this->$name;
+			case 'error':
+			case 'value':
+				return is_array($this->$name) 
+					? array_map(array('ae','escape'), $this->$name, ae::attribute)
+					: ae::escape($this->$name, ae::attribute);
+			default:
+				trigger_error('Uknown property: ' . $name, E_USER_ERROR);
 		}
-		
-		$this->value = $value;
-		
-		return $this;
 	}
 	
+	public function __set($name, $value)
+	{
+		switch ($name) 
+		{
+			case 'name':
+			case 'index':
+				$this->$name = ae::escape($value, ae::identifier);
+				return;
+			case 'error':
+			case 'value':
+				$this->$name = $value;
+				return;
+			default:
+				trigger_error('Uknown property: ' . $name, E_USER_ERROR);
+		}
+	}
+	
+	public function __isset($name)
+	{
+		switch ($name) 
+		{
+			case 'name':
+			case 'index':
+			case 'error':
+			case 'value':
+				return !empty($this->$name);
+			default:
+				trigger_error('Uknown property: ' . $name, E_USER_ERROR);
+		}
+	}
+
 	public function checked($value)
 	{
 		return $this->_matches($value) ? 'checked' : '';
@@ -318,6 +340,11 @@ class aeFormField extends aeFormValidator
 	public function selected($value)
 	{
 		return $this->_matches($value) ? 'selected' : '';
+	}
+	
+	protected function _matches($value)
+	{
+		return is_scalar($this->value) && (string) $this->value === (string) $value;
 	}
 	
 	public function validate()
@@ -330,11 +357,6 @@ class aeFormField extends aeFormValidator
 	public function error($before = '<em class="error">', $after = '</em>')
 	{
 		return !empty($this->error) ? $before . $this->error . $after : '';
-	}
-	
-	protected function _matches($value)
-	{
-		return is_scalar($this->value) && (string) $this->value === (string) $value;
 	}
 }
 
@@ -414,16 +436,18 @@ class aeFormFieldSequence extends aeFormValidator implements ArrayAccess, Iterat
 	
 	public function validate()
 	{
+		$count = 0;
 		$result = true;
 		$errors = array_map(array($this, '_validate'), $this->values);
 		
 		foreach ($errors as $key => $error) 
 		{
+			$count++;
 			$result &= empty($error);
 			$this->errors[$key] = $error;
 		}
 		
-		return $result;
+		return $result && $count >= $this->min && $count <= $this->max;
 	}
 	
 	// ==============================
