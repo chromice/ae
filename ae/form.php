@@ -367,6 +367,8 @@ class aeFormField extends aeFormValidator
 		$this->index = ae::escape($index, ae::identifier);
 		$this->value =& $value;
 		$this->error =& $error;
+		
+		$this->value = is_array($this->value) ? array_map('trim', $this->value) : trim($this->value);
 	}
 	
 	public function __get($name)
