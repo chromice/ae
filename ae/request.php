@@ -198,7 +198,7 @@ class aeRequest
 		}
 		
 		
-		self::$_uri = '/' . $uri . '.' . $type;
+		self::$_uri = '/' . $uri . ($type !== 'html' ? '.' . $type  : '');
 		self::$_type = $type;
 		self::$_segments = array_map('urldecode', explode('/', $uri));
 	}
