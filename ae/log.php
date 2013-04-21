@@ -24,10 +24,10 @@ class aeLog
 	or X-ae-log header, or appends them to a log file.
 	
 	`log` options:
-		`level`			- aeLog::everything or aeLog::problems (default).
-		`environment`	- log $_* variables: true or false (default);
-		`ip_whitelist`	- an array or comma-separated list of IP addresses;
-		`directory`		- path to log directory.
+		`level`         - aeLog::everything or aeLog::problems (default).
+		`environment`   - log $_* variables: true or false (default);
+		`ip_whitelist`  - an array or comma-separated list of IP addresses;
+		`directory`     - path to log directory.
 		
 */
 {
