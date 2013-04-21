@@ -121,11 +121,16 @@ class aeForm
 		return $this->errors;
 	}
 
-	public function open($action = '')
+	public function open($action = null)
 	/*
 		Returns opening form tag and some hidden inputs.
 	*/
 	{
+		if (empty($action))
+		{
+			$action = ae::request()->uri();
+		}
+		
 		return '<form id="' . $this->id . '" action="' . $action . '" method="post">'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
 			. '<input type="submit" tabindex="-1" style="position:absolute;left:-9999px;">';
