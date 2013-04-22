@@ -133,7 +133,7 @@ class aeForm
 		
 		return '<form id="' . $this->id . '" action="' . $action . '" method="post">'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
-			. '<input type="submit" tabindex="-1" style="position:absolute;left:-9999px;">';
+			. '<input type="submit" tabindex="-1" style="position:absolute;left:-999em;">';
 	}
 
 	public function close()
@@ -186,7 +186,7 @@ class aeFormValidator
 	protected $required;
 	protected $validators = array();
 	
-	protected function _validate($value)
+	protected function _validate($value, $index = null)
 	{
 		if (!empty($this->required) && strlen($value) === 0)
 		{
@@ -195,7 +195,7 @@ class aeFormValidator
 		
 		foreach ($this->validators as $func)
 		{
-			if ($error = $func($value))
+			if ($error = $func($value, $index))
 			{
 				return $error;
 			}
@@ -208,6 +208,15 @@ class aeFormValidator
 	*/
 	{
 		$this->required = $message;
+		
+		return $this;
+	}
+	
+	public function custom($message, $closure)
+	{
+		$this->validators[] = function($value, $index = null) use ($message, $closure) {
+			return $closure($value, $index) === false ? $message : null;
+		};
 		
 		return $this;
 	}
@@ -493,11 +502,11 @@ class aeFormFieldMultiple extends aeFormField
 			return $this->required;
 		}
 		
-		foreach ($values as $value)
+		foreach ($values as $index => $value)
 		{
 			foreach ($this->validators as $func)
 			{
-				if ($error = $func($value))
+				if ($error = $func($value, $index))
 				{
 					return $error;
 				}
@@ -563,7 +572,7 @@ class aeFormFieldSequence extends aeFormValidator implements ArrayAccess, Iterat
 	{
 		$count = 0;
 		$result = true;
-		$errors = array_map(array($this, '_validate'), $this->values);
+		$errors = array_map(array($this, '_validate'), $this->values, array_keys($this->values));
 		
 		foreach ($errors as $key => $error) 
 		{
