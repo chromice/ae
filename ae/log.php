@@ -55,7 +55,7 @@ class aeLog
 		}
 	}
 
-	protected static function onError($error, $backtrace = null)
+	protected static function on_error($error, $backtrace = null)
 	{
 		if ($error['type'] === 'exception')
 		{
@@ -93,7 +93,7 @@ class aeLog
 		);
 	}
 	
-	protected static function onShutdown()
+	protected static function on_shutdown()
 	{
 		$options = ae::options('log');
 		$show_environment = $options->get('environment', false);
@@ -398,7 +398,7 @@ class aeLog
 		$trace = debug_backtrace();
 		array_shift($trace);
 		
-		self::onError($error, $trace);
+		self::on_error($error, $trace);
 	}
 
 	public static function _handleException($e)
@@ -409,7 +409,7 @@ class aeLog
 		$error['file'] = $e->getFile();
 		$error['line'] = $e->getLine();
 		
-		self::onError($error, $e->getTrace());
+		self::on_error($error, $e->getTrace());
 	}
 
 	public static function _handleShutdown()
@@ -422,10 +422,10 @@ class aeLog
 			|| $error['file'] !== $_error['file']
 			|| $error['line'] !== $_error['line']))
 		{
-			self::onError($error);
+			self::on_error($error);
 		}
 		
-		self::onShutdown();
+		self::on_shutdown();
 		
 		self::$output->output();
 	}
