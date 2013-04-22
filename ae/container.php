@@ -25,8 +25,7 @@ class aeContainer
 {
 	protected $path;
 	protected $buffer;
-	protected $top;
-	protected static $stack = array();
+	protected $context;
 	protected static $vars = array();
 	
 	public function __construct($path)
@@ -38,7 +37,7 @@ class aeContainer
 		
 		$this->path = $path;
 		$this->buffer = new aeBuffer();
-		$this->top = new aeStack(self::$stack, self::$vars);
+		$this->context = new aeSwitch(self::$vars, self::$vars);
 	}
 	
 	public function __destruct()
