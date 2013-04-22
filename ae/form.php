@@ -245,7 +245,7 @@ class aeFormValidator
 			
 			switch ($format)
 			{
-				case aeForm::valid_number:
+				default:
 					$this->validators[] = function($value) use ($message) {
 						return !is_numeric($value) ? $message : null;
 					};
