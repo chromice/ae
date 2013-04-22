@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a PHP framework with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule and only what you are actively using is loaded and being kept in memory.
+æ |aʃ| is a low-level web framework written in PHP with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule and only what you are actively using is loaded and being kept in memory. 
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -18,6 +18,9 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 - [Request](#request)
 - [Response](#response)
 - [Image](#image)
+- [Form](#form)
+	- [Field types](#field-types)
+	- [Validation](#validation)
 - [Database](#database)
 	- [Making queries](#making-queries)
 	- [Transactions](#transactions)
@@ -231,7 +234,7 @@ Please consult with the source code of the core libraries for real life examples
 
 ## Buffer
 
-`aeBuffer` is a core utility class for capturing output in an exception–safe way:
+`aeBuffer` is a core utility class for capturing output in an exception-safe way:
 
 You must create a buffer and assign it to a variable, in order to start capturing output:
 
@@ -331,7 +334,7 @@ $proxies = $options->get('proxies', null);
 
 ## Log
 
-Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user–defined directory.
+Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user-defined directory.
 
 **NB!** The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
 
@@ -371,7 +374,7 @@ ae::options('log')->set('environment', true);
 
 If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
 
-æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. Just make sure that */inspector* directory is located in the web root and the log library will inject the inspector button into the page, if there are any message logged. Pressing that button will open a new window, containing all messages:
+æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. Just make sure that */inspector* directory is located in the web root and log library will inject the inspector button into the page, if there are any message logged. Pressing that button will open a new window, containing all messages:
 
 ![](inspector/example.png)
 
@@ -471,7 +474,7 @@ $request = ae::request();
 echo $request->type(); // json
 ```
 
-Requests can be re–routed to a specific directory:
+Requests can be re-routed to a specific directory:
 
 ```php
 // GET /article/123 HTTP/1.1
@@ -507,7 +510,7 @@ echo "Article ID is $id. ";
 echo "You can access it at " . aeRequest::uri();
 ```
 
-And, finally, use `aeRequest::ip_address()` to get the IP address of the client. If your app is running behind a reverse–proxy or load balancer, you need to specify its IP address via request options:
+And, finally, use `aeRequest::ip_address()` to get the IP address of the client. If your app is running behind a reverse-proxy or load balancer, you need to specify its IP address via request options:
 
 ```php
 ae::options('request')->set('proxies', '83.14.1.1, 83.14.1.2');
@@ -517,7 +520,7 @@ $client_ip = ae::request()->ip_address();
 
 ## Response
 
-Response library allows you to create a response of a specific mime–type, set its headers and (optionally) cache and compress it.
+Response library allows you to create a response of a specific mime-type, set its headers and (optionally) cache and compress it.
 
 Here is an example of a simple application that creates gzip'ed response with a custom header that is cached for 5 minutes:
 
@@ -541,15 +544,15 @@ $response
 ?>
 ```
 
-You can specify the type when you create a new response object. It should be either a valid mime–type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html".
+You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html".
 
 When response is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded.
 
 You can set HTTP headers at any point via `aeResponse::header()` method. 
 
-If you want the response to be cached client–side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
+If you want the response to be cached client-side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
 
-Response library supports server–side caching as well. The responses are saved to */cache* directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
+Response library supports server-side caching as well. The responses are saved to */cache* directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
 
 Here are the rules that *.htaccess* file in the web root directory must contain:
 
@@ -625,6 +628,210 @@ $small = $image
 $small
 	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
 	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+```
+
+## Form
+
+Form library allows you to populate form fields with values, validate posted forms and display error messages.
+
+Each form must have a unique ID. This way the library knows which form has been posted, even if there are multiple pages on the form. The form
+
+In general any form script would consist of three parts: form and field declaration, validation and HTML output.
+
+Let's declare a simple form with three fields (text input, checkbox and select drop-down) and basic validation rules:
+
+```php
+$form = ae::form('form-id');
+
+$input = $this->single('text')
+	->required('This field is required.')
+	->min_length('It should be at least 3 characters long.', 3)
+	->max_length('Please keep it shorter than 100 characters.', 100);
+
+$checkbox = $this->single('checkbox')
+	->required('You must check this checkbox!');
+
+$options = array(
+	'foo' => 'Foo',
+	'bar' => 'Bar'
+);
+
+$select = $this->single('select')
+	->options('Wrong value selected', $options);
+```
+
+Now, this declaration is enough to validate the form, has it been submitted:
+
+```php
+if ($form->is_submitted())
+{
+	$is_valid = $form->validate();
+	
+	if ($is_valid)
+	{
+		// Do something useful with the values
+		$values = $form->values();
+		
+		var_dump($values);
+	}
+}
+```
+
+If the form has not been submitted, you may want to populate it with default values:
+
+```php
+if (!$form->is_submitted)
+{
+	$form->value(array(
+		'text' => 'Foo'
+	));
+}
+```
+
+The HTML code of the form's content can be anything you like, but you must use `aeForm::open()` and `aeForm::close()` methods instead of `<form>` and `</form>` tags:
+
+```php
+<?= $form->open() ?>
+<div class="field">
+	<label for="text-input">Inter some text:</label>
+	<input id="text-input" name="<?= $input->name ?>" value="<?= $input->value ?>">
+	<?= $input->error('<em class="error">', '</em>') ?>
+</div>
+<div class="field">
+	<label>
+		<input type="checkbox" name="<?= $input->name ?>" value="1" <?= $this->checked() ?>>
+		This is a very important checkbox
+	</label>
+</div>
+<div class="field">
+	<label for="select-input">Select something (total optional):</label>
+	<select name="<?= $select->name ?>" id="select-input">
+		<option>Nothing selected</option>
+<?php foreach ($options as $key => $value): ?>
+		<option value="<?= $key ?>" <?= $select->selected($key) ?>><?= $value ?></option>
+<?php endforeach ?>
+	</select>
+</div>
+<div class="field">
+	<button type="submit">Submit</button>
+</div>
+<?= $form->close() ?>
+```
+
+### Field types
+
+Form library does not distinguish between various input types of HTML, as it operates only with values. However if a field accepts multiple values (e.g. `<select multiple>` or several `<input type="checkbox">`) you must declare the field appropriately for validation to work.
+
+In cases where the amount of values is arbitrary you must declare the field as `multiple`:
+
+```php
+$cb = $form->multiple('checked')
+	->required('Check at least one box');
+```
+
+You would then output this field like this:
+
+```php
+<label><input type="checkbox" name="<?= $cb->name ?>[]" <?= $cb->checked('foo') ?> value="foo"> Foo</label>
+<label><input type="checkbox" name="<?= $cb->name ?>[]" <?= $cb->checked('bar') ?> value="bar"> Bar</label>
+```
+
+If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and maximum length:
+
+```php
+$tags = $form->sequence('tags', 1, 5)
+	->min_length('Should be at least 2 character long', 2);
+```
+
+The sequence will contain the minimum number of fields required, but you can allow user to control the length via "Add" and "Remove" buttons.
+
+```php
+if ($form->value('add') === 'tag')
+{
+	$tags[] = ''; // Empty by default
+}
+else if ($index = $form->value('remove')) // NB! intentionally does not work for 0.
+{
+	unset($tags[$index]);
+}
+```
+
+And here is what the HTML of this field will look like:
+
+```php
+<?php foreach ($tags as $tag): ?>
+<div class="field">
+	<label for="tag-<?= $tag->index ?>">Tag <?= $tag->index + 1 ?>:</label>
+	<input name="<?= $tag->name ?>[<?= $tag->index ?>]" id="tag-<?= $tag->index ?>">
+<?php if ($tag->index > 0): ?>
+	<button type="submit" name="remove" value="<?= $tag->index ?>">Remove</button>
+<?php endif ?>
+	<?= $tag->error() ?>
+</div>
+<?php endforeach ?>
+<?php if ($tag->count() < 5): ?>
+<p><button type="submit" name="add" value="tag">Add another</button> tag.</p>
+<?php endif ?>
+```
+
+### Validation
+
+Form library comes with a few validation methods. Each method accept the error message that should be displayed to the user, if validation fails, as the first argument.
+
+Any field can be made required to be filled in by user:
+
+```php
+$field->required('This field is required.');
+```
+
+If the value of the field must be a number, you can validate its format and minimum and maximum value:
+
+```php
+$field->format('Should contain a number`, aeForm::valid_integer)
+	->min_value('Must be greater than 1.', 2)
+	->max_value('Must be less than 5.', 4);
+```
+
+There several number types supported:
+
+- `aeForm::valid_number` -- any numeric value;
+- `aeForm::valid_integer` -- an integer number, e.g. -1, 0, 1, 2, 999;
+- `aeForm::valid_octal` -- an octal number, e.g. 01, 0755, 02523;
+- `aeForm::valid_hexadecimal` -- a hexadecimal number, e.g. 0x1, 0x24, 0xee; 
+- `aeForm::valid_decimal` -- a decimal number, e.g. 0.01, 0.02, 25.00;
+- `aeForm::valid_float` -- a float number e.g. 10.05, -1.5678e2;
+
+If value is a string you may validate its format and maximum and minimum length:
+
+```php
+$field->format('This should be a valid email.', aeForm::valid_email)
+	->min_length('Cannot be shorter than 5 characters.', 5)
+	->max_length('Cannot be longer than 100 characters.', 100);
+```
+
+There several number string formats supported:
+
+- `aeForm::valid_email` -- a valid email address;
+- `aeForm::valid_url` -- a valid URL string: protocol and domain;
+- `aeForm::valid_url_path` -- a valid URL string: protocol, domain and path;
+- `aeForm::valid_url_query` -- a valid URL string: protocol, domain, path and query string;
+- `aeForm::valid_ip` -- any valid IP address;
+- `aeForm::valid_ip4` -- any valid IPv4 address;
+- `aeForm::valid_ip6` -- any valid IPv6 address;
+- `aeForm::valid_public_ip` -- any valid public IP address;
+
+You may also you a regular expression to define format:
+
+```php
+$field->format('Only lowercase alphabet characters', '/^[a-z]$/');
+```
+
+Or you can use an anonymous function as a validator:
+
+```php
+$field->custom('Devils are not allowed.', function ($value) {
+	return $value == 666;
+});
 ```
 
 
@@ -812,7 +1019,7 @@ There are 3 authors in the database:
 
 ### Active record
 
-The database library has `aeDatabaseTable` abstract class that your table specific class can extend:
+Database library has `aeDatabaseTable` abstract class that your table specific class can extend:
 
 ```php
 class Authors extends aeDatabaseTable {}

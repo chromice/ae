@@ -59,7 +59,7 @@ class aeForm
 		
 		$this->id = $form_id;
 		
-		if ($this->is_posted())
+		if ($this->is_submitted())
 		{
 			$this->values($_POST);
 		}
@@ -89,7 +89,7 @@ class aeForm
 		return $this->fields[$name] = new aeFormFieldSequence($name, $this->values[$name], $this->errors[$name], $min, $max);
 	}
 
-	public function is_posted()
+	public function is_submitted()
 	/*
 		Returns true if the form with such id is posted.
 	*/
@@ -439,7 +439,7 @@ class aeFormField extends aeFormValidator
 		}
 	}
 
-	public function checked($value)
+	public function checked($value = true)
 	/*
 		Returns 'checked' if $value matches. Useful for radio and checkbox inputs.
 	*/

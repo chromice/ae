@@ -3,7 +3,7 @@
 $form = ae::form('form-id');
 
 // Set default values
-if (!$form->is_posted())
+if (!$form->is_submitted())
 {
 	$form->values(array(
 		'text' => '1',
@@ -61,7 +61,7 @@ else if ($index = $form->value('remove')) // NB! intentionally does not work for
 	unset($textarea[$index]);
 }
 // Process the form only if no other actions are made, and the form is posted
-else if ($form->is_posted())
+else if ($form->is_submitted())
 {
 	// Run the validation, which will set errors
 	$is_valid = $form->validate();
