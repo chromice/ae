@@ -144,18 +144,19 @@ class aeForm
 		return '</form>';
 	}
 
-	public function value($name, $value = null)
+	public function value($name, $index = null)
 	/*
-		Returns literal value of the field (if $value is NULL);
-		or sets it to new value (if value is not NULL).
+		Returns literal value of the field.
 	*/
 	{
 		if (is_null($value))
 		{
 			return isset($this->values[$name]) ? $this->values[$name] : null;
 		}
-		
-		$this->values[$name] = $value;
+		else if (isset($this->values[$name][$index]))
+		{
+			return $this->values[$name][$index];
+		}
 	}
 
 	public function values($values = null)
