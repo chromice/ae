@@ -669,7 +669,6 @@ if ($form->is_submitted())
 	
 	if ($is_valid)
 	{
-		// Do something useful with the values
 		$values = $form->values();
 		
 		var_dump($values);
