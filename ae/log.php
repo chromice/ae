@@ -377,15 +377,15 @@ class aeLog
 		self::$output = new aeBuffer();
 		
 		// Set up all handlers
-		set_error_handler(array('aeLog','_handleError'), E_ALL | E_STRICT);
-		set_exception_handler(array('aeLog','_handleException'));
-		register_shutdown_function(array('aeLog','_handleShutdown'));
+		set_error_handler(array('aeLog','_handle_error'), E_ALL | E_STRICT);
+		set_exception_handler(array('aeLog','_handle_exception'));
+		register_shutdown_function(array('aeLog','_handle_shutdown'));
 		
 		// Turn off error reporting
 		error_reporting(0);
 	}
 	
-	public static function _handleError($type, $message, $file, $line, $context)
+	public static function _handle_error($type, $message, $file, $line, $context)
 	{
 		$error['type'] = $type;
 		$error['context'] = $context;
@@ -401,7 +401,7 @@ class aeLog
 		self::on_error($error, $trace);
 	}
 
-	public static function _handleException($e)
+	public static function _handle_exception($e)
 	{
 		$error['type'] = 'exception';
 		$error['code'] = $e->getCode();
@@ -412,7 +412,7 @@ class aeLog
 		self::on_error($error, $e->getTrace());
 	}
 
-	public static function _handleShutdown()
+	public static function _handle_shutdown()
 	{
 		$error = error_get_last();
 		$_error =& self::$last_error;
