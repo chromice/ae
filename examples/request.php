@@ -35,12 +35,18 @@ echo $request->segment(3, 'default'); // 'default'
 echo "\n";
 
 // Route request
-$route = $request->route('examples/request/views');
+// $route = $request->route('/', 'examples/request/views');
+// or
+$route = $request->route(array(
+	'/view/:any/:alpha/:numeric' => function ($s1, $s2, $number) {
+		echo 'Routing function called with arguments: ' . $s1 . ', ' . $s2 . ', ' . $number . '<br>';
+	},
+	'/' => 'examples/request/views'
+));
 
 if ($route->exists())
 {
 	$route->follow(); 
-	// loads a script, e.g. '/segment-1/segment-2.php'
 }
 else
 {
@@ -48,7 +54,7 @@ else
 }
 
 // Redirect request to a file
-$route = $request->route('examples/request/views/view.php');
+$route = $request->route('/', 'examples/request/views/view.php');
 
 // It is pointless to check if path exists or not...
 $route->follow(); 

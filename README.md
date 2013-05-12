@@ -464,7 +464,7 @@ Requests can be re-routed to a specific directory:
 // GET /article/123 HTTP/1.1
 $request = ae::request();
 
-$route = $request->route('handlers/');
+$route = $request->route('/', 'handlers/');
 
 if (!$route->exists())
 {

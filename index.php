@@ -3,7 +3,7 @@
 include 'ae/core.php';
 
 $request = ae::request();
-$route = $request->route('/examples/');
+$route = $request->route('/','/examples/');
 
 if ($route->exists())
 {

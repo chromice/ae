@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-ae::invoke(array('aeRoute','request'), ae::factory);
+ae::invoke(array('aeRouter','request'), ae::factory);
 
 class aeRequest
 /*
@@ -68,14 +68,19 @@ class aeRequest
 		return isset($this->segments[$offset]) ? $this->segments[$offset] : $default;
 	}
 	
-	public function route($base)
+	public function route($rules, $target = null)
 	/*
-		Returns an instance of aeRoute for base path and current uri.
+		Returns an instance of aeRouter for base path and current uri.
 	*/
 	{
 		$uri = implode('/', array_slice($this->segments, $this->depth));
 		
-		return new aeRoute($uri, $base);
+		if (!is_array($rules))
+		{
+			$rules = array($rules => $target);
+		}
+		
+		return new aeRouter($uri, $rules);
 	}
 	
 	// ==============================
@@ -228,7 +233,7 @@ class aeRequest
 }
 
 
-class aeRoute
+class aeRouter
 {
 	protected static $depth = 0;
 	protected static $segments = array();
@@ -251,11 +256,47 @@ class aeRoute
 		return new aeRequest(self::$depth, aeRequest::segments());
 	}
 	
-	protected $uri;
+	// ===========
+	// = Routing =
+	// ===========
+	
 	protected $offset;
 	protected $path;
 	
-	public function __construct($uri, $base)
+	protected $callback;
+	protected $arguments = array();
+	
+	public function __construct($uri, $rules)
+	{
+		$uri = trim($uri, '/');
+		
+		foreach ($rules as $rule => $route) 
+		{
+			$rule = strtr(preg_quote(trim($rule, '/'), '/'), array(
+				'\:alpha' => '([a-zA-Z]+)',
+				'\:numeric' => '([0-9]+)',
+				'\:any' => '([^\/]+)'
+			));
+			
+			if (preg_match('/^' . $rule . '/', $uri, $matches) === 1)
+			{
+				if (is_string($route)) 
+				{
+					$this->_route_uri($route, $uri);
+				} 
+				else if (is_callable($route)) 
+				{
+					array_shift($matches);
+					$this->callback = $route;
+					$this->arguments = $matches;
+				}
+				
+				break;
+			}
+		}
+	}
+
+	protected function _route_uri($base, $uri)
 	{
 		$base = ae::resolve($base);
 		
@@ -271,7 +312,7 @@ class aeRoute
 			
 			return;
 		}
-
+		
 		$uri = trim($uri, '/');
 		$segments = explode('/', $uri);
 		
@@ -296,7 +337,7 @@ class aeRoute
 		Returns true if the path can be routed.
 	*/
 	{
-		return !is_null($this->path);
+		return !is_null($this->path) || !is_null($this->callback);
 	}
 	
 	public function follow($parameters = array())
@@ -304,6 +345,11 @@ class aeRoute
 		Attempts to follow the path. Throws aeRequestException on error.
 	*/
 	{
+		if (is_callable($this->callback))
+		{
+			return call_user_func_array($this->callback, $this->arguments);
+		}
+		
 		if (is_null($this->path))
 		{
 			throw new aeRequestException('Request could not be routed. No matches found.');
