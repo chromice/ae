@@ -120,7 +120,7 @@ final class ae
 			// Static callback
 			ae::invoke(array('AnotherSingletonClassName', 'factory'));
 			
-			// Closure callback and singleton
+			// Closure / singleton pattern
 			ae::invoke(function($param, $param_2) {
 				static $instance;
 				

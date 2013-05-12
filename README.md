@@ -162,7 +162,7 @@ ae::import('ae/options.php');
 $options = new aeOptions();
 ```
 
-You can configure the library instance via second parameter of `ae::load()`. æ will pass it to class constructor or object factory by value:
+You can configure the library by passing more arguments to `ae::load()`. æ will pass them to class constructor or object factory by value:
 
 ```php
 $lib_options = ae::load('ae/options.php', 'my_library_namespace');
@@ -188,7 +188,7 @@ class LibraryClassName
 }
 ```
 
-You can also use the factory pattern and delegate the creation of the instance to a factory specified by function name, callback or closure:
+You can also use the factory pattern and delegate the creation of the instance by passing a function name, callback or closure:
 
 ```php
 ae::invoke('a_factory_function');

@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-ae::invoke(array('aeDatabase', 'connection'), ae::factory);
+ae::invoke(array('aeDatabase', 'connection'));
 
 class aeDatabase
 /*
