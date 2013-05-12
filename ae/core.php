@@ -82,6 +82,7 @@ final class ae
 		$_path = trim($_path, '/');
 		
 		$try[] = $path;
+		$try[] = $_path;
 		
 		if (true === $modules)
 		{
@@ -136,7 +137,7 @@ final class ae
 	{
 		$data =& self::$paths[end(self::$stack)];
 		
-		if (ae::factory & $type || is_a($misc, 'Closure'))
+		if (is_callable($misc))
 		{
 			$data['callback'] = $misc;
 		} 
@@ -222,12 +223,9 @@ final class ae
 		You can pass some variables to the script via the second argument.
 	*/
 	{
-		$path = self::resolve($path);
-		
-		$ps = new aeStack(self::$stack, $path);
 		$ob = new aeBuffer();
 		
-		__ae_include__($path, $parameters);
+		self::output($path, $parameters);
 		
 		return $ob->render();
 	}
@@ -239,7 +237,10 @@ final class ae
 		You can pass some variables to the script via the second argument.
 	*/
 	{
-		echo self::render($path, $parameters);
+		$path = self::resolve($path);
+		$ps = new aeStack(self::$stack, $path);
+
+		__ae_include__($path, $parameters);
 	}
 	
 	// =================================
@@ -338,9 +339,8 @@ final class ae
 
 function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 /*
-	Allows you to run an external script with nearly pristine stack
-	and no $this, optionally passing some parameters to it via the
-	second argument.
+	Runs an external script with nearly pristine environment, optionally 
+	passing some parameters to it via the second argument.
 */
 {
 	if (is_array($__ae_secret_array__))
@@ -357,9 +357,6 @@ function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 class aeBuffer
 /*
 	PHP output buffer abstraction layer. 
-	
-	It ensures that the scope output is always captured or discarded 
-	correctly, even when an exception is thrown.
 	
 		$buffer = new aeBuffer();
 		
@@ -383,14 +380,7 @@ class aeBuffer
 			'visits' => number_format($article->visits)
 		));
 	
-	If you don't call render() or output() methods, the captured content
-	will be discarded:
-	
-		$buffer = new aeBuffer(); 
-		
-		echo 'Invisible text.';
-		
-		unset($buffer);
+	The buffer content is flushed, if not manually rendered.
 */
 {
 	protected $content;
@@ -404,7 +394,7 @@ class aeBuffer
 	{
 		if (is_null($this->content))
 		{
-			ob_end_clean();
+			ob_end_flush();
 		}
 	}
 	
