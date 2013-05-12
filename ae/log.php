@@ -16,6 +16,8 @@
 # limitations under the License.
 # 
 
+ae::import('ae/request.php');
+
 aeLog::_setup();
 
 class aeLog
@@ -171,14 +173,12 @@ class aeLog
 		
 		$o.= self::_ruler() . "\n";
 		
-		if ($log)
+		if (isset($log))
 		{
 			$log->write($o);
 		}
 		
 		// Is client's IP address in the whitelist?
-		ae::import('ae/request.php');
-		
 		$ip = aeRequest::ip_address();
 		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
 		
@@ -195,14 +195,28 @@ class aeLog
 		{
 			return;
 		}
-		else if (aeRequest::is_ajax && !headers_sent())
+		else if (aeRequest::is_ajax)
 		{
-			header('X-ae-log: ' . base64_encode($o));
+			if (!headers_sent())
+			{
+				header('X-ae-log: ' . base64_encode($o));
+			}
+			else if (self::$has_problems)
+			{
+				echo $o;
+			}
 		}
 		else
 		{
 			echo "\n<!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
-			echo '<script charset="utf-8">' . ae::render('inspector/inject.js') . '</script>';
+			
+			// Try displaying the button
+			try {
+				echo '<script charset="utf-8">' 
+					. 'var base_path = "' . ae::options('request')->get('base_path', '/') . '";' 
+					. file_get_contents(ae::resolve('inspector/inject.js')) 
+					. '</script>';
+			} catch (Exception $e) {}
 		}
 	}
 	
@@ -372,16 +386,12 @@ class aeLog
 	
 	public static function _setup()
 	{
-		// We need to capture output until shutdown to be able to 
-		// set `X-ae-log` header, when necessary.
-		self::$output = new aeBuffer();
-		
 		// Set up all handlers
 		set_error_handler(array('aeLog','_handle_error'), E_ALL | E_STRICT);
 		set_exception_handler(array('aeLog','_handle_exception'));
 		register_shutdown_function(array('aeLog','_handle_shutdown'));
 		
-		// Turn off error reporting
+		// We are in total control of error output
 		error_reporting(0);
 	}
 	
@@ -417,7 +427,8 @@ class aeLog
 		$error = error_get_last();
 		$_error =& self::$last_error;
 		
-		if (is_array($error) && is_array($_error)
+		if (is_array($error) && empty($_error)
+		|| is_array($error) && is_array($_error)
 		&& ($error['message'] !== $_error['message']
 			|| $error['file'] !== $_error['file']
 			|| $error['line'] !== $_error['line']))
@@ -426,7 +437,5 @@ class aeLog
 		}
 		
 		self::on_shutdown();
-		
-		self::$output->output();
 	}
 }

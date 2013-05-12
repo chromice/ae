@@ -1,4 +1,9 @@
-var ae_log_monitor = function (log, source) {
+var ae_log_severity = function(level) {
+		if (this.level === undefined) this.level = 0;
+		if (level === undefined) return this.level;
+		this.level = Math.max(this.level, level);
+	},
+	ae_log_monitor = function (log, source) {
 	
 	if (this.logs === undefined) {
 		this.logs = [];
@@ -18,6 +23,9 @@ var ae_log_monitor = function (log, source) {
 		} 
 		return;
 	}
+	
+	if (log.match(/^(?:Error|Exception):/m) !== null) ae_log_severity(2);
+	if (log.match(/^(?:Warning|Notice):/m) !== null) ae_log_severity(1);
 	
 	this.logs.push({
 		time: Date.now(),
@@ -64,7 +72,7 @@ var ae_log_monitor = function (log, source) {
 // Parse body and inject inspector button.
 (function() {
 	if (window === window.top && !document.getElementById('ae-inspector-button')) {
-		document.write('<iframe id="ae-inspector-button" src="/inspector/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px" frameborder="0"></iframe>');
+		document.write('<iframe id="ae-inspector-button" src="' + (base_path || '/') + 'inspector/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px" frameborder="0"></iframe>');
 	}
 
 	// Find the HTML comment node with the log

@@ -299,7 +299,7 @@ Zepto(function() {
 						code = code.replace(variable, '<a class="dump" href="#' + dumpID + '">' + variable + '</a>');
 					} else if (text === '--- End of dump') {
 						dumpID = '';
-					} else if (text.match(/\d+\./)) {
+					} else if (text.match(/^\d+\./)) {
 						wrapItem();
 						parts.push('<li>');
 					} else {
