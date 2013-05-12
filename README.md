@@ -4,6 +4,8 @@
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
+**Please note**: This documentation covers only the basics. I would advise you to read the source code, because this is the best way to familiarise yourself with the API. And in case you miss the software licence at the bottom, *I bare absolutely no responsibility for any bugs I haven't yet squashed*.
+
 - [Acknowledgments](#acknowledgments)
 - [Getting started](#getting-started)
 - [Core](#core)
