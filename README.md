@@ -614,9 +614,9 @@ $small
 
 ## Form
 
-Form library allows you to populate form fields with values, validate posted forms and display error messages.
+Form library allows you to generate form controls, validate submitted values and display error messages.
 
-Each form must have a unique ID. This way the library knows which form has been posted, even if there are multiple pages on the form. The form
+Each form must have a unique ID. This way the library knows which form has been submitted, even if there are multiple pages on the form.
 
 In general any form script would consist of three parts: form and field declaration, validation and HTML output.
 
@@ -639,7 +639,7 @@ $options = array(
 );
 
 $select = $this->single('select')
-	->options('Wrong value selected', $options);
+	->valid_value('Wrong value selected', $options);
 ```
 
 Now, this declaration is enough to validate the form, has it been submitted:
@@ -661,7 +661,7 @@ if ($form->is_submitted())
 If the form has not been submitted, you may want to populate it with default values:
 
 ```php
-if (!$form->is_submitted)
+if (!$form->is_submitted())
 {
 	$form->value(array(
 		'text' => 'Foo'
@@ -674,24 +674,18 @@ The HTML code of the form's content can be anything you like, but you must use `
 ```php
 <?= $form->open() ?>
 <div class="field">
-	<label for="text-input">Inter some text:</label>
-	<input id="text-input" name="<?= $input->name ?>" value="<?= $input->value ?>">
-	<?= $input->error('<em class="error">', '</em>') ?>
+	<label for="<?= $input->id() ?>">Enter some text:</label>
+	<?= $input->input('text') ?>
+	<?= $input->error() ?>
 </div>
 <div class="field">
-	<label>
-		<input type="checkbox" name="<?= $input->name ?>" value="1" <?= $this->checked() ?>>
-		This is a very important checkbox
-	</label>
+	<label><?= $checkbox->input('checkbox') ?> Check me out!</label>
+	<?= $checkbox->error() ?>
 </div>
 <div class="field">
-	<label for="select-input">Select something (total optional):</label>
-	<select name="<?= $select->name ?>" id="select-input">
-		<option>Nothing selected</option>
-<?php foreach ($options as $key => $value): ?>
-		<option value="<?= $key ?>" <?= $select->selected($key) ?>><?= $value ?></option>
-<?php endforeach ?>
-	</select>
+	<label for="<?= $select->id() ?>">Select something (total optional):</label>
+	<?= $select->select(array('' => 'Nothing selected') + $options) ?>
+	<?= $select->error() ?>
 </div>
 <div class="field">
 	<button type="submit">Submit</button>
@@ -699,25 +693,31 @@ The HTML code of the form's content can be anything you like, but you must use `
 <?= $form->close() ?>
 ```
 
+Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in all browsers that support, you should set the `novalidate` attribute on a form:
+
+```php
+<?= $form->open(array('novalidate' => true)); ?>
+```
+
 ### Field types
 
-Form library does not distinguish between various input types of HTML, as it operates only with values. However if a field accepts multiple values (e.g. `<select multiple>` or several `<input type="checkbox">`) you must declare the field appropriately for validation to work.
+Form library does not distinguish between various input types of HTML when the form is validated, as it operates only with values. However, if a field accepts multiple values (e.g. `<select multiple>`, `<input type="email" multiple>` or several `<input type="checkbox">`) you must declare the field appropriately for validation to work.
 
 In cases where the amount of values is arbitrary you must declare the field as `multiple`:
 
 ```php
-$cb = $form->multiple('checked')
-	->required('Check at least one box');
+$cb = $form->multiple('checked')->required('Check at least one box');
 ```
 
 You would then output this field like this:
 
 ```php
-<label><input type="checkbox" name="<?= $cb->name ?>[]" <?= $cb->checked('foo') ?> value="foo"> Foo</label>
-<label><input type="checkbox" name="<?= $cb->name ?>[]" <?= $cb->checked('bar') ?> value="bar"> Bar</label>
+<label><?= $cb->input('checkbox', 'foo') ?> Foo</label><br>
+<label><?= $cb->input('checkbox', 'bar') ?> Bar</label>
+<?= $cb->error('<br><em class="error">','</em>') ?>
 ```
 
-If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and maximum length:
+If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and (optionally) maximum length:
 
 ```php
 $tags = $form->sequence('tags', 1, 5)
@@ -740,12 +740,12 @@ else if ($index = $form->value('remove')) // NB! intentionally does not work for
 And here is what the HTML of this field will look like:
 
 ```php
-<?php foreach ($tags as $tag): ?>
+<?php $count = 0; foreach ($tags as $index => $tag): $count++; ?>
 <div class="field">
-	<label for="tag-<?= $tag->index ?>">Tag <?= $tag->index + 1 ?>:</label>
-	<input name="<?= $tag->name ?>[<?= $tag->index ?>]" id="tag-<?= $tag->index ?>">
-<?php if ($tag->index > 0): ?>
-	<button type="submit" name="remove" value="<?= $tag->index ?>">Remove</button>
+	<label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
+	<?= $tag->input('input') ?>
+<?php if ($count > 0): ?>
+	<button type="submit" name="remove" value="<?= $tag->index() ?>">Remove</button>
 <?php endif ?>
 	<?= $tag->error() ?>
 </div>
@@ -754,6 +754,8 @@ And here is what the HTML of this field will look like:
 <p><button type="submit" name="add" value="tag">Add another</button> tag.</p>
 <?php endif ?>
 ```
+
+You can combine several sequences together to create repeatable field groups.
 
 ### Validation
 
@@ -765,56 +767,54 @@ Any field can be made required to be filled in by user:
 $field->required('This field is required.');
 ```
 
-If the value of the field must be a number, you can validate its format and minimum and maximum value:
+If the value of the field is a decimal/integer number or time/date/month/week, you can validate its format and minimum and maximum value:
 
 ```php
-$field->format('Should contain a number`, aeForm::valid_integer)
-	->min_value('Must be greater than 1.', 2)
-	->max_value('Must be less than 5.', 4);
+$number->valid_pattern('Should contain a number.`, aeValidator::integer)
+	->min_value('Must be equal to 2 or greater.', 2)
+	->max_value('Must be equal to 4 or less.', 4);
+$date->valid_pattern('Should contain a date: YYYY-MM-DD.`, aeValidator::date)
+	->min_value('Cannot be in the past.', date('Y-m-d'));
 ```
 
-There several number types supported:
-
-- `aeForm::valid_number` -- any numeric value;
-- `aeForm::valid_integer` -- an integer number, e.g. -1, 0, 1, 2, 999;
-- `aeForm::valid_octal` -- an octal number, e.g. 01, 0755, 02523;
-- `aeForm::valid_hexadecimal` -- a hexadecimal number, e.g. 0x1, 0x24, 0xee; 
-- `aeForm::valid_decimal` -- a decimal number, e.g. 0.01, 0.02, 25.00;
-- `aeForm::valid_float` -- a float number e.g. 10.05, -1.5678e2;
-
-If value is a string you may validate its format and maximum and minimum length:
+If value is a string you may validate, its format and maximum and minimum length:
 
 ```php
-$field->format('This should be a valid email.', aeForm::valid_email)
+$field->valid_pattern('This should be a valid email.', aeValidator::email)
 	->min_length('Cannot be shorter than 5 characters.', 5)
 	->max_length('Cannot be longer than 100 characters.', 100);
 ```
 
-There several number string formats supported:
+The library comes with a few stock format validators:
 
-- `aeForm::valid_email` -- a valid email address;
-- `aeForm::valid_url` -- a valid URL string: protocol and domain;
-- `aeForm::valid_url_path` -- a valid URL string: protocol, domain and path;
-- `aeForm::valid_url_query` -- a valid URL string: protocol, domain, path and query string;
-- `aeForm::valid_ip` -- any valid IP address;
-- `aeForm::valid_ip4` -- any valid IPv4 address;
-- `aeForm::valid_ip6` -- any valid IPv6 address;
-- `aeForm::valid_public_ip` -- any valid public IP address;
+- `aeValidator::integer` -- an integer number, e.g. -1, 0, 1, 2, 999;
+- `aeValidator::decimal` -- a decimal number, e.g. 0.01, 0.02, 25.00;
+- `aeValidator::numeric` -- a string consisting of numeric characters, e.g. 123, 000;
+- `aeValidator::alpha` -- a string consisting of alphabetic characters, e.g. abc, cdef;
+- `aeValidator::alphanumeric` -- a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
+- `aeValidator::color` -- a hex value of a color, e.g. #fff000, #434343;
+- `aeValidator::time` -- a valid time, e.g. 14:00:00, 23:59:59.99;
+- `aeValidator::date` -- a valid date, e.g. 2009-10-15;
+- `aeValidator::datetime` -- a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
+- `aeValidator::month` -- a valid month, e.g. 2009-10;
+- `aeValidator::week` -- a valid week, e.g. 2009-W42;
+- `aeValidator::email` -- a valid email address;
+- `aeValidator::url` -- a valid URL string;
+- `aeValidator::postcode_uk` -- a valid UK postal code.
 
-You may also you a regular expression to define format:
+You may define any pattern manually:
 
 ```php
-$field->format('Only lowercase alphabet characters', '/^[a-z]$/');
+$field->valid_pattern('At least 5 alphabetic characters.', '[a-z]{5,}');
 ```
 
-Or you can use an anonymous function as a validator:
+You can also use an anonymous function as a validator:
 
 ```php
-$field->custom('Devils are not allowed.', function ($value) {
+$field->valid_value('Devils are not allowed.', function ($value) {
 	return $value == 666;
 });
 ```
-
 
 ## Database
 
