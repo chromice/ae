@@ -21,9 +21,6 @@ ae::invoke('aeImage');
 class aeImage
 /*
 	An image manipulation library.
-	
-	`image` options:
-		`quality`	-	JPEG quality
 */
 {
 	protected $path;
@@ -315,7 +312,7 @@ class aeImage
 		return $this;
 	}
 	
-	public function save($name = null)
+	public function save($name = null, $quality = 75)
 	{
 		$this->_load();
 		list($path, $type) = $this->_path_type($name);
@@ -329,7 +326,7 @@ class aeImage
 				$success = imagepng($this->source, $path);
 				break;
 			case IMAGETYPE_JPEG:
-				$success = imagejpeg($this->source, $path, ae::options('image')->get('quality', 75));
+				$success = imagejpeg($this->source, $path, $quality);
 				break;
 		}
 		
@@ -346,7 +343,7 @@ class aeImage
 		return new aeImage($path);
 	}
 
-	public function dispatch($name = null)
+	public function dispatch($name = null, $quality = 75)
 	{
 		$this->_load();
 		list($path, $type) = $this->_path_type($name);
@@ -365,7 +362,7 @@ class aeImage
 				exit;
 			case IMAGETYPE_JPEG:
 				header('Content-Type: image/jpeg');
-				imagejpeg($this->source, null, ae::options('image')->get('quality', 75));
+				imagejpeg($this->source, null, $quality);
 				exit;
 		}
 	}
