@@ -23,7 +23,8 @@ class aeRequest
 	Request abstration.
 	
 	`request` options:
-		`proxies`	-	an array or comma-separated list of IP addresses.
+		`base_path` - a base URL path; "/" by default;
+		`proxies`  - an array or comma-separated list of IP addresses.
 */
 {
 	const is_cli = __ae_request_cli__;
@@ -77,9 +78,24 @@ class aeRequest
 		return new aeRoute($uri, $base);
 	}
 	
-	// =======================
-	// = General information =
-	// =======================
+	// ==============================
+	// = URL generate and redirects =
+	// ==============================
+	
+	public static function url($url = null)
+	{
+		return ae::options('request')->get('base_path', '/') . ltrim((is_null($url) ? aeRequest::uri() : $url), '/');
+	}
+	
+	public static function redirect($url, $http_response_code = 302)
+	{
+		header("Location: " . self::url($url), TRUE, $http_response_code);
+		exit;
+	}
+	
+	// ==============================
+	// = Global request information =
+	// ==============================
 	
 	protected static $_uri;
 	protected static $_type;
@@ -117,9 +133,10 @@ class aeRequest
 	
 	public static function ip_address()
 	/*
-		Returns IP address of the client. If the server is behind a proxy or
-		load balancer, this method will return its IP address, unless it has been
-		added to the list of known `proxies`.
+		Returns IP address of the client. 
+		
+		If the server is behind a proxy or load balancer, this method will return
+		its IP address, unless it has been added to the list of known `proxies`.
 	*/
 	{
 		if (empty($_SERVER['REMOTE_ADDR']))
@@ -190,6 +207,12 @@ class aeRequest
 		
 		$type = 'html';
 		$uri = trim($uri, '/');
+		$base_path = trim(ae::options('request')->get('base_path', '/'), '/');
+		
+		if (strlen($base_path) > 0 && strpos($uri, $base_path) === 0)
+		{
+			$uri = trim(substr($uri, strlen($base_path)), '/');
+		}
 		
 		if (preg_match('/\.([a-z0-9_]+)$/', $uri, $match) == 1)
 		{

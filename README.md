@@ -447,16 +447,6 @@ echo $request->type(); // html
 echo $request->segment(99, 'default value'); // default value
 ```
 
-For code portability reasons, you should probably do the same for command line arguments:
-
-```php
-// php index.php separate arguments with spaces
-$request = ae::request();
-
-echo $request->segment(0); // separate
-echo $request->segment(1); // arguments
-```
-
 All requests have a type ("html" by default), which is defined by the *file extension* part of the URI.
 
 ```php
