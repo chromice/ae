@@ -188,48 +188,16 @@ class LibraryClassName
 }
 ```
 
-If you want to have one and only one instance of the class, you can instruct æ to follow the singleton pattern:
+You can also use the factory pattern and delegate the creation of the instance to a factory specified by function name, callback or closure:
 
 ```php
-ae::invoke('SingletonClassName', ae::singleton);
-
-class SingletonClassName
-{
-	function __construct() {}
-}
-```
-
-**NB!** For the sake of behaviour consistency singletons are not configurable via the `ae::load()` method.
-
-You can also use the factory pattern and delegate the creation of the instance to a function:
-
-```php
-ae::invoke('a_factory_function', ae::factory);
+ae::invoke('a_factory_function');
 
 function a_factory_function($parameters = null)
 {
 	return new STDClass();
 }
 
-```
-
-Both patterns can be combined (note the usage of a static class method as a factory):
-
-```php
-ae::invoke(
-	array('AnotherSingletonClassName', 'factory'), 
-	ae::factory | ae:singleton
-);
-
-class AnotherSingletonClassName
-{
-	public static function factory()
-	{
-		$class = get_called_class();
-		
-		return new $class;
-	}
-}
 ```
 
 Please consult with the source code of the core libraries for real life examples.

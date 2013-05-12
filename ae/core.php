@@ -25,9 +25,6 @@ final class ae
 	// = Code management =
 	// ===================
 	
-	const factory = 1;
-	const singleton = 2;
-	
 	private static $modules = array();
 	private static $paths = array();
 	private static $stack = array();	
@@ -107,32 +104,35 @@ final class ae
 		throw new Exception('Could not resolve path: ' . $path);
 	}
 	
-	public static function invoke($misc, $type = 0)
+	public static function invoke($misc)
 	/*
 		Call this method from the loaded or imported file to define 
 		class name or factory that load() method should use.
 		
+		If valid class name is passed, æ will create a new instance 
+		of it every time the library is loaded:
+		
 			ae::invoke('LibraryClassName');
 		
-		æ will create a new instance of LibraryClassName every
-		time the library is loaded.
+		Alternatively you can pass an callable function name, 
+		callback or closure that sill be used as a factory:
 			
-			ae::invoke('SingletonClassName', ae::singleton);
-		
-		Only one instance of SingletonClassName will be created;
-		all subsequent calls to ae::load() will return that instance.
+			// Static callback
+			ae::invoke(array('AnotherSingletonClassName', 'factory'));
 			
-			ae::invoke('a_factory_function', ae::factory);
-		
-		a_factory_function() function will be called.
-			
-			ae::invoke(
-				array('AnotherSingletonClassName', 'factory'), 
-				ae::factory | ae:singleton
-			);
-		
-		AnotherSingletonClassName::factory() method will be 
-		used to create and reuse a single instance of an object.
+			// Closure callback and singleton
+			ae::invoke(function($param, $param_2) {
+				static $instance;
+				
+				if (!empty($instance)) 
+				{
+					return $instance;
+				}
+				
+				return $instance = new SomeClass($param, $param_2;
+			});
+
+
 	*/
 	{
 		$data =& self::$paths[end(self::$stack)];
@@ -141,12 +141,14 @@ final class ae
 		{
 			$data['callback'] = $misc;
 		} 
-		else 
+		else if (class_exists($misc))
 		{
 			$data['class'] = $misc;
 		}
-		
-		$data['singleton'] = (bool)(ae::singleton & $type);
+		else
+		{
+			trigger_error('Wrong invocation parameter.', E_USER_ERROR);
+		}
 	}
 	
 	public static function import($path)
@@ -171,7 +173,7 @@ final class ae
 		__ae_include__($path);
 	}
 	
-	public static function load($path, $parameters = null)
+	public static function load()
 	/*
 		Loads a script and attempts to invoke an object defined in it, 
 		using invoke() method:
@@ -184,33 +186,26 @@ final class ae
 		more real life examples.
 	*/
 	{
+		$arguments = func_get_args();
+		$path = array_shift($arguments);
+		
 		ae::import($path);
 		
 		$path = self::resolve($path);
 		$data =& self::$paths[$path];
 		
-		if (isset($data['instance']))
-		{
-			return $data['instance'];
-		}
-		
-		if (!empty($data['singleton']))
-		{
-			$parameters = null;
-		}
-		
 		if (isset($data['callback']))
 		{
-			$instance = call_user_func($data['callback'], $parameters);
+			$instance = call_user_func_array($data['callback'], $arguments);
+		}
+		else if(count($arguments) == 0)
+		{
+			$instance = new $data['class'];
 		}
 		else
 		{
-			$instance = new $data['class']($parameters);
-		}
-		
-		if (!empty($data['singleton']) && $instance)
-		{
-			$data['instance'] = $instance;
+			$r = new ReflectionClass($data['class']);
+			$instance = $r->newInstanceArgs($arguments);
 		}
 		
 		return $instance;

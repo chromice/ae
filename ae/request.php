@@ -16,7 +16,7 @@
 # limitations under the License.
 # 
 
-ae::invoke(array('aeRouter','request'), ae::factory);
+ae::invoke(array('aeRouter','request'));
 
 class aeRequest
 /*
