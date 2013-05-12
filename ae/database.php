@@ -23,13 +23,13 @@ class aeDatabase
 	A MySQL database abstraction layer.
 	
 	`database.[connection name]` options:
-		`class`		-	connection class: 'aeDatabase' by default;
-		`host`		-	connection host;
-		`port`		-	connection port;
-		`socket`	-	connection socket;
-		`user`		-	user name;
-		`password`	-	password;
-		`database`	-	database name.
+		`class`     - connection class: 'aeDatabase' by default;
+		`host`      - connection host;
+		`port`      - connection port;
+		`socket`    - connection socket;
+		`user`      - user name;
+		`password`  - password;
+		`database`  - database name.
 */
 {
 	// ==============
@@ -106,7 +106,7 @@ class aeDatabase
 	public function transaction()
 	/*
 		Returns a transaction object, which opens up a new transaction, and 
-		rollsback it back unless it has been explicitly committed.
+		rolls it back, unless it has been explicitly committed.
 	*/
 	{
 		return new aeDatabaseTransaction($this->db);
@@ -465,7 +465,7 @@ class aeDatabase
 	public function make()
 	/*
 		Runs current query and returns the number of affected rows 
-		or FALSE if query returned an error.
+		or FALSE if query had an error.
 	*/
 	{
 		$this->_result(null);
@@ -512,12 +512,12 @@ class aeDatabase
 	
 	protected $using = array();
 	
-	public function one($class)
+	public function one($class, $result = 'aeDatabaseResult')
 	/*
 		Executes the query and returns an instance of table class.
 	*/
 	{
-		$result = $this->many($class);
+		$result = $this->many($class, $result);
 		
 		if ($result->count() > 0)
 		{
@@ -576,14 +576,14 @@ class aeDatabase
 		return $columns;
 	}
 	
-	public function count($table, $where = null)
+	public function count($table, $where = null, $where_value = null)
 	/*
 		Returns the number of total or matching rows in the table.
 	*/
 	{
 		if (!is_null($where))
 		{
-			$this->where($where);
+			$this->where($where, $where_value);
 		}
 		
 		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table} {sql:where}")
@@ -597,18 +597,16 @@ class aeDatabase
 		return $result['found'];
 	}
 	
-	public function find($table, $where)
+	public function find($table, $where, $where_value = null)
 	/*
 		Finds a particular row in the table.
 	*/
 	{
-		$where = $this->_where($where);
-		
 		$result = $this->query("SELECT * FROM {table} {sql:where}")
 			->names(array(
 				'table' => $table
 			))
-			->where($where)
+			->where($where, $where_value)
 			->result();
 			
 		$found = $result->fetch();
@@ -633,7 +631,7 @@ class aeDatabase
 	/*
 		Updates the existing row or inserts a new one, if it does not exist.
 		
-		Unlike other methods, $where argument must be an associative array.
+		NB! Unlike other methods, $where argument must be an associative array.
 	*/
 	{
 		$insert_keys = array();
@@ -658,7 +656,7 @@ class aeDatabase
 			->make();
 	}
 	
-	public function update($table, $values, $where)
+	public function update($table, $values, $where, $where_value = null)
 	/*
 		Updates existing row(s) and returns the number of affected rows.
 	*/
@@ -668,11 +666,11 @@ class aeDatabase
 				'table' => $table
 			))
 			->values($values)
-			->where($where)
+			->where($where, $where_value)
 			->make();
 	}
 	
-	public function delete($table, $where)
+	public function delete($table, $where, $where_value = null)
 	/*
 		Deletes existing row(s) and returns the number of affected rows.
 	*/
@@ -681,7 +679,7 @@ class aeDatabase
 			->names(array(
 				'table' => $table
 			))
-			->where($where)
+			->where($where, $where_value)
 			->make();
 	}
 }
@@ -775,23 +773,17 @@ class aeDatabaseResult
 		
 		$class = $this->class;
 		
-		$values = $class::unserialize(array_combine(
-			$this->columns, 
-			array_intersect_key($row, $this->columns)
-		));
+		$values = array_combine($this->columns, array_intersect_key($row, $this->columns));
 		
-		$object = $class::create($values, false);
+		$object = new $class($values, true);
 		
 		foreach ($this->related as $name => $table)
 		{
 			$class = $table['class'];
 			
-			$values = $class::unserialize(array_combine(
-				$table['columns'], 
-				array_intersect_key($row, $table['columns'])
-			));
+			$values = array_combine($table['columns'], array_intersect_key($row, $table['columns']));
 			
-			$related = $class::create($values, false);
+			$related = new $class($values, true);
 			
 			$object->_attach($table['alias'], $related);
 		}
@@ -936,7 +928,7 @@ abstract class aeDatabaseTable
 	// = Data serialization =
 	// ======================
 	
-	public static function serialize($values)
+	protected static function serialize($values)
 	/*
 		Processes values before they are sent to database.
 	*/
@@ -944,7 +936,7 @@ abstract class aeDatabaseTable
 		return $values;
 	}
 	
-	public static function unserialize($record)
+	protected static function unserialize($record)
 	/*
 		Processes values retrieved from database.
 	*/
@@ -963,7 +955,12 @@ abstract class aeDatabaseTable
 	
 	private $is_dirty = false;
 	
-	public function __construct($values = null)
+	public function __construct($values = null, $_raw = false)
+	/*
+		NB! Must not be used directly. 
+		
+		Use aeDatabaseTable::create() method instead.
+	*/
 	{
 		$table = static::name();
 		$accessor = static::accessor();
@@ -973,10 +970,12 @@ abstract class aeDatabaseTable
 			trigger_error('Table "' . $table . '" has no accessor.', E_USER_ERROR);
 		}
 		
-		if (is_array($values)) foreach ($values as $key => $value)
+		if (is_array($values))
 		{
-			$this->$key = $value;
+			$this->values($values, $_raw);
 		}
+		
+		$this->is_dirty = !$_raw;
 	}
 	
 	public function _attach($related, $object)
@@ -998,9 +997,34 @@ abstract class aeDatabaseTable
 	// = Setters and getters =
 	// =======================
 	
+	public function values($values = null, $raw = false)
+	/*
+		Sets supplied $values or returns current values.
+		
+		If second argument is TRUE, $values are unserialized before being set.
+	*/
+	{
+		if (is_array($values))
+		{
+			if ($raw === true)
+			{
+				$values = static::unserialize($values);
+			}
+			
+			foreach ($values as $key => $value)
+			{
+				$this->$key = $value;
+			}
+		}
+		else if (is_null($values))
+		{
+			return array_merge($this->transient, $this->values, $this->ids);
+		}
+	}
+	
 	public function __set($name, $value)
 	{
-		$ref =& $this->_values_or_ids($name);
+		$ref =& $this->_value_reference($name);
 		
 		if (!isset($ref[$name]) || $ref[$name] !== $value)
 		{
@@ -1017,7 +1041,7 @@ abstract class aeDatabaseTable
 			return $this->related[$name];
 		}
 		
-		$ref =& $this->_values_or_ids($name);
+		$ref =& $this->_value_reference($name);
 		
 		if (isset($ref[$name]))
 		{
@@ -1027,19 +1051,19 @@ abstract class aeDatabaseTable
 	
 	public function __isset($name)
 	{
-		$ref =& $this->_values_or_ids($name);
+		$ref =& $this->_value_reference($name);
 		
 		return isset($ref[$name]);
 	}
 	
 	public function __unset($name)
 	{
-		$ref =& $this->_values_or_ids($name);
+		$ref =& $this->_value_reference($name);
 		
 		unset($ref[$name]);
 	}
 	
-	protected function &_values_or_ids($name)
+	protected function &_value_reference($name)
 	{
 		if (in_array($name, static::accessor()))
 		{
@@ -1059,7 +1083,7 @@ abstract class aeDatabaseTable
 	// = Basic CRUD methods. =
 	// =======================
 	
-	public static function create($values = null, $_dirty = true)
+	public static function create($values = null)
 	/*
 		Creates a new instance.
 		
@@ -1069,8 +1093,6 @@ abstract class aeDatabaseTable
 		$class = get_called_class();
 		
 		$entity = new $class($values);
-		
-		$entity->is_dirty = (bool) $_dirty;
 		
 		return $entity;
 	}
@@ -1131,11 +1153,7 @@ abstract class aeDatabaseTable
 				. 'to nothing.');
 		}
 		
-		foreach ($values as $key => $value)
-		{
-			$this->$key = $value;
-		}
-		
+		$this->values($values, true);
 		$this->is_dirty = false;
 		
 		return $this;
@@ -1170,6 +1188,8 @@ abstract class aeDatabaseTable
 				$this->ids()
 			);
 		}
+		
+		$this->is_dirty = false;
 
 		return $this;
 	}
