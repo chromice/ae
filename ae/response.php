@@ -29,8 +29,13 @@ class aeResponse
 	protected $headers;
 	protected $buffer;
 	
+	protected $current_switch;
+	protected static $current;
+	
 	public function __construct($type)
 	{
+		$this->current_switch = new aeSwitch(self::$current, $this);
+		
 		$this->headers = array();
 		$this->buffer = new aeBuffer();
 
@@ -82,6 +87,11 @@ class aeResponse
 
 		$this->header('Content-type', $type);
 	}
+
+	public static function current()
+	{
+		return self::$current;
+	}
 	
 	public function header($name, $value, $replace = true)
 	/*
@@ -122,10 +132,10 @@ class aeResponse
 		if (ae::options('response')->get('compress', false))
 		{
 			$output = $this->_compress($output);
+			
+			// Compression affects "Content-Length"
+			$this->header('Content-Length', strlen($output));
 		}
-		
-		// Compression affects "Content-Length"
-		$this->header('Content-Length', strlen($output));
 		
 		$this->_set_cache_headers('private');
 		
@@ -143,6 +153,7 @@ class aeResponse
 		}
 		
 		echo $output;
+		exit;
 	}
 	
 	protected function _compress($output)
