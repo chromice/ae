@@ -340,7 +340,7 @@ class aeRouter
 		return !is_null($this->path) || !is_null($this->callback);
 	}
 	
-	public function follow($parameters = array())
+	public function follow()
 	/*
 		Attempts to follow the path. Throws aeRequestException on error.
 	*/
@@ -358,7 +358,7 @@ class aeRouter
 		$depth = self::$depth + $this->offset;
 		$ds = new aeSwitch(self::$depth, $depth);
 		
-		ae::output($this->path, $parameters);
+		ae::output($this->path);
 	}
 }
 
