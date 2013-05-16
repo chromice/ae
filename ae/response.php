@@ -278,7 +278,7 @@ class aeResponse
 
 	RewriteCond %{ENV:REDIRECT_FROM_ROOT} !1 [OR]
 	RewriteCond %{TIME} >$ts
-	RewriteRule ^(.*) /index.php?/$1 [L]\n";
+	RewriteRule ^(.*) index.php?/$1 [L]\n";
 
 		// ...and dump headers
 		foreach ($this->headers as $name => $value)

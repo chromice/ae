@@ -6,21 +6,15 @@
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_URI} !\.\w+$
-	RewriteRule ^(.*?)$ /$1.html [L]
+	RewriteRule ^(.*?)$ $1.html [L]
 
 	# ...and redirect to cache directory ("/cache")
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+	RewriteRule ^(.*?)\.(\w+)$ cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
 	
 	# Alternatively, redirect to index.php to skip caching altogether
 	# RewriteCond %{REQUEST_FILENAME} !-f
-	# RewriteRule ^(.*) /index.php?/$1 [L,QSA]
-</IfModule>
-
-<IfModule !mod_rewrite.c>
-	# If mod_rewrite is not available, throw all non-existing 
-	# paths at index.php
-	ErrorDocument 404 /index.php
+	# RewriteRule ^(.*) index.php?/$1 [L,QSA]
 </IfModule>
 
 # ============================
