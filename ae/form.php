@@ -717,7 +717,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 	public function offsetSet($offset, $value)
 	{
 		if (isset($this->fields[$offset]) 
-		|| !is_null($this->max) && $this->max >= count($this->fields))
+		|| !is_null($this->max) && $this->max <= count($this->fields))
 		{
 			return;
 		}

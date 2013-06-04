@@ -24,13 +24,17 @@ $number = $form->single('text')
 
 
 // Create a sequence of 0 to 5 fields that accept tweet size chunks of text
-$textarea = $form->sequence('textarea', 1, 5) // the last field is validated only if not empty
-	->required('Please enter some text.')
+$textarea = $form->sequence('textarea', 1, 3) // the last field is validated only if not empty
 	->valid_value('Second box must contain 555.', function ($value, $index) {
 		return $index != 1 || $value == 555;
 	})
 	->min_length('Just type a few characters!', 2)
 	->max_length('Let\'s keep it short, shall we?', 140);
+	
+$textarea->required('Please enter some text.', function ($index) use ($textarea) {
+	return $textarea->count() - 1 > $index || $index === 0;
+});
+
 
 // Create a single field, that accepts only 'foo' and 'bar' values
 $select = $form->single('select')
@@ -40,10 +44,10 @@ $select = $form->single('select')
 // Create a single field, that accepts an array of 'foo' and 'bar' values
 $checkboxes = $form->multiple('check') // field is validated only if not empty
 	->required('Please check at least one box!') // at least one value is required by default
-	->valid_value('Wrong option selected.', array('foo' => 'Foo', 'bar' => 'Bar')); // keys are used here
+	->valid_value('Wrong option selected.', array('foo', 'bar')); // keys are used here
 
 // Try processing all special actions first
-if ($form->value('add') === 'textarea')
+if ($form->value('add'))
 {
 	$textarea[] = ''; // Empty by default
 }
