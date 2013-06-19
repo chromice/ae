@@ -36,9 +36,9 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 
 This project is born out of love and respect for PHP, a language of insanity, learning which helped me build beautiful things. This work stands on the shoulders of giants:
 
-- Respect to Rick Ellis for CodeIgniter and for shifting the perception of how big the framework should be and what it should do towards smaller and more focused.
+- Respect to Rick Ellis for CodeIgniter and for shifting the perception of how big the framework should be and what it should do, towards smaller and more focused respectively.
 
-- MODx community. MODx template syntax and architecture is even uglier than PHP's, but out of your love for the platform many great ideas were born. A few of those — expressed in slightly better PHP — found new home here; some inspired me to come up with better ones.
+- Hat tip to MODx community. Your template syntax and architecture is even uglier than PHP's, but out of your love for the platform many great ideas were born. A few of those — expressed in slightly better PHP — found new home here; some inspired me to come up with better ones.
 
 - Wordpress project, which I've learned to love to hate as a developer, but respect as a user.
 
@@ -492,7 +492,7 @@ $response
 
 You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html".
 
-When response is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded.
+When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded, when object is destroyed. You can access the the last active response object using `aeResponse::current()` method.
 
 You can set HTTP headers at any point via `aeResponse::header()` method. 
 
@@ -580,7 +580,7 @@ $small
 
 Form library allows you to generate form controls, validate submitted values and display error messages.
 
-Each form must have a unique ID. This way the library knows which form has been submitted, even if there are multiple pages on the form.
+Each form must have a unique ID. This way the library knows which form has been submitted, even if there are multiple forms on the page.
 
 In general any form script would consist of three parts: form and field declaration, validation and HTML output.
 
@@ -647,7 +647,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 	<?= $checkbox->error() ?>
 </div>
 <div class="field">
-	<label for="<?= $select->id() ?>">Select something (total optional):</label>
+	<label for="<?= $select->id() ?>">Select something (totally optional):</label>
 	<?= $select->select(array('' => 'Nothing selected') + $options) ?>
 	<?= $select->error() ?>
 </div>
@@ -657,7 +657,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 <?= $form->close() ?>
 ```
 
-Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in all browsers that support, you should set the `novalidate` attribute on a form:
+Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in the browsers that support it, you should set the `novalidate` attribute of the form:
 
 ```php
 <?= $form->open(array('novalidate' => true)); ?>
@@ -688,7 +688,7 @@ $tags = $form->sequence('tags', 1, 5)
 	->min_length('Should be at least 2 character long', 2);
 ```
 
-The sequence will contain the minimum number of fields required, but you can allow user to control the length via "Add" and "Remove" buttons.
+The sequence will contain the minimum number of fields required, but you can let user control the length via "Add" and "Remove" buttons.
 
 ```php
 if ($form->value('add') === 'tag')
@@ -719,13 +719,13 @@ And here is what the HTML of this field will look like:
 <?php endif ?>
 ```
 
-You can combine several sequences together to create repeatable field groups.
+You can combine several sequences in one loop to create repeatable field groups.
 
 ### Validation
 
-Form library comes with a few validation methods. Each method accept the error message that should be displayed to the user, if validation fails, as the first argument.
+Form library comes with a few validation methods. Each method accepts validation error message as the first argument.
 
-Any field can be made required to be filled in by user:
+Any field can be made required:
 
 ```php
 $field->required('This field is required.');
@@ -741,7 +741,7 @@ $date->valid_pattern('Should contain a date: YYYY-MM-DD.', aeValidator::date)
 	->min_value('Cannot be in the past.', date('Y-m-d'));
 ```
 
-If value is a string you may validate, its format and maximum and minimum length:
+If value is a string you may validate its format and maximum and minimum length:
 
 ```php
 $field->valid_pattern('This should be a valid email.', aeValidator::email)
@@ -749,10 +749,10 @@ $field->valid_pattern('This should be a valid email.', aeValidator::email)
 	->max_length('Cannot be longer than 100 characters.', 100);
 ```
 
-The library comes with a few stock format validators:
+The library comes with a few format validators:
 
 - `aeValidator::integer` -- an integer number, e.g. -1, 0, 1, 2, 999;
-- `aeValidator::decimal` -- a decimal number, e.g. 0.01, 0.02, 25.00;
+- `aeValidator::decimal` -- a decimal number, e.g. 0.01, -.02, 25.00, 30;
 - `aeValidator::numeric` -- a string consisting of numeric characters, e.g. 123, 000;
 - `aeValidator::alpha` -- a string consisting of alphabetic characters, e.g. abc, cdef;
 - `aeValidator::alphanumeric` -- a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
@@ -766,7 +766,7 @@ The library comes with a few stock format validators:
 - `aeValidator::url` -- a valid URL string;
 - `aeValidator::postcode_uk` -- a valid UK postal code.
 
-You may define any pattern manually:
+You may define any other pattern manually:
 
 ```php
 $field->valid_pattern('At least 5 alphabetic characters.', '[a-zA-Z]{5,}');
@@ -776,9 +776,20 @@ You can also use an anonymous function as a validator:
 
 ```php
 $field->valid_value('Devils are not allowed.', function ($value) {
-	return $value == 666;
+	return $value != 666;
 });
 ```
+
+If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted the correct value:
+
+```php
+$field->valid_value('Wrong option selected.', array(
+	'foo', 'bar' //, '...'
+));
+```
+
+Legitimate users would never see this error, but it prevent would-be hackers from tempering with the data.
+
 
 ## Database
 
@@ -902,7 +913,6 @@ unset($transaction);
 This way, if one of your SQL queries fails, it will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
 
 **NB!** Only one transaction can exist at a time.
-
 
 ### Retrieving data
 
