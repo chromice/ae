@@ -26,16 +26,11 @@ class aeLog
 	or X-ae-log header, or appends them to a log file.
 	
 	`log` options:
-		`level`         - aeLog::everything or aeLog::problems (default).
-		`environment`   - log $_* variables: true or false (default);
-		`ip_whitelist`  - an array or comma-separated list of IP addresses;
-		`directory`     - path to log directory.
-		
+		`dump_context`    - whether to dump global variables and error contexts: true or false (default);
+		`allowed_ips`     - an array or comma-separated list of IP addresses (127.0.0.1 by default);
+		`directory_path`  - path to log directory.
 */
 {
-	const everything = 1;
-	const problems = 2;
-	
 	protected static $log = array();
 	protected static $has_problems = false;
 	
@@ -98,18 +93,16 @@ class aeLog
 	protected static function on_shutdown()
 	{
 		$options = ae::options('log');
-		$show_environment = $options->get('environment', false);
+		$dump_context = $options->get('dump_context', false);
 		
-		if (!$show_environment && count(self::$log) === 0)
+		if (!$dump_context && count(self::$log) === 0)
 		{
 			return;
 		}
 		
-		$path = $options->get('directory', false);
-		$save = $options->get('level', aeLog::problems) === aeLog::everything 
-			|| self::$has_problems;
+		$path = $options->get('directory_path', false);
 		
-		if ($path && $save)
+		if ($path && self::$has_problems)
 		{
 			try 
 			{
@@ -137,9 +130,9 @@ class aeLog
 			. ' at ' . gmdate('H:i:s', time()) . " GMT:"
 			. self::_ruler('=', 79);
 		
-		if ($show_environment)
+		if ($dump_context)
 		{
-			$o.= self::_environment();
+			$o.= self::_global_context();
 		}
 		
 		while ($message = array_shift(self::$log))
@@ -180,18 +173,18 @@ class aeLog
 		
 		// Is client's IP address in the whitelist?
 		$ip = aeRequest::ip_address();
-		$whitelist = $options->get('ip_whitelist', '127.0.0.1');
+		$allowed_ips = $options->get('allowed_ips', '127.0.0.1');
 		
-		if (is_string($whitelist))
+		if (is_string($allowed_ips))
 		{
-			$whitelist = preg_split('/,\s+?/', trim($whitelist));
+			$allowed_ips = preg_split('/,\s+?/', trim($allowed_ips));
 		}
 		
 		if (aeRequest::is_cli)
 		{
 			fwrite(STDERR, "$o\n");
 		}
-		else if (!in_array($ip, $whitelist))
+		else if (!in_array($ip, $allowed_ips))
 		{
 			return;
 		}
@@ -234,7 +227,7 @@ class aeLog
 	// = Log formatting =
 	// ==================
 	
-	protected static function _environment()
+	protected static function _global_context()
 	{
 		$o = self::_ruler();
 		
@@ -348,7 +341,6 @@ class aeLog
 			}
 		}
 		
-		
 		return $o;
 	}
 	
@@ -398,7 +390,6 @@ class aeLog
 	public static function _handle_error($type, $message, $file, $line, $context)
 	{
 		$error['type'] = $type;
-		$error['context'] = $context;
 		$error['message'] = $message;
 		$error['file'] = $file;
 		$error['line'] = $line;
@@ -407,6 +398,11 @@ class aeLog
 		
 		$trace = debug_backtrace();
 		array_shift($trace);
+		
+		if (ae::options('log')->get('dump_context', false))
+		{
+			$error['context'] = $context;
+		}
 		
 		self::on_error($error, $trace);
 	}

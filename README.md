@@ -300,12 +300,6 @@ Log library allows you to log events and dump variables for debugging purposes. 
 
 **NB!** The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
 
-Only logs containing errors are displayed and preserved by default. In order to display and preserve all logs, you should configure the library like this:
-
-```php
-ae::options('log')->set('level', aeLog::everything);
-```
-
 Here's a short example of how the library should be used:
 
 ```php
@@ -313,7 +307,7 @@ Here's a short example of how the library should be used:
 ae::import('ae/log.php');
 
 // Put all logs to /log directory (if it is writable)
-ae::options('log')->set('directory', '/log');
+ae::options('log')->set('directory_path', '/log');
 
 // Trigger an error artificially.
 trigger_error("Everything goes according to the plan.", E_USER_ERROR);
@@ -325,13 +319,13 @@ ae::log("Let's dump something:", $_SERVER);
 In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
 
 ```php
-ae::options('log')->set('ip_whitelist', '127.0.0.1, 192.168.1.101');
+ae::options('log')->set('allowed_ips', '127.0.0.1, 192.168.1.101');
 ```
 
-You can also dump the environment variables for each request like this:
+You can also dump the environment variables and local variable scopes for errors:
 
 ```php
-ae::options('log')->set('environment', true);
+ae::options('log')->set('dump_context', true);
 ```
 
 If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
