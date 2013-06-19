@@ -27,7 +27,7 @@ final class ae
 	
 	private static $modules = array();
 	private static $paths = array();
-	private static $stack = array();	
+	private static $stack = array();
 	
 	public static function register($path)
 	/*
