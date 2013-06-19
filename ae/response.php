@@ -89,6 +89,9 @@ class aeResponse
 	}
 
 	public static function current()
+	/*
+		Returns currently active response object.
+	*/
 	{
 		return self::$current;
 	}
