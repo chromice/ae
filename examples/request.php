@@ -38,8 +38,8 @@ echo "\n";
 // $route = $request->route('/', 'examples/request/views');
 // or
 $route = $request->route(array(
-	'/view/:any/:alpha/:numeric' => function ($s1, $s2, $number) {
-		echo 'Routing function called with arguments: ' . $s1 . ', ' . $s2 . ', ' . $number . '<br>';
+	'/view/:any/:alpha/:numeric' => function ($s1, $s2, $number, $trailing) {
+		echo 'Routing function called with arguments: ' . $s1 . ', ' . $s2 . ', ' . $number . ', ' . $trailing . '<br>';
 	},
 	'/' => 'examples/request/views'
 ));

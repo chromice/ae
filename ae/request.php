@@ -83,9 +83,9 @@ class aeRequest
 		return new aeRouter($uri, $rules);
 	}
 	
-	// ==============================
-	// = URL generate and redirects =
-	// ==============================
+	// ================================
+	// = URL generation and redirects =
+	// ================================
 	
 	public static function url($url = null)
 	{
@@ -94,7 +94,7 @@ class aeRequest
 	
 	public static function redirect($url, $http_response_code = 302)
 	{
-		header("Location: " . self::url($url), TRUE, $http_response_code);
+		header("Location: " . self::url($url), true, $http_response_code);
 		exit;
 	}
 	
@@ -278,11 +278,11 @@ class aeRouter
 				'\:any' => '([^\/]+)'
 			));
 			
-			if (preg_match('/^' . $rule . '/', $uri, $matches) === 1)
+			if (preg_match('/^' . $rule . '(.*)$/', $uri, $matches) === 1)
 			{
 				if (is_string($route)) 
 				{
-					$this->_route_uri($route, $uri);
+					$this->_route_uri($route, end($matches));
 				} 
 				else if (is_callable($route)) 
 				{
@@ -302,7 +302,7 @@ class aeRouter
 		
 		if (!file_exists($base))
 		{
-			throw new aeRequestException('Request could not be routed. Base directory "'.$base.'" does not exist.');
+			throw new aeRequestException('Request could not be routed. Base directory "' . $base . '" does not exist.');
 		}
 		
 		if (is_file($base))
