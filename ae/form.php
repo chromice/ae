@@ -190,16 +190,16 @@ class aeValidator
 	const datetime = '\d{4,}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[\+\-]\d{2}:\d{2})?';
 	const time = '(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\.\d+)?';
 	const integer = '[\+\-]?\d+';
-	const decimal = '[\+\-]?\d+(?:\.\d+)?|\.\d+';
+	const decimal = '[\+\-]?(?:\d+(?:\.\d+)?|\.\d+)';
 	const numeric = '\d+';
 	const alpha = '[a-zA-Z]+';
 	const alphanumeric = '[0-9a-zA-Z]+';
 	const color = '#[0-9a-fA-F]{6}';
 	
-	// Sourced from the internet (StackOverflow most likely):
+	// Complex types
 	const email = '([0-9a-zA-Z]([-\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})';
 	const url = '((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)';
-	const postcode_uk = '(([A-PR-UW-Z]{1}[A-IK-Y]?)([0-9]?[A-HJKS-UW]?[ABEHMNPRVWXY]?|[0-9]?[0-9]?))\s*([0-9]{1}[ABD-HJLNP-UW-Z]{2})';
+	const postcode_uk = '(([a-pr-uw-zA-PR-UW-Z]{1}[a-ik-yA-IK-Y]?)([0-9]?[a-hjks-uwA-HJKS-UW]?[abehmnprvwxyABEHMNPRVWXY]?|[0-9]?[0-9]?))\s*([0-9]{1}[abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2})';
 
 	
 	protected $required;
@@ -480,7 +480,11 @@ class aeFormField extends aeValidator
 		
 		if (in_array($type, array('checkbox', 'radio')))
 		{
-			$attributes['id'] = false;
+			if (empty($attributes['id']))
+			{
+				$attributes['id'] = false;
+			}
+			
 			$attributes['class'] = $this->id();
 			$attributes['checked'] = $this->_matches(!is_null($value) ? $value : '1') ? 'checked' : '';
 		}
