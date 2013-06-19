@@ -1131,7 +1131,7 @@ abstract class aeDatabaseTable
 		if (count($accessor) !== count($this->ids))
 		{
 			throw new aeDatabaseException(get_class($this) 
-				. '::load() failed, because accessor value' 
+				. '::id() failed, because accessor value' 
 				. (count($accessor) > 1 ? 's are' : ' is') 
 				. ' not defined.');
 		}
