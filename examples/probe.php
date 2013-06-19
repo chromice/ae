@@ -2,11 +2,6 @@
 
 ae::import('ae/log.php');
 
-ae::options('log')
-	->set('level', aeLog::everything)
-	->set('inspector', true);
-
-
 // class ProbeTest {
 // 	
 // 
