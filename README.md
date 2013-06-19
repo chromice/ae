@@ -212,7 +212,11 @@ You must create a buffer and assign it to a variable, in order to start capturin
 $buffer = new aeBuffer();
 ```
 
-All output is captured until you  either call `aeBuffer::output()` method to echo its content or `aeBuffer::render()` method to return its content as a string. If you do not use these methods, buffer's content will be flushed when the instance is destroyed.
+All output is captured until you  either call `aeBuffer::output()` method to echo its content or `aeBuffer::render()` method to return its content as a string. If you do not use these methods, buffer's content will be flushed when the instance is destroyed. You can prevent autoflushing by passing `false` to the constructor:
+
+```php
+$auto_cleaned_buffer = new aeBuffer(false);
+```
 
 Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 

@@ -378,10 +378,13 @@ class aeBuffer
 	The buffer content is flushed, if not manually rendered.
 */
 {
+	protected $autoflush;
 	protected $content;
 	
-	public function __construct()
+	public function __construct($autoflush = true)
 	{
+		$this->autoflush = $autoflush;
+		
 		ob_start();
 	}
 	
@@ -389,7 +392,7 @@ class aeBuffer
 	{
 		if (is_null($this->content))
 		{
-			ob_end_flush();
+			$this->autoflush ? ob_end_flush() : ob_end_clean();
 		}
 	}
 	
