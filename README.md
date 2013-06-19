@@ -740,10 +740,10 @@ $field->required('This field is required.');
 If the value of the field is a decimal/integer number or time/date/month/week, you can validate its format and minimum and maximum value:
 
 ```php
-$number->valid_pattern('Should contain a number.`, aeValidator::integer)
+$number->valid_pattern('Should contain a number.', aeValidator::integer)
 	->min_value('Must be equal to 2 or greater.', 2)
 	->max_value('Must be equal to 4 or less.', 4);
-$date->valid_pattern('Should contain a date: YYYY-MM-DD.`, aeValidator::date)
+$date->valid_pattern('Should contain a date: YYYY-MM-DD.', aeValidator::date)
 	->min_value('Cannot be in the past.', date('Y-m-d'));
 ```
 
@@ -775,7 +775,7 @@ The library comes with a few stock format validators:
 You may define any pattern manually:
 
 ```php
-$field->valid_pattern('At least 5 alphabetic characters.', '[a-z]{5,}');
+$field->valid_pattern('At least 5 alphabetic characters.', '[a-zA-Z]{5,}');
 ```
 
 You can also use an anonymous function as a validator:
