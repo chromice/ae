@@ -277,7 +277,7 @@ class aeValidator
 		
 		NB! The pattern must be in HTML5 format, e.g. `[a-z0-9]`, i.e. no slashes of flags.
 		
-		In addition to checking stock date patterns (month, week, date, datetime, time)
+		In addition to validating date/time formats (month, week, date, datetime, time)
 		the library also validates the value and switches min_value(), max_value() 
 		constraints to time format:
 		
@@ -337,7 +337,7 @@ class aeValidator
 	
 	public function min_value($message, $limit)
 	/*
-		Prevents user from submitting a number greater then $limit.
+		Prevents user from submitting a number greater then $limit or date after a certain time.
 	*/
 	{
 		$this->html['min'] = $limit;
@@ -362,7 +362,7 @@ class aeValidator
 	
 	public function max_value($message, $limit)
 	/*
-		Prevents user from submitting a number less then $limit.
+		Prevents user from submitting a number less then $limit or date past a certain time.
 	*/
 	{
 		$this->html['max'] = $limit;

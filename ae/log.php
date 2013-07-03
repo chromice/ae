@@ -26,9 +26,9 @@ class aeLog
 	or X-ae-log header, or appends them to a log file.
 	
 	`log` options:
-		`dump_context`    - whether to dump global variables and error contexts: true or false (default);
-		`allowed_ips`     - an array or comma-separated list of IP addresses (127.0.0.1 by default);
-		`directory_path`  - path to log directory.
+		`dump_context`   - whether to dump global variables and error contexts (false by default);
+		`allowed_ips`    - an array or comma-separated list of IP addresses ('127.0.0.1' by default);
+		`directory_path` - path to log directory.
 */
 {
 	protected static $log = array();

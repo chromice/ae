@@ -480,7 +480,7 @@ Here is an example of a simple application that creates gzip'ed response with a 
 include 'ae/core.php';
 
 ae::options('response')
-	->set('compress', true); // turn on the g-zip compression
+	->set('compress_output', true); // turn on the g-zip compression
 
 $response = ae::response('html')
 	->header('X-Header-Example', 'Some value');

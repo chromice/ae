@@ -21,9 +21,9 @@ ae::invoke('aeResponse');
 class aeResponse
 /*
 	`response` options:
-		`directory`	-	path to directory to put cache files to: '/cache' by default;
-		`compress`	-	whether to gzip dispatched output: true or false (default);
-		`charset`	-	character set: 'utf-8' by default.
+		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
+		`compress_output` - whether to gzip dispatched output (false by default);
+		`charset`         - character set; 'utf-8' by default.
 */
 {
 	protected $headers;
@@ -132,7 +132,7 @@ class aeResponse
 		unset($this->buffer);
 		
 		// Compress output, if browser supports compression
-		if (ae::options('response')->get('compress', false))
+		if (ae::options('response')->get('compress_output', false))
 		{
 			$output = $this->_compress($output);
 			
@@ -222,7 +222,7 @@ class aeResponse
 		{
 			$this
 				->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
-				->header('Last-Modified', gmdate('D, d M Y H:i:s').' GMT')
+				->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
 				->header('Cache-Control', 'no-store, no-cache, must-revalidate')
 				->header('Cache-Control', 'post-check=0, pre-check=0', false);
 		}
@@ -349,7 +349,7 @@ class aeResponse
 		Returns cache directory path and checks if it is writable.
 	*/
 	{
-		$cache_path = trim(ae::options('response')->get('directory', '/cache'), '/');
+		$cache_path = trim(ae::options('response')->get('directory_path', '/cache'), '/');
 		
 		if (empty($cache_path))
 		{
