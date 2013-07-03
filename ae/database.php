@@ -602,7 +602,7 @@ class aeDatabase
 		Finds a particular row in the table.
 	*/
 	{
-		$result = $this->query("SELECT * FROM {table} {sql:where}")
+		$result = $this->query("SELECT * FROM {table} {sql:where} LIMIT 1")
 			->names(array(
 				'table' => $table
 			))
