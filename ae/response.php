@@ -23,7 +23,9 @@ class aeResponse
 	`response` options:
 		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
 		`compress_output` - whether to gzip dispatched output (false by default);
-		`charset`         - character set; 'utf-8' by default.
+		`charset`         - character set; 'utf-8' by default;
+		`error_path`      - a path to a script that should run when an error condition 
+		                    is triggered.
 */
 {
 	protected $headers;
@@ -94,6 +96,67 @@ class aeResponse
 	*/
 	{
 		return self::$current;
+	}
+	
+	protected $http_errors = array(
+		// Client errors
+		400 => '400 Bad Request',
+		401 => '401 Unauthorized',
+		402 => '402 Payment Required',
+		403 => '403 Forbidden',
+		404 => '404 Not Found',
+		405 => '405 Method Not Allowed',
+		406 => '406 Not Acceptable',
+		407 => '407 Proxy Authentication Required',
+		408 => '408 Request Timeout',
+		409 => '409 Conflict',
+		410 => '410 Gone',
+		411 => '411 Length Required',
+		412 => '412 Precondition Failed',
+		413 => '413 Request Entity Too Large',
+		414 => '414 Request-URI Too Long',
+		415 => '415 Unsupported Media Type',
+		416 => '416 Requested Range Not Satisfiable',
+		417 => '417 Expectation Failed',
+		
+		// Server errors
+		500 => '500 Internal Server Error',
+		501 => '501 Not Implemented',
+		502 => '502 Bad Gateway',
+		503 => '503 Service Unavailable',
+		504 => '504 Gateway Timeout',
+		505 => '505 HTTP Version Not Supported'
+	);
+	
+	public function error($code, $path = null)
+	{
+		// Reset the buffer
+		$this->buffer->render();
+		unset($this->buffer);
+		
+		// Validate the code
+		$code = (int) $code;
+		
+		if (empty($this->http_errors[$code]))
+		{
+			trigger_error('Unknown HTTP error code: ' . $code, E_USER_NOTICE);
+			
+			$code = 500;
+		}
+		
+		// Respond with a correct header
+		header((isset($_SERVER['SERVER_PROTOCOL']) 
+			? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1')
+			. ' ' . $this->http_errors[$code]);
+		
+		$path = ae::options('response')->get('error_path', $path);
+		
+		if (!empty($path)) 
+		{
+			ae::output($path, array('code' => $code, 'status' => $this->http_errors[$code]));
+		}
+		
+		exit;
 	}
 	
 	public function header($name, $value, $replace = true)

@@ -11,7 +11,6 @@ if ($route->exists())
 }
 else
 {
-	header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1') . ' 404 Not Found');
-
-	echo "<h1>Such page does not exist</h1>";
+	// ae::options('response')->set('error_path', 'examples/error.php');
+	ae::response()->error(404, 'examples/error.php');
 }
