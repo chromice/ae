@@ -557,7 +557,7 @@ class aeDatabase
 	public function columns($table)
 	/*
 		Returns an associative array of column names as keys and whether 
-		they are primary keys as values.
+		they are primary keys (TRUE or FALSE) as values.
 	*/
 	{
 		$result = $this->query("SHOW COLUMNS FROM {table}")
