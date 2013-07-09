@@ -89,7 +89,7 @@ class aeDatabase
 		
 		if ($this->db->set_charset('utf8') === false)
 		{
-			throw new aeDatabaseException('Could not set character set to utf8: ' 
+			throw new aeDatabaseException('Could not switch character set to utf8: ' 
 				. $this->db->error);
 		}
 	}
