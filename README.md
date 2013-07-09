@@ -1,6 +1,6 @@
 # æ
 
-æ |aʃ| is a low-level web framework written in PHP with a simple goal behind it: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule and only what you are actively using is loaded and being kept in memory. 
+æ |aʃ| is a low-level web framework written in PHP with a simple goal in mind: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule and only what you are actively using is loaded and being kept in memory.
 
 It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache with mod_rewrite.
 
@@ -593,12 +593,12 @@ Let's declare a simple form with three fields (text input, checkbox and select d
 ```php
 $form = ae::form('form-id');
 
-$input = $this->single('text')
+$input = $form->single('text')
 	->required('This field is required.')
 	->min_length('It should be at least 3 characters long.', 3)
 	->max_length('Please keep it shorter than 100 characters.', 100);
 
-$checkbox = $this->single('checkbox')
+$checkbox = $form->single('checkbox')
 	->required('You must check this checkbox!');
 
 $options = array(
@@ -755,20 +755,20 @@ $field->valid_pattern('This should be a valid email.', aeValidator::email)
 
 The library comes with a few format validators:
 
-- `aeValidator::integer` -- an integer number, e.g. -1, 0, 1, 2, 999;
-- `aeValidator::decimal` -- a decimal number, e.g. 0.01, -.02, 25.00, 30;
-- `aeValidator::numeric` -- a string consisting of numeric characters, e.g. 123, 000;
-- `aeValidator::alpha` -- a string consisting of alphabetic characters, e.g. abc, cdef;
-- `aeValidator::alphanumeric` -- a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
-- `aeValidator::color` -- a hex value of a color, e.g. #fff000, #434343;
-- `aeValidator::time` -- a valid time, e.g. 14:00:00, 23:59:59.99;
-- `aeValidator::date` -- a valid date, e.g. 2009-10-15;
-- `aeValidator::datetime` -- a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
-- `aeValidator::month` -- a valid month, e.g. 2009-10;
-- `aeValidator::week` -- a valid week, e.g. 2009-W42;
-- `aeValidator::email` -- a valid email address;
-- `aeValidator::url` -- a valid URL string;
-- `aeValidator::postcode_uk` -- a valid UK postal code.
+- `aeValidator::integer` — an integer number, e.g. -1, 0, 1, 2, 999;
+- `aeValidator::decimal` — a decimal number, e.g. 0.01, -.02, 25.00, 30;
+- `aeValidator::numeric` — a string consisting of numeric characters, e.g. 123, 000;
+- `aeValidator::alpha` — a string consisting of alphabetic characters, e.g. abc, cdef;
+- `aeValidator::alphanumeric` — a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
+- `aeValidator::color` — a hex value of a color, e.g. #fff000, #434343;
+- `aeValidator::time` — a valid time, e.g. 14:00:00, 23:59:59.99;
+- `aeValidator::date` — a valid date, e.g. 2009-10-15;
+- `aeValidator::datetime` — a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
+- `aeValidator::month` — a valid month, e.g. 2009-10;
+- `aeValidator::week` — a valid week, e.g. 2009-W42;
+- `aeValidator::email` — a valid email address;
+- `aeValidator::url` — a valid URL string;
+- `aeValidator::postcode_uk` — a valid UK postal code.
 
 You may define any other pattern manually:
 
@@ -784,7 +784,7 @@ $field->valid_value('Devils are not allowed.', function ($value) {
 });
 ```
 
-If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted the correct value:
+If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted correct data:
 
 ```php
 $field->valid_value('Wrong option selected.', array(
@@ -792,7 +792,7 @@ $field->valid_value('Wrong option selected.', array(
 ));
 ```
 
-Legitimate users would never see this error, but it prevent would-be hackers from tempering with the data.
+Legitimate users would never see this error, but it prevents would-be hackers from tempering with the data.
 
 
 ## Database
@@ -813,10 +813,16 @@ ae::options('database.default')
 Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
 
 ```php
-$db = ae::database(); // same as ae::database("default");
-
-$db->query("SELECT 1")->make();
+try {
+	$db = ae::database(); // same as ae::database("default");
+	
+	$db->query("SELECT 1")->make();
+} catch (aeDatabaseException $e) {
+	echo 'Something went wrong: ' . $e->getMessage();
+}
 ```
+
+As you can see, whenever something goes wrong on the database side, the library throws `aeDatabaseException`, which you can catch and handle gracefully.
 
 ### Making queries 
 
@@ -995,7 +1001,7 @@ $stephenson = Authors::find($stephenson_id);
 $stephenson->load();
 
 echo $stephenson->name; // Neal Stephenson
-echo ' -- ';
+echo ' — ';
 echo $stephenson->nationality; // American
 ```
 
