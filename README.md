@@ -929,8 +929,8 @@ This way, if one of your SQL queries fails, it will throw an exception and all u
 Now that we have some rows in the table, let's retrieve and display them:
 
 ```php
-$authors = ae::database()->query('SELECT * FROM `authors`')->result();
-$count = $authors->count();
+$count = ae::database()->count('authors');
+$authors = ae::database()->select('authors')->result();
 
 echo "There are $count authors in the database:\n";
 
@@ -953,13 +953,13 @@ Now, let's change the query so that authors are ordered alphabetically:
 
 ```php
 $authors = ae::database()
-	->query('SELECT * FROM `authors` {sql:order_by}')
+	->select('authors') // equivalent to ->query('SELECT * FROM `authors` {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}')
 	->order_by('`name` ASC')
 	->result() // return an instance of aeDatabaseResult
 	->all(); // return an array of rows
 $count = count($authors);
 
-echo "There are $count authors in the database:\n";
+echo "There are $count authors in the result set:\n";
 
 foreach ($authors as $author)
 {
@@ -997,11 +997,11 @@ This one line of code is enough to start performing basic CRUD operations for th
 // record in the "authors" table:
 $stephenson = Authors::find($stephenson_id);
 
-// Load the data
-$stephenson->load();
+// Load only name and nationality properties
+$stephenson->load(array('name', 'nationality'));
 
 echo $stephenson->name; // Neal Stephenson
-echo ' — ';
+echo ' -- ';
 echo $stephenson->nationality; // American
 ```
 

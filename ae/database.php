@@ -586,13 +586,9 @@ class aeDatabase
 			$this->where($where, $where_value);
 		}
 		
-		$result = $this->query("SELECT COUNT(*) AS `found` FROM {table} {sql:where}")
-			->names(array(
-				'table' => $table
-			))
-			->result();
-		
-		$result = $result->fetch();
+		$result = $this->select($table, 'COUNT(*) AS `found`')
+			->result()
+			->fetch();
 		
 		return $result['found'];
 	}
@@ -602,16 +598,37 @@ class aeDatabase
 		Finds a particular row in the table.
 	*/
 	{
-		$result = $this->query("SELECT * FROM {table} {sql:where} LIMIT 1")
-			->names(array(
-				'table' => $table
-			))
+		$result = $this->select($table)
 			->where($where, $where_value)
+			->limit(1)
 			->result();
 			
 		$found = $result->fetch();
 		
 		return $found;
+	}
+	
+	public function select($table, $columns = null)
+	/*
+		Declares a standard SELECT query with clause placeholders that
+		you can fill/modify via join(), where(), group_by(), having(),
+		order_by() and limit() methods.
+	*/
+	{
+		if (is_null($columns))
+		{
+			$columns = '*';
+		}
+		else if (is_array($columns))
+		{
+			$columns = array_map(array($this, 'identifier'), $columns);
+			$columns = implode(', ', $columns);
+		}
+		
+		return $this->query("SELECT $columns FROM {table} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
+			->names(array(
+				'table' => $table
+			));
 	}
 	
 	public function insert($table, $values)
@@ -1139,12 +1156,18 @@ abstract class aeDatabaseTable
 		return $this->ids;
 	}
 	
-	public function load()
+	public function load($columns)
 	/*
 		(Re)load the record values from database.
 	*/
 	{
-		$values = static::database()->find(static::name(), $this->ids());
+		$found = static::database()
+			->select(static::name(), $columns)
+			->where($this->ids())
+			->limit(1)
+			->result();
+		
+		$values = $found->fetch();
 		
 		if (!is_array($values))
 		{

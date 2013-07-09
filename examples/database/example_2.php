@@ -84,8 +84,8 @@ echo '<h3>Unordered list</h3>';
 echo '<pre>';
 
 // EXAMPLE: Unordered list
-$authors = ae::database()->query('SELECT * FROM `authors`')->result();
-$count = $authors->count();
+$count = ae::database()->count('authors');
+$authors = ae::database()->select('authors')->result();
 
 echo "There are $count authors in the database:\n";
 
@@ -101,13 +101,13 @@ echo '<pre>';
 
 // EXAMPLE: Ordered list
 $authors = ae::database()
-	->query('SELECT * FROM `authors` {sql:order_by}')
+	->select('authors')
 	->order_by('`name` ASC')
 	->result() // return an instance of aeDatabaseResult
 	->all(); // return an array of rows
 $count = count($authors);
 
-echo "There are $count authors in the database:\n";
+echo "There are $count authors in the result set:\n";
 
 foreach ($authors as $author)
 {
@@ -129,7 +129,7 @@ echo '<pre>';
 $stephenson = Authors::find($stephenson_id);
 
 // Load the data
-$stephenson->load();
+$stephenson->load(array('name', 'nationality'));
 
 echo $stephenson->name; // Neal Stephenson
 echo ' -- ';
