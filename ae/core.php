@@ -141,13 +141,9 @@ final class ae
 		{
 			$data['callback'] = $misc;
 		} 
-		else if (class_exists($misc))
-		{
-			$data['class'] = $misc;
-		}
 		else
 		{
-			trigger_error('Wrong invocation parameter.', E_USER_ERROR);
+			$data['class'] = $misc;
 		}
 	}
 	
@@ -198,7 +194,7 @@ final class ae
 		{
 			$instance = call_user_func_array($data['callback'], $arguments);
 		}
-		else if(count($arguments) == 0)
+		else if (count($arguments) == 0)
 		{
 			$instance = new $data['class'];
 		}
