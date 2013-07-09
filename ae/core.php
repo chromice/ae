@@ -392,6 +392,19 @@ class aeBuffer
 		}
 	}
 	
+	public function reset()
+	/*
+		Use this method to reset an autoflushing buffer.
+	*/
+	{
+		if (is_null($this->content))
+		{
+			$this->content = '';
+			
+			ob_end_clean();
+		}
+	}
+	
 	public function render($variables = null)
 	/*
 		Returns the captured output as a string and stops capturing.

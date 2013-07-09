@@ -131,8 +131,7 @@ class aeResponse
 	public function error($code, $path = null)
 	{
 		// Reset the buffer
-		$this->buffer->render();
-		unset($this->buffer);
+		$this->buffer->reset();
 		
 		// Validate the code
 		$code = (int) $code;
