@@ -29,19 +29,37 @@ final class ae
 	private static $paths = array();
 	private static $stack = array();
 	
-	public static function register($path)
+	public static function register($module)
 	/*
-		Registers a directory as a source of libraries.
+		Registers a module by name and returns options object for that 
+		module. (See "ae/options.php" for more details.)
+		
+		All modules must be located in "/modules" directory. If there is 
+		an 'initalise.php' script inside the module directory, it will 
+		be included.
 	*/
 	{
-		$path = self::resolve($path, false);
+		$path = self::resolve('modules/' . $module, false);
 		
 		if (in_array($path, self::$modules))
 		{
-			trigger_error('Cannot register "' . $path . '" again.', E_USER_ERROR);
+			return;
+		}
+		
+		if (!is_dir($path))
+		{
+			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
 		}
 		
 		self::$modules[] = $path;
+		
+		// Initialise module
+		if (file_exists($path . '/initialise.php'))
+		{
+			require $path . '/initialise.php';
+		}
+		
+		return ae::options($module);
 	}
 	
 	public static function resolve($path, $modules = true)

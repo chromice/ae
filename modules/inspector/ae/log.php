@@ -31,10 +31,10 @@ class aeLog
 	Logs errors, notices, dumps, etc.,  outputs them in the response body 
 	or X-ae-log header, or appends them to a log file.
 	
-	`log` options:
-		`dump_context`   - whether to dump global variables and error contexts (false by default);
-		`allowed_ips`    - an array or comma-separated list of IP addresses ('127.0.0.1' by default);
-		`directory_path` - path to log directory.
+	The library behaviour can be modified via `inspector` options:
+		`dump_context` - whether to dump global variables and error contexts (false by default);
+		`allowed_ips` - an array or comma-separated list of IP addresses ('127.0.0.1' by default);
+		`log_directory_path` - path to log directory.
 */
 {
 	protected static $log = array();
@@ -98,7 +98,7 @@ class aeLog
 	
 	protected static function on_shutdown()
 	{
-		$options = ae::options('log');
+		$options = ae::options('inspector');
 		$dump_context = $options->get('dump_context', false);
 		
 		if (!$dump_context && count(self::$log) === 0)
@@ -213,7 +213,7 @@ class aeLog
 			try {
 				echo '<script charset="utf-8">' 
 					. 'var base_path = "' . ae::options('request')->get('base_path', '/') . '";' 
-					. file_get_contents(ae::resolve('inspector/inject.js')) 
+					. file_get_contents(ae::resolve('/modules/inspector/assets/inject.js')) 
 					. '</script>';
 			} catch (Exception $e) {}
 		}
@@ -405,7 +405,7 @@ class aeLog
 		$trace = debug_backtrace();
 		array_shift($trace);
 		
-		if (ae::options('log')->get('dump_context', false))
+		if (ae::options('inspector')->get('dump_context', false))
 		{
 			$error['context'] = $context;
 		}

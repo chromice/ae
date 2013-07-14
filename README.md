@@ -15,8 +15,6 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 - [Buffer](#buffer)
 - [Container](#container)
 - [Options](#options)
-- [Log](#log)
-- [Probe](#probe)
 - [Request](#request)
 - [Response](#response)
 - [Image](#image)
@@ -29,6 +27,9 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 	- [Retrieving data](#retrieving-data)
 	- [Active record](#active-record)
 	- [Relationships](#relationships)
+- [Inspector](#inspector)
+	- [Log](#log)
+	- [Probe](#probe)
 - [License](#license)
 
 
@@ -179,7 +180,7 @@ ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-All libraries located in 'ae/' directory (in either root directory or a module), can be loaded using a shorthand syntax, e.g.:
+All libraries located in *ae/* directory (in either root directory or a module), can be loaded using a shorthand syntax, e.g.:
 
 ```php
 $lib_options = ae::options('my_library_namespace');
@@ -312,81 +313,6 @@ $proxies = $options->get('proxies', null);
 ```
 
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
-
-
-## Log
-
-Log library allows you to log events and dump variables for debugging purposes. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user-defined directory.
-
-**NB!** The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
-
-Here's a short example of how the library should be used:
-
-```php
-// You must import the library first
-ae::import('ae/log.php');
-
-// Put all logs to /log directory (if it is writable)
-ae::options('log')->set('directory_path', '/log');
-
-// Trigger an error artificially.
-trigger_error("Everything goes according to the plan.", E_USER_ERROR);
-	
-// You can log a message and dump a variable
-ae::log("Let's dump something:", $_SERVER);
-```
-
-In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
-
-```php
-ae::options('log')->set('allowed_ips', '127.0.0.1, 192.168.1.101');
-```
-
-You can also dump the environment variables and local variable scopes for errors:
-
-```php
-ae::options('log')->set('dump_context', true);
-```
-
-If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
-
-æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. Just make sure that */inspector* directory is located in the web root and log library will inject the inspector button into the page, if there are any messages logged. Pressing that button will open a new window, in which you can browse all items, view dumps, backtraces, etc.:
-
-![](inspector/example.png)
-
-## Probe
-
-Probe library allows you to profile your code and see how much time and memory each part consumes. The results are logged via `ae::log()` method, so you have to have log library imported to see them.
-
-```php
-$probe = ae::probe('foo');
-
-usleep(3000);
-
-$probe->report('slept for 3ms');
-
-$a = array(); $j = 0; while($j < 10000) $a[] = ++$j;
-
-$probe->report('filled memory with some garbage');
-
-unset($a);
-
-$probe->report('cleaned the garbage');
-```
-
-If you run this script, the probe will log the following messages:
-
-```markdown
-foo was created. Timestamp: 0ms (+0.000ms). Footprint: 683kb (+0b).
-
-foo slept for 3ms. Timestamp: 3ms (+3.379ms). Footprint: 684kb (+572b).
-
-foo filled memory with some garbage. Timestamp: 10ms (+6.561ms). Footprint: 1mb (+768kb).
-
-foo cleaned the garbage. Timestamp: 11ms (+1.203ms). Footprint: 685kb (-767kb).
-
-foo was destroyed. Timestamp: 11ms (+0.095ms). Footprint: 686kb (+696b).
-```
 
 ## Request
 
@@ -1192,6 +1118,88 @@ Here are all 9 novels ordered alphabetically:
 - Reamde by Neal Stephenson
 - Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
+```
+
+## Inspector
+
+Inspector module allows you to debug and profile your application more easily. It comes with two libraries: "Log" and "Probe".
+
+### Log
+
+Log library allows you to log events and dump variables for quick and easy debugging. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user-defined directory.
+
+**NB!** The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
+
+Here's a short example of how the library should be used:
+
+```php
+// You must register the inspector module
+ae::register('inspector');
+
+// Put all logs to /log directory (if it is writable)
+ae::options('inspector')->set('log_directory_path', '/log');
+
+// Trigger an error artificially.
+trigger_error("Everything goes according to the plan.", E_USER_ERROR);
+
+// You can log a message and dump a variable
+ae::log("Let's dump something:", $_SERVER);
+```
+
+In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
+
+```php
+ae::options('inspector')->set('allowed_ips', '127.0.0.1, 192.168.1.101');
+```
+
+You can also dump the environment variables and local variable scopes for errors:
+
+```php
+ae::options('inspector')->set('dump_context', true);
+```
+
+If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
+
+æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. The log library will inject the inspector button into the page, if there are any messages logged. Pressing that button will open a new window, in which you can browse all items, view dumps, backtraces, etc.:
+
+![](modules/inspector/screenshot.png)
+
+### Probe
+
+Probe library allows you to profile your code and see how much time and memory each part consumes.
+
+```php
+// You must register the inspector module
+ae::register('inspector');
+
+// Create a probe
+$probe = ae::probe('foo');
+
+usleep(3000);
+
+$probe->report('slept for 3ms');
+
+$a = array(); $j = 0; while($j < 10000) $a[] = ++$j;
+
+$probe->report('filled memory with some garbage');
+
+unset($a);
+
+$probe->report('cleaned the garbage');
+```
+
+If you run this script, the probe will log the following messages:
+
+```markdown
+foo was created. Timestamp: 0ms (+0.000ms). Footprint: 683kb (+0b).
+
+foo slept for 3ms. Timestamp: 3ms (+3.379ms). Footprint: 684kb (+572b).
+
+foo filled memory with some garbage. Timestamp: 10ms (+6.561ms). Footprint: 1mb (+768kb).
+
+foo cleaned the garbage. Timestamp: 11ms (+1.203ms). Footprint: 685kb (-767kb).
+
+foo was destroyed. Timestamp: 11ms (+0.095ms). Footprint: 686kb (+696b).
 ```
 
 ## License

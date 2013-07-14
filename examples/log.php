@@ -1,7 +1,6 @@
 <?php
-	ae::import('ae/log.php');
-	ae::options('log')
-		// ->set('directory_path', '/examples/log')
+	ae::register('inspector')
+		// ->set('log_directory_path', '/examples/log')
 		->set('dump_context', true);
 	
 	$r = ae::request();

@@ -72,7 +72,7 @@ var ae_log_severity = function(level) {
 // Parse body and inject inspector button.
 (function() {
 	if (window === window.top && !document.getElementById('ae-inspector-button')) {
-		document.write('<iframe id="ae-inspector-button" src="' + (base_path || '/') + 'inspector/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px" frameborder="0"></iframe>');
+		document.write('<iframe id="ae-inspector-button" src="' + (base_path || '/') + 'modules/inspector/assets/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px" frameborder="0"></iframe>');
 	}
 
 	// Find the HTML comment node with the log
