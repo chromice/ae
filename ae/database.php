@@ -1156,7 +1156,7 @@ abstract class aeDatabaseTable
 		return $this->ids;
 	}
 	
-	public function load($columns)
+	public function load($columns = '*')
 	/*
 		(Re)load the record values from database.
 	*/
