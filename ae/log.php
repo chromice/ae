@@ -18,7 +18,13 @@
 
 ae::import('ae/request.php');
 
+// Setup all error handling hooks
 aeLog::_setup();
+
+// Call aeLog whenever user is "loading" the library.
+ae::invoke(function() {
+	call_user_func_array(array('aeLog', 'log'), func_get_args());
+});
 
 class aeLog
 /*

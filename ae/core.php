@@ -234,63 +234,18 @@ final class ae
 		__ae_include__($path, $parameters);
 	}
 	
-	// =================================
-	// = Shortcuts for stock libraries =
-	// =================================
-	
-	public static function container($path)
+	public static function __callStatic($name, $arguments)
+	/*
+		Resolves all other static method calls as:
+		
+			ae::load('ae/{method}.php', ...arguments...);
+	*/
 	{
-		return ae::load('ae/container.php', $path);
-	}
-	
-	public static function database($name = null)
-	{
-		return ae::load('ae/database.php', $name);
-	}
-	
-	public static function file($path)
-	{
-		return ae::load('ae/file.php', $path);
-	}
-	
-	public static function form($id)
-	{
-		return ae::load('ae/form.php', $id);
-	}
-	
-	public static function image($path)
-	{
-		return ae::load('ae/image.php', $path);
-	}
-	
-	public static function log()
-	{
-		if (class_exists('aeLog'))
-		{
-			call_user_func_array(array('aeLog', 'log'), func_get_args());
-		}
-	}
-	
-	public static function options($namespace = null)
-	{
-		return ae::load('ae/options.php', $namespace);
-	}
-	
-	public static function probe($name)
-	{
-		return ae::load('ae/probe.php', $name);
-	}
-	
-	public static function request($segments = null)
-	{
-		return ae::load('ae/request.php', $segments);
+		array_unshift($arguments, 'ae/' . $name . '.php');
+		
+		return call_user_func_array(array('ae', 'load'), $arguments);
 	}
 
-	public static function response($type = null)
-	{
-		return ae::load('ae/response.php', $type);
-	}
-	
 	// ========
 	// = HTML =
 	// ========

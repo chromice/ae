@@ -42,6 +42,7 @@ This project is born out of love and respect for PHP, a language of insanity, le
 
 - Wordpress project, which I've learned to love to hate as a developer, but respect as a user.
 
+
 ## Getting started
 
 Here is a very a simple æ application:
@@ -105,6 +106,7 @@ echo ae::resolve('foo.php');
 // will echo "/absolute/path/to/module/directory/foo.php", if the file exists.
 ```
 
+
 ### Importing code
 
 You can use `ae::import()` method to include any PHP script:
@@ -114,6 +116,7 @@ ae::import('path/to/library.php');
 ```
 
 æ will resolve the path and include the script, if it has not been included yet.
+
 
 ### Running code
 
@@ -147,6 +150,7 @@ ae::output('/your/page.php', array(
 ));
 ```
 
+
 ### Loading libraries
 
 In order to load a library you must use `ae::load()` method:
@@ -175,7 +179,15 @@ ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-æ does not "automagically" guess what class to use, when you are using `ae::load()` method. Instead, you must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want it to instantiate an object.
+All libraries located in 'ae/' directory (in either root directory or a module), can be loaded using a shorthand syntax, e.g.:
+
+```php
+$lib_options = ae::options('my_library_namespace');
+```
+
+In this case the library name is determined by the name of the method.
+
+æ does not "automagically" guess what class to use, when you are using `ae::load()` method. Instead, you must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want to.
 
 In order to create a new instance of `LibraryClassName`, every time the library is loaded, you should pass the class name as the first argument:
 
@@ -184,7 +196,10 @@ ae::invoke('LibraryClassName');
 
 class LibraryClassName
 {
-	function __construct($parameters = null) {}
+	function __construct($argument_1, $argument_2, /*...*/)
+	{
+		// ...
+	}
 }
 ```
 
@@ -193,14 +208,14 @@ You can also use the factory pattern and delegate the creation of the instance b
 ```php
 ae::invoke('a_factory_function');
 
-function a_factory_function($parameters = null)
+function a_factory_function($argument_1, $argument_2, /*...*/)
 {
-	return new STDClass();
+	// ...
 }
-
 ```
 
 Please consult with the source code of the core libraries for real life examples.
+
 
 ## Buffer
 
@@ -229,6 +244,7 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 	'visits' => number_format($article->visits)
 )) ?>
 ```
+
 
 ## Container
 
