@@ -56,7 +56,7 @@ Here is a very a simple æ application:
 ?>
 ```
 
-You should put this code into a file named *index.php* in the root web directory. */ae* directory containing all the core and libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
+You should put this code into a file named *index.php* in the root web directory. */ae* directory containing the core and all libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -94,18 +94,20 @@ include 'ae/core.php';
 
 This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, register modules and load libraries. All these methods accept both absolute and relative file paths.
 
-If you want æ to look for a file in a specific directory, you can register it:
+Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can register it as a module:
 
 ```php
-ae::register('/absolute/path/to/module/directory/');
+ae::register('module-name');
 ```
 
-Now æ will look for files in that directory as well as */ae* and root directories:
+All modules are located in the */modules* directory. æ will look for files in all registered modules' directories, before trying the root directory:
 
 ```php
-echo ae::resolve('foo.php');
-// will echo "/absolute/path/to/module/directory/foo.php", if the file exists.
+echo ae::resolve('libs/foo.php');
+// will echo "/modules/module-name/libs/foo.php", if the file exists.
 ```
+
+You can register as many modules as you want, the path resolver would try them all in the order they were registered.
 
 
 ### Importing code
@@ -124,7 +126,7 @@ ae::import('path/to/library.php');
 `ae::render()` returns output of any script as a string:
 
 ```php
-$output = ae::render('/your/page.php', array(
+$output = ae::render('your/page.php', array(
 	'title' => 'Example!',
 	'body' => '<h1>Hello world!</h1>'
 ));
@@ -145,7 +147,7 @@ The `$output` variable would contain:
 In order to echo the output of a script, you can use `ae::output()` method:
 
 ```php
-ae::output('/your/page.php', array(
+ae::output('your/page.php', array(
 	'title' => 'Example!',
 	'body' => '<h1>Hello world!</h1>'
 ));
