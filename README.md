@@ -94,6 +94,9 @@ include 'ae/core.php';
 
 This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, register modules and load libraries. All these methods accept both absolute and relative file paths.
 
+
+### Modules
+
 Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can register it as a module:
 
 ```php
@@ -106,6 +109,8 @@ All modules are located in the */modules* directory. æ will look for files in a
 echo ae::resolve('libs/foo.php');
 // will echo "/modules/module-name/libs/foo.php", if the file exists.
 ```
+
+If there is an *index.php* script inside the module directory, it will be included when the module is registered. All module initialisation code should go there.
 
 You can register as many modules as you want, the path resolver would try them all in the order they were registered.
 

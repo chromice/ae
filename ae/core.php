@@ -54,9 +54,9 @@ final class ae
 		self::$modules[] = $path;
 		
 		// Initialise module
-		if (file_exists($path . '/initialise.php'))
+		if (file_exists($path . '/index.php'))
 		{
-			require $path . '/initialise.php';
+			require $path . '/index.php';
 		}
 		
 		return ae::options($module);
