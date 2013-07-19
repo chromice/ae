@@ -91,6 +91,11 @@ else if ($form->is_submitted())
 
 
 // Generate HTML of the form 
+
+// ===========================================
+// = NB! <button> element is bugged in IE6/7 =
+// = and does not post its name/value at all =
+// ===========================================
 ?>
 <?= $form->open() ?>
 <!-- <form action="" method="post">
