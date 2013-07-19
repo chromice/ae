@@ -35,7 +35,7 @@ final class ae
 		module. (See "ae/options.php" for more details.)
 		
 		All modules must be located in "/modules" directory. If there is 
-		an 'initalise.php' script inside the module directory, it will 
+		an 'index.php' script inside the module directory, it will 
 		be included.
 	*/
 	{
