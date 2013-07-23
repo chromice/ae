@@ -278,7 +278,7 @@ class aeRouter
 				'\:any' => '([^\/]+)'
 			));
 			
-			if (preg_match('/^' . $rule . '(.*)$/', $uri, $matches) === 1)
+			if (preg_match('/^' . $rule . '\\/?(.*)$/', $uri, $matches) === 1)
 			{
 				if (is_string($route)) 
 				{
