@@ -16,7 +16,9 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 - [Container](#container)
 - [Options](#options)
 - [Request](#request)
+	- [Request](#request-routing)
 - [Response](#response)
+	- [Response](#response-caching)
 - [Image](#image)
 - [Form](#form)
 	- [Field types](#field-types)
@@ -316,10 +318,11 @@ Request library will use `aeRequest::get()` method to retrieve the value of that
 ```php
 $options = ae::options('request');
 
-$proxies = $options->get('proxies', null);
+$proxies = $options->get('proxy_ips', null);
 ```
 
 `aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
+
 
 ## Request
 
@@ -373,6 +376,8 @@ $request = ae::request();
 echo $request->type(); // json
 ```
 
+### Request routing
+
 Requests can be re-routed to a specific directory:
 
 ```php
@@ -389,6 +394,14 @@ if (!$route->exists())
 }
 
 $route->follow();
+```
+
+In order to get the IP address of the client, you should use `aeRequest::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
+
+```php
+ae::options('request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+
+$client_ip = ae::request()->ip_address();
 ```
 
 Now, if you have a matching request handler in the */handlers* directory (article.php in this case), æ will run it:
@@ -409,13 +422,28 @@ echo "Article ID is $id. ";
 echo "You can access it at " . aeRequest::uri();
 ```
 
-And, finally, use `aeRequest::ip_address()` to get the IP address of the client. If your app is running behind a reverse-proxy or load balancer, you need to specify its IP address via request options:
+You can route different types of requests to different directories:
 
 ```php
-ae::options('request')->set('proxies', '83.14.1.1, 83.14.1.2');
-
-$client_ip = ae::request()->ip_address();
+$route = ae::request()->route(array(
+	'/admin' => 'cms/', // all requests starting with /admin 
+	'/' => 'webroot/' // all other requests
+);
 ```
+
+You can always provide an anonymous function instead of a directory and pass URI segments as arguments like this:
+
+```php
+ae::request()->route(array(
+	'/example/:any/:alpha/:numeric' => function ($any, $alpha, $numeric, $remaining) {
+		echo 'First handler. Request URI: ' . $any . '/' . $alpha . '/' . $numeric . '/' . $remaining;
+	},
+	'/' => function($remaining) {
+		echo 'Default handler. Request URI: ' . $remaining;
+	}
+))->follow();
+```
+
 
 ## Response
 
@@ -448,6 +476,8 @@ You can specify the type when you create a new response object. It should be eit
 When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded, when object is destroyed. You can access the the last active response object using `aeResponse::current()` method.
 
 You can set HTTP headers at any point via `aeResponse::header()` method. 
+
+### Response caching
 
 If you want the response to be cached client-side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
 
