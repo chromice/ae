@@ -1165,7 +1165,7 @@ Inspector module allows you to debug and profile your application more easily. I
 
 Log library allows you to log events and dump variables for quick and easy debugging. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user-defined directory.
 
-**NB!** The parsing errors and anything the impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
+**NB!** The parsing errors and anything that impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
 
 Here's a short example of how the library should be used:
 
