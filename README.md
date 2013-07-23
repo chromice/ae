@@ -308,7 +308,7 @@ For example, if your app is sitting behind a proxy or load balancer, you must sp
 ```php
 $options = ae::options('request');
 
-$options->set('proxies', '83.14.1.1, 83.14.1.2');
+$options->set('proxy_ips', '83.14.1.1, 83.14.1.2');
 ```
 
 Request library will use `aeRequest::get()` method to retrieve the value of that option:

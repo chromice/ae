@@ -24,7 +24,7 @@ class aeRequest
 	
 	`request` options:
 		`base_path` - a base URL path; "/" by default;
-		`proxies`  - an array or comma-separated list of IP addresses.
+		`proxy_ips`  - an array or comma-separated list of IP addresses.
 */
 {
 	const is_cli = __ae_request_cli__;
@@ -141,7 +141,7 @@ class aeRequest
 		Returns IP address of the client. 
 		
 		If the server is behind a proxy or load balancer, this method will return
-		its IP address, unless it has been added to the list of known `proxies`.
+		its IP address, unless it has been added to the list of known proxies.
 	*/
 	{
 		if (empty($_SERVER['REMOTE_ADDR']))
@@ -152,7 +152,7 @@ class aeRequest
 		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 		{
 			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
-			$whitelist = ae::options('request')->get('proxies',
+			$whitelist = ae::options('request')->get('proxy_ips',
 				!empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : ''
 			);
 			
