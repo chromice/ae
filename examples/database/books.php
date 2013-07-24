@@ -1,7 +1,7 @@
 <?php
 
 ae::import('ae/database.php');
-ae::import('authors.php');
+ae::import('examples/database/authors.php');
 
 class Novels extends aeDatabaseTable
 {

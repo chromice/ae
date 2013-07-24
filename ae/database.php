@@ -1096,9 +1096,9 @@ abstract class aeDatabaseTable
 		}
 	}
 	
-	// =======================
-	// = Basic CRUD methods. =
-	// =======================
+	// ======================
+	// = Basic CRUD methods =
+	// ======================
 	
 	public static function create($values = null)
 	/*
