@@ -1176,6 +1176,10 @@ abstract class aeDatabaseTable
 				. 'to nothing.');
 		}
 		
+		// Reset all current values
+		$this->values = array();
+		$this->transient = array();
+		
 		$this->values($values, true);
 		$this->is_dirty = false;
 		
