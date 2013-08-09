@@ -451,7 +451,7 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function prepare()
+	public function prepared()
 	/*
 		Returns a raw MySQLi prepared statement and resets the query.
 	*/
