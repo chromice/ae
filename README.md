@@ -429,7 +429,7 @@ You can route different types of requests to different directories:
 $route = ae::request()->route(array(
 	'/admin' => 'cms/', // all requests starting with /admin 
 	'/' => 'webroot/' // all other requests
-);
+)->follow();
 ```
 
 You can always provide an anonymous function instead of a directory and pass URI segments as arguments like this:
@@ -568,7 +568,7 @@ $image = ae::image('examples/image/test.jpg');
 
 $image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
 	->cache(5)
-	->dispatch($request->uri()); // image will be cached for the next 5 minutes.
+	->dispatch('/images/foo.png'); // image will be cached for the next 5 minutes.
 ```
 
 ## Form
