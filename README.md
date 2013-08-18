@@ -466,8 +466,7 @@ $response = ae::response('html')
 <?php 
 $response
 	->cache(5) // cache for five minutes
-	->save('/hello-world.html') // save response for /hello-world request
-	->dispatch();
+	->dispatch('/hello-world.html');  // save response for /hello-world and dispatch the request
 ?>
 ```
 

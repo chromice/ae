@@ -1,8 +1,10 @@
 <?php
+
 	// ae::import('log.php');
 	ae::options('response')
-		->set('directory', '/cache/')
-		->set('compress', true);
+		->set('compress_output', true);
+	ae::options('cache')
+		->set('directory_path', '/cache');
 	
 	// Work for a few seconds...
 	$j = 0; while($j < 10000000) ++$j;
@@ -11,10 +13,10 @@
 	$type = $request::type() === 'json' ? 'json' : 'html';
 	$response = ae::response($type);
 	
-	// aeResponse::delete('caching/test');
+	// aeResponseCache::delete('caching/test');
 
-if ($type === 'json'):
 ?>
+<?php if ($type === 'json'): ?>
 {'hello':'world'}
 <?php else: ?>
 <h1>Hello World!</h1>
@@ -23,5 +25,4 @@ if ($type === 'json'):
 
 	$response
 		->cache(5)
-		->save($request::uri())
-		->dispatch();
+		->dispatch($request::uri());

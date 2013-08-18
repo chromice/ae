@@ -21,7 +21,6 @@ ae::invoke('aeResponse');
 class aeResponse
 /*
 	`response` options:
-		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
 		`compress_output` - whether to gzip dispatched output (false by default);
 		`charset`         - character set; 'utf-8' by default;
 		`error_path`      - a path to a script that should run when an error condition 
@@ -34,7 +33,7 @@ class aeResponse
 	protected $current_switch;
 	protected static $current;
 	
-	public function __construct($type)
+	public function __construct($type = null)
 	{
 		$this->current_switch = new aeSwitch(self::$current, $this);
 		
@@ -179,7 +178,7 @@ class aeResponse
 		return $this;
 	}
 	
-	public function dispatch()
+	public function dispatch($uri = null)
 	/*
 		Dispatches the response to the browser and halts execution.
 	*/
@@ -193,6 +192,21 @@ class aeResponse
 		$output = $this->buffer->render();
 		unset($this->buffer);
 		
+		$this->_set_cache_headers(!is_null($uri));
+		
+		if (!is_null($uri))
+		{
+			$cache = new aeResponseCache();
+			
+			$cache
+				->duration($this->cache_ttl)
+				->headers($this->headers)
+				->content($output)
+				->save($uri);
+			
+			unset($cache);
+		}
+		
 		// Compress output, if browser supports compression
 		if (ae::options('response')->get('compress_output', false))
 		{
@@ -201,8 +215,6 @@ class aeResponse
 			// Compression affects "Content-Length"
 			$this->header('Content-Length', strlen($output));
 		}
-		
-		$this->_set_cache_headers('private');
 		
 		// Output headers
 		foreach ($this->headers as $name => $value)
@@ -249,7 +261,6 @@ class aeResponse
 	// ===========
 	
 	protected $cache_ttl;
-	protected $cache_headers_set = false;
 	
 	public function cache($minutes)
 	/*
@@ -260,16 +271,9 @@ class aeResponse
 		
 		return $this;
 	}
-	
-	protected function _set_cache_headers($cc = 'private')
+
+	protected function _set_cache_headers($public = false)
 	{
-		if ($this->cache_headers_set) 
-		{
-			return;
-		}
-		
-		$this->cache_headers_set = true;
-		
 		if ($this->cache_ttl > 0)
 		{
 			$seconds = 60 * $this->cache_ttl;
@@ -277,7 +281,7 @@ class aeResponse
 			$this
 				->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
 				->header('Last-Modified', null)
-				->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($cc === 'private' ? $cc : 'public'))
+				->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($public ? 'public' : 'private'))
 				->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
 		}
 		else
@@ -289,24 +293,68 @@ class aeResponse
 				->header('Cache-Control', 'post-check=0, pre-check=0', false);
 		}
 	}
+}
+
+class aeResponseCache
+/*
+	`cache` options:
+		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
+*/
+{
+	protected $ttl = 0;
+	protected $headers = array();
+	protected $content = '';
 	
-	public function save($uri = '')
+	public function duration($minutes)
 	/*
-		Saves reponse to cache directory.
+		Sets for how long cache is valid in minutes.
 	*/
 	{
-		if ($this->cache_ttl < 1 || !($cache_path = self::_cache_directory()))
+		$this->ttl = $minutes;
+		
+		return $this;
+	}
+	
+	public function headers($headers)
+	/*
+		Sets HTTP headers of the cached response.
+	*/
+	{
+		foreach ($headers as &$value)
+		{
+			$value = (array) $value;
+		}
+		
+		$this->headers = $headers;
+		
+		return $this;
+	}
+	
+	public function content($content)
+	/*
+		Sets content of the cached response.
+	*/
+	{
+		$this->content = $content;
+		
+		return $this;
+	}
+	
+	public function save($uri)
+	/*
+		Saves response to cache.
+	*/
+	{
+		if ($this->ttl === 0 || !($cache_path = self::_cache_directory()))
 		{
 			return $this;
 		}
-		
-		$this->_set_cache_headers('public');
 		
 		// Determine file path and extension
 		$uri = trim($uri, '/');
 		$ext = 'html';
 		
-		if (!empty($uri) && preg_match('/^(.*?)\.([a-z0-9_]+)$/', $uri, $match) == 1)
+		if (!empty($uri) && preg_match('/^(.*?)\.([a-z0-9_]+)$/', $uri, $match) === 1)
 		{
 			$uri = $match[1];
 			$ext = $match[2];
@@ -322,9 +370,6 @@ class aeResponse
 			mkdir($cache_path, 0777, true);
 		}
 		
-		// Get output
-		$output = $this->buffer->render();
-
 		$htaccess = ae::file($cache_path . '.htaccess');
 		$content = ae::file($cache_path . 'index.' . $ext);
 		
@@ -332,10 +377,10 @@ class aeResponse
 		|| !$htaccess->lock(LOCK_EX | LOCK_NB) 
 		|| !$content->lock(LOCK_EX | LOCK_NB))
 		{
-			return;
+			return $this;
 		}
 
-		$ts = date('YmdHis', time() + $this->cache_ttl * 60);
+		$ts = date('YmdHis', time() + $this->ttl * 60);
 
 		// Create rewrite rules...
 		$rules = "<IfModule mod_rewrite.c>
@@ -348,20 +393,17 @@ class aeResponse
 		// ...and dump headers
 		foreach ($this->headers as $name => $value)
 		{
-			$prefix = $name;
-
-			$rules.= "\n\tHeader add " . $name . ' "' . array_shift($value) . '"';
-
 			foreach ($value as $_value)
 			{
 				$rules.= "\n\tHeader add " . $name . ' "' . $_value . '"';
 			}
 		}
-
+		
 		$rules.= "\n</IfModule>";
 		
 		// Add compression rules
-		if (ae::options('response')->get('compress', false))
+		if (ae::options('response')->get('compress_output', false)
+		&& preg_match('/^(?:gif|jpe?g|png)$/', $ext) === 0)
 		{
 			$rules.= "\n<IfModule mod_deflate.c>
 	SetOutputFilter DEFLATE
@@ -376,9 +418,9 @@ class aeResponse
 		}
 		
 		// Write content to files
-		if (!$htaccess->write($rules) || !$content->write($output))
+		if (!$htaccess->write($rules) || !$content->write($this->content))
 		{
-			trigger_error('Coult not write to cache files.', E_USER_WARNING);
+			trigger_error('Coult not write cache files.', E_USER_WARNING);
 			
 			unset($htaccess, $content);
 			self::delete($cache_path);
@@ -411,7 +453,7 @@ class aeResponse
 		Returns cache directory path and checks if it is writable.
 	*/
 	{
-		$cache_path = trim(ae::options('response')->get('directory_path', '/cache'), '/');
+		$cache_path = trim(ae::options('cache')->get('directory_path', '/cache'), '/');
 		
 		if (empty($cache_path))
 		{
@@ -431,14 +473,14 @@ class aeResponse
 	
 	protected static function _remove_directory($path)
 	/*
-		Attempts to remove the directory. 
+		Attempts to remove the directory.
 		
 		NB! May fail silently, if a file is locked.
 	*/
 	{
 		foreach (scandir($path) as $file)
 		{
-			if (in_array($file, array('.','..')))
+			if (in_array($file, array('.', '..')))
 			{
 				continue;
 			}
