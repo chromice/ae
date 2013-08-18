@@ -20,6 +20,7 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 - [Response](#response)
 	- [Response caching](#response-caching)
 - [Image](#image)
+	- [Image caching](#image-caching)
 - [Form](#form)
 	- [Field types](#field-types)
 	- [Validation](#validation)
@@ -556,6 +557,18 @@ $small = $image
 $small
 	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
 	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+```
+
+### Image caching
+
+Images can be cached just like responses:
+
+```php
+$image = ae::image('examples/image/test.jpg');
+
+$image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
+	->cache(5)
+	->dispatch($request->uri()); // image will be cached for the next 5 minutes.
 ```
 
 ## Form

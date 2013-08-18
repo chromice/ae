@@ -18,7 +18,7 @@
 		'Database: Entity basics' => 'database/example_1',
 		'Database: Full–on test' => 'database/example_2',
 		'Form' => 'form',
-		'Image' => 'image',
+		'Image' => 'image.jpeg',
 		'Log' => 'log',
 		'Log (trigger error)' => 'log/error',
 		'Log (throw exception)' => 'log/exception',

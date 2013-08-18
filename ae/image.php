@@ -16,6 +16,8 @@
 # limitations under the License.
 # 
 
+ae::import('ae/response.php');
+
 ae::invoke('aeImage');
 
 class aeImage
@@ -343,28 +345,44 @@ class aeImage
 		return new aeImage($path);
 	}
 
-	public function dispatch($name = null, $quality = 75)
+	public function dispatch($uri = null, $quality = 75)
 	{
 		$this->_load();
-		list($path, $type) = $this->_path_type($name);
+		list($path, $type) = $this->_path_type($uri);
 		
 		while(ob_get_level()) ob_end_clean();
+		
+		ob_start();
 		
 		switch ($type)
 		{
 			case IMAGETYPE_GIF:
-				header('Content-Type: image/gif');
+				$mime = 'image/gif';
 				imagegif($this->source);
-				exit;
+				break;
 			case IMAGETYPE_PNG:
-				header('Content-Type: image/png');
+				$mime = 'image/png';
 				imagepng($this->source);
-				exit;
+				break;
 			case IMAGETYPE_JPEG:
-				header('Content-Type: image/jpeg');
+				$mime = 'image/jpeg';
 				imagejpeg($this->source, null, $quality);
-				exit;
+				break;
 		}
+		
+		header('Content-type: ' . $mime);
+		
+		$cache = new aeResponseCache();
+		
+		$cache
+			->duration(5)
+			->headers(array(
+				'Content-type' => $mime
+			))
+			->content(ob_get_flush())
+			->save($uri);
+		
+		exit;
 	}
 	
 	protected function _path_type($name)
@@ -376,7 +394,7 @@ class aeImage
 		{
 			$path = $parts['dirname'] . '/' . $name;
 			
-			switch (substr($name, strrpos($name, '.'))) 
+			switch (substr($name, strrpos($name, '.') + 1)) 
 			{
 				case 'gif': $type = IMAGETYPE_GIF; break;
 				case 'png': $type = IMAGETYPE_PNG; break;

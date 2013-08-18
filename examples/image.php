@@ -1,6 +1,12 @@
 <?php 
 
+$request = ae::request();
 $image = ae::image('examples/image/test.jpg');
+
+if (!in_array($request->type(), array('jpeg','jpg','png','gif')))
+{
+	ae::response()->error(404);
+}
 
 // Get meta data
 $width = $image->width();
@@ -41,6 +47,6 @@ $image
 // using http://uk3.php.net/manual/en/function.imagefilter.php
 $image
 	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+	->dispatch($request->uri()); // clean all output, set the correct headers, return the image content and... die!
 	
 ?>
