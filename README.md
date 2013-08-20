@@ -95,27 +95,27 @@ In order to start using æ in your application, you must include *core.php* loca
 include 'ae/core.php';
 ```
 
-This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, register utilities and load libraries. All these methods accept both absolute and relative file paths.
+This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and load libraries and utilities. All these methods accept both absolute and relative file paths.
 
 
 ### Modules
 
-Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can register it as a utility:
+Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can load it as a utility:
 
 ```php
 ae::utilize('utility-name');
 ```
 
-All utilities are located in the */utilities* directory. æ will look for files in all registered utilities' directories, before trying the root directory:
+All utilities are located in the */utilities* directory. æ will look for files in all loaded utilities' directories, before trying the root directory:
 
 ```php
 echo ae::resolve('libs/foo.php');
 // will echo "/utilities/utility-name/libs/foo.php", if the file exists.
 ```
 
-If there is an *index.php* script inside the utility directory, it will be included when the utility is registered. All utility initialisation code should go there.
+If there is an *index.php* script inside the utility directory, it will be included when the utility is loaded. All utility initialisation code should go there.
 
-You can register as many utilities as you want, the path resolver would try them all in the order they were registered.
+You can use as many utilities as you want, the path resolver would try them all in the order they were loaded.
 
 
 ### Importing code
@@ -1182,7 +1182,7 @@ Log library allows you to log events and dump variables for quick and easy debug
 Here's a short example of how the library should be used:
 
 ```php
-// You must register the inspector utility
+// You must load the inspector utility
 ae::utilize('inspector');
 
 // Put all logs to /log directory (if it is writable)
@@ -1218,7 +1218,7 @@ If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquia
 Probe library allows you to profile your code and see how much time and memory each part consumes.
 
 ```php
-// You must register the inspector utility
+// You must load the inspector utility
 ae::utilize('inspector');
 
 // Create a probe
