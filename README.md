@@ -12,6 +12,7 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 	- [Importing code](#importing-code)
 	- [Running code](#running-code)
 	- [Loading libraries](#loading-libraries)
+	- [Utilities](#utilities)
 - [Buffer](#buffer)
 - [Container](#container)
 - [Options](#options)
@@ -96,26 +97,6 @@ include 'ae/core.php';
 ```
 
 This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and load libraries and utilities. All these methods accept both absolute and relative file paths.
-
-
-### Modules
-
-Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can load it as a utility:
-
-```php
-ae::utilize('utility-name');
-```
-
-All utilities are located in the */utilities* directory. æ will look for files in all loaded utilities' directories, before trying the root directory:
-
-```php
-echo ae::resolve('libs/foo.php');
-// will echo "/utilities/utility-name/libs/foo.php", if the file exists.
-```
-
-If there is an *index.php* script inside the utility directory, it will be included when the utility is loaded. All utility initialisation code should go there.
-
-You can use as many utilities as you want, the path resolver would try them all in the order they were loaded.
 
 
 ### Importing code
@@ -226,6 +207,26 @@ function a_factory_function($argument_1, $argument_2, /*...*/)
 ```
 
 Please consult with the source code of the core libraries for real life examples.
+
+
+### Utilities
+
+Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can load it as a utility:
+
+```php
+ae::utilize('utility-name');
+```
+
+All utilities are located in the */utilities* directory. æ will look for files in all loaded utilities' directories, before trying the root directory:
+
+```php
+echo ae::resolve('libs/foo.php');
+// will echo "/utilities/utility-name/libs/foo.php", if the file exists.
+```
+
+If there is an *index.php* script inside the utility directory, it will be included when the utility is loaded. All utility initialisation code should go there.
+
+You can use as many utilities as you want, the path resolver would try them all in the order they were loaded.
 
 
 ## Buffer
