@@ -69,11 +69,11 @@ final class ae
 		
 			echo ae::resolve('ae/options.php'); // '.../ae/options.php'
 		
-		You may register a different directory to look in as well:
+		You may register a module to look in it as well:
 		
-			ae::register('path/to/foo');
+			ae::register('module-name');
 			
-			echo ae::resolve('bar.php'); // 'path/to/foo/bar.php'
+			echo ae::resolve('bar.php'); // 'modules/module-name/bar.php'
 		
 		æ would fallback to the core directory, if it finds nothing in 
 		registered module directories:

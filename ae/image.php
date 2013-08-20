@@ -398,7 +398,7 @@ class aeImage
 			{
 				case 'gif': $type = IMAGETYPE_GIF; break;
 				case 'png': $type = IMAGETYPE_PNG; break;
-				case 'jpeg': 
+				case 'jpeg':
 				case 'jpg': $type = IMAGETYPE_JPEG; break;
 			}
 		}
