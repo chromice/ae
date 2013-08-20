@@ -1,5 +1,5 @@
 <?php
-	ae::register('inspector')
+	ae::utilize('inspector')
 		// ->set('log_directory_path', '/examples/log')
 		->set('dump_context', true);
 	

@@ -1,6 +1,6 @@
 <?php
 
-ae::register('inspector');
+ae::utilize('inspector');
 
 // class ProbeTest {
 // 	

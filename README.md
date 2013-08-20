@@ -95,27 +95,27 @@ In order to start using æ in your application, you must include *core.php* loca
 include 'ae/core.php';
 ```
 
-This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, register modules and load libraries. All these methods accept both absolute and relative file paths.
+This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, register utilities and load libraries. All these methods accept both absolute and relative file paths.
 
 
 ### Modules
 
-Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can register it as a module:
+Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can register it as a utility:
 
 ```php
-ae::register('module-name');
+ae::utilize('utility-name');
 ```
 
-All modules are located in the */modules* directory. æ will look for files in all registered modules' directories, before trying the root directory:
+All utilities are located in the */utilities* directory. æ will look for files in all registered utilities' directories, before trying the root directory:
 
 ```php
 echo ae::resolve('libs/foo.php');
-// will echo "/modules/module-name/libs/foo.php", if the file exists.
+// will echo "/utilities/utility-name/libs/foo.php", if the file exists.
 ```
 
-If there is an *index.php* script inside the module directory, it will be included when the module is registered. All module initialisation code should go there.
+If there is an *index.php* script inside the utility directory, it will be included when the utility is registered. All utility initialisation code should go there.
 
-You can register as many modules as you want, the path resolver would try them all in the order they were registered.
+You can register as many utilities as you want, the path resolver would try them all in the order they were registered.
 
 
 ### Importing code
@@ -190,7 +190,7 @@ ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-All libraries located in *ae/* directory (in either root directory or a module), can be loaded using a shorthand syntax, e.g.:
+All libraries located in *ae/* directory (in either root directory or a utility), can be loaded using a shorthand syntax, e.g.:
 
 ```php
 $lib_options = ae::options('my_library_namespace');
@@ -1171,7 +1171,7 @@ Here are all 9 novels ordered alphabetically:
 
 ## Inspector
 
-Inspector module allows you to debug and profile your application more easily. It comes with two libraries: "Log" and "Probe".
+Inspector utility allows you to debug and profile your application more easily. It comes with two libraries: "Log" and "Probe".
 
 ### Log
 
@@ -1182,8 +1182,8 @@ Log library allows you to log events and dump variables for quick and easy debug
 Here's a short example of how the library should be used:
 
 ```php
-// You must register the inspector module
-ae::register('inspector');
+// You must register the inspector utility
+ae::utilize('inspector');
 
 // Put all logs to /log directory (if it is writable)
 ae::options('inspector')->set('log_directory_path', '/log');
@@ -1211,15 +1211,15 @@ If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquia
 
 æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. The log library will inject the inspector button into the page, if there are any messages logged. Pressing that button will open a new window, in which you can browse all items, view dumps, backtraces, etc.:
 
-![](modules/inspector/screenshot.png)
+![](utilities/inspector/screenshot.png)
 
 ### Probe
 
 Probe library allows you to profile your code and see how much time and memory each part consumes.
 
 ```php
-// You must register the inspector module
-ae::register('inspector');
+// You must register the inspector utility
+ae::utilize('inspector');
 
 // Create a probe
 $probe = ae::probe('foo');

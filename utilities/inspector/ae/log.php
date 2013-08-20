@@ -213,7 +213,7 @@ class aeLog
 			try {
 				echo '<script charset="utf-8">' 
 					. 'var base_path = "' . ae::options('request')->get('base_path', '/') . '";' 
-					. file_get_contents(ae::resolve('/modules/inspector/assets/inject.js')) 
+					. file_get_contents(ae::resolve('/utilities/inspector/assets/inject.js')) 
 					. '</script>';
 			} catch (Exception $e) {}
 		}

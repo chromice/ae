@@ -25,23 +25,23 @@ final class ae
 	// = Code management =
 	// ===================
 	
-	private static $modules = array();
+	private static $utilities = array();
 	private static $paths = array();
 	private static $stack = array();
 	
-	public static function register($module)
+	public static function utilize($utility)
 	/*
-		Registers a module by name and returns options object for that 
-		module. (See "ae/options.php" for more details.)
+		Registers a utility by name and returns options object for that 
+		utility. (See "ae/options.php" for more details.)
 		
-		All modules must be located in "/modules" directory. If there is 
-		an 'index.php' script inside the module directory, it will 
+		All utilities must be located in "/utilities" directory. If there is 
+		an 'index.php' script inside the utility directory, it will 
 		be included.
 	*/
 	{
-		$path = self::resolve('modules/' . $module, false);
+		$path = self::resolve('utilities/' . $utility, false);
 		
-		if (in_array($path, self::$modules))
+		if (in_array($path, self::$utilities))
 		{
 			return;
 		}
@@ -51,32 +51,32 @@ final class ae
 			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
 		}
 		
-		self::$modules[] = $path;
+		self::$utilities[] = $path;
 		
-		// Initialise module
+		// Initialise utility
 		if (file_exists($path . '/index.php'))
 		{
 			require $path . '/index.php';
 		}
 		
-		return ae::options($module);
+		return ae::options($utility);
 	}
 	
-	public static function resolve($path, $modules = true)
+	public static function resolve($path, $utilities = true)
 	/*
 		Resolves a relative path to a directory or file. By default
 		the parent of 'ae' directory is used for base:
 		
 			echo ae::resolve('ae/options.php'); // '.../ae/options.php'
 		
-		You may register a module to look in it as well:
+		You may register a utility to look in it as well:
 		
-			ae::register('module-name');
+			ae::utilize('utility-name');
 			
-			echo ae::resolve('bar.php'); // 'modules/module-name/bar.php'
+			echo ae::resolve('bar.php'); // 'utilities/utility-name/bar.php'
 		
 		æ would fallback to the core directory, if it finds nothing in 
-		registered module directories:
+		registered utility directories:
 		
 			$request = ae::load('ae/request.php');
 		
@@ -99,13 +99,13 @@ final class ae
 		$try[] = $path;
 		$try[] = $_path;
 		
-		if (true === $modules)
+		if (true === $utilities)
 		{
 			$try[] = dirname(__DIR__) . '/' . $_path;
 			
-			foreach (self::$modules as $module)
+			foreach (self::$utilities as $utility)
 			{
-				$try[] = $module . '/' . $_path;
+				$try[] = $utility . '/' . $_path;
 			}
 		}
 		
@@ -276,7 +276,7 @@ final class ae
 	
 	public static function escape($value, $context = ae::text)
 	/*
-		Escape the string to be used in the selected module:
+		Escape the string to be used in the selected utility:
 		
 		ae::html - don't escape;
 		ae::text - escape all HTML code, but preserve entities;
