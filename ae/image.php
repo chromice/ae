@@ -322,6 +322,44 @@ class aeImage
 		return $this;
 	}
 	
+	public function cache($minutes, $uri = null)
+	{
+		$this->_load();
+		list($path, $type) = $this->_path_type($uri);
+		
+		while(ob_get_level()) ob_end_clean();
+		
+		ob_start();
+		
+		switch ($type)
+		{
+			case IMAGETYPE_GIF:
+				$mime = 'image/gif';
+				imagegif($this->source);
+				break;
+			case IMAGETYPE_PNG:
+				$mime = 'image/png';
+				imagepng($this->source);
+				break;
+			case IMAGETYPE_JPEG:
+				$mime = 'image/jpeg';
+				imagejpeg($this->source, null, $this->quality);
+				break;
+		}
+		
+		$cache = new aeResponseCache();
+		
+		$cache
+			->duration($minutes)
+			->headers(array(
+				'Content-type' => $mime
+			))
+			->content(ob_get_clean())
+			->save($uri);
+		
+		return $this;
+	}
+	
 	public function save($path = null)
 	{
 		$this->_load();
@@ -354,44 +392,28 @@ class aeImage
 		return new aeImage($path);
 	}
 
-	public function dispatch($uri = null)
+	public function dispatch($name = null)
 	{
 		$this->_load();
-		list($path, $type) = $this->_path_type($uri);
+		list($path, $type) = $this->_path_type($name);
 		
 		while(ob_get_level()) ob_end_clean();
-		
-		ob_start();
-		
+
 		switch ($type)
 		{
 			case IMAGETYPE_GIF:
-				$mime = 'image/gif';
+				header('Content-type: image/gif');
 				imagegif($this->source);
-				break;
+				exit;
 			case IMAGETYPE_PNG:
-				$mime = 'image/png';
+				header('Content-type: image/png');
 				imagepng($this->source);
-				break;
+				exit;
 			case IMAGETYPE_JPEG:
-				$mime = 'image/jpeg';
+				header('Content-type: image/jpeg');
 				imagejpeg($this->source, null, $this->quality);
-				break;
+				exit;
 		}
-		
-		header('Content-type: ' . $mime);
-		
-		$cache = new aeResponseCache();
-		
-		$cache
-			->duration(5)
-			->headers(array(
-				'Content-type' => $mime
-			))
-			->content(ob_get_flush())
-			->save($uri);
-		
-		exit;
 	}
 	
 	protected function _path_type($path)
@@ -407,7 +429,7 @@ class aeImage
 				? $parts['dirname'] : $_parts['dirname'])
 				. '/' . $_parts['basename'];
 			
-			switch (substr($name, strrpos($_parts['basename'], '.') + 1)) 
+			switch ($_parts['extension']) 
 			{
 				case 'gif': $type = IMAGETYPE_GIF; break;
 				case 'png': $type = IMAGETYPE_PNG; break;

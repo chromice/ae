@@ -22,7 +22,6 @@
 <h1>Hello World!</h1>
 <?php endif ?>
 <?php
-
 	$response
-		->cache(5)
-		->dispatch($request::uri());
+		->cache(5, $request::uri())
+		->dispatch();

@@ -178,7 +178,37 @@ class aeResponse
 		return $this;
 	}
 	
-	public function dispatch($uri = null)
+	public function cache($minutes, $uri = null)
+	/*
+		Sets caching headers and (optionally) save response to web cache.
+	*/
+	{
+		$seconds = 60 * $this->cache_ttl;
+		$public = !is_null($uri);
+		
+		$this
+			->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
+			->header('Last-Modified', null)
+			->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($public ? 'public' : 'private'))
+			->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
+		
+		if (!is_null($uri))
+		{
+			$cache = new aeResponseCache();
+			
+			$cache
+				->duration($minutes)
+				->headers($this->headers)
+				->content($this->buffer->render())
+				->save($uri);
+			
+			unset($cache);
+		}
+		
+		return $this;
+	}
+	
+	public function dispatch()
 	/*
 		Dispatches the response to the browser and halts execution.
 	*/
@@ -191,21 +221,6 @@ class aeResponse
 		// Get buffered output and destroy the buffer
 		$output = $this->buffer->render();
 		unset($this->buffer);
-		
-		$this->_set_cache_headers(!is_null($uri));
-		
-		if (!is_null($uri))
-		{
-			$cache = new aeResponseCache();
-			
-			$cache
-				->duration($this->cache_ttl)
-				->headers($this->headers)
-				->content($output)
-				->save($uri);
-			
-			unset($cache);
-		}
 		
 		// Compress output, if browser supports compression
 		if (ae::options('response')->get('compress_output', false))
@@ -255,44 +270,6 @@ class aeResponse
 
 		return gzencode($output);
 	}
-	
-	// ===========
-	// = Caching =
-	// ===========
-	
-	protected $cache_ttl;
-	
-	public function cache($minutes)
-	/*
-		Enables caching and sets "time to live".
-	*/
-	{
-		$this->cache_ttl = $minutes;
-		
-		return $this;
-	}
-
-	protected function _set_cache_headers($public = false)
-	{
-		if ($this->cache_ttl > 0)
-		{
-			$seconds = 60 * $this->cache_ttl;
-			
-			$this
-				->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
-				->header('Last-Modified', null)
-				->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($public ? 'public' : 'private'))
-				->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
-		}
-		else
-		{
-			$this
-				->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
-				->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
-				->header('Cache-Control', 'no-store, no-cache, must-revalidate')
-				->header('Cache-Control', 'post-check=0, pre-check=0', false);
-		}
-	}
 }
 
 class aeResponseCache
@@ -301,6 +278,11 @@ class aeResponseCache
 		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
 */
 {
+	const day = 1440;
+	const week = 10080;
+	const month = 43200;
+	const year = 525600;
+	
 	protected $ttl = 0;
 	protected $headers = array();
 	protected $content = '';
