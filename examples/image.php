@@ -19,8 +19,7 @@ ae::image('examples/image/test.png')
 	->crop(100,100)
 	->scale(200, null)
 	->suffix('_cropped')
-	->save();
-
+	->save('examples/image/preserve_opacity.png');
 
 // Blow one pixel up.
 $cropped = $image
@@ -41,12 +40,14 @@ $image
 $image
 	->fit(320, 320)
 	->suffix('_small')
+	->quality(50)
 	->save();  // save as 'test_small.jpg'
 
 // Apply colorize filter
 // using http://uk3.php.net/manual/en/function.imagefilter.php
 $image
 	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->dispatch($request->uri()); // clean all output, set the correct headers, return the image content and... die!
+	->dispatch();
+	// ->dispatch($request->uri()); // clean all output, set the correct headers, return the image content and... die!
 	
 ?>

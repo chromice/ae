@@ -297,8 +297,16 @@ class aeImage
 	// = Output =
 	// ==========
 	
+	protected $quality = 75;
 	protected $suffix;
 	protected $prefix;
+	
+	public function quality($quality)
+	{
+		$this->quality = (int) $quality;
+		
+		return $this;
+	}
 	
 	public function suffix($suffix)
 	{
@@ -314,10 +322,10 @@ class aeImage
 		return $this;
 	}
 	
-	public function save($name = null, $quality = 75)
+	public function save($path = null)
 	{
 		$this->_load();
-		list($path, $type) = $this->_path_type($name);
+		list($path, $type) = $this->_path_type($path);
 		
 		switch ($type)
 		{
@@ -328,7 +336,7 @@ class aeImage
 				$success = imagepng($this->source, $path);
 				break;
 			case IMAGETYPE_JPEG:
-				$success = imagejpeg($this->source, $path, $quality);
+				$success = imagejpeg($this->source, $path, $this->quality);
 				break;
 		}
 		
@@ -339,13 +347,14 @@ class aeImage
 		
 		$this->_unload();
 		
+		$this->quality = 75;
 		$this->prefix = null;
 		$this->suffix = null;
 		
 		return new aeImage($path);
 	}
 
-	public function dispatch($uri = null, $quality = 75)
+	public function dispatch($uri = null)
 	{
 		$this->_load();
 		list($path, $type) = $this->_path_type($uri);
@@ -366,7 +375,7 @@ class aeImage
 				break;
 			case IMAGETYPE_JPEG:
 				$mime = 'image/jpeg';
-				imagejpeg($this->source, null, $quality);
+				imagejpeg($this->source, null, $this->quality);
 				break;
 		}
 		
@@ -385,16 +394,20 @@ class aeImage
 		exit;
 	}
 	
-	protected function _path_type($name)
+	protected function _path_type($path)
 	{
 		$type = $this->type;
 		$parts = pathinfo($this->path);
 		
-		if (!is_null($name))
+		if (!empty($path))
 		{
-			$path = $parts['dirname'] . '/' . $name;
+			$_parts = pathinfo($path);
 			
-			switch (substr($name, strrpos($name, '.') + 1)) 
+			$path = ($_parts['dirname'] === '.'
+				? $parts['dirname'] : $_parts['dirname'])
+				. '/' . $_parts['basename'];
+			
+			switch (substr($name, strrpos($_parts['basename'], '.') + 1)) 
 			{
 				case 'gif': $type = IMAGETYPE_GIF; break;
 				case 'png': $type = IMAGETYPE_PNG; break;
@@ -404,8 +417,8 @@ class aeImage
 		}
 		else
 		{
-			$path = $parts['dirname'] . '/' 
-				. $this->prefix 
+			$path = $parts['dirname'] . '/'
+				. $this->prefix
 				. $parts['filename']
 				. $this->suffix
 				. '.' . $parts['extension'];
