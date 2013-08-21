@@ -467,8 +467,8 @@ $response = ae::response('html')
 <h1>Hello world</h1>
 <?php 
 $response
-	->cache(5) // cache for five minutes
-	->dispatch('/hello-world.html');  // save response for /hello-world and dispatch the request
+	->cache(5, '/hello-world.html') // cache for five minutes as /hello-world.html
+	->dispatch(); // dispatch the request
 ?>
 ```
 
@@ -568,8 +568,7 @@ Images can be cached just like responses:
 $image = ae::image('examples/image/test.jpg');
 
 $image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->cache(5)
-	->dispatch('/images/foo.png'); // image will be cached for the next 5 minutes.
+	->cache(aeResponseCache::year, '/images/foo.png') // cache image for a year
 ```
 
 ## Form
