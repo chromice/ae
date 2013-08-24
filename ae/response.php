@@ -91,7 +91,7 @@ class aeResponse
 		
 		// Disable caching by default
 		$this
-			->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
+			->header('Expires', gmdate('D, d M Y H:i:s', time() - aeResponseCache::year * 60) . ' GMT')
 			->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
 			->header('Cache-Control', 'max-age=0, no-cache, must-revalidate, proxy-revalidate');
 	}
@@ -383,7 +383,7 @@ class aeResponseCache
 		{
 			foreach ($value as $_value)
 			{
-				$rules.= "\n\tHeader add " . $name . ' "' . $_value . '"';
+				$rules.= "\n\tHeader set " . $name . ' "' . $_value . '"';
 			}
 		}
 		
