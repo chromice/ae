@@ -1224,7 +1224,7 @@ In the context of a web site or application, æ appends the log to the output on
 ae::options('inspector')->set('allowed_ips', '127.0.0.1, 192.168.1.101');
 ```
 
-You can also dump the environment variables and local variable scopes for errors:
+You can also automatically dump the environment variables and local variable scopes for errors:
 
 ```php
 ae::options('inspector')->set('dump_context', true);
