@@ -86,7 +86,14 @@ class aeResponse
 		// Append character set
 		$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
 
-		$this->header('Content-type', $type);
+		// Set content type
+		$this->header('Content-Type', $type);
+		
+		// Disable caching by default
+		$this
+			->header('Expires', gmdate('D, d M Y H:i:s', time() - 365 * 24 * 60 * 60) . ' GMT')
+			->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
+			->header('Cache-Control', 'max-age=0, no-cache, must-revalidate, proxy-revalidate');
 	}
 
 	public static function current()
@@ -147,7 +154,10 @@ class aeResponse
 			? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1')
 			. ' ' . $this->http_errors[$code]);
 		
-		$path = ae::options('response')->get('error_path', $path);
+		if (empty($path)) 
+		{
+			$path = ae::options('response')->get('error_path', $path);
+		}
 		
 		if (!empty($path)) 
 		{
@@ -183,14 +193,10 @@ class aeResponse
 		Sets caching headers and (optionally) save response to web cache.
 	*/
 	{
-		$seconds = 60 * $this->cache_ttl;
-		$public = !is_null($uri);
-		
 		$this
-			->header('Expires', gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT')
+			->header('Expires', gmdate('D, d M Y H:i:s', time() + 60 * $minutes) . ' GMT')
 			->header('Last-Modified', null)
-			->header('Cache-Control', 'max-age=' . $seconds . ', ' . ($public ? 'public' : 'private'))
-			->header('Cache-Control', 'post-check=' . $seconds . ', pre-check=' . ($seconds * 2), false);
+			->header('Cache-Control', !is_null($uri) ? 'public' : 'private');
 		
 		if (!is_null($uri))
 		{

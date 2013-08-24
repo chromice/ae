@@ -297,6 +297,7 @@ class aeImage
 	// = Output =
 	// ==========
 	
+	protected $headers = array();
 	protected $quality = 75;
 	protected $suffix;
 	protected $prefix;
@@ -334,28 +335,34 @@ class aeImage
 		switch ($type)
 		{
 			case IMAGETYPE_GIF:
-				$mime = 'image/gif';
+				$mimetype = 'image/gif';
 				imagegif($this->source);
 				break;
 			case IMAGETYPE_PNG:
-				$mime = 'image/png';
+				$mimetype = 'image/png';
 				imagepng($this->source);
 				break;
 			case IMAGETYPE_JPEG:
-				$mime = 'image/jpeg';
+				$mimetype = 'image/jpeg';
 				imagejpeg($this->source, null, $this->quality);
 				break;
 		}
 		
-		$cache = new aeResponseCache();
+		$this->headers['Expires'] = gmdate('D, d M Y H:i:s', time() + $minutes * 60) . ' GMT';
+		$this->headers['Cache-Control'] = !is_null($uri) ? 'public' : 'private';
 		
-		$cache
-			->duration($minutes)
-			->headers(array(
-				'Content-type' => $mime
-			))
-			->content(ob_get_clean())
-			->save($uri);
+		if (!is_null($uri))
+		{
+			$cache = new aeResponseCache();
+			
+			$cache
+				->duration($minutes)
+				->headers(array_merge($this->headers, array(
+					'Content-Type' => $mimetype
+				)))
+				->content(ob_get_clean())
+				->save($uri);
+		}
 		
 		return $this;
 	}
@@ -398,19 +405,24 @@ class aeImage
 		list($path, $type) = $this->_path_type($name);
 		
 		while(ob_get_level()) ob_end_clean();
-
+		
+		foreach ($this->headers as $key => $value) 
+		{
+			header($key . ': ' . $value);
+		}
+		
 		switch ($type)
 		{
 			case IMAGETYPE_GIF:
-				header('Content-type: image/gif');
+				header('Content-Type: image/gif');
 				imagegif($this->source);
 				exit;
 			case IMAGETYPE_PNG:
-				header('Content-type: image/png');
+				header('Content-Type: image/png');
 				imagepng($this->source);
 				exit;
 			case IMAGETYPE_JPEG:
-				header('Content-type: image/jpeg');
+				header('Content-Type: image/jpeg');
 				imagejpeg($this->source, null, $this->quality);
 				exit;
 		}

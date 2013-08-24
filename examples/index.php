@@ -2,7 +2,7 @@
 	$container = ae::container('/examples/container/container_html.php');
 	$container->set('title', 'æ');
 	
-	$Request = ae::request();
+	$request = ae::response('html');
 ?>
 <h1>æ</h1>
 <h2>Examples:</h2>
@@ -37,3 +37,4 @@
 	endforeach;
 ?>
 </ul>
+<?php $request->dispatch() ?>
