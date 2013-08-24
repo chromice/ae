@@ -517,7 +517,30 @@ And here's what *.htaccess* file in */cache* directory must be like:
 
 Apache would first look for a cached response, and only if it finds no valid response, will it route the request to */index.php*. No PHP code is actually involved in serving cached responses.
 
-In order to save a response use `aeResponse::save()` method, passing the full request URI (including the file extension) via the first argument. You can delete any cached response using `aeResponse::delete()` method.
+In order to save a response use `aeResponse::cache()` method, passing the number of minutes it should be cached for via first argument and full request URI (including the file extension) via second argument:
+
+```php
+$response->cache(5, '/hello-world.html');
+```
+
+You can delete any cached response using `aeResponseCache::delete()` method by passing full or partial URL to it:
+
+```php
+ae::import('ae/response.php');
+
+aeResponseCache::delete('/hello-world.html');
+```
+
+You should also remove all stale cache entries via `aeResponseCache::collect_garbage()`:
+
+```php
+ae::import('ae/response.php');
+
+aeResponseCache::collect_garbage();
+```
+
+The garbage collection can be a very resource-intensive operation, so its usage should be restricted to an infrequent cron job.
+
 
 ## Image
 
