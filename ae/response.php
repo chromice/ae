@@ -436,6 +436,52 @@ class aeResponseCache
 		}
 	}
 	
+	public static function collect_garbage()
+	/*
+		Deletes stale cache entries.
+		
+		NB! This operation is IO intensive and should be performed infrequently on an internal thread.
+	*/
+	{
+		if (!($cache_path = self::_cache_directory()))
+		{
+			return;
+		}
+		
+		self::_clean_directory($cache_path);
+	}
+	
+	protected static function _clean_directory($path)
+	/*
+		Recursively scans the directory for stale cache entries.
+	*/
+	{
+		$path = rtrim($path, '/');
+		
+		if (file_exists($path . '/.htaccess') 
+		&& preg_match('/RewriteCond %{TIME} >(\d{14})/', file_get_contents($path . '/.htaccess'), $matches))
+		{
+			if ($matches[1] < date('YmdHis'))
+			{
+				self::_remove_directory($path);
+			}
+		}
+		else foreach (scandir($path) as $dir)
+		{
+			if (in_array($dir, array('.', '..')))
+			{
+				continue;
+			}
+			
+			$dir = $path . '/' . $dir;
+			
+			if (is_dir($dir))
+			{
+				self::_clean_directory($dir);
+			}
+		}
+	}
+	
 	protected static function _cache_directory()
 	/*
 		Returns cache directory path and checks if it is writable.

@@ -2,7 +2,11 @@
 	$container = ae::container('/examples/container/container_html.php');
 	$container->set('title', 'æ');
 	
-	$request = ae::response('html');
+	// Test default response headers
+	$response = ae::response('html');
+	
+	// Test garbage collection
+	aeResponseCache::collect_garbage();
 ?>
 <h1>æ</h1>
 <h2>Examples:</h2>
@@ -37,4 +41,4 @@
 	endforeach;
 ?>
 </ul>
-<?php $request->dispatch() ?>
+<?php $response->dispatch() ?>
