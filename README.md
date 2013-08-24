@@ -333,11 +333,11 @@ Request library allows you to handle both HTTP and command line requests. You ca
 ```php
 ae::import('ae/request.php');
 
-if (aeRequest::cli)
+if (aeRequest::is_cli)
 {
 	echo "Hello World!";
 }
-else if (aeRequest::ajax)
+else if (aeRequest::is_ajax)
 {
 	echo "{message:'Hello world'}";
 }
