@@ -23,6 +23,14 @@ ae::invoke('aeImage');
 class aeImage
 /*
 	An image manipulation library.
+	
+	Crop any image to a 100x100 square thumbail and save it as image_thumb.png:
+	
+		ae::image('path/to/image.png')
+			->cover(100, 100)
+			->suffix('_thumb')
+			->save(); 
+	
 */
 {
 	protected $path;

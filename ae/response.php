@@ -21,7 +21,7 @@ ae::invoke('aeResponse');
 class aeResponse
 /*
 	`response` options:
-		`compress_output` - whether to gzip dispatched output (false by default);
+		`compress_output` - whether to gzip dispatched output (FALSE by default);
 		`charset`         - character set; 'utf-8' by default;
 		`error_path`      - a path to a script that should run when an error condition 
 		                    is triggered.

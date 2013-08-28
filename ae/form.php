@@ -23,6 +23,38 @@ ae::invoke('aeForm');
 class aeForm
 /*
 	Form rendering and validation library.
+	
+	Here is an example of form and input initialisation and validation:
+	
+		$form = ae::form('example-form');
+		
+		$input = $form->single('example-input')
+			->required('This field is required!');
+		
+		if ($form->is_submitted())
+		{
+			$is_valid = $form->validate();
+			
+			if ($is_valid)
+			{
+				$values = $form->values();
+				
+				echo '<h1>' . $values['example-input'] . '</h1>'
+			}
+		}
+	
+	And here is how you can render that form's HTML:
+	
+		<?= $form->open() ?>
+		<div class="field">
+			<label for="<?= $input->id() ?>">Enter some text:</label>
+			<?= $input->input('text') ?>
+			<?= $input->error() ?>
+		</div>
+		<div class="field">
+			<button type="submit">Submit</button>
+		</div>
+		<?= $form->close() ?>
 */
 {
 	protected $id;
@@ -158,6 +190,9 @@ class aeForm
 	}
 	
 	public static function attributes($attributes)
+	/*
+		Serializes an array of attributes into a string.
+	*/
 	{
 		$output = array();
 		
@@ -258,6 +293,13 @@ class aeValidator
 	}
 	
 	public function valid_value($message, $misc)
+	/*
+		Prevents user from submitting a value that does not meet a constraint:
+		
+		- if `$misc` has a scalar value, value is not equal to it;
+		- if `$misc` is an array, value is not in it;
+		- if `$misc` is a function, and `$misc($value, $index)` returns FALSE.
+	*/
 	{
 		$this->validators['valid_value'] = function($value, $index = null) use ($message, $misc) {
 			if (is_scalar($misc))
@@ -275,7 +317,7 @@ class aeValidator
 	/*
 		Prevents user from submitting a value that does not patch the pattern.
 		
-		NB! The pattern must be in HTML5 format, e.g. `[a-z0-9]`, i.e. no slashes of flags.
+		NB! The pattern must be in HTML5 format, e.g. `[a-z0-9]`, i.e. no slashes or flags.
 		
 		In addition to validating date/time formats (month, week, date, datetime, time)
 		the library also validates the value and switches min_value(), max_value() 
@@ -312,7 +354,7 @@ class aeValidator
 	
 	public function min_length($message, $length)
 	/*
-		Prevents user from submitting a value shorter then $length.
+		Prevents user from submitting a value shorter then `$length`.
 	*/
 	{
 		$this->validators['min_length'] = function($value) use ($message, $length) {
@@ -324,7 +366,7 @@ class aeValidator
 	
 	public function max_length($message, $length)
 	/*
-		Prevents user from submitting a value longer then $length.
+		Prevents user from submitting a value longer then `$length`.
 	*/
 	{
 		$this->html['maxlength'] = $length;
@@ -337,7 +379,7 @@ class aeValidator
 	
 	public function min_value($message, $limit)
 	/*
-		Prevents user from submitting a number greater then $limit or date after a certain time.
+		Prevents user from submitting a number greater then `$limit` or date after a certain time.
 	*/
 	{
 		$this->html['min'] = $limit;
@@ -362,7 +404,7 @@ class aeValidator
 	
 	public function max_value($message, $limit)
 	/*
-		Prevents user from submitting a number less then $limit or date past a certain time.
+		Prevents user from submitting a number less then `$limit` or date past a certain time.
 	*/
 	{
 		$this->html['max'] = $limit;
@@ -471,6 +513,9 @@ class aeFormField extends aeValidator
 	}
 	
 	public function input($type, $value = null, $attributes = array())
+	/*
+		Renders a <input> element for the field.
+	*/
 	{
 		if (is_array($value))
 		{
@@ -511,6 +556,9 @@ class aeFormField extends aeValidator
 	}
 	
 	public function textarea($attributes = array())
+	/*
+		Renders a <textarea> element for the field.
+	*/
 	{
 		$attributes['required'] = isset($attributes['required']) 
 			? !empty($attributes['required'])
@@ -527,6 +575,9 @@ class aeFormField extends aeValidator
 	}
 	
 	public function select($options, $attributes = array())
+	/*
+		Renders a <select> element for the field.
+	*/
 	{
 		$attributes['required'] = isset($attributes['required']) 
 			? !empty($attributes['required'])
@@ -659,9 +710,9 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 	
 	public function required($message, $callback = null)
 	/*
-		Overloads aeValidator::required() to allow setting a callback function,
-		which accepts field index as the only argument and must return TRUE, 
-		if the field is required. 
+		Overloads `aeValidator::required()` to allow setting a callback function,
+		which accepts field index as the only argument and must return TRUE,
+		if the field is required.
 	*/
 	{
 		parent::required($message);

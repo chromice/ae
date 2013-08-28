@@ -47,6 +47,10 @@ class aeOptions
 	}
 	
 	public function get($option, $default = null)
+	/*
+		Returns the option value, if it has been previously set;
+		otherwise returns the user defined default value.
+	*/
 	{
 		if (isset($this->reference[$option]))
 		{
@@ -57,6 +61,9 @@ class aeOptions
 	}
 	
 	public function set($option, $value)
+	/*
+		Sets the option value.
+	*/
 	{
 		$this->reference[$option] = $value;
 

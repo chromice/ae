@@ -32,7 +32,7 @@ final class ae
 	public static function utilize($utility)
 	/*
 		Registers a utility by name and returns options object for that 
-		utility. (See "ae/options.php" for more details.)
+		utility. (See 'ae/options.php' for more details.)
 		
 		All utilities must be located in "/utilities" directory. If there is 
 		an 'index.php' script inside the utility directory, it will 
@@ -75,7 +75,7 @@ final class ae
 			
 			echo ae::resolve('bar.php'); // 'utilities/utility-name/bar.php'
 		
-		æ would fallback to the core directory, if it finds nothing in 
+		æ would fall back to the core directory, if it finds nothing in 
 		registered utility directories:
 		
 			$request = ae::load('ae/request.php');
@@ -125,7 +125,7 @@ final class ae
 	public static function invoke($misc)
 	/*
 		Call this method from the loaded or imported file to define 
-		class name or factory that load() method should use.
+		class name or factory that `ae::load()` method should use.
 		
 		If valid class name is passed, æ will create a new instance 
 		of it every time the library is loaded:
@@ -149,8 +149,6 @@ final class ae
 				
 				return $instance = new SomeClass($param, $param_2;
 			});
-
-
 	*/
 	{
 		$data =& self::$paths[end(self::$stack)];
@@ -190,11 +188,11 @@ final class ae
 	public static function load()
 	/*
 		Loads a script and attempts to invoke an object defined in it, 
-		using invoke() method:
+		using `ae::invoke()` method:
 		
 			$o = ae::load('ae/options.php', 'namespace');
 			
-		In this example, load() will return an instance of aeOptions.
+		In this example, `ae::load()` will return an instance of `aeOptions`.
 		
 		Please consult with the source code of the core libraries for 
 		more real life examples.
@@ -278,11 +276,11 @@ final class ae
 	/*
 		Escape the string to be used in the selected utility:
 		
-		ae::html - don't escape;
-		ae::text - escape all HTML code, but preserve entities;
-		ae::tag - safe for tag or attribute names;
-		ae::attribute - safe for attribute values;
-		ae::identifier - alphnumerics, dashes and underscores only.
+		`ae::html` - don't escape;
+		`ae::text` - escape all HTML code, but preserve entities;
+		`ae::tag` - safe for tag or attribute names;
+		`ae::attribute` - safe for attribute values;
+		`ae::identifier` - alphnumerics, dashes and underscores only.
 		
 	*/
 	{
@@ -327,22 +325,6 @@ class aeBuffer
 		echo 'Hello world!';
 		
 		echo $buffer->render();
-		
-	Buffered content may be used as a template:
-	
-		$buffer = new aeBuffer();
-		
-		echo '<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>';
-		
-		$buffer->output(array(
-			'url' => $article->url,
-			'name' => (
-				strlen($article->name) > 20 
-				? substr($article->name, 0, 19) . '&hellip;' 
-				: $article->name
-			),
-			'visits' => number_format($article->visits)
-		));
 	
 	The buffer content is flushed, if not manually rendered.
 */
@@ -381,6 +363,22 @@ class aeBuffer
 	public function render($variables = null)
 	/*
 		Returns the captured output as a string and stops capturing.
+		
+		Buffered content may be used as a template:
+		
+			$buffer = new aeBuffer();
+			
+			echo '<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>';
+			
+			$output = $buffer->render(array(
+				'url' => $article->url,
+				'name' => (
+					strlen($article->name) > 20 
+					? substr($article->name, 0, 19) . '&hellip;' 
+					: $article->name
+				),
+				'visits' => number_format($article->visits)
+			));
 	*/
 	{
 		if (is_null($this->content))

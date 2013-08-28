@@ -22,6 +22,11 @@ class aeFile
 /*
 	A thin wrapper that abstracts common file operations 
 	mostly for the sake of exception safety.
+	
+		$file = ae::file('example.txt');
+		$file->open('w');
+		$file->write('This is a test');
+		$file->close();
 */
 {
 	protected $path;

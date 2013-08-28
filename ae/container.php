@@ -21,6 +21,36 @@ ae::invoke('aeContainer');
 class aeContainer
 /*
 	Wraps output of a script with another script.
+	
+	Example of container.php:
+	
+		<html>
+		<head>
+			<title><?= $title ?></title>
+		</head>
+		<body>
+			<?= $content ?>
+		</body>
+		</html>
+		
+	Example of content.php:
+	
+		<?php 
+		$container = ae::container('container.php')
+			->set('title', 'Container example');
+		?>
+		<h1>Hello World!</h1>
+		
+	When rendered the content.php will produce:
+	
+		<html>
+		<head>
+			<title>Container example</title>
+		</head>
+		<body>
+			<h1>Hello World!</h1>
+		</body>
+		</html>
 */
 {
 	protected $path;
@@ -30,11 +60,6 @@ class aeContainer
 	
 	public function __construct($path)
 	{
-		if (empty($path))
-		{
-			throw new Exception('Container must be initialized with a path to the container script.');
-		}
-		
 		$this->path = $path;
 		$this->buffer = new aeBuffer();
 		$this->context = new aeSwitch(self::$vars, self::$vars);
@@ -48,6 +73,9 @@ class aeContainer
 	}
 	
 	public function set($name, $value)
+	/*
+		Sets a container variable.
+	*/
 	{
 		self::$vars[$name] = $value;
 		

@@ -30,6 +30,13 @@ class aeDatabase
 		`user`      - user name;
 		`password`  - password;
 		`database`  - database name.
+		
+	This library must be invoked with the connection name, 
+	otherise 'default' connection is used.
+	
+		$db = ae::database('connection name');
+		
+		$db->query('SELECT 1')->make();
 */
 {
 	// ==============
@@ -107,6 +114,8 @@ class aeDatabase
 	/*
 		Returns a transaction object, which opens up a new transaction, and 
 		rolls it back, unless it has been explicitly committed.
+		
+		See `aeDatabaseTransaction` for more details.
 	*/
 	{
 		return new aeDatabaseTransaction($this->db);
@@ -144,7 +153,7 @@ class aeDatabase
 	
 	public function join($join, $type = '')
 	/*
-		Sets the `{sql:join}` placeholder.
+		Sets the {sql:join} placeholder.
 		
 		Example:
 		
@@ -171,7 +180,7 @@ class aeDatabase
 	
 	public function where($column, $value = null)
 	/*
-		Sets the `{sql:where}` placeholder.
+		Sets the {sql:where} placeholder.
 		
 		Examples:
 			
@@ -204,7 +213,7 @@ class aeDatabase
 	
 	public function group_by($clause)
 	/*
-		Sets the `{sql:group_by}` placeholder. 
+		Sets the {sql:group_by} placeholder. 
 		
 		Example:
 		
@@ -226,7 +235,7 @@ class aeDatabase
 	
 	public function having($column, $value = null)
 	/*
-		Sets the `{sql:having}` placeholder. 
+		Sets the {sql:having} placeholder. 
 		
 		Works similarly to `where()` method.
 	*/
@@ -247,7 +256,7 @@ class aeDatabase
 	
 	public function order_by($clause)
 	/*
-		Sets the `{sql:order_by}` placeholder. 
+		Sets the {sql:order_by} placeholder. 
 		
 		Example:
 		
@@ -269,7 +278,7 @@ class aeDatabase
 	
 	public function limit($limit, $offset = null)
 	/*
-		Sets the `{sql:limit}` placeholder. 
+		Sets the {sql:limit} placeholder. 
 		
 		Examples:
 		
@@ -404,7 +413,7 @@ class aeDatabase
 	
 	public function value($value)
 	/*
-		Returns an escaped value.
+		Returns an escaped value:
 		
 		- Arrays are serialized into strings. 
 		- Objects are cast to string. 
@@ -431,6 +440,10 @@ class aeDatabase
 	}
 	
 	public function names($names)
+	/*
+		Accepts an associative array of placeholder/indetifier pairs
+		used in the current query.
+	*/
 	{
 		$this->names = array_merge($this->names, $names);
 		
@@ -438,6 +451,10 @@ class aeDatabase
 	}
 	
 	public function variables($variables)
+	/*
+		Accepts an associative array of placeholder/variable pairs
+		used in the current query.
+	*/
 	{
 		$this->variables = array_merge($this->variables, $variables);
 		
@@ -445,6 +462,16 @@ class aeDatabase
 	}
 	
 	public function values($values)
+	/*
+		Accepts an associative array of key/value pairs
+		used to replace the following placeholders:
+		
+		- {keys} with `key_1`, `key_2`, ...
+		- {values} with "value 1", "value 2", ...
+		- {keys_values} with `key_1` = "value 1", `key_2` = "value 2", ...
+		
+		Very useful for writing INSERT and UPDATE queries.
+	*/
 	{
 		$this->values = array_merge($this->values, $values);
 		
@@ -484,6 +511,8 @@ class aeDatabase
 	public function result($result = 'aeDatabaseResult')
 	/*
 		Runs current query and returns the result set.
+		
+		See `aeDatabaseResult` for more details.
 	*/
 	{
 		return $this->_result($result);
@@ -530,6 +559,8 @@ class aeDatabase
 	public function many($class, $result = 'aeDatabaseResult')
 	/*
 		Executes the query and returns a instance of result class.
+		
+		See `aeDatabaseResult` for more details.
 	*/
 	{
 		$return = $this->_result($result, $class, $this->using);
@@ -542,7 +573,7 @@ class aeDatabase
 	public function using($class, $property = null)
 	/*
 		Specifies secondary/related table classes to use and what property 
-		of the primary instance to assign the instance to.
+		of the primary object to assign the instances to.
 	*/
 	{
 		$this->using[$class] = $property;
@@ -556,7 +587,7 @@ class aeDatabase
 	
 	public function columns($table)
 	/*
-		Returns an associative array of column names as keys and whether 
+		Returns an associative array of column names as keys and whether
 		they are primary keys (TRUE or FALSE) as values.
 	*/
 	{
@@ -648,7 +679,7 @@ class aeDatabase
 	/*
 		Updates the existing row or inserts a new one, if it does not exist.
 		
-		NB! Unlike other methods, $where argument must be an associative array.
+		NB! Unlike other methods, `$where` argument must be an associative array.
 	*/
 	{
 		$insert_keys = array();
@@ -702,6 +733,9 @@ class aeDatabase
 }
 
 class aeDatabaseTransaction
+/*
+	Used by `aeDatabase::transaction()`.
+*/
 {
 	protected $db;
 	
@@ -724,6 +758,9 @@ class aeDatabaseTransaction
 }
 
 class aeDatabaseResult
+/*
+	Used by `aeDatabase::many()` and `aeDatabase::result()`.
+*/
 {
 	protected $result;
 	
@@ -772,7 +809,7 @@ class aeDatabaseResult
 	
 	public function fetch()
 	/*
-		Fetches the next result as an associate array or instance of 
+		Fetches the next row as an associate array or instance of 
 		the table class.
 	*/
 	{
@@ -810,7 +847,7 @@ class aeDatabaseResult
 	
 	public function count()
 	/*
-		Returns the number of results.
+		Returns the number of rows in the result set.
 	*/
 	{
 		return $this->result->num_rows;
@@ -818,7 +855,7 @@ class aeDatabaseResult
 	
 	public function seek($offset)
 	/*
-		Sets the internal pointer to a particular result's offset.
+		Sets the internal pointer to a particular offset.
 	*/
 	{
 		return $this->result->data_seek($offset);
@@ -826,7 +863,7 @@ class aeDatabaseResult
 
 	public function all()
 	/*
-		Returns an array of all results.
+		Returns an array of all rows.
 	*/
 	{
 		$all = array();
@@ -846,6 +883,26 @@ class aeDatabaseResult
 }
 
 abstract class aeDatabaseTable
+/*
+	A database table abstraction class that provides active record style
+	access to data in a specifc table.
+	
+	Table specific class must extend this class:
+	
+		class MyTable extends aeDatabaseTable {}
+	
+	Now you can easily perform CRUD actions on "my_table" table:
+	
+		$row = MyTable::create(arrat('column' => 'value'))->save();
+		
+		$row_ids = $row->ids();
+		
+		$row_copy = MyTable::find($row_ids)->load();
+		
+		echo $row_copy->column; // echoes "value"
+		
+	NB! For this class to work, table must have a scalar or composite primary key.
+*/
 {
 	// ========================
 	// = Entity configuration =
@@ -856,6 +913,8 @@ abstract class aeDatabaseTable
 	protected static function database()
 	/*
 		Returns an instance of database connection.
+		
+		Override this method, if you want your class to use a different connection.
 	*/
 	{
 		$class = get_called_class();
@@ -976,7 +1035,7 @@ abstract class aeDatabaseTable
 	/*
 		NB! Must not be used directly. 
 		
-		Use aeDatabaseTable::create() method instead.
+		Use `aeDatabaseTable::create()` method instead.
 	*/
 	{
 		$table = static::name();
@@ -1140,7 +1199,7 @@ abstract class aeDatabaseTable
 	
 	public function ids()
 	/*
-		Returns an associative array of accessor values.
+		Returns an associative array of primary key(s)/value(s).
 	*/
 	{
 		$accessor = static::accessor();
@@ -1158,7 +1217,7 @@ abstract class aeDatabaseTable
 	
 	public function load($columns = '*')
 	/*
-		(Re)load the record values from database.
+		(Re)loads the record values from database.
 	*/
 	{
 		$found = static::database()
@@ -1188,7 +1247,7 @@ abstract class aeDatabaseTable
 	
 	public function save()
 	/*
-		Saves or updates the record data in database.
+		Saves or updates the record in database.
 	*/
 	{
 		if (!$this->is_dirty || empty($this->values))

@@ -16,11 +16,11 @@
 # limitations under the License.
 # 
 
-ae::invoke(array('aeRouter','request'));
+ae::invoke(array('aeRouter', 'request'));
 
 class aeRequest
 /*
-	Request abstration.
+	Request abstraction.
 	
 	`request` options:
 		`base_path` - a base URL path; "/" by default;
@@ -70,7 +70,7 @@ class aeRequest
 	
 	public function route($rules, $target = null)
 	/*
-		Returns an instance of aeRouter for base path and current uri.
+		Returns an instance of `aeRouter` for base path and current URI.
 	*/
 	{
 		$uri = implode('/', array_slice($this->segments, $this->depth));
@@ -240,7 +240,7 @@ class aeRouter
 	
 	public static function request($segments = null)
 	/*
-		Returns are an instance of aeRequest object.
+		Returns an instance of `aeRequest` object.
 	*/
 	{
 		if (aeRequest::is_cli)
@@ -334,7 +334,7 @@ class aeRouter
 		
 	public function exists()
 	/*
-		Returns true if the path can be routed.
+		Returns TRUE if the path can be routed.
 	*/
 	{
 		return !is_null($this->path) || !is_null($this->callback);
@@ -342,7 +342,7 @@ class aeRouter
 	
 	public function follow()
 	/*
-		Attempts to follow the path. Throws aeRequestException on error.
+		Attempts to follow the path. Throws `aeRequestException` on error.
 	*/
 	{
 		if (is_callable($this->callback))

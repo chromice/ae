@@ -1230,7 +1230,7 @@ You can also automatically dump the environment variables and local variable sco
 ae::options('inspector')->set('dump_context', true);
 ```
 
-If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header.
+If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header of the response.
 
 æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. The log library will inject the inspector button into the page, if there are any messages logged. Pressing that button will open a new window, in which you can browse all items, view dumps, backtraces, etc.:
 
