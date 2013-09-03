@@ -23,10 +23,10 @@ class aeFile
 	A thin wrapper that abstracts common file operations 
 	mostly for the sake of exception safety.
 	
-		$file = ae::file('example.txt');
-		$file->open('w');
-		$file->write('This is a test');
-		$file->close();
+		$file = ae::file('example.txt')
+			->open('w')
+			->write('This is a test')
+			->close();
 */
 {
 	protected $path;
@@ -40,7 +40,7 @@ class aeFile
 	
 	public function __destruct()
 	{
-		if ($this->file)
+		if (is_resource($this->file))
 		{
 			$this->close();
 		}
@@ -53,36 +53,43 @@ class aeFile
 	
 	public function open($mode)
 	{
+		if (is_resource($this->file))
+		{
+			throw new aeFileException('File is already opened.');
+		}
+		
 		$this->file = fopen($this->path, $mode);
 		
-		return $this->file !== false;
+		if (false === $ths->file)
+		{
+			throw new aeFileException('Failed to open file.');
+		}
+		
+		return $this;
 	}
 	
 	public function close()
 	{
-		if (!is_resource($this->file))
-		{
-			return true;
-		}
+		$this->_can('close file');
 		
 		if ($this->is_locked)
 		{
 			$this->unlock();
 		}
 		
-		$result = fclose($this->file);
+		if (false === fclose($this->file))
+		{
+			throw new aeFileException('Failed to close file.');
+		}
 		
 		$this->file = null;
 		
-		return $result;
+		return $this;
 	}
 	
 	public function lock($mode = null)
 	{
-		if (!is_resource($this->file))
-		{
-			return false;
-		}
+		$this->_can('lock file');
 		
 		if ($this->is_locked)
 		{
@@ -94,68 +101,102 @@ class aeFile
 			$mode = LOCK_EX | LOCK_NB;
 		}
 		
-		return $this->is_locked = (flock($this->file, $mode) === true);
+		if (false === flock($this->file, $mode)) 
+		{
+			throw new aeFileException('Failed to lock file.');
+		}
+		
+		$this->is_locked = true;
+		
+		return $this;
 	}
 	
 	public function unlock()
 	{
+		$this->_can('unlock file');
+		
 		if (!$this->is_locked)
 		{
-			return true;
+			return $this;
+		}
+		
+		if (false === flock($this->file, LOCK_UN))
+		{
+			throw new aeFileException('Failed to unlock file.');
 		}
 		
 		$this->is_locked = false;
 		
-		return flock($this->file, LOCK_UN);
+		return $this;
 	}
 	
 	public function truncate($size = 0)
 	{
-		if (!is_resource($this->file))
+		$this->_can('truncate file');
+		
+		if (false === ftruncate($this->file, $size))
 		{
-			return false;
+			throw new aeFileException('Failed to truncate file.');
 		}
 		
-		return ftruncate($this->file, $size);
+		return $this;
 	}
 	
 	public function write($content)
 	{
-		if (!is_resource($this->file))
+		$this->_can('write to file');
+		
+		if (false === fwrite($this->file, $content))
 		{
-			return false;
+			throw new aeFileException('Failed to write to file.');
 		}
 		
-		return fwrite($this->file, $content) !== false;
+		return $this;
 	}
 	
 	public function read($length)
 	{
-		if (!is_resource($this->file))
-		{
-			return false;
-		}
+		$this->_can('read from file');
 		
-		return fread($this->file, $length);
+		if (false === fread($this->file, $length))
+		{
+			throw new aeFileException('Failed to write to file.');
+		}
+
+		return $this;
 	}
 	
 	public function seek($offset)
 	{
-		if (!is_resource($this->file))
+		$this->_can('seek the position');
+		
+		if (-1 === fseek($this->file, $offset))
 		{
-			return false;
+			throw new aeFileException('Failed to seek the position.');
 		}
 		
-		return fseek($this->file, $offset) === 0;
+		return $this;
 	}
 	
 	public function offset()
 	{
-		if (!is_resource($this->file))
+		$this->_can('return the offset');
+		
+		if (flase === ($offset = ftell($this->file)))
 		{
-			return false;
+			throw new aeFileException('Failed to return the offset.');
 		}
 		
-		return ftell($this->file);
+		return $offset;
+	}
+	
+	protected function _can($intent)
+	{
+		if (!is_resource($this->file))
+		{
+			throw new aeFileException('Cannot ' . $intent . '. File is not opened.');
+		}
 	}
 }
+
+class aeFileException extends Exception {}

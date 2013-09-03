@@ -116,8 +116,8 @@ class aeLog
 				
 				if (is_dir($path) && is_writable($path)) 
 				{
-					$log = ae::file($path . '/log_' . gmdate('Y_m_d'));
-					$log->open('a');
+					$log = ae::file($path . '/log_' . gmdate('Y_m_d'))
+						->open('a');
 				}
 				else
 				{

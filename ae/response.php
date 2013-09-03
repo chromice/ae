@@ -358,12 +358,18 @@ class aeResponseCache
 			mkdir($cache_path, 0777, true);
 		}
 		
-		$htaccess = ae::file($cache_path . '.htaccess');
-		$content = ae::file($cache_path . 'index.' . $ext);
-		
-		if (!$htaccess->open('w') || !$content->open('w')
-		|| !$htaccess->lock(LOCK_EX | LOCK_NB) 
-		|| !$content->lock(LOCK_EX | LOCK_NB))
+		// Try opening and locking the files
+		try 
+		{
+			$htaccess = ae::file($cache_path . '.htaccess')
+				->open('w')
+				->lock();
+				
+			$content = ae::file($cache_path . 'index.' . $ext)
+				->open('w')
+				->lock();
+		} 
+		catch (aeFileException $e) 
 		{
 			return $this;
 		}
@@ -405,15 +411,20 @@ class aeResponseCache
 			$rules.= "</IfModule>";
 		}
 		
-		// Write content to files
-		if (!$htaccess->write($rules) || !$content->write($this->content))
+		// Try writing content to files
+		try
 		{
-			trigger_error('Coult not write cache files.', E_USER_WARNING);
+			$htaccess->write($rules);
+			$content->write($this->content);
+		}
+		catch (aeFileException $e) 
+		{
+			trigger_error('Coult not write cache files.', E_USER_NOTICE);
 			
 			unset($htaccess, $content);
 			self::delete($cache_path);
 		}
-		
+
 		return $this;
 	}
 	
