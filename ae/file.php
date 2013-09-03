@@ -27,6 +27,7 @@ class aeFile
 			->open('w')
 			->write('This is a test')
 			->close();
+	
 */
 {
 	protected $path;
@@ -51,14 +52,16 @@ class aeFile
 		return file_exists($this->path);
 	}
 	
-	public function open($mode)
+	public function open($mode, $use_include_path = false, $context = null)
 	{
 		if (is_resource($this->file))
 		{
 			throw new aeFileException('File is already opened.');
 		}
 		
-		$this->file = fopen($this->path, $mode);
+		$this->file = is_resource($context)
+			? fopen($this->path, $mode, $use_include_path, $context)
+			: fopen($this->path, $mode, $use_include_path);
 		
 		if (false === $ths->file)
 		{
@@ -142,11 +145,13 @@ class aeFile
 		return $this;
 	}
 	
-	public function write($content)
+	public function write($content, $length = null)
 	{
 		$this->_can('write to file');
 		
-		if (false === fwrite($this->file, $content))
+		if (false === (is_null($length)
+			? fwrite($this->file, $content)
+			: fwrite($this->file, $content, $length)))
 		{
 			throw new aeFileException('Failed to write to file.');
 		}
@@ -166,11 +171,11 @@ class aeFile
 		return $this;
 	}
 	
-	public function seek($offset)
+	public function seek($offset, $whence = SEEK_SET)
 	{
 		$this->_can('seek the position');
 		
-		if (-1 === fseek($this->file, $offset))
+		if (-1 === fseek($this->file, $offset, $whence))
 		{
 			throw new aeFileException('Failed to seek the position.');
 		}
@@ -178,9 +183,9 @@ class aeFile
 		return $this;
 	}
 	
-	public function offset()
+	public function tell()
 	{
-		$this->_can('return the offset');
+		$this->_can('tell the position');
 		
 		if (flase === ($offset = ftell($this->file)))
 		{
