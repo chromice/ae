@@ -43,7 +43,7 @@ class aeImage
 		
 		if (false === $info)
 		{
-			throw new Exception('Could not load image data for ' . $this->path);
+			throw new aeImageException('Could not load image data for ' . $this->path);
 		}
 		
 		$this->width = $info[0];
@@ -151,7 +151,7 @@ class aeImage
 		}
 		else
 		{
-			throw new Exception('Failed to crop the image.');
+			throw new aeImageException('Failed to crop the image.');
 		}
 		
 		return $this;
@@ -189,7 +189,7 @@ class aeImage
 		}
 		else
 		{
-			throw new Exception('Failed to scale the image.');
+			throw new aeImageException('Failed to scale the image.');
 		}
 		
 		return $this;
@@ -247,7 +247,7 @@ class aeImage
 		if ((empty($width) || $width < 0)
 		&& (empty($height) || $height < 0))
 		{
-			throw new Exception('At least one dimension must be greater than 0.');
+			throw new aeImageException('At least one dimension must be greater than 0.');
 		}
 		
 		if (empty($width) || $width < 0)
@@ -287,7 +287,7 @@ class aeImage
 		
 		if (false === $this->source) 
 		{
-			throw new Exception('Failed to load the image: ' . $this->path);
+			throw new aeImageException('Failed to load the image: ' . $this->path);
 		}
 	}
 	
@@ -395,7 +395,7 @@ class aeImage
 		
 		if (!$success) 
 		{
-			throw new Exception('Failed to save the image: ' . $path);
+			throw new aeImageException('Failed to save the image: ' . $path);
 		}
 		
 		$this->_unload();
@@ -469,3 +469,5 @@ class aeImage
 		return array($path, $type);
 	}
 }
+
+class aeImageException extends Exception {}
