@@ -23,8 +23,7 @@ class aeResponse
 	`response` options:
 		`compress_output` - whether to gzip dispatched output (FALSE by default);
 		`charset`         - character set; 'utf-8' by default;
-		`error_path`      - a path to a script that should run when an error condition 
-		                    is triggered.
+		`error_path`      - path to a script that is used by `aeResponse::error()`.
 */
 {
 	protected $headers;
@@ -135,6 +134,9 @@ class aeResponse
 	);
 	
 	public function error($code, $path = null)
+	/*
+		Responds with an 4xx or 50x HTTP error code and halts execution.
+	*/
 	{
 		// Reset the buffer
 		$this->buffer->reset();
