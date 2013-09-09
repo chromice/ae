@@ -44,7 +44,7 @@ class aeRequest
 	
 	public function is_routed()
 	/*
-		Returns TRUE if requested was routed.
+		Returns TRUE, if requested was routed.
 	*/
 	{
 		return $this->depth > 0;
@@ -234,6 +234,9 @@ class aeRequest
 
 
 class aeRouter
+/*
+	Request router abstraction.
+*/
 {
 	protected static $depth = 0;
 	protected static $segments = array();
@@ -334,7 +337,7 @@ class aeRouter
 		
 	public function exists()
 	/*
-		Returns TRUE if the path can be routed.
+		Returns TRUE, if route exists.
 	*/
 	{
 		return !is_null($this->path) || !is_null($this->callback);
@@ -342,7 +345,9 @@ class aeRouter
 	
 	public function follow()
 	/*
-		Attempts to follow the path. Throws `aeRequestException` on error.
+		Attempts to route the request.
+		
+		Throws `aeRequestException` on error.
 	*/
 	{
 		if (is_callable($this->callback))
