@@ -12,7 +12,8 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 	- [Importing code](#importing-code)
 	- [Running code](#running-code)
 	- [Loading libraries](#loading-libraries)
-	- [Utilities](#utilities)
+	- [Using utilities](#using-utilities)
+	- [Launching application](#launching-application)
 - [Buffer](#buffer)
 - [Container](#container)
 - [Options](#options)
@@ -209,7 +210,7 @@ function a_factory_function($argument_1, $argument_2, /*...*/)
 Please consult with the source code of the core libraries for real life examples.
 
 
-### Utilities
+### Using utilities
 
 Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can load it as a utility:
 
@@ -228,7 +229,8 @@ If there is an *index.php* script inside the utility directory, it will be inclu
 
 You can use as many utilities as you want, the path resolver would try them all in the order they were loaded.
 
-### Application
+
+### Launching application
 
 You can use shorter paths for components of your application as well. Here's what the *index.php* in the web root may look like:
 
