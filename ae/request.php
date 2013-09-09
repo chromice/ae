@@ -321,10 +321,9 @@ class aeRouter
 		
 		for ($l = count($segments); $l > 0; $l--)
 		{ 
-			$path = array_slice($segments, 0, $l);
-			$path = implode('/', $path);
-			$path = empty($path) ? 'index.php' : $path . '.php';
-			$path = $base . '/' . $path;
+			$path = implode('/', array_slice($segments, 0, $l));
+			$path.= is_dir($base . '/' . $path) ? '/index.php' : '.php';
+			$path = $base . '/' . ltrim($path, '/');
 		
 			if (file_exists($path))
 			{
