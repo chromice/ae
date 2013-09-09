@@ -25,23 +25,46 @@ final class ae
 	// = Code management =
 	// ===================
 	
-	private static $utilities = array();
+	private static $contexts = array();
 	private static $paths = array();
 	private static $stack = array();
 	
+	public static function launch($path)
+	/*
+		Treats specified directory as an application with its own context and
+		attempts to run 'index.php' script in that directory and halts execution.
+		
+		All relative paths will be resolved against the application directory before
+		falling back to root directory.
+	*/
+	{
+		$path = self::resolve($path, false);
+		
+		if (!file_exists($path . '/index.php'))
+		{
+			trigger_error('Cannot launch "' . $path . '/index.php". The file does not exist.', E_USER_ERROR);
+		}
+		
+		self::$contexts[] = $path;
+		
+		require $path . '/index.php';
+		
+		exit;
+	}
+	
 	public static function utilize($utility)
 	/*
-		Registers a utility by name and returns options object for that 
-		utility. (See 'ae/options.php' for more details.)
+		Registers a utility by name and returns its options object. 
+		(See 'ae/options.php' for more details.)
 		
-		All utilities must be located in "/utilities" directory. If there is 
+		All utilities must be located in '/utilities' directory. If there is 
 		an 'index.php' script inside the utility directory, it will 
 		be included.
 	*/
 	{
 		$path = self::resolve('utilities/' . $utility, false);
 		
-		if (in_array($path, self::$utilities))
+		if (in_array($path, self::$contexts))
 		{
 			return;
 		}
@@ -51,7 +74,7 @@ final class ae
 			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
 		}
 		
-		self::$utilities[] = $path;
+		self::$contexts[] = $path;
 		
 		// Initialise utility
 		if (file_exists($path . '/index.php'))
@@ -62,7 +85,7 @@ final class ae
 		return ae::options($utility);
 	}
 	
-	public static function resolve($path, $utilities = true)
+	public static function resolve($path, $search = true)
 	/*
 		Resolves a relative path to a directory or file. By default
 		the parent of 'ae' directory is used for base:
@@ -99,13 +122,13 @@ final class ae
 		$try[] = $path;
 		$try[] = $_path;
 		
-		if (true === $utilities)
+		if (true === $search)
 		{
 			$try[] = dirname(__DIR__) . '/' . $_path;
 			
-			foreach (self::$utilities as $utility)
+			foreach (self::$contexts as $context)
 			{
-				$try[] = $utility . '/' . $_path;
+				$try[] = $context . '/' . $_path;
 			}
 		}
 		

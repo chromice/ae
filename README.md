@@ -228,10 +228,26 @@ If there is an *index.php* script inside the utility directory, it will be inclu
 
 You can use as many utilities as you want, the path resolver would try them all in the order they were loaded.
 
+### Application
+
+You can use shorter paths for components of your application as well. Here's what the *index.php* in the web root may look like:
+
+```php
+include 'ae/core.php';
+
+ae::launch('path/to/application');
+```
+
+æ will register your application directory as a new context against which to resolve relative paths and will attempt to run *index.php* in that directory. This will allow you to use shorter relative paths, as well as override the core classes:
+
+```php
+ae::resolve('path/to/application/pages/hello.php') === ae::resolve('pages/hello.php'); // evaluates to TRUE;
+```
+
 
 ## Buffer
 
-`aeBuffer` is a core utility class for capturing output.
+`aeBuffer` is a core class used for capturing output.
 
 You must create a buffer and assign it to a variable, in order to start capturing output:
 
