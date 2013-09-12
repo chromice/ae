@@ -455,8 +455,8 @@ You can always provide an anonymous function instead of a directory and pass URI
 
 ```php
 ae::request()->route(array(
-	'/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $remaining) {
-		echo 'First handler. Request URI: ' . $any . '/' . $alpha . '/' . $numeric . '/' . $remaining;
+	'/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
+		echo 'First handler. Request URI: ' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
 	},
 	'/' => function($remaining) {
 		echo 'Default handler. Request URI: ' . $remaining;

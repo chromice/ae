@@ -20,11 +20,22 @@ ae::invoke(array('aeRouter', 'request'));
 
 class aeRequest
 /*
-	Request abstraction.
+	Request URI abstraction.
 	
 	`request` options:
 		`base_path` - a base URL path; "/" by default;
 		`proxy_ips`  - an array or comma-separated list of IP addresses.
+	
+	Provided the application is accessed with "/some/arbitrary/request.json":
+	
+		$request = ae::request();
+		
+		echo $request->segment(0); // some
+		echo $request->segment(1); // arbitrary
+		
+		echo $request->type(); // json
+		echo $request->segment(99, 'default'); // default
+	
 */
 {
 	const is_cli = __ae_request_cli__;
@@ -52,7 +63,7 @@ class aeRequest
 	
 	public function base()
 	/*
-		Returns the base URI for the redirected request.
+		Returns the base URI for the routed request.
 	*/
 	{
 		return implode('/', array_slice($this->segments, 0, $this->depth));
@@ -70,7 +81,7 @@ class aeRequest
 	
 	public function route($rules, $target = null)
 	/*
-		Returns an instance of `aeRouter` for base path and current URI.
+		Creates an instance of `aeRouter` for current URI.
 	*/
 	{
 		$uri = implode('/', array_slice($this->segments, $this->depth));
@@ -87,14 +98,20 @@ class aeRequest
 	// = URL generation and redirects =
 	// ================================
 	
-	public static function url($url = null)
+	public static function url($uri = null)
+	/*
+		Returns a complete URI path, prefixed with base path.
+	*/
 	{
-		return ae::options('request')->get('base_path', '/') . ltrim((is_null($url) ? aeRequest::uri() : $url), '/');
+		return ae::options('request')->get('base_path', '/') . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
 	}
 	
-	public static function redirect($url, $http_response_code = 302)
+	public static function redirect($uri, $http_response_code = 302)
+	/*
+		Redirects to a specific URI.
+	*/
 	{
-		header("Location: " . self::url($url), true, $http_response_code);
+		header("Location: " . self::url($uri), true, $http_response_code);
 		exit;
 	}
 	
@@ -235,7 +252,18 @@ class aeRequest
 
 class aeRouter
 /*
-	Request router abstraction.
+	Provides URI routing capabilities to `aeRequest`.
+	
+	You can route a request based on its URI to either a closure or
+	a directory:
+	
+		ae::request()->route(array(
+			'/special/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
+				echo 'Special request URI: /special/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
+			},
+			'/' => 'webroot/'
+		))->follow();
+	
 */
 {
 	protected static $depth = 0;
@@ -243,7 +271,7 @@ class aeRouter
 	
 	public static function request($segments = null)
 	/*
-		Returns an instance of `aeRequest` object.
+		Returns an instance of `aeRequest` object for given segments.
 	*/
 	{
 		if (aeRequest::is_cli)
@@ -345,8 +373,6 @@ class aeRouter
 	public function follow()
 	/*
 		Attempts to route the request.
-		
-		Throws `aeRequestException` on error.
 	*/
 	{
 		if (is_callable($this->callback))
