@@ -24,9 +24,11 @@ class aeImage
 /*
 	An image manipulation library.
 	
-	Crop any image to a 100x100 square thumbail and save it as image_thumb.png:
+	The following example would crop the top part of the specified image 
+	to a 100x100 square thumbail and save it as "image_thumb.png":
 	
 		ae::image('path/to/image.png')
+			->align(aeImage::center, aeImage::top)
 			->cover(100, 100)
 			->suffix('_thumb')
 			->save(); 
@@ -67,16 +69,25 @@ class aeImage
 	protected $mimetype;
 	
 	public function width()
+	/*
+		Returns the width of the image.
+	*/
 	{
 		return $this->width;
 	}
 	
 	public function height()
+	/*
+		Returns the height of the image.
+	*/
 	{
 		return $this->height;
 	}
 	
 	public function type()
+	/*
+		Returns the type of the image as a string: "gif", "png" or "jpeg".
+	*/
 	{
 		switch ($this->type)
 		{
@@ -87,6 +98,9 @@ class aeImage
 	}
 	
 	public function mimetype()
+	/*
+		Returns the mime type of the image.
+	*/
 	{
 		return $this->mimetype;
 	}
@@ -111,6 +125,13 @@ class aeImage
 	protected $source_height;
 	
 	public function align($horizontal, $vertial)
+	/*
+		Sets the origin point along horizontal and vertical axis.
+		
+		0.0 - left or top;
+		0.5 - center;
+		1.0 - right or bottom.
+	*/
 	{
 		$this->align_x = min(1, max(0, (float)$horizontal));
 		$this->align_y = min(1, max(0, (float)$vertial));
@@ -119,6 +140,9 @@ class aeImage
 	}
 	
 	public function crop($width, $height)
+	/*
+		Crops the image by a rectangle of specified dimensions.
+	*/
 	{
 		$this->_load();
 		list($width, $height) = $this->_dimensions($width, $height);
@@ -158,6 +182,9 @@ class aeImage
 	}
 	
 	public function scale($width, $height)
+	/*
+		Scales the image to specified dimensions.
+	*/
 	{
 		$this->_load();
 		list($width, $height) = $this->_dimensions($width, $height);
@@ -196,6 +223,9 @@ class aeImage
 	}
 	
 	public function cover($width, $height)
+	/*
+		Scales and crops the image so that it covers the specified dimensions.
+	*/
 	{
 		$this->_load();
 		
@@ -215,6 +245,9 @@ class aeImage
 	}
 	
 	public function fit($width, $height)
+	/*
+		Scales the image so that it fits the specified dimensions.
+	*/
 	{
 		$this->_load();
 		
@@ -233,11 +266,22 @@ class aeImage
 		return $this;
 	}
 	
-	public function apply($filter, $arg_1 = null, $arg_2 = null, $arg_3 = null, $arg_4 = null)
+	public function apply()
+	/*
+		Applies a filter to the image.
+		
+		Uses PHP's `imagefilter()` function.
+	*/
 	{
 		$this->_load();
 		
-		imagefilter($this->source, $filter, $arg_1, $arg_2, $arg_3, $arg_4);
+		$arguments = func_get_args();
+		array_unshift($arguments, $this->source);
+		
+		if (false === call_user_func_array('imagefilter', $arguments))
+		{
+			throw new aeImageException('Could not apply filter.');
+		}
 		
 		return $this;
 	}
@@ -311,6 +355,9 @@ class aeImage
 	protected $prefix;
 	
 	public function quality($quality)
+	/*
+		Sets quality level of JPEG.
+	*/
 	{
 		$this->quality = (int) $quality;
 		
@@ -318,6 +365,9 @@ class aeImage
 	}
 	
 	public function suffix($suffix)
+	/*
+		Sets the suffix of the new image name.
+	*/
 	{
 		$this->suffix = $suffix;
 		
@@ -325,6 +375,9 @@ class aeImage
 	}
 	
 	public function prefix($prefix)
+	/*
+		Sets the prefix of the new image name.
+	*/
 	{
 		$this->prefix = $prefix;
 		
@@ -332,6 +385,12 @@ class aeImage
 	}
 	
 	public function cache($minutes, $uri = null)
+	/*
+		Caches the image for specified number of minutes.
+		
+		If URI is specified, the image will be saved to server-side
+		response cache.
+	*/
 	{
 		$this->_load();
 		list($path, $type) = $this->_path_type($uri);
@@ -376,6 +435,13 @@ class aeImage
 	}
 	
 	public function save($path = null)
+	/*
+		Saves the image.
+		
+		If no path is specified, the existing file will be overwritten, unless
+		`prefix()` or `suffix()` is set. If only file name is specified, it will
+		be saved into the same directory.
+	*/
 	{
 		$this->_load();
 		list($path, $type) = $this->_path_type($path);
@@ -408,6 +474,9 @@ class aeImage
 	}
 
 	public function dispatch($name = null)
+	/*
+		Dispatches the image as an HTTP response.
+	*/
 	{
 		$this->_load();
 		list($path, $type) = $this->_path_type($name);
