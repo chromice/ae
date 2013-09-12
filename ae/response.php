@@ -20,10 +20,25 @@ ae::invoke('aeResponse');
 
 class aeResponse
 /*
+	HTTP response abstraction.
+
 	`response` options:
 		`compress_output` - whether to gzip dispatched output (FALSE by default);
 		`charset`         - character set; 'utf-8' by default;
 		`error_path`      - path to a script that is used by `aeResponse::error()`.
+		
+	
+	The following code creates an HTML response, that is cached for 5 minutes:
+	
+		$response = ae::response('html')
+			->header('X-Header-Example', 'Some value');
+		
+		echo '<h1>Hello world</h1>';
+		
+		$response
+			->cache(5, '/hello-world.html')
+			->dispatch();
+
 */
 {
 	protected $headers;
@@ -282,8 +297,55 @@ class aeResponse
 
 class aeResponseCache
 /*
+	A server-side response caching abstraction.
+	
 	`cache` options:
 		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
+	
+	This class requires some fiddling with .htaccess and mod_rewrite. You need 
+	to make sure that all request have extensions and a routed to cache directory 
+	first.
+	
+	Example ".htaccess" for webroot directory:
+	
+		<IfModule mod_rewrite.c>
+			RewriteEngine on
+			RewriteBase /
+		
+			# Append ".html", if there is no extension...
+			RewriteCond %{REQUEST_FILENAME} !-f
+			RewriteCond %{REQUEST_FILENAME} !-d
+			RewriteCond %{REQUEST_URI} !\.\w+$
+			RewriteRule ^(.*?)$ /$1.html [L]
+		
+			# ...and redirect to cache directory ("/cache")
+			RewriteCond %{REQUEST_FILENAME} !-f
+			RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+		</IfModule>
+	
+	Example ".htaccess" for cache directory:
+	
+		<IfModule mod_rewrite.c>
+			RewriteEngine on
+		
+			# If no matching file found, redirect back to index.php
+			RewriteCond %{REQUEST_FILENAME} !-f
+			RewriteRule ^(.*) /index.php?/$1 [L,QSA]
+		</IfModule>
+
+	With this in place, you can cache any HTTP response:
+
+		$cache = new aeResponseCache();
+		
+		$cache
+			->headers(array(
+				'Content-Type' => 'text/html',
+				'X-Header-Example' => 'Some value'
+			))
+			->content('<h1>Hello world</h1>')
+			->duration(5)
+			->save('/hello-world.html');
+
 */
 {
 	const day = 1440;
