@@ -276,9 +276,9 @@ class aeRouter
 		foreach ($rules as $rule => $route) 
 		{
 			$rule = strtr(preg_quote(trim($rule, '/'), '/'), array(
-				'\:alpha' => '([a-zA-Z]+)',
-				'\:numeric' => '([0-9]+)',
-				'\:any' => '([^\/]+)'
+				'\{alpha\}' => '([a-zA-Z]+)',
+				'\{numeric\}' => '([0-9]+)',
+				'\{any\}' => '([^\/]+)'
 			));
 			
 			if (preg_match('/^' . $rule . '\\/?(.*)$/', $uri, $matches) === 1)

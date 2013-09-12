@@ -447,7 +447,7 @@ You can route different types of requests to different directories:
 ```php
 $route = ae::request()->route(array(
 	'/admin' => 'cms/', // all requests starting with /admin 
-	'/' => 'webroot/' // all other requests
+	'/' => 'webroot/' // other requests
 )->follow();
 ```
 
@@ -455,7 +455,7 @@ You can always provide an anonymous function instead of a directory and pass URI
 
 ```php
 ae::request()->route(array(
-	'/example/:any/:alpha/:numeric' => function ($any, $alpha, $numeric, $remaining) {
+	'/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $remaining) {
 		echo 'First handler. Request URI: ' . $any . '/' . $alpha . '/' . $numeric . '/' . $remaining;
 	},
 	'/' => function($remaining) {
