@@ -61,7 +61,7 @@ Here is a very a simple æ application:
 ?>
 ```
 
-You should put this code into a file named *index.php* in the root web directory. */ae* directory containing the core and all libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
+You should put this code into *index.php* in the root web directory. */ae* directory containing the core and all libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -172,7 +172,7 @@ ae::import('ae/options.php');
 $lib_options = new aeOptions('my_library_namespace');
 ```
 
-All libraries located in *ae/* directory (in either root directory or a utility), can be loaded using a shorthand syntax, e.g.:
+All libraries located in *ae/* directory (either root or utility directory), can be loaded using a shorthand syntax, e.g.:
 
 ```php
 $lib_options = ae::options('my_library_namespace');
@@ -180,7 +180,7 @@ $lib_options = ae::options('my_library_namespace');
 
 In this case the library name is determined by the name of the method.
 
-æ does not "automagically" guess what class to use, when you are using `ae::load()` method. Instead, you must use `ae::invoke()` method at the beginning of the loaded file to tell æ how and when you want to.
+æ does not "automagically" guess what class to use, when you are using `ae::load()` method. Instead, you must use `ae::invoke()` method at the beginning of the loaded file to tell æ how you want to invoke a new instance.
 
 In order to create a new instance of `LibraryClassName`, every time the library is loaded, you should pass the class name as the first argument:
 
@@ -396,6 +396,15 @@ $request = ae::request();
 echo $request->type(); // json
 ```
 
+In order to get the IP address of the client, you should use `aeRequest::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
+
+```php
+ae::options('request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+
+$client_ip = ae::request()->ip_address();
+```
+
+
 ### Request routing
 
 Requests can be re-routed to a specific directory:
@@ -414,14 +423,6 @@ if (!$route->exists())
 }
 
 $route->follow();
-```
-
-In order to get the IP address of the client, you should use `aeRequest::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
-
-```php
-ae::options('request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
-
-$client_ip = ae::request()->ip_address();
 ```
 
 Now, if you have a matching request handler in the */handlers* directory (article.php in this case), æ will run it:
@@ -456,10 +457,10 @@ You can always provide an anonymous function instead of a directory and pass URI
 ```php
 ae::request()->route(array(
 	'/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
-		echo 'First handler. Request URI: ' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
+		echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
 	},
-	'/' => function($remaining) {
-		echo 'Default handler. Request URI: ' . $remaining;
+	'/' => function($uri) {
+		echo 'Default handler. Request URI: /' . $uri;
 	}
 ))->follow();
 ```
@@ -495,6 +496,7 @@ You can specify the type when you create a new response object. It should be eit
 When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded, when object is destroyed. You can access the the last active response object using `aeResponse::current()` method.
 
 You can set HTTP headers at any point via `aeResponse::header()` method. 
+
 
 ### Response caching
 
@@ -639,7 +641,7 @@ $options = array(
 );
 
 $select = $this->single('select')
-	->valid_value('Wrong value selected', $options);
+	->valid_value('Wrong value selected.', $options);
 ```
 
 Now, this declaration is enough to validate the form, has it been submitted:
