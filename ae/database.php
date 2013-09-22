@@ -839,7 +839,7 @@ class aeDatabaseResult
 			
 			$related = new $class($values, true);
 			
-			$object->_attach($table['alias'], $related);
+			$object->attach($table['alias'], $related);
 		}
 		
 		return $object;
@@ -1054,7 +1054,7 @@ abstract class aeDatabaseTable
 		$this->is_dirty = !$_raw;
 	}
 	
-	public function _attach($related, $object)
+	public function attach($property, $object)
 	/*
 		Attaches an instance of (usually) related entity.
 	*/
@@ -1064,7 +1064,7 @@ abstract class aeDatabaseTable
 			trigger_error('Cannot attach an instance of "' . get_class($object) . '" class.', E_USER_ERROR);
 		}
 		
-		$this->related[$related] = $object;
+		$this->related[$property] = $object;
 		
 		return $this;
 	}

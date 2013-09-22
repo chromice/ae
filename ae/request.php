@@ -63,7 +63,7 @@ class aeRequest
 	
 	public function base()
 	/*
-		Returns the base URI for the routed request.
+		Returns the base part of the routed URI.
 	*/
 	{
 		return implode('/', array_slice($this->segments, 0, $this->depth));
@@ -81,7 +81,7 @@ class aeRequest
 	
 	public function route($rules, $target = null)
 	/*
-		Creates an instance of `aeRouter` for current URI.
+		Returns an instance of `aeRouter` for current URI.
 	*/
 	{
 		$uri = implode('/', array_slice($this->segments, $this->depth));

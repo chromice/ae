@@ -170,7 +170,7 @@ final class ae
 					return $instance;
 				}
 				
-				return $instance = new SomeClass($param, $param_2;
+				return $instance = new SomeClass($param, $param_2);
 			});
 	*/
 	{
