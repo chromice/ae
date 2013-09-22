@@ -39,6 +39,10 @@ class aeDatabase
 		$db->query('SELECT 1')->make();
 */
 {
+	// Value types
+	const values = 1;
+	const statements = 2;
+	
 	// ==============
 	// = Connection =
 	// ==============
@@ -358,7 +362,7 @@ class aeDatabase
 		
 		if (!empty($this->variables))
 		{
-			$placeholders = array_merge($placeholders, array_map(array($this, 'value'), $this->variables));
+			$placeholders = array_merge($placeholders, $this->variables);
 		}
 		
 		if (!empty($this->values))
@@ -370,7 +374,7 @@ class aeDatabase
 			foreach ($this->values as $key => $value)
 			{
 				$keys[] = $key = $this->identifier($key);
-				$values[] = $value = $this->value($value);
+				$values[] = $value;
 				$keys_values[] = $key . ' = ' . $value;
 			}
 			
@@ -450,18 +454,23 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function variables($variables)
+	public function variables($variables, $type = aeDatabase::values)
 	/*
 		Accepts an associative array of placeholder/variable pairs
 		used in the current query.
 	*/
 	{
+		if ($type !== aeDatabase::statements)
+		{
+			$variables = array_map(array($this, 'value'), $variables);
+		}
+		
 		$this->variables = array_merge($this->variables, $variables);
 		
 		return $this;
 	}
 	
-	public function values($values)
+	public function values($values, $type = aeDatabase::values)
 	/*
 		Accepts an associative array of key/value pairs
 		used to replace the following placeholders:
@@ -470,9 +479,14 @@ class aeDatabase
 		- {values} with "value 1", "value 2", ...
 		- {keys_values} with `key_1` = "value 1", `key_2` = "value 2", ...
 		
-		Very useful for writing INSERT and UPDATE queries.
+		Useful for writing INSERT and UPDATE queries.
 	*/
 	{
+		if ($type !== aeDatabase::statements)
+		{
+			$values = array_map(array($this, 'value'), $values);
+		}
+
 		$this->values = array_merge($this->values, $values);
 		
 		return $this;
@@ -1073,7 +1087,7 @@ abstract class aeDatabaseTable
 	// = Setters and getters =
 	// =======================
 	
-	public function values($values = null, $raw = false)
+	public function values($values = null, $_raw = false)
 	/*
 		Sets supplied $values or returns current values.
 		
@@ -1082,7 +1096,7 @@ abstract class aeDatabaseTable
 	{
 		if (is_array($values))
 		{
-			if ($raw === true)
+			if ($_raw === true)
 			{
 				$values = static::unserialize($values);
 			}

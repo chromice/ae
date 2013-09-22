@@ -45,11 +45,11 @@ ae::database()
 		'table' => 'authors'
 	))
 	->values(array(
-		'name' => 'Richard K. Morgan'
-	))
+		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
+	), aeDatabase::statements) // don' escape
 	->variables(array(
 		'author_id' => $morgan_id
-	))
+	), aeDatabase::values) // escape
 	->make();
 
 // Commit previous insert statement.

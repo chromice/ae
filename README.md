@@ -897,7 +897,7 @@ ae::database()
 $morgan_id = ae::database()->insert_id();
 ```
 
-In this example we are using `{keys}` and `{values}` placeholders and specify keys and values via `aeDatabase::values()` method. Now, I made a typo in the authors name, so let's updated it:
+In this example we are using `{keys}` and `{values}` placeholders and specify keys and values via `aeDatabase::values()` method. Now, I made a typo in the authors name, so let's fix it:
 
 ```php
 ae::database()
@@ -906,15 +906,15 @@ ae::database()
 		'table' => 'authors'
 	))
 	->values(array(
-		'name' => 'Richard K. Morgan'
-	))
+		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
+	), aeDatabase::statements) // don' escape
 	->variables(array(
 		'author_id' => $morgan_id
-	))
+	), aeDatabase::values) // escape
 	->make();
 ```
 
-In this example we are using `{keys=values}` placeholder and specifying its value via `aeDatabase::values()` method, while `{author_id}` placeholder in conjunction with `aeDatabase::variables()` will escape the value of `$morgan_id`. 
+In this example we are using `{keys=values}` placeholder and specifying its value via `aeDatabase::values()` method, while `aeDatabase::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
 
 Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 
