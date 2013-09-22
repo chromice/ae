@@ -50,10 +50,10 @@ ae::database()
 	))
 	->values(array(
 		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), aeDatabase::statements) // don' escape
+	), aeDatabase::statement) // don' escape
 	->variables(array(
 		'author_id' => $morgan_id
-	), aeDatabase::values) // escape
+	), aeDatabase::value) // escape
 	->make();
 
 // Commit previous insert statement.

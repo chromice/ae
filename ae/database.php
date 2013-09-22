@@ -43,8 +43,8 @@ class aeDatabase
 */
 {
 	// Value types
-	const values = 1;
-	const statements = 2;
+	const value = 1;
+	const statement = 2;
 	
 	// ==============
 	// = Connection =
@@ -457,13 +457,13 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function variables($variables, $type = aeDatabase::values)
+	public function variables($variables, $type = aeDatabase::value)
 	/*
 		Accepts an associative array of placeholder/variable pairs
 		used in the current query.
 	*/
 	{
-		if ($type !== aeDatabase::statements)
+		if ($type !== aeDatabase::statement)
 		{
 			$variables = array_map(array($this, 'value'), $variables);
 		}
@@ -473,7 +473,7 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function values($values, $type = aeDatabase::values)
+	public function values($values, $type = aeDatabase::value)
 	/*
 		Accepts an associative array of key/value pairs
 		used to replace the following placeholders:
@@ -485,7 +485,7 @@ class aeDatabase
 		Useful for writing INSERT and UPDATE queries.
 	*/
 	{
-		if ($type !== aeDatabase::statements)
+		if ($type !== aeDatabase::statement)
 		{
 			$values = array_map(array($this, 'value'), $values);
 		}
