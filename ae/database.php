@@ -926,7 +926,7 @@ abstract class aeDatabaseTable
 
 	protected static function database()
 	/*
-		Returns an instance of database connection.
+		Returns an instance of default database connection.
 		
 		Override this method, if you want your class to use a different connection.
 	*/
@@ -945,7 +945,7 @@ abstract class aeDatabaseTable
 	/*
 		Returns the actual name of the table.
 		
-		The default implementation derives the from the class name, e.g.:
+		The default implementation derives it from the class name, e.g.:
 		Customers -> customers, CustomerOrders -> customer_orders, etc.
 	*/
 	{
@@ -1039,13 +1039,12 @@ abstract class aeDatabaseTable
 	// ===================
 	
 	private $ids = array();
+	private $data = array();
 	private $values = array();
 	private $transient = array();
 	private $related = array();
 	
-	private $is_dirty = false;
-	
-	public function __construct($values = null, $_raw = false)
+	public function __construct($values = null, $_raw_data = false)
 	/*
 		NB! Must not be used directly. 
 		
@@ -1062,10 +1061,8 @@ abstract class aeDatabaseTable
 		
 		if (is_array($values))
 		{
-			$this->values($values, $_raw);
+			$this->values($values, $_raw_data);
 		}
-		
-		$this->is_dirty = !$_raw;
 	}
 	
 	public function attach($property, $object)
@@ -1087,39 +1084,33 @@ abstract class aeDatabaseTable
 	// = Setters and getters =
 	// =======================
 	
-	public function values($values = null, $_raw = false)
+	public function values($values = null, $_raw_data = false)
 	/*
 		Sets supplied $values or returns current values.
 		
-		If second argument is TRUE, $values are unserialized before being set.
+		If second argument is TRUE, $values are unserialized and set as data before being set.
 	*/
 	{
 		if (is_array($values))
 		{
-			if ($_raw === true)
+			if ($_raw_data === true)
 			{
-				$values = static::unserialize($values);
+				$this->data = static::unserialize($values);
 			}
-			
-			foreach ($values as $key => $value)
+			else foreach ($values as $key => $value)
 			{
 				$this->$key = $value;
 			}
 		}
 		else if (is_null($values))
 		{
-			return array_merge($this->transient, $this->values, $this->ids);
+			return array_merge($this->transient, $this->data, $this->values, $this->ids);
 		}
 	}
 	
 	public function __set($name, $value)
 	{
-		$ref =& $this->_value_reference($name);
-		
-		if (!isset($ref[$name]) || $ref[$name] !== $value)
-		{
-			$this->is_dirty = true;
-		}
+		$ref =& $this->_value_reference($name, true);
 		
 		$ref[$name] = $value;
 	}
@@ -1131,7 +1122,7 @@ abstract class aeDatabaseTable
 			return $this->related[$name];
 		}
 		
-		$ref =& $this->_value_reference($name);
+		$ref =& $this->_value_reference($name, false);
 		
 		if (isset($ref[$name]))
 		{
@@ -1141,19 +1132,19 @@ abstract class aeDatabaseTable
 	
 	public function __isset($name)
 	{
-		$ref =& $this->_value_reference($name);
+		$ref =& $this->_value_reference($name, false);
 		
 		return isset($ref[$name]);
 	}
 	
 	public function __unset($name)
 	{
-		$ref =& $this->_value_reference($name);
+		$ref =& $this->_value_reference($name, true);
 		
 		unset($ref[$name]);
 	}
 	
-	protected function &_value_reference($name)
+	protected function &_value_reference($name, $mutate)
 	{
 		if (in_array($name, static::accessor()))
 		{
@@ -1161,7 +1152,14 @@ abstract class aeDatabaseTable
 		}
 		else if (in_array($name, static::columns()))
 		{
-			return $this->values;
+			if ($mutate === true || isset($this->values[$name]))
+			{
+				return $this->values;
+			}
+			else
+			{
+				return $this->data;
+			}
 		}
 		else
 		{
@@ -1182,9 +1180,7 @@ abstract class aeDatabaseTable
 	{
 		$class = get_called_class();
 		
-		$entity = new $class($values);
-		
-		return $entity;
+		return new $class($values);
 	}
 	
 	public static function find($ids)
@@ -1221,7 +1217,7 @@ abstract class aeDatabaseTable
 		if (count($accessor) !== count($this->ids))
 		{
 			throw new aeDatabaseException(get_class($this) 
-				. '::id() failed, because accessor value' 
+				. '::ids() failed, because accessor value' 
 				. (count($accessor) > 1 ? 's are' : ' is') 
 				. ' not defined.');
 		}
@@ -1249,12 +1245,8 @@ abstract class aeDatabaseTable
 				. 'to nothing.');
 		}
 		
-		// Reset all current values
-		$this->values = array();
-		$this->transient = array();
-		
+		$this->reset();
 		$this->values($values, true);
-		$this->is_dirty = false;
 		
 		return $this;
 	}
@@ -1264,7 +1256,7 @@ abstract class aeDatabaseTable
 		Saves or updates the record in database.
 	*/
 	{
-		if (!$this->is_dirty || empty($this->values))
+		if (empty($this->values))
 		{
 			return $this;
 		}
@@ -1289,8 +1281,23 @@ abstract class aeDatabaseTable
 			);
 		}
 		
-		$this->is_dirty = false;
+		$this->data = array_merge($this->data, $this->values);
+		$this->values = array();
 
+		return $this;
+	}
+	
+	public function reset($accessor = false)
+	{
+		if ($accessor === true)
+		{
+			$this->ids = array();
+		}
+		
+		$this->values = array();
+		$this->transient = array();
+		$this->related = array();
+	
 		return $this;
 	}
 	
@@ -1301,11 +1308,7 @@ abstract class aeDatabaseTable
 	{
 		static::database()->delete(static::name(), $this->ids());
 		
-		$this->ids = array();
-		$this->values = array();
-		$this->transient = array();
-		
-		return $this;
+		return $this->reset(true);
 	}
 }
 
