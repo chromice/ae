@@ -156,11 +156,11 @@ class aeForm
 		if (is_null($values))
 		{
 			return array_intersect_key($this->values, $this->fields);
-		} 
+		}
 		
-		if (is_array($values))
+		if (is_array($values)) foreach ($values as $field => $value)
 		{
-			$this->values = array_merge($this->values, $values);
+			$this->values[$field] = $value;
 		}
 	}
 
@@ -613,7 +613,11 @@ class aeFormField extends aeValidator
 	
 	protected function _attributes($attributes)
 	{
-		$attributes['name'] = $this->name();
+		if (!isset($attributes['name']) 
+		|| $attributes['name'] !== false)
+		{
+			$attributes['name'] = $this->name();
+		}
 		
 		if (!isset($attributes['id']))
 		{
