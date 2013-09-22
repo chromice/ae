@@ -291,7 +291,7 @@ class aeImage
 		if ((empty($width) || $width < 0)
 		&& (empty($height) || $height < 0))
 		{
-			throw new aeImageException('At least one dimension must be greater than 0.');
+			trigger_error('At least one dimension must be greater than 0.', E_USER_ERROR);
 		}
 		
 		if (empty($width) || $width < 0)
