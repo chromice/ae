@@ -22,6 +22,9 @@ class aeDatabase
 /*
 	A MySQL database abstraction layer.
 	
+	`database` options:
+		`log`       - whether to log SQL queries: FALSE by default.
+	
 	`database.[connection name]` options:
 		`class`     - connection class: 'aeDatabase' by default;
 		`host`      - connection host;
@@ -534,9 +537,23 @@ class aeDatabase
 	
 	protected function _result($result = 'aeDatabaseResult', $class = null, $related = null)
 	{
+		static $query_counter = 0;
+		
 		$query = $this->_query();
 		
+		if (ae::options('database')->get('log', false) === true)
+		{
+			ae::utilize('inspector');
+			
+			$probe = ae::probe('Query #' . ++$query_counter)->mark();
+		}
+		
 		$return = $this->db->query($query, MYSQLI_STORE_RESULT);
+		
+		if (!empty($probe))
+		{
+			$probe->mark($query);
+		}
 		
 		if ($return === false)
 		{

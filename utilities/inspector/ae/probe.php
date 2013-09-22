@@ -33,15 +33,9 @@ class aeProbe
 		}
 		
 		$this->name = $name;
-		$this->report('was created');
 	}
 	
-	public function __destruct()
-	{
-		$this->report('was destroyed');
-	}
-	
-	public function report($description)
+	public function mark($description = null)
 	/*
 		Triggers a notice with performance mertrics in both absolute and relative terms.
 	*/
@@ -65,13 +59,18 @@ class aeProbe
 		$last_t = $t;
 		$last_m = $m;
 		
-		$notice = sprintf('%s %s. Timestamp: %.0fms (+%.3fms). Footprint: %s (%s).', 
-			$this->name, $description, 
-			$ts * 1000, $dt * 1000, 
-			self::_format($ms, 0), 
-			($dm < 0 ? '-' : '+') . self::_format(abs($dm), 0));
+		if (!is_null($description))
+		{
+			$notice = sprintf('%s: %s. Timestamp: %.0fms (+%.3fms). Footprint: %s (%s).', 
+				$this->name, $description, 
+				$ts * 1000, $dt * 1000, 
+				self::_format($ms, 0), 
+				($dm < 0 ? '-' : '+') . self::_format(abs($dm), 0));
+			
+			ae::log($notice);
+		}
 		
-		ae::log($notice);
+		return $this;
 	}
 	
 	private static function _format($bytes, $precision = 2)

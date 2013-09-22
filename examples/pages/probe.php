@@ -3,34 +3,36 @@
 ae::utilize('inspector');
 
 // class ProbeTest {
-// 	
-// 
-function probe_test()
-{
+	
+
+// function probe_test()
+// {
 	$probe = ae::probe('Test probe');
 
-	$probe->report('did nothing');
+	$probe->mark('started');
 
 	// Declaring a variable would consume some memory
 	$string = "Hello";
 	
 	echo $string;
 
-	$probe->report('was declared and echoed a string');
+	$probe->mark('declared a variable and echoed a string');
 
 	$string2 = " world";
 
 	usleep(3000);
 
-	$probe->report('slept for 3.0ms and declared another variable');
+	$probe->mark('slept for 3.0ms and declared another variable');
 
 	echo $string2;
+	
+	$probe->mark('echoed another string');
 
 	unset($probe);
-}
+// }
 // }
 
-probe_test();
+// probe_test();
 
 // $p = new ProbeTest();
 // $p->probe_test();

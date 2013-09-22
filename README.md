@@ -1254,7 +1254,7 @@ If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquia
 
 æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. The log library will inject the inspector button into the page, if there are any messages logged. Pressing that button will open a new window, in which you can browse all items, view dumps, backtraces, etc.:
 
-![](utilities/inspector/screenshot.png)
+![](utilities/inspector/screenshot_log.png)
 
 ### Probe
 
@@ -1265,34 +1265,26 @@ Probe library allows you to profile your code and see how much time and memory e
 ae::utilize('inspector');
 
 // Create a probe
-$probe = ae::probe('foo');
+$probe = ae::probe('Test probe')->mark('begin probing');
 
-usleep(3000);
+usleep(10000);
 
-$probe->report('slept for 3ms');
+$probe->mark('slept for ~10ms');
 
 $a = array(); $j = 0; while($j < 10000) $a[] = ++$j;
 
-$probe->report('filled memory with some garbage');
+$probe->mark('filled memory with some garbage');
 
 unset($a);
 
-$probe->report('cleaned the garbage');
+$probe->mark('cleaned the garbage');
 ```
 
 If you run this script, the probe will log the following messages:
 
-```markdown
-foo was created. Timestamp: 0ms (+0.000ms). Footprint: 683kb (+0b).
+![](utilities/inspector/screenshot_probe.png)
 
-foo slept for 3ms. Timestamp: 3ms (+3.379ms). Footprint: 684kb (+572b).
-
-foo filled memory with some garbage. Timestamp: 10ms (+6.561ms). Footprint: 1mb (+768kb).
-
-foo cleaned the garbage. Timestamp: 11ms (+1.203ms). Footprint: 685kb (-767kb).
-
-foo was destroyed. Timestamp: 11ms (+0.095ms). Footprint: 686kb (+696b).
-```
+**NB!** Each logged message itself consumes a few hundred bytes of memory.
 
 ## License
 

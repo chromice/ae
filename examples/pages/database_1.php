@@ -1,7 +1,11 @@
 <?php
 
+// Turn on query logging
+ae::options('database')
+	->set('log', true);
+
 // Set default database paramters
-$options = ae::options('database.default')
+ae::options('database.default')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
@@ -24,6 +28,9 @@ $author = Authors::create(array(
 	'nationality' => 'American',
 	'non_existant' => 'Property'
 ))->save();
+
+$author->nationality = 'United States of America';
+$author->save();
 
 $book = Novels::create(array(
 	'author_id' => $author->id,
