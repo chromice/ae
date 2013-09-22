@@ -858,6 +858,15 @@ try {
 
 As you can see, whenever something goes wrong on the database side, the library throws `aeDatabaseException`, which you can catch and handle gracefully.
 
+If you want to know what queries are performed and how much memory and time they take, you can turn query logging on:
+
+```php
+ae::options('database')
+	->set('log', true);
+```
+
+See [Inspector](#inspector) section for more details.
+
 ### Making queries 
 
 Let's create the "authors" table:
@@ -1256,6 +1265,7 @@ If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquia
 
 ![](utilities/inspector/screenshot_log.png)
 
+
 ### Probe
 
 Probe library allows you to profile your code and see how much time and memory each part consumes.
@@ -1285,6 +1295,7 @@ If you run this script, the probe will log the following messages:
 ![](utilities/inspector/screenshot_probe.png)
 
 **NB!** Each logged message itself consumes a few hundred bytes of memory.
+
 
 ## License
 
