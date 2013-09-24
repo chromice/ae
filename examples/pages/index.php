@@ -29,7 +29,8 @@
 		'Log (critical error)' => 'log/critical',
 		'Options' => 'options',
 		'Probes' => 'probe',
-		'Request' => 'request/view/some/uri'
+		'Request' => 'request/view/some/uri',
+		'Session' => 'session'
 	) as $name => $uri): $b = new aeBuffer(); 
 ?> 
 	<li><a href="{uri}">{name}</a></li>
