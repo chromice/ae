@@ -98,6 +98,9 @@ class aeRequest
 	// = URL generation and redirects =
 	// ================================
 	
+	const permanently = 301;
+	const temporarily = 302;
+	
 	public static function url($uri = null)
 	/*
 		Returns a complete URI path, prefixed with base path.
@@ -106,7 +109,7 @@ class aeRequest
 		return ae::options('request')->get('base_path', '/') . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
 	}
 	
-	public static function redirect($uri, $http_response_code = 302)
+	public static function redirect($uri, $http_response_code = aeRequest::temporarily)
 	/*
 		Redirects to a specific URI.
 	*/
