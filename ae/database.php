@@ -622,9 +622,9 @@ class aeDatabase
 		they are primary keys (TRUE or FALSE) as values.
 	*/
 	{
-		$result = $this->query("SHOW COLUMNS FROM {table}")
+		$result = $this->query("SHOW COLUMNS FROM {table:primary}")
 			->names(array(
-				'table' => $table
+				'table:primary' => $table
 			))
 			->result();
 		
@@ -687,9 +687,9 @@ class aeDatabase
 			$columns = implode(', ', $columns);
 		}
 		
-		return $this->query("SELECT $columns FROM {table} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
+		return $this->query("SELECT $columns FROM {table:primary} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
 			->names(array(
-				'table' => $table
+				'table:primary' => $table
 			));
 	}
 	
@@ -698,9 +698,9 @@ class aeDatabase
 		Insert a new row and returns its autoincremented primary key or NULL.
 	*/
 	{
-		return $this->query("INSERT INTO {table} ({keys}) VALUES ({values})")
+		return $this->query("INSERT INTO {table:primary} ({keys}) VALUES ({values})")
 			->names(array(
-				'table' => $table
+				'table:primary' => $table
 			))
 			->values($values)
 			->make() > 0 ? $this->insert_id() : null;
@@ -725,11 +725,11 @@ class aeDatabase
 		$insert_keys = implode(', ', $insert_keys);
 		$insert_values = implode(', ', $insert_values);
 		
-		return $this->query("INSERT INTO {table} ({keys}, $insert_keys) 
+		return $this->query("INSERT INTO {table:primary} ({keys}, $insert_keys) 
 				VALUES ({values}, $insert_values) 
 				ON DUPLICATE KEY UPDATE {keys=values}")
 			->names(array(
-				'table' => $table
+				'table:primary' => $table
 			))
 			->values($values)
 			->make();
@@ -740,9 +740,9 @@ class aeDatabase
 		Updates existing row(s) and returns the number of affected rows.
 	*/
 	{
-		return $this->query("UPDATE {table} SET {keys=values} {sql:where}")
+		return $this->query("UPDATE {table:primary} SET {keys=values} {sql:where}")
 			->names(array(
-				'table' => $table
+				'table:primary' => $table
 			))
 			->values($values)
 			->where($where, $where_value)
@@ -754,9 +754,9 @@ class aeDatabase
 		Deletes existing row(s) and returns the number of affected rows.
 	*/
 	{
-		return $this->query("DELETE FROM {table} {sql:where}")
+		return $this->query("DELETE FROM {table:primary} {sql:where}")
 			->names(array(
-				'table' => $table
+				'table:primary' => $table
 			))
 			->where($where, $where_value)
 			->make();
