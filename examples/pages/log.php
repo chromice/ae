@@ -1,6 +1,6 @@
 <?php
 	ae::utilize('inspector')
-		// ->set('log_directory_path', '/examples/log')
+		// ->set('directory_path', '/logs')
 		->set('dump_context', true);
 	
 	$r = ae::request();

@@ -63,7 +63,7 @@ class aeFile
 			? fopen($this->path, $mode, $use_include_path, $context)
 			: fopen($this->path, $mode, $use_include_path);
 		
-		if (false === $ths->file)
+		if (false === $this->file)
 		{
 			throw new aeFileException('Failed to open file.');
 		}

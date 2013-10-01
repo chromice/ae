@@ -1238,7 +1238,7 @@ Here's a short example of how the library should be used:
 ae::utilize('inspector');
 
 // Put all logs to /log directory (if it is writable)
-ae::options('inspector')->set('log_directory_path', '/log');
+ae::options('inspector')->set('directory_path', '/log');
 
 // Trigger an error artificially.
 trigger_error("Everything goes according to the plan.", E_USER_ERROR);
