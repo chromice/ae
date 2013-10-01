@@ -21,7 +21,7 @@ ae::import('ae/request.php');
 // Setup all error handling hooks
 aeLog::_setup();
 
-// Call aeLog whenever user is "loading" the library.
+// Call aeLog::log() whenever user is "loading" the library.
 ae::invoke(function() {
 	call_user_func_array(array('aeLog', 'log'), func_get_args());
 });
@@ -34,7 +34,7 @@ class aeLog
 	The library behaviour can be modified via `inspector` options:
 		`dump_context` - whether to dump global variables and error contexts (false by default);
 		`allowed_ips` - an array or comma-separated list of IP addresses ('127.0.0.1' by default);
-		`log_directory_path` - path to log directory.
+		`directory_path` - path to log directory.
 */
 {
 	protected static $log = array();
@@ -207,7 +207,7 @@ class aeLog
 		}
 		else
 		{
-			echo "\n<!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
+			echo "\n<!--\"><!-- ae-log\n" . str_replace('-->', '- - >', $o) . "\n-->\n";
 			
 			// Try displaying the button
 			try {

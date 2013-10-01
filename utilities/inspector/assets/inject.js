@@ -82,8 +82,10 @@ var ae_log_severity = function(level) {
 	
 		if (el.nodeName == "#comment" || el.nodeType == 8) {
 			
-			if (el.nodeValue.substr(0,7) === ' ae-log') {
-				comments.push(el.nodeValue.substr(8));
+			var offset = el.nodeValue.search(' ae-log');
+			
+			if (offset > 0) {
+				comments.push(el.nodeValue.substr(offset + 7));
 			}
 	
 		} else if (el.childNodes.length > 0 ) {
