@@ -439,8 +439,8 @@ class aeImage
 		Saves the image.
 		
 		If no path is specified, the existing file will be overwritten, unless
-		`prefix()` or `suffix()` is set. If only file name is specified, it will
-		be saved into the same directory.
+		`prefix()` or `suffix()` is set. If only file name is specified, it 
+		will be saved into the same directory.
 	*/
 	{
 		$this->_load();

@@ -103,8 +103,7 @@ class aeDatabase
 		
 		if ($this->db->set_charset('utf8') === false)
 		{
-			throw new aeDatabaseException('Could not switch character set to utf8: ' 
-				. $this->db->error);
+			throw new aeDatabaseException('Could not switch character set to utf8: ' . $this->db->error);
 		}
 	}
 	
@@ -149,7 +148,9 @@ class aeDatabase
 	/*
 		Sets the query to run.
 		
-		The query may contain {placeholders} that are replaced by other methods.
+		The query may contain {placeholders} that are replaced by 
+		other methods.
+		
 		See pretty much every method below.
 	*/
 	{
@@ -220,7 +221,7 @@ class aeDatabase
 	
 	public function group_by($clause)
 	/*
-		Sets the {sql:group_by} placeholder. 
+		Sets the {sql:group_by} placeholder.
 		
 		Example:
 		
@@ -263,7 +264,7 @@ class aeDatabase
 	
 	public function order_by($clause)
 	/*
-		Sets the {sql:order_by} placeholder. 
+		Sets the {sql:order_by} placeholder.
 		
 		Example:
 		
@@ -932,7 +933,8 @@ abstract class aeDatabaseTable
 		
 		echo $row_copy->column; // echoes "value"
 		
-	NB! For this class to work, table must have a scalar or composite primary key.
+	NB! For this class to work, table must have a scalar or composite 
+	primary key.
 */
 {
 	// ========================
@@ -945,7 +947,8 @@ abstract class aeDatabaseTable
 	/*
 		Returns an instance of default database connection.
 		
-		Override this method, if you want your class to use a different connection.
+		Override this method, if you want your class to use a 
+		different connection.
 	*/
 	{
 		$class = get_called_class();
@@ -1105,7 +1108,8 @@ abstract class aeDatabaseTable
 	/*
 		Sets supplied $values or returns current values.
 		
-		If second argument is TRUE, $values are unserialized and set as data before being set.
+		If second argument is TRUE, $values are unserialized and set as data 
+		before being set.
 	*/
 	{
 		if (is_array($values))
@@ -1305,6 +1309,9 @@ abstract class aeDatabaseTable
 	}
 	
 	public function reset($accessor = false)
+	/*
+		Resets the record data and (optionally) the accessor.
+	*/
 	{
 		if ($accessor === true)
 		{

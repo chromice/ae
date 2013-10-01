@@ -111,7 +111,8 @@ class aeForm
 
 	public function validate()
 	/*
-		Validates all declared fields and returns TRUE on success or FALSE on failure.
+		Validates all declared fields and returns TRUE on success or FALSE 
+		on failure.
 	*/
 	{
 		$result = true;
@@ -317,11 +318,12 @@ class aeValidator
 	/*
 		Prevents user from submitting a value that does not patch the pattern.
 		
-		NB! The pattern must be in HTML5 format, e.g. `[a-z0-9]`, i.e. no slashes or flags.
+		NB! The pattern must be in HTML5 format, e.g. `[a-z0-9]`, i.e. no 
+		slashes or flags.
 		
-		In addition to validating date/time formats (month, week, date, datetime, time)
-		the library also validates the value and switches min_value(), max_value() 
-		constraints to time format:
+		In addition to validating date/time formats (month, week, date, 
+		datetime, time) 	the library also validates the value and switches 
+		min_value(), max_value() constraints to time format:
 		
 			$field->valid_pattern('Invalid date format', aeValidator::date)
 				->min_value('Must be from now on and till the end of times, date('Y-m-d'));
@@ -379,7 +381,8 @@ class aeValidator
 	
 	public function min_value($message, $limit)
 	/*
-		Prevents user from submitting a number greater then `$limit` or date after a certain time.
+		Prevents user from submitting a number greater then `$limit` or date 
+		after a certain time.
 	*/
 	{
 		$this->html['min'] = $limit;
@@ -404,7 +407,8 @@ class aeValidator
 	
 	public function max_value($message, $limit)
 	/*
-		Prevents user from submitting a number less then `$limit` or date past a certain time.
+		Prevents user from submitting a number less then `$limit` or date past 
+		a certain time.
 	*/
 	{
 		$this->html['max'] = $limit;
@@ -472,7 +476,8 @@ class aeFormField extends aeValidator
 	
 	public function id()
 	/*
-		Returns value of the element's id attribute, or empty string for field with multple values.
+		Returns value of the element's id attribute, or empty string for field 
+		with multple values.
 	*/
 	{
 		if ($this->index !== true)
@@ -714,9 +719,9 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 	
 	public function required($message, $callback = null)
 	/*
-		Overloads `aeValidator::required()` to allow setting a callback function,
-		which accepts field index as the only argument and must return TRUE,
-		if the field is required.
+		Overloads `aeValidator::required()` to allow setting a callback 
+		function, which accepts field index as the only argument and must 
+		return TRUE, if the field is required.
 	*/
 	{
 		parent::required($message);

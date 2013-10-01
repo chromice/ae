@@ -160,8 +160,9 @@ class aeRequest
 	/*
 		Returns IP address of the client. 
 		
-		If the server is behind a proxy or load balancer, this method will return
-		its IP address, unless it has been added to the list of known proxies.
+		If the server is behind a proxy or load balancer, this method will
+		return its IP address, unless it has been added to the list of 
+		known proxies.
 	*/
 	{
 		if (empty($_SERVER['REMOTE_ADDR']))

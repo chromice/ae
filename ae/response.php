@@ -21,7 +21,7 @@ ae::invoke('aeResponse');
 class aeResponse
 /*
 	HTTP response abstraction.
-
+	
 	`response` options:
 		`compress_output` - whether to gzip dispatched output (FALSE by default);
 		`charset`         - character set; 'utf-8' by default;
@@ -38,7 +38,6 @@ class aeResponse
 		$response
 			->cache(5, '/hello-world.html')
 			->dispatch();
-
 */
 {
 	protected $headers;
@@ -118,7 +117,7 @@ class aeResponse
 		return self::$current;
 	}
 	
-	protected $http_errors = array(
+	protected static $http_errors = array(
 		// Client errors
 		400 => 'Bad Request',
 		401 => 'Unauthorized',
@@ -159,7 +158,7 @@ class aeResponse
 		// Validate the code
 		$code = (int) $code;
 		
-		if (empty($this->http_errors[$code]))
+		if (empty(self::$http_errors[$code]))
 		{
 			trigger_error('Unknown HTTP error code: ' . $code, E_USER_NOTICE);
 			
@@ -169,7 +168,7 @@ class aeResponse
 		// Respond with a correct header
 		header((isset($_SERVER['SERVER_PROTOCOL']) 
 			? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1')
-			. ' ' . $code . ' ' . $this->http_errors[$code]);
+			. ' ' . $code . ' ' . self::$http_errors[$code]);
 		
 		if (empty($path)) 
 		{
@@ -178,7 +177,7 @@ class aeResponse
 		
 		if (!empty($path)) 
 		{
-			ae::output($path, array('code' => $code, 'status' => $this->http_errors[$code]));
+			ae::output($path, array('code' => $code, 'status' => self::$http_errors[$code]));
 		}
 		
 		exit;
@@ -303,8 +302,8 @@ class aeResponseCache
 		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
 	
 	This class requires some fiddling with .htaccess and mod_rewrite. You need 
-	to make sure that all request have extensions and a routed to cache directory 
-	first.
+	to make sure that all request have extensions and a routed to cache 
+	directory first.
 	
 	Example ".htaccess" for webroot directory:
 	
@@ -515,7 +514,8 @@ class aeResponseCache
 	/*
 		Deletes stale cache entries.
 		
-		NB! This operation is IO intensive and should be performed infrequently on an internal thread.
+		NB! This operation is IO intensive and should be performed 
+		infrequently on an internal thread.
 	*/
 	{
 		if (!($cache_path = self::_cache_directory()))

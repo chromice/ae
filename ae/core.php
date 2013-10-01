@@ -32,10 +32,11 @@ final class ae
 	public static function launch($path)
 	/*
 		Treats specified directory as an application with its own context and
-		attempts to run 'index.php' script in that directory and halts execution.
+		attempts to run 'index.php' script in that directory and halts
+		execution.
 		
-		All relative paths will be resolved against the application directory before
-		falling back to root directory.
+		All relative paths will be resolved against the application directory
+		before falling back to root directory.
 	*/
 	{
 		$path = self::resolve($path, false);
