@@ -135,7 +135,7 @@ final class ae
 		
 		while ($__path = array_pop($try))
 		{
-			if (!file_exists($__path) || in_array($__path, self::$stack))
+			if ($__path === end(self::$stack) || !file_exists($__path))
 			{
 				continue;
 			}
