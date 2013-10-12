@@ -10,6 +10,25 @@ Zepto(function() {
 		window.opener.inspectorClosed();
 	});
 	
+	
+	function fitSource() {
+		$('a.source > kbd').each(function() {
+			if (!$(this).data('original')) {
+				$(this).data('original', this.innerHTML);
+			}
+				
+			trimLeft(this);
+		});
+	}
+	
+	$(window).on('resize', function() {
+		$('a.source > kbd').each(function() {
+			this.innerHTML = $(this).data('original');
+			trimLeft(this);
+		});
+	});
+
+	
 	$(document).on('click', 'a.dump, a.backtrace, a.context', function(e) {
 		var link = $(this),
 			id = link.attr('href'),
@@ -37,17 +56,21 @@ Zepto(function() {
 		
 		window.scrollTo(0, window.scrollY - (oldTop - link.offset().top));
 		
+		fitSource();
+		
 		return false;
 	});
 	
 	$.each(window.opener.logs(), function(i, log) {
 		appendLog(log);
+		fitSource();
 	});
 	
 	setInterval(function() {
 		$.each(window.opener.unprocessed_logs(), function(i, log) {
 			appendLog(log);
 		});
+		fitSource();
 	}, 1000);
 	
 	function appendLog(log) {
@@ -139,9 +162,9 @@ Zepto(function() {
 					}
 
 					if (m.File && m.Line) {
-						message.push('<a href="' + sourceLink(m.File, m.Line) + '" class="source">In&nbsp;<kbd class="file">' 
+						message.push('<a href="' + sourceLink(m.File, m.Line) + '" class="source"><kbd>In ' 
 							+ $.trim(m.File)
-							+ '</kbd> at line&nbsp;<kbd class="line">'
+							+ ' at line '
 							+ $.trim(m.Line)
 							+ '</kbd></a>');
 					}
@@ -306,11 +329,11 @@ Zepto(function() {
 						var _source = text.match(regex);
 						source = '<a href="' 
 							+ sourceLink(_source[1], _source[2]) 
-							+ '" class="source">In&nbsp;<kbd class="file">' 
+							+ '" class="source"><kbd>In ' 
 							+ _source[1]
-							+ '</kbd> at line&nbsp;<kbd class="line">'
+							+ ' at line '
 							+ _source[2]
-							+ '</kbd>:</a>';
+							+ ':</kbd></a>';
 					}
 				} else if (dumpID) {
 					dumps.push('<pre id="' + dumpID + '" class="dump">' + parseDump(text) + '</pre>');
@@ -432,3 +455,44 @@ Zepto(function() {
 		window.Tokenizer = Tokenizer;//export as standalone class
 
 })();
+
+/*
+ * Trim left: http://jsfiddle.net/sP9AE/1/
+ */
+function trimLeft(row){
+	var trimContents = function(row, node){
+		while (row.scrollWidth > row.offsetWidth) {
+
+			var childNode = node.firstChild;
+
+			if (!childNode)
+				return true;            
+
+			if (childNode.nodeType == document.TEXT_NODE){
+				trimText(row, node, childNode);
+			}
+			else {
+				var empty = trimContents(row, childNode);
+				if (empty){
+					node.removeChild(childNode);
+				}
+			}
+		}
+	}
+	var trimText = function(row, node, textNode){
+		var prefix = 'In …',
+			value = prefix + textNode.nodeValue;
+		do {
+			value = prefix + value.substr(prefix.length + 1);
+			textNode.nodeValue = value;
+
+			if (value == prefix){
+				node.removeChild(textNode);
+				return;
+			}
+		}
+		while (row.scrollWidth > row.offsetWidth);
+	}
+
+	trimContents(row, row);    
+}

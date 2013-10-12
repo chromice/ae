@@ -158,11 +158,19 @@ h1 .time {
 	Source
 */
 .source {
+	display: block;
+	overflow: hidden;
 	border-bottom: 0;
+	padding-top: 0.5em;
 	color: #666;
 	font-size: 0.75em;
-	line-height: 2;
+	line-height: 1.5;
 	text-decoration: none;
+}
+.source kbd {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
 }
 .source:hover, .source:focus {
 	text-decoration: underline;
@@ -223,8 +231,8 @@ pre.dump {
 }
 ol.backtrace pre.dump {
 	padding-left: 30px;
-	padding-right: 30px;
-	margin: 0 -30px;
+	padding-right: 10px;
+	margin: 0 -10px 0 -30px;
 	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
 }
 var, .message > a.dump  {
@@ -236,7 +244,7 @@ var, .message > a.dump  {
 */
 ol.backtrace {
 	overflow: hidden;
-	padding: 0 30px 0;
+	padding: 0 10px 0 30px;
 	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
 	background: #3f3f3f;
 	color: #eee;
