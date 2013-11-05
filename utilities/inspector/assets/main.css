@@ -221,7 +221,7 @@ a.dump {
 pre.dump {
 	overflow: hidden;
 	padding: 1em 10px;
-	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
+	box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
 	background: #333;
 	color: #eee;
 	font-size: 0.75em;
@@ -233,7 +233,7 @@ ol.backtrace pre.dump {
 	padding-left: 30px;
 	padding-right: 10px;
 	margin: 0 -10px 0 -30px;
-	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
 }
 var, .message > a.dump  {
 	color: #33812d;
@@ -245,7 +245,7 @@ var, .message > a.dump  {
 ol.backtrace {
 	overflow: hidden;
 	padding: 0 10px 0 30px;
-	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
+	box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
 	background: #3f3f3f;
 	color: #eee;
 	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);
