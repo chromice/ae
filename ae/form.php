@@ -82,7 +82,7 @@ class aeForm
 		Add a field for scalar value.
 	*/
 	{
-		return $this->fields[$name] = new aeFormField($name, false, $this->values[$name], $this->errors[$name]);
+		return $this->fields[$name] = new aeFormField($this->id, $name, false, $this->values[$name], $this->errors[$name]);
 	}
 
 	public function multiple($name)
@@ -90,7 +90,7 @@ class aeForm
 		Add a field for an array of values (arbitrary length).
 	*/
 	{
-		return $this->fields[$name] = new aeFormField($name, true, $this->values[$name], $this->errors[$name]);
+		return $this->fields[$name] = new aeFormField($this->id, $name, true, $this->values[$name], $this->errors[$name]);
 	}
 
 	public function sequence($name, $min = 1, $max = null)
@@ -98,7 +98,7 @@ class aeForm
 		Add a field for an array of values (controlled length).
 	*/
 	{
-		return $this->fields[$name] = new aeFormFieldSequence($name, $this->values[$name], $this->errors[$name], $min, $max);
+		return $this->fields[$name] = new aeFormFieldSequence($this->id, $name, $this->values[$name], $this->errors[$name], $min, $max);
 	}
 
 	public function is_submitted()
@@ -175,7 +175,7 @@ class aeForm
 			'action' => aeRequest::url()
 		), $attributes);
 		
-		$attributes['id'] = 'form-' . $this->id;
+		$attributes['id'] = $this->id . '-form';
 		
 		return '<form ' . self::attributes($attributes) . '>'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
@@ -434,14 +434,18 @@ class aeValidator
 
 class aeFormField extends aeValidator
 {
+	protected $form_id;
+	
 	protected $name;
 	protected $index;
 	protected $value;
 	protected $error;
 	
-	public function __construct($name, $index, &$value, &$error, &$html = null)
+	public function __construct($form_id, $name, $index, &$value, &$error, &$html = null)
 	{
+		$this->form_id = $form_id;
 		$this->name = $name;
+		
 		$this->index = $index;
 		$this->value =& $value;
 		$this->error =& $error;
@@ -482,7 +486,7 @@ class aeFormField extends aeValidator
 	{
 		if ($this->index !== true)
 		{
-			return 'field-' . preg_replace('/[\s_]+/', '-', $this->name) 
+			return $this->form_id . '-' . preg_replace('/[\s_]+/', '-', $this->name) 
 				. ($this->index !== false ? '-' . $this->index : '');
 		}
 	}
@@ -668,6 +672,7 @@ class aeFormField extends aeValidator
 
 class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 {
+	protected $form_id;
 	protected $name;
 
 	protected $min;
@@ -679,8 +684,9 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 	
 	protected $required_callback;
 	
-	public function __construct($name, &$values, &$errors, $min = 1, $max = null)
+	public function __construct($form_id, $name, &$values, &$errors, $min = 1, $max = null)
 	{
+		$this->form_id = $form_id;
 		$this->name = $name;
 		
 		$this->min = $min;
@@ -705,7 +711,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 
 		foreach ($this->values as $i => $value)
 		{
-			$this->fields[$i] = new aeFormField($this->name, $i, $this->values[$i], $this->errors[$i], $this->html);
+			$this->fields[$i] = new aeFormField($this->form_id, $this->name, $i, $this->values[$i], $this->errors[$i], $this->html);
 		}
 	}
 
@@ -775,7 +781,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 	{
 		return isset($this->fields[$offset]) 
 			? $this->fields[$offset] 
-			: $this->fields[$offset] = new aeFormField($this->name, $offset, $this->values[$offset], $this->errors[$offset]);
+			: $this->fields[$offset] = new aeFormField($this->form_id, $this->name, $offset, $this->values[$offset], $this->errors[$offset], $this->html);
 	}
 	
 	public function offsetSet($offset, $value)
@@ -792,7 +798,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 		}
 		
 		$this->values[$offset] = $value;
-		$this->fields[$offset] = new aeFormField($this->name, $offset, $this->values[$offset], $this->errors[$offset]);
+		$this->fields[$offset] = new aeFormField($this->form_id, $this->name, $offset, $this->values[$offset], $this->errors[$offset], $this->html);
 	}
 	
 	public function offsetUnset($offset)
