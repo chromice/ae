@@ -270,7 +270,7 @@ final class ae
 	{
 		$path = self::resolve($path);
 		$ps = new aeStack(self::$stack, $path);
-
+		
 		__ae_include__($path, $parameters);
 	}
 	

@@ -322,11 +322,12 @@ class aeValidator
 		slashes or flags.
 		
 		In addition to validating date/time formats (month, week, date, 
-		datetime, time) 	the library also validates the value and switches 
+		datetime, time) the library also validates the value and switches 
 		min_value(), max_value() constraints to time format:
 		
 			$field->valid_pattern('Invalid date format', aeValidator::date)
-				->min_value('Must be from now on and till the end of times, date('Y-m-d'));
+				->min_value('Must be from now on and till the end of times', 
+				date('Y-m-d'));
 	*/
 	{
 		if (in_array($pattern, array(
