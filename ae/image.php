@@ -256,11 +256,11 @@ class aeImage
 		
 		if ($target_ratio > $source_ratio)
 		{
-			$this->scale(null, $width);
+			$this->scale(null, $height);
 		}
 		else 
 		{
-			$this->scale($heigh, null);
+			$this->scale($width, null);
 		}
 		
 		return $this;
