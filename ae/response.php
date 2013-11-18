@@ -515,7 +515,7 @@ class aeResponseCache
 		Deletes stale cache entries.
 		
 		NB! This operation is IO intensive and should be performed 
-		infrequently on an internal thread.
+		infrequently by an internal process.
 	*/
 	{
 		if (!($cache_path = self::_cache_directory()))
