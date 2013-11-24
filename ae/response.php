@@ -16,17 +16,20 @@
 # limitations under the License.
 # 
 
+ae::options('ae.response', array(
+	'compress_output' => false, // whether to gzip dispatched output;
+	'charset' => 'utf-8', // character set;
+	'error_path' => null // path to a script that is used by `aeResponse::error()`.
+));
+ae::options('ae.response.cache', array(
+	'directory_path' => '/cache' // must be writable
+));
+
 ae::invoke('aeResponse');
 
 class aeResponse
 /*
 	HTTP response abstraction.
-	
-	`response` options:
-		`compress_output` - whether to gzip dispatched output (FALSE by default);
-		`charset`         - character set; 'utf-8' by default;
-		`error_path`      - path to a script that is used by `aeResponse::error()`.
-		
 	
 	The following code creates an HTML response, that is cached for 5 minutes:
 	
@@ -97,7 +100,7 @@ class aeResponse
 		}
 		
 		// Append character set
-		$type.= '; charset=' . ae::options('response')->get('charset', 'utf-8');
+		$type.= '; charset=' . ae::options('ae.response')->get('charset');
 
 		// Set content type
 		$this->header('Content-Type', $type);
@@ -172,7 +175,7 @@ class aeResponse
 		
 		if (empty($path)) 
 		{
-			$path = ae::options('response')->get('error_path', $path);
+			$path = ae::options('ae.response')->get('error_path');
 		}
 		
 		if (!empty($path)) 
@@ -245,7 +248,7 @@ class aeResponse
 		unset($this->buffer);
 		
 		// Compress output, if browser supports compression
-		if (ae::options('response')->get('compress_output', false))
+		if (ae::options('ae.response')->get('compress_output'))
 		{
 			$output = $this->_compress($output);
 			
@@ -297,9 +300,6 @@ class aeResponse
 class aeResponseCache
 /*
 	A server-side response caching abstraction.
-	
-	`cache` options:
-		`directory_path`  - path to directory where cache files are stored ('/cache' by default);
 	
 	This class requires some fiddling with .htaccess and mod_rewrite. You need 
 	to make sure that all request have extensions and a routed to cache 
@@ -459,7 +459,7 @@ class aeResponseCache
 		$rules.= "\n</IfModule>";
 		
 		// Add compression rules
-		if (ae::options('response')->get('compress_output', false)
+		if (ae::options('ae.response')->get('compress_output')
 		&& preg_match('/^(?:gif|jpe?g|png)$/', $ext) === 0)
 		{
 			$rules.= "\n<IfModule mod_deflate.c>
@@ -562,7 +562,7 @@ class aeResponseCache
 		Returns cache directory path and checks if it is writable.
 	*/
 	{
-		$cache_path = trim(ae::options('cache')->get('directory_path', '/cache'), '/');
+		$cache_path = trim(ae::options('ae.response.cache')->get('directory_path'), '/');
 		
 		if (empty($cache_path))
 		{

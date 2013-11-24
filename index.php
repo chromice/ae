@@ -11,6 +11,6 @@ if ($route->exists())
 }
 else
 {
-	// ae::options('response')->set('error_path', 'examples/error.php');
+	// ae::options('ae.response')->set('error_path', 'examples/error.php');
 	ae::response()->error(404, 'examples/error.php');
 }

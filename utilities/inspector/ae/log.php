@@ -18,23 +18,24 @@
 
 ae::import('ae/request.php');
 
-// Setup all error handling hooks
-aeLog::_setup();
+ae::options('inspector', array(
+	'dump_context' => false, // whether to dump global variables and error contexts;
+	'allowed_ips' => '127.0.0.1', // an array or comma-separated list of IP addresses;
+	'directory_path' => null // path to log directory.
+));
 
 // Call aeLog::log() whenever user is "loading" the library.
 ae::invoke(function() {
 	call_user_func_array(array('aeLog', 'log'), func_get_args());
 });
 
+// Setup all error handling hooks
+aeLog::_setup();
+
 class aeLog
 /*
 	Logs errors, notices, dumps, etc.,  outputs them in the response body 
 	or X-ae-log header, or appends them to a log file.
-	
-	The library behaviour can be modified via `inspector` options:
-		`dump_context` - whether to dump global variables and error contexts (false by default);
-		`allowed_ips` - an array or comma-separated list of IP addresses ('127.0.0.1' by default);
-		`directory_path` - path to log directory.
 */
 {
 	protected static $log = array();
@@ -99,14 +100,14 @@ class aeLog
 	protected static function on_shutdown()
 	{
 		$options = ae::options('inspector');
-		$dump_context = $options->get('dump_context', false);
+		$dump_context = $options->get('dump_context');
 		
 		if (!$dump_context && count(self::$log) === 0)
 		{
 			return;
 		}
 		
-		$path = $options->get('directory_path', false);
+		$path = $options->get('directory_path');
 		
 		if ($path && self::$has_problems)
 		{
@@ -179,7 +180,7 @@ class aeLog
 		
 		// Is client's IP address in the whitelist?
 		$ip = aeRequest::ip_address();
-		$allowed_ips = $options->get('allowed_ips', '127.0.0.1');
+		$allowed_ips = $options->get('allowed_ips');
 		
 		if (is_string($allowed_ips))
 		{
@@ -405,7 +406,7 @@ class aeLog
 		$trace = debug_backtrace();
 		array_shift($trace);
 		
-		if (ae::options('inspector')->get('dump_context', false))
+		if (ae::options('inspector')->get('dump_context'))
 		{
 			$error['context'] = $context;
 		}

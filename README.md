@@ -328,7 +328,7 @@ $options = ae::options('namespace');
 For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library be able to return the correct IP address of the client:
 
 ```php
-$options = ae::options('request');
+$options = ae::options('ae.request');
 
 $options->set('proxy_ips', '83.14.1.1, 83.14.1.2');
 ```
@@ -336,7 +336,7 @@ $options->set('proxy_ips', '83.14.1.1, 83.14.1.2');
 Request library will use `aeRequest::get()` method to retrieve the value of that option:
 
 ```php
-$options = ae::options('request');
+$options = ae::options('ae.request');
 
 $proxies = $options->get('proxy_ips', null);
 ```
@@ -399,7 +399,7 @@ echo $request->type(); // json
 In order to get the IP address of the client, you should use `aeRequest::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
 
 ```php
-ae::options('request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+ae::options('ae.request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
 
 $client_ip = ae::request()->ip_address();
 ```
@@ -477,7 +477,7 @@ Here is an example of a simple application that creates gzip'ed response with a 
 // GET /hello-world HTTP/1.1
 include 'ae/core.php';
 
-ae::options('response')
+ae::options('ae.response')
 	->set('compress_output', true); // turn on the g-zip compression
 
 $response = ae::response('html')
@@ -837,7 +837,7 @@ Before you can make queries to the database, you have to specify the connection 
 
 ```php
 // Configure the "default" database connection
-ae::options('database.default')
+ae::options('ae.database.default')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
@@ -861,7 +861,7 @@ As you can see, whenever something goes wrong on the database side, the library 
 If you want to know what queries are performed and how much memory and time they take, you can turn query logging on:
 
 ```php
-ae::options('database')
+ae::options('ae.database')
 	->set('log', true);
 ```
 

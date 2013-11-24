@@ -16,16 +16,17 @@
 # limitations under the License.
 # 
 
+ae::options('ae.database', array(
+	'log' => false
+));
+
 ae::invoke(array('aeDatabase', 'connection'));
 
 class aeDatabase
 /*
 	A MySQL database abstraction layer.
 	
-	`database` options:
-		`log`       - whether to log SQL queries: FALSE by default.
-	
-	`database.[connection name]` options:
+	Use `ae.database.[connection name]` options to configure connection:
 		`class`     - connection class: 'aeDatabase' by default;
 		`host`      - connection host;
 		`port`      - connection port;
@@ -37,7 +38,11 @@ class aeDatabase
 	This library must be invoked with the connection name, 
 	otherise 'default' connection is used.
 	
-		$db = ae::database('connection name');
+		ae::options('ae.database.default')
+			->set('host', 'localhost')
+			->set('user', 'root');
+		
+		$db = ae::database('default');
 		
 		$db->query('SELECT 1')->make();
 */
@@ -64,14 +69,17 @@ class aeDatabase
 			return self::$connections[$database];
 		}
 		
-		$params = ae::options('database.' . $database, false);
+		$params = ae::options('ae.database.' . $database, array(
+			'class' => get_called_class(),
+			'host' => 'localhost',
+			'user' => null,
+			'password' => null,
+			'database' => null,
+			'port' => null,
+			'socket' => null,
+		));
 		
-		if ($params === false)
-		{
-			trigger_error('Unknown database connection: ' . $database, E_USER_ERROR);
-		}
-		
-		$class = $params->get('class', get_called_class());
+		$class = $params->get('class');
 		
 		self::$connections[$database] = new $class(
 			$params->get('host'),
@@ -542,7 +550,7 @@ class aeDatabase
 		
 		$query = $this->_query();
 		
-		if (ae::options('database')->get('log', false) === true)
+		if (ae::options('ae.database')->get('log') === true)
 		{
 			ae::utilize('inspector');
 			
