@@ -1,9 +1,9 @@
 <?php
 
 	// ae::import('log.php');
-	ae::options('response')
+	ae::options('ae.response')
 		->set('compress_output', true);
-	ae::options('cache')
+	ae::options('ae.response.cache')
 		->set('directory_path', '/cache');
 	
 	// Work for a few seconds...

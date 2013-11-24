@@ -1,11 +1,11 @@
 <?php
 
 // Turn on query logging
-ae::options('database')
+ae::options('ae.database')
 	->set('log', true);
 
 // Set default database paramters
-ae::options('database.default')
+ae::options('ae.database.default')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')

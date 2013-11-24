@@ -16,16 +16,16 @@
 # limitations under the License.
 # 
 
+ae::options('ae.request', array(
+	'base_url' => '/',
+	'proxy_ips' => !empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : null
+));
+
 ae::invoke(array('aeRouter', 'request'));
 
 class aeRequest
 /*
 	Request URI abstraction.
-	
-	`request` options:
-		`base_path` - a base URL path; "/" by default;
-		`proxy_ips`  - an array or comma-separated list of IP addresses.
-	
 	Provided the application is accessed with "/some/arbitrary/request.json":
 	
 		$request = ae::request();
@@ -106,7 +106,7 @@ class aeRequest
 		Returns a complete URI path, prefixed with base path.
 	*/
 	{
-		return ae::options('request')->get('base_path', '/') . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
+		return ae::options('ae.request')->get('base_url') . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
 	}
 	
 	public static function redirect($uri, $http_response_code = aeRequest::temporarily)
@@ -173,9 +173,7 @@ class aeRequest
 		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 		{
 			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
-			$whitelist = ae::options('request')->get('proxy_ips',
-				!empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : ''
-			);
+			$whitelist = ae::options('ae.request')->get('proxy_ips');
 			
 			if (empty($whitelist))
 			{
@@ -233,7 +231,7 @@ class aeRequest
 		
 		$type = 'html';
 		$uri = trim($uri, '/');
-		$base_path = trim(ae::options('request')->get('base_path', '/'), '/');
+		$base_path = trim(ae::options('ae.request')->get('base_url', '/'), '/');
 		
 		if (strlen($base_path) > 0 && strpos($uri, $base_path) === 0)
 		{
