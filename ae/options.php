@@ -20,7 +20,7 @@ ae::invoke('aeOptions');
 
 class aeOptions
 /*
-	Provides an interface for library and utility configuration.
+	A simple key/value storage class used for configuration:
 	
 		$lib_options = ae::options('library');
 		
@@ -29,20 +29,61 @@ class aeOptions
 		echo $lib_options->get('bar', 'default value'); // 'foo'
 		echo $lib_options->get('foo', 'default value'); // 'default value'
 	
+	Preferably you should provide an exhaustive list of keys/default values via
+	second argument. This method leaves no room for typos.
+	
+		$predefined = ae::options('namespace', array(
+			'bar' => 'foo'
+		));
+		
+		echo $predefined->get('bar', 'not used'); // 'foo'
+		
+		$predefined->set('bar', 'bar');
+		
+		echo $predefined->get('bar'); // 'bar'
 */
 {
-	protected static $options;
-	protected $reference;
+	protected static $values;
+	protected static $defaults;
+	protected $namespace;
 	
-	public function __construct($namespace = null)
+	public function __construct($namespace, $defaults = array())
 	{
-		if (is_string($namespace))
+		$this->namespace = $namespace;
+		
+		// Quit, if there are no default values to validate
+		if (empty($defaults) || !is_array($defaults))
 		{
-			$this->reference =& self::$options[$namespace];
+			return;
+		}
+		
+		$_defaults =& self::$defaults[$this->namespace];
+		
+		// Merge default option values
+		if (!empty($_defaults))
+		{
+			$_defaults = array_merge($_defaults, $defaults);
 		}
 		else
 		{
-			$this->reference =& self::$options['__ae__'];
+			$_defaults = $defaults;
+		}
+		
+		$_values =& self::$values[$this->namespace];
+		
+		// Quit, if there are no values to validate
+		if (empty($_values))
+		{
+			return;
+		}
+		
+		$unknown = array_diff_key($_values, $_defaults);
+		
+		if (!empty($unknown))
+		{
+			trigger_error('Unexpected "' . $this->namespace . '" option'
+				. (count($unknown) === 1 ? ': ' : 's: ')
+				. implode(', ', array_keys($unknown)), E_USER_WARNING);
 		}
 	}
 	
@@ -52,12 +93,24 @@ class aeOptions
 		otherwise returns the user defined default value.
 	*/
 	{
-		if (isset($this->reference[$option]))
+		$_defaults =& self::$defaults[$this->namespace];
+		$_values =& self::$values[$this->namespace];
+		
+		if (!empty($_values) && array_key_exists($option, $_values))
 		{
-			return $this->reference[$option];
+			return $_values[$option];
+		}
+		else if (empty($_defaults))
+		{
+			return $default;
+		}
+		else if (array_key_exists($option, $_defaults))
+		{
+			return $_defaults[$option];
 		}
 		
-		return $default;
+		trigger_error('Unexpected "' . $this->namespace . '" option: '
+			. $option, E_USER_WARNING);
 	}
 	
 	public function set($option, $value)
@@ -65,7 +118,15 @@ class aeOptions
 		Sets the option value.
 	*/
 	{
-		$this->reference[$option] = $value;
+		$_defaults =& self::$defaults[$this->namespace];
+		
+		if (!empty($_defaults) && !array_key_exists($option, $_defaults))
+		{
+			trigger_error('Unexpected "' . $this->namespace . '" option: '
+				. $option, E_USER_WARNING);
+		}
+		
+		self::$values[$this->namespace][$option] = $value;
 
 		return $this;
 	}
