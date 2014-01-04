@@ -338,10 +338,8 @@ Request library will use `aeRequest::get()` method to retrieve the value of that
 ```php
 $options = ae::options('ae.request');
 
-$proxies = $options->get('proxy_ips', null);
+$proxies = $options->get('proxy_ips');
 ```
-
-`aeOptions::get()` returns the value of the second argument (`null` by default), if the option has not been previously set. Thus many options are indeed optional.
 
 
 ## Request

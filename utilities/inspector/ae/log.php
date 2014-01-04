@@ -213,7 +213,7 @@ class aeLog
 			// Try displaying the button
 			try {
 				echo '<script charset="utf-8">' 
-					. 'var base_path = "' . ae::options('request')->get('base_path', '/') . '";' 
+					. 'var base_path = "' . ae::options('ae.request')->get('base_url') . '";' 
 					. file_get_contents(ae::resolve('/utilities/inspector/assets/inject.js')) 
 					. '</script>';
 			} catch (Exception $e) {}

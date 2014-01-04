@@ -26,8 +26,9 @@ class aeOptions
 		
 		$lib_options->set('bar','foo');
 		
-		echo $lib_options->get('bar', 'default value'); // 'foo'
-		echo $lib_options->get('foo', 'default value'); // 'default value'
+		$lib_options_copy = ae::options('library');
+		
+		echo $lib_options_copy->get('bar'); // echoes 'foo'
 	
 	Preferably you should provide an exhaustive list of keys/default values via
 	second argument. This method leaves no room for typos.
@@ -36,11 +37,11 @@ class aeOptions
 			'bar' => 'foo'
 		));
 		
-		echo $predefined->get('bar', 'not used'); // 'foo'
+		echo $predefined->get('bar', 'not used'); // echoes 'foo'
 		
 		$predefined->set('bar', 'bar');
 		
-		echo $predefined->get('bar'); // 'bar'
+		echo $predefined->get('bar'); // echoes 'bar'
 */
 {
 	protected static $values;
@@ -81,35 +82,32 @@ class aeOptions
 		
 		if (!empty($unknown))
 		{
-			trigger_error('Unexpected "' . $this->namespace . '" option'
+			trigger_error('Unexpected ' . $this->namespace . ' option'
 				. (count($unknown) === 1 ? ': ' : 's: ')
 				. implode(', ', array_keys($unknown)), E_USER_WARNING);
 		}
 	}
 	
-	public function get($option, $default = null)
+	public function get($option)
 	/*
-		Returns the option value, if it has been previously set;
-		otherwise returns the user defined default value.
+		Returns option value, if it has been previously set,
+		or default value, if default values have been specified;
+		otherwise triggers a warning.
 	*/
 	{
 		$_defaults =& self::$defaults[$this->namespace];
 		$_values =& self::$values[$this->namespace];
 		
-		if (!empty($_values) && array_key_exists($option, $_values))
+		if (is_array($_values) && array_key_exists($option, $_values))
 		{
 			return $_values[$option];
 		}
-		else if (empty($_defaults))
-		{
-			return $default;
-		}
-		else if (array_key_exists($option, $_defaults))
+		else if (is_array($_defaults) && array_key_exists($option, $_defaults))
 		{
 			return $_defaults[$option];
 		}
 		
-		trigger_error('Unexpected "' . $this->namespace . '" option: '
+		trigger_error('Unexpected ' . $this->namespace . ' option: '
 			. $option, E_USER_WARNING);
 	}
 	
@@ -120,9 +118,9 @@ class aeOptions
 	{
 		$_defaults =& self::$defaults[$this->namespace];
 		
-		if (!empty($_defaults) && !array_key_exists($option, $_defaults))
+		if (is_array($_defaults) && !array_key_exists($option, $_defaults))
 		{
-			trigger_error('Unexpected "' . $this->namespace . '" option: '
+			trigger_error('Unexpected ' . $this->namespace . ' option: '
 				. $option, E_USER_WARNING);
 		}
 		

@@ -231,7 +231,7 @@ class aeRequest
 		
 		$type = 'html';
 		$uri = trim($uri, '/');
-		$base_path = trim(ae::options('ae.request')->get('base_url', '/'), '/');
+		$base_path = trim(ae::options('ae.request')->get('base_url'), '/');
 		
 		if (strlen($base_path) > 0 && strpos($uri, $base_path) === 0)
 		{
