@@ -21,6 +21,7 @@ ae::options('ae.response', array(
 	'charset' => 'utf-8', // character set;
 	'error_path' => null // path to a script that is used by `aeResponse::error()`.
 ));
+
 ae::options('ae.response.cache', array(
 	'directory_path' => '/cache' // must be writable
 ));

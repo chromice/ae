@@ -32,7 +32,7 @@
 		'Request' => 'request/view/some/uri',
 		'Session' => 'session'
 	) as $name => $uri): $b = new aeBuffer(); 
-?> 
+?>
 	<li><a href="{uri}">{name}</a></li>
 <?php
 		$b->output(array(
