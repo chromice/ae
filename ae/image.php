@@ -29,7 +29,7 @@ class aeImage
 	
 		ae::image('path/to/image.png')
 			->align(aeImage::center, aeImage::top)
-			->cover(100, 100)
+			->fill(100, 100)
 			->suffix('_thumb')
 			->save(); 
 	
@@ -222,9 +222,9 @@ class aeImage
 		return $this;
 	}
 	
-	public function cover($width, $height)
+	public function fill($width, $height)
 	/*
-		Scales and crops the image so that it covers the specified dimensions.
+		Scales and crops the image to fill the specified dimensions.
 	*/
 	{
 		$this->_load();

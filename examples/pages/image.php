@@ -32,7 +32,7 @@ $cropped = $image
 // Crop to cover
 $image
 	->align(aeImage::center, aeImage::top) // same as align(0.5, 0.0)
-	->cover(100, 100)
+	->fill(100, 100)
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
 
