@@ -552,7 +552,7 @@ class aeDatabase
 		
 		if (ae::options('ae.database')->get('log') === true)
 		{
-			ae::utilize('inspector');
+			ae::register('utilities/inspector');
 			
 			$probe = ae::probe('Query #' . ++$query_counter)->mark();
 		}

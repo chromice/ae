@@ -1,5 +1,6 @@
 <?php
-	ae::utilize('inspector')
+	ae::register('utilities/inspector');
+	ae::options('inspector')
 		// ->set('directory_path', '/logs')
 		->set('dump_context', true);
 	
@@ -24,6 +25,7 @@
 				'bar' => 'foo'
 			));
 			break;
+		
 		default:
 			ae::log('Let\'s dump $_ENV:', $_ENV);
 			

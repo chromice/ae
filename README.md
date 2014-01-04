@@ -210,43 +210,6 @@ function a_factory_function($argument_1, $argument_2, /*...*/)
 Please consult with the source code of the core libraries for real life examples.
 
 
-### Using utilities
-
-Out of the box æ will try to resolve all relative paths against the root directory, i.e. the one that contains *ae/core.php*. If you want æ to look for a file in another directory first, you can load it as a utility:
-
-```php
-ae::utilize('utility-name');
-```
-
-All utilities are located in the */utilities* directory. æ will look for files in all loaded utilities' directories, before trying the root directory:
-
-```php
-echo ae::resolve('libs/foo.php');
-// will echo "/utilities/utility-name/libs/foo.php", if the file exists.
-```
-
-If there is an *index.php* script inside the utility directory, it will be included when the utility is loaded. All utility initialisation code should go there.
-
-You can use as many utilities as you want, the path resolver would try them all in the order they were loaded.
-
-
-### Launching application
-
-You can use shorter paths for components of your application as well. Here's what the *index.php* in the web root may look like:
-
-```php
-include 'ae/core.php';
-
-ae::launch('path/to/application');
-```
-
-æ will register your application directory as a new context against which to resolve relative paths and will attempt to run *index.php* in that directory. This will allow you to use shorter relative paths, as well as override the core classes:
-
-```php
-ae::resolve('path/to/application/pages/hello.php') === ae::resolve('pages/hello.php'); // evaluates to TRUE;
-```
-
-
 ## Buffer
 
 `aeBuffer` is a core class used for capturing output.
@@ -1233,7 +1196,7 @@ Here's a short example of how the library should be used:
 
 ```php
 // You must load the inspector utility
-ae::utilize('inspector');
+ae::register('utilities/inspector');
 
 // Put all logs to /log directory (if it is writable)
 ae::options('inspector')->set('directory_path', '/log');
@@ -1270,7 +1233,7 @@ Probe library allows you to profile your code and see how much time and memory e
 
 ```php
 // You must load the inspector utility
-ae::utilize('inspector');
+ae::register('utilities/inspector');
 
 // Create a probe
 $probe = ae::probe('Test probe')->mark('begin probing');

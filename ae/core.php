@@ -29,63 +29,6 @@ final class ae
 	private static $paths = array();
 	private static $stack = array();
 	
-	public static function launch($path)
-	/*
-		Treats specified directory as an application with its own context and
-		attempts to run 'index.php' script in that directory and halts
-		execution.
-		
-		All relative paths will be resolved against the application directory
-		before falling back to root directory.
-	*/
-	{
-		$path = self::resolve($path, false);
-		
-		if (!file_exists($path . '/index.php'))
-		{
-			trigger_error('Cannot launch "' . $path . '/index.php". The file does not exist.', E_USER_ERROR);
-		}
-		
-		self::$contexts[] = $path;
-		
-		require $path . '/index.php';
-		
-		exit;
-	}
-	
-	public static function utilize($utility)
-	/*
-		Registers a utility by name and returns its options object. 
-		(See 'ae/options.php' for more details.)
-		
-		All utilities must be located in '/utilities' directory. If there is 
-		an 'index.php' script inside the utility directory, it will 
-		be included.
-	*/
-	{
-		$path = self::resolve('utilities/' . $utility, false);
-		
-		if (in_array($path, self::$contexts))
-		{
-			return;
-		}
-		
-		if (!is_dir($path))
-		{
-			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
-		}
-		
-		self::$contexts[] = $path;
-		
-		// Initialise utility
-		if (file_exists($path . '/index.php'))
-		{
-			require $path . '/index.php';
-		}
-		
-		return ae::options($utility);
-	}
-	
 	public static function resolve($path, $search = true)
 	/*
 		Resolves a relative path to a directory or file. By default
@@ -93,14 +36,14 @@ final class ae
 		
 			echo ae::resolve('ae/options.php'); // '.../ae/options.php'
 		
-		You may register a utility to look in it as well:
+		You may register a directory to look in it as well:
 		
-			ae::utilize('utility-name');
+			ae::register('some/directory');
 			
-			echo ae::resolve('bar.php'); // 'utilities/utility-name/bar.php'
+			echo ae::resolve('bar.php'); // 'some/directory/bar.php'
 		
 		æ would fall back to the core directory, if it finds nothing in 
-		registered utility directories:
+		registered directories:
 		
 			$request = ae::load('ae/request.php');
 		
@@ -146,6 +89,66 @@ final class ae
 		throw new Exception('Could not resolve path: ' . $path);
 	}
 	
+	public static function register($path, $launch = false)
+	/*
+		Registers a directory as a valid context.
+		
+			ae::register('path/to/directory');
+		
+		See `ae::resolve()` more.
+	*/
+	{
+		$path = self::resolve($path, true);
+		
+		if (in_array($path, self::$contexts))
+		{
+			return;
+		}
+		
+		if (!is_dir($path))
+		{
+			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
+		}
+		
+		self::$contexts[] = $path;
+		
+		if (file_exists($path . '/index.php'))
+		{
+			__ae_include__($path . '/index.php');
+		}
+		else if ($launch === true)
+		{
+			trigger_error('Cannot launch "' . $path . '/index.php". The file does not exist.', E_USER_ERROR);
+		}
+	}
+	
+	public static function import($path)
+	/*
+		Imports external script. Does not do much else.
+		
+			ae::import('path/to/script.php');
+		
+	*/
+	{
+		$path = self::resolve($path);
+		
+		if (isset(self::$paths[$path]))
+		{
+			return;
+		}
+		
+		if (is_dir($path))
+		{
+			trigger_error('Cannot import "' . $path . '", because it is a directory.', E_USER_ERROR);
+		}
+		
+		$ps = new aeStack(self::$stack, $path);
+		
+		self::$paths[$path] = array();
+		
+		__ae_include__($path);
+	}
+	
 	public static function invoke($misc)
 	/*
 		Call this method from the loaded or imported file to define 
@@ -187,35 +190,13 @@ final class ae
 		}
 	}
 	
-	public static function import($path)
-	/*
-		Imports external script. Does not do much else.
-		
-			ae::import('path/to/script.php');
-		
-	*/
-	{
-		$path = self::resolve($path);
-		
-		if (isset(self::$paths[$path]))
-		{
-			return;
-		}
-		
-		$ps = new aeStack(self::$stack, $path);
-		
-		self::$paths[$path] = array();
-		
-		__ae_include__($path);
-	}
-	
 	public static function load()
 	/*
 		Loads a script and attempts to invoke an object defined in it, 
 		using `ae::invoke()` method:
 		
 			$o = ae::load('ae/options.php', 'namespace');
-			
+		
 		In this example, `ae::load()` will return an instance of `aeOptions`.
 		
 		Please consult with the source code of the core libraries for 
@@ -247,6 +228,24 @@ final class ae
 		return $instance;
 	}
 	
+	public static function __callStatic($name, $arguments)
+	/*
+		Resolves all other static method calls as:
+		
+			ae::load('ae/{method}.php', ...arguments...);
+		
+	*/
+	{
+		array_unshift($arguments, 'ae/' . $name . '.php');
+		
+		return call_user_func_array(array('ae', 'load'), $arguments);
+	}
+	
+	
+	// ====================
+	// = Script rendering =
+	// ====================
+	
 	public static function render($path, $parameters = null)
 	/*
 		Runs a script and returns the output as a string.
@@ -273,18 +272,7 @@ final class ae
 		
 		__ae_include__($path, $parameters);
 	}
-	
-	public static function __callStatic($name, $arguments)
-	/*
-		Resolves all other static method calls as:
-		
-			ae::load('ae/{method}.php', ...arguments...);
-	*/
-	{
-		array_unshift($arguments, 'ae/' . $name . '.php');
-		
-		return call_user_func_array(array('ae', 'load'), $arguments);
-	}
+
 
 	// ========
 	// = HTML =
