@@ -356,18 +356,22 @@ class aeRouter
 		
 		$uri = trim($uri, '/');
 		$segments = explode('/', $uri);
+		$extensions = array('.' . aeRequest::type() . '.php', '.php');
 		
 		for ($l = count($segments); $l > 0; $l--)
-		{ 
-			$path = implode('/', array_slice($segments, 0, $l));
-			$path.= is_dir($base . '/' . $path) ? '/index.php' : '.php';
-			$path = $base . '/' . ltrim($path, '/');
-		
-			if (file_exists($path))
+		{
+			foreach ($extensions as $ext)
 			{
-				$this->path = $path;
-				$this->offset = $l;
-				break;
+				$path = implode('/', array_slice($segments, 0, $l));
+				$path.= is_dir($base . '/' . $path) ? '/index' . $ext : $ext;
+				$path = $base . '/' . ltrim($path, '/');
+		
+				if (file_exists($path))
+				{
+					$this->path = $path;
+					$this->offset = $l;
+					break;
+				}
 			}
 		} 
 	}
