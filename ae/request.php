@@ -103,10 +103,13 @@ class aeRequest
 	
 	public static function url($uri = null)
 	/*
-		Returns a complete URI path, prefixed with base path.
+		Returns a URI, prefixed with base URL.
+		
+			ae::options('ae.request')->set('base_url', 'https://domain.com/')
+			echo $request::url('blah'); // echo "https://domain.com/blah"
 	*/
 	{
-		return ae::options('ae.request')->get('base_url') . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
+		return self::_base_url() . '/' . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
 	}
 	
 	public static function redirect($uri, $http_response_code = aeRequest::temporarily)
@@ -231,7 +234,7 @@ class aeRequest
 		
 		$type = 'html';
 		$uri = trim($uri, '/');
-		$base_path = trim(ae::options('ae.request')->get('base_url'), '/');
+		$base_path = self::_base_url();
 		
 		if (strlen($base_path) > 0 && strpos($uri, $base_path) === 0)
 		{
@@ -248,6 +251,11 @@ class aeRequest
 		self::$_uri = '/' . $uri . ($type !== 'html' ? '.' . $type  : '');
 		self::$_type = $type;
 		self::$_segments = array_map('urldecode', explode('/', $uri));
+	}
+	
+	protected static function _base_url()
+	{
+		return rtrim(ae::options('ae.request')->get('base_url'), '/');
 	}
 }
 
