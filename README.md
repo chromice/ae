@@ -12,8 +12,6 @@ It requires PHP version 5.3 or higher, and a recent version of MySQL and Apache 
 	- [Importing code](#importing-code)
 	- [Running code](#running-code)
 	- [Loading libraries](#loading-libraries)
-	- [Using utilities](#using-utilities)
-	- [Launching application](#launching-application)
 - [Buffer](#buffer)
 - [Container](#container)
 - [Options](#options)
