@@ -311,6 +311,11 @@ final class ae
 	}
 }
 
+
+// =================================
+// = Utility classes and functions =
+// =================================
+
 function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 /*
 	Runs an external script with nearly pristine environment, optionally 
@@ -327,27 +332,23 @@ function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 	require $__ae_path__;
 }
 
-
-class aeBuffer
+class aeBlackhole
 /*
 	PHP output buffer abstraction layer. 
 	
-		$buffer = new aeBuffer();
+		$buffer = new aeBlackhole();
 		
 		echo 'Hello world!';
 		
 		echo $buffer->render();
 	
-	The buffer content is flushed, if not manually rendered.
+	The blackhole buffer content is never flushed.
 */
 {
-	protected $autoflush;
 	protected $content;
 	
-	public function __construct($autoflush = true)
+	public function __construct()
 	{
-		$this->autoflush = $autoflush;
-		
 		ob_start();
 	}
 	
@@ -355,19 +356,6 @@ class aeBuffer
 	{
 		if (is_null($this->content))
 		{
-			$this->autoflush ? ob_end_flush() : ob_end_clean();
-		}
-	}
-	
-	public function reset()
-	/*
-		Use this method to reset an autoflushing buffer.
-	*/
-	{
-		if (is_null($this->content))
-		{
-			$this->content = '';
-			
 			ob_end_clean();
 		}
 	}
@@ -417,19 +405,53 @@ class aeBuffer
 	}
 }
 
+class aeBuffer extends aeBlackhole
+/*
+	PHP output buffer abstraction layer. 
+	
+		$buffer = new aeBuffer();
+		
+		echo 'Hello world!';
+		
+		echo $buffer->render();
+	
+	The buffer content is flushed, if not manually rendered.
+*/
+{
+	public function __destruct()
+	{
+		if (is_null($this->content))
+		{
+			ob_end_flush();
+		}
+	}
+	
+	public function reset()
+	/*
+		Resets an autoflushing buffer.
+	*/
+	{
+		if (is_null($this->content))
+		{
+			$this->content = '';
+			
+			ob_end_clean();
+		}
+	}
+}
 
 class aeStack
 /*
 	Provides an exception-safe way to push/pop values to/from stack.
 
 		$stack = array('foo');
-
+		
 		$item = new aeStack($stack, 'bar');
-
+		
 		var_dump($stack); // array('foo','bar');
-
+		
 		unset($item);
-
+		
 		var_dump($stack); // array('foo');
 */
 {
