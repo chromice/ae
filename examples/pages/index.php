@@ -1,12 +1,12 @@
 <?php
-	$container = ae::container('/examples/container/container_html.php');
-	$container->set('title', 'æ');
-	
 	// Test default response headers
 	$response = ae::response('html');
 	
 	// Test garbage collection
 	aeResponseCache::collect_garbage();
+
+	$container = ae::container('/examples/container/container_html.php')
+		->set('title', 'æ');
 ?>
 <h1>æ</h1>
 <h2>Examples:</h2>

@@ -450,11 +450,7 @@ $response
 ?>
 ```
 
-You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html".
-
-When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response, otherwise it will be discarded, when object is destroyed. You can access the the last active response object using `aeResponse::current()` method.
-
-You can set HTTP headers at any point via `aeResponse::header()` method. 
+You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html". When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response along with any HTTP headers set via `aeResponse::header()` method.
 
 
 ### Response caching

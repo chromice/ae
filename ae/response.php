@@ -47,16 +47,15 @@ class aeResponse
 	protected $headers;
 	protected $buffer;
 	
-	protected $current_switch;
-	protected static $current;
+	protected static $buffers = array();
 	
 	public function __construct($type = null)
 	{
-		$this->current_switch = new aeSwitch(self::$current, $this);
-		
 		$this->headers = array();
 		$this->buffer = new aeBuffer();
-
+		
+		array_unshift(self::$buffers, &$this->buffer);
+		
 		if (empty($type))
 		{
 			$type = 'html';
@@ -112,15 +111,16 @@ class aeResponse
 			->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
 			->header('Cache-Control', 'max-age=0, no-cache, must-revalidate, proxy-revalidate');
 	}
-
-	public static function current()
-	/*
-		Returns currently active response object.
-	*/
-	{
-		return self::$current;
-	}
 	
+	public function __destruct()
+	{
+		if (($i = array_search($this->buffer, self::$buffers, true)) !== false)
+		{
+			unset(self::$buffers[$i]);
+		}
+		
+	}
+
 	protected static $http_errors = array(
 		// Client errors
 		400 => 'Bad Request',
@@ -239,14 +239,14 @@ class aeResponse
 		Dispatches the response to the browser and halts execution.
 	*/
 	{
-		if (!isset($this->buffer))
-		{
-			return;
-		}
-		
-		// Get buffered output and destroy the buffer
+		// Get buffered output
 		$output = $this->buffer->render();
-		unset($this->buffer);
+		
+		// Reset all active buffers
+		foreach (self::$buffers as $buffer)
+		{
+			$buffer->reset();
+		}
 		
 		// Compress output, if browser supports compression
 		if (ae::options('ae.response')->get('compress_output'))
