@@ -287,6 +287,7 @@ Zepto(function() {
 	
 	function parseDump(dump) {
 		return dump
+			.replace(/</g, '&lt;')
 			.replace(/\n\s*\n/, '')
 			.replace(/^\n+/, '')
 			.replace(/\n+$/, '')
@@ -338,7 +339,7 @@ Zepto(function() {
 				} else if (dumpID) {
 					dumps.push('<pre id="' + dumpID + '" class="dump">' + parseDump(text) + '</pre>');
 				} else if (!code) {
-					code = '<pre class="code">' + $.trim(text) + '</pre>';
+					code = '<pre class="code">' + $.trim(text.replace(/</g, '&lt;')) + '</pre>';
 				}
 				
 				return text;
@@ -494,5 +495,5 @@ function trimLeft(row){
 		while (row.scrollWidth > row.offsetWidth);
 	}
 
-	trimContents(row, row);    
+	trimContents(row, row);
 }
