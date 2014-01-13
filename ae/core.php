@@ -21,6 +21,56 @@ final class ae
 	Holds everything together.
 */
 {
+	// ======================
+	// = Context management =
+	// ======================
+	
+	const application = true;
+	const module = null;
+	const context = false;
+	
+	public static function register($path, $type = ae::module)
+	/*
+		Registers a directory as a valid module or context, or launches
+		an application.
+			
+			// Register a new context:
+			ae::register('path/to/directory', ae::context);
+
+			// Register a new context and run /index.php, if it exists.
+			ae::register('path/to/module'); // or
+			ae::register('path/to/module', ae::module);
+			
+			// Register context and run /index.php or trigger error.
+			ae::register('path/to/module', ae::application);
+		
+		See `ae::resolve()` more.
+	*/
+	{
+		$path = self::resolve($path, true);
+		
+		if (in_array($path, self::$contexts))
+		{
+			return;
+		}
+		
+		if (!is_dir($path))
+		{
+			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
+		}
+		
+		self::$contexts[] = $path;
+		
+		if ($type !== ae::context && file_exists($path . '/index.php'))
+		{
+			__ae_include__($path . '/index.php');
+		}
+		else if ($type === ae::application)
+		{
+			trigger_error('Cannot launch "' . $path . '/index.php". File does not exist.', E_USER_ERROR);
+		}
+	}
+	
 	// ===================
 	// = Code management =
 	// ===================
@@ -38,7 +88,7 @@ final class ae
 		
 		You may register a directory to look in it as well:
 		
-			ae::register('some/directory');
+			ae::register('some/directory', ae::context);
 			
 			echo ae::resolve('bar.php'); // 'some/directory/bar.php'
 		
@@ -87,39 +137,6 @@ final class ae
 		}
 		
 		throw new Exception('Could not resolve path: ' . $path);
-	}
-	
-	public static function register($path, $launch = false)
-	/*
-		Registers a directory as a valid context.
-		
-			ae::register('path/to/directory');
-		
-		See `ae::resolve()` more.
-	*/
-	{
-		$path = self::resolve($path, true);
-		
-		if (in_array($path, self::$contexts))
-		{
-			return;
-		}
-		
-		if (!is_dir($path))
-		{
-			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
-		}
-		
-		self::$contexts[] = $path;
-		
-		if (file_exists($path . '/index.php'))
-		{
-			__ae_include__($path . '/index.php');
-		}
-		else if ($launch === true)
-		{
-			trigger_error('Cannot launch "' . $path . '/index.php". The file does not exist.', E_USER_ERROR);
-		}
 	}
 	
 	public static function import($path)
