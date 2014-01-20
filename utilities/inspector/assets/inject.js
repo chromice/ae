@@ -72,7 +72,18 @@ var ae_log_severity = function(level) {
 // Parse body and inject inspector button.
 (function() {
 	if (window === window.top && !document.getElementById('ae-inspector-button')) {
-		document.write('<iframe id="ae-inspector-button" src="' + (base_path || '/') + 'utilities/inspector/assets/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px" frameborder="0"></iframe>');
+		var button = '<iframe id="ae-inspector-button" src="' + (base_path || '/') + 'utilities/inspector/assets/button.html" style="position:fixed; bottom:40px; left:-999em; width:60px; height:60px; z-index: 100000" frameborder="0"></iframe>';
+		
+		if (document.body === null) {
+			document.write(button)
+		} else {
+			var temp = document.createElement("div");
+			document.body.appendChild(temp);
+			temp.innerHTML = button;
+			
+			document.body.insertBefore(temp.childNodes[0], document.body.firstChild);
+			temp.parentNode.removeChild(temp);
+		}
 	}
 
 	// Find the HTML comment node with the log
