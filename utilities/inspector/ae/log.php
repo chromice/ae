@@ -20,7 +20,7 @@ ae::import('ae/request.php');
 
 ae::options('inspector', array(
 	'dump_context' => false, // whether to dump global variables and error contexts;
-	'allowed_ips' => '127.0.0.1', // an array or comma-separated list of IP addresses;
+	'allowed_ips' => '127.0.0.1, ::1', // an array or comma-separated list of IP addresses;
 	'directory_path' => null // path to log directory.
 ));
 
