@@ -254,6 +254,8 @@ class aeLog
 	
 	protected static function _error($class, $error)
 	{
+		$dump_context = ae::options('inspector')->get('dump_context');
+			
 		$o = self::_ruler() . "\n";
 		
 		$o.= ucfirst($class) . ': ' 
@@ -308,12 +310,12 @@ class aeLog
 				$object_offset = 1;
 				$array_offset = 1;
 				
-				if (isset($trace['object']))
+				if ($dump_context && isset($trace['object']))
 				{
 					$dumps[] = self::_dump('$' . $trace['class'], $trace['object'], 1);
 				}
 				
-				if (isset($trace['args'])) while ($arg = array_shift($trace['args']))
+				if ($dump_context && isset($trace['args'])) while ($arg = array_shift($trace['args']))
 				{
 					if (is_array($arg) || is_object($arg))
 					{
