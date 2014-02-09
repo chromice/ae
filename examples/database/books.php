@@ -37,15 +37,12 @@ class Novels extends aeDatabaseTable
 	public static function one($id)
 	{
 		return static::database()
-			->query("SELECT * 
-				FROM {books} 
-				JOIN {authors} ON {authors}.`id` = {books}.`author_id` 
-				WHERE {books}.`id` = {book_id}")
-			->variables(array(
+			->select(self::name())
+			->join('{authors} ON {authors}.`id` = {table:primary}.`author_id`')
+			->where('{table:primary}.`id` = {book_id}', array(
 				'book_id' => $id
 			))
 			->aliases(array(
-				'books' => static::name(),
 				'authors' => Authors::name()
 			))
 			->using('Authors', 'author')
@@ -55,13 +52,10 @@ class Novels extends aeDatabaseTable
 	public static function many($limit, $offset = null)
 	{
 		return static::database()
-			->query('SELECT * 
-				FROM {books} 
-				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
-				{sql:limit}')
+			->select(self::name())
+			->join('{authors} ON {authors}.`id` = {table:primary}.`author_id`')
 			->limit($limit, $offset)
 			->aliases(array(
-				'books' => static::name(),
 				'authors' => Authors::name()
 			))
 			->using('Authors', 'author')
@@ -71,12 +65,10 @@ class Novels extends aeDatabaseTable
 	public static function all()
 	{
 		return static::database()
-			->query('SELECT * 
-				FROM {books} 
-				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
-				ORDER BY {books}.`title`')
+			->select(self::name())
+			->join('{authors} ON {authors}.`id` = {table:primary}.`author_id`')
+			->order_by('{table:primary}.`title`')
 			->aliases(array(
-				'books' => static::name(),
 				'authors' => Authors::name()
 			))
 			->using('Authors', 'author')

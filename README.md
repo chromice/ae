@@ -861,7 +861,7 @@ ae::database()
 $morgan_id = ae::database()->insert_id();
 ```
 
-In this example we are using `{data:names}` and `{data:values}` placeholders and specify column names and corresponding values via `aeDatabase::data()` method. Now, I made a typo in the authors name, so let's fix it:
+In this example we are using `{data:names}` and `{data:values}` placeholders and specify column names and corresponding values via `aeDatabase::data()` method. Now, I intentionally made a typo in the authors name, so let's fix it:
 
 ```php
 ae::database()
