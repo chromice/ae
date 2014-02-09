@@ -254,6 +254,7 @@ class aeLog
 	
 	protected static function _error($class, $error)
 	{
+		$max_argument_length = 80;
 		$dump_context = ae::options('inspector')->get('dump_context');
 			
 		$o = self::_ruler() . "\n";
@@ -339,6 +340,12 @@ class aeLog
 					else if ($arg === null)
 					{
 						$args[] = 'NULL';
+					}
+					else if (strlen($arg) > $max_argument_length)
+					{
+						$name = '"' . substr($arg, 0, $max_argument_length) . '..."';
+						$args[] = $name;
+						$dumps[] = self::_dump($name, $arg, 1);
 					}
 					else
 					{
