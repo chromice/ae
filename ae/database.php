@@ -1093,6 +1093,17 @@ abstract class aeDatabaseTable
 		}
 	}
 	
+	public function __clone()
+	/*
+		Clones related entity objects as well.
+	*/
+	{
+		foreach ($this->related as &$related)
+		{
+			$related = clone $related;
+		}
+	}
+	
 	public function attach($property, $object)
 	/*
 		Attaches an instance of (usually) related entity.

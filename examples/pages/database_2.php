@@ -217,6 +217,9 @@ echo "Here are all $count novels ordered alphabetically:\n";
 
 while ($novel = $novels->fetch())
 {
+	$clone = clone $novel;
+	$clone->author->name = 'Blah blah blah';
+	
 	echo "- {$novel->title} by {$novel->author->name}\n";
 }
 
