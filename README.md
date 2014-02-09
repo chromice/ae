@@ -848,11 +848,11 @@ Let's fill this table with some data:
 
 ```php
 ae::database()
-	->query("INSERT INTO {table} ({keys}) VALUES ({values})")
+	->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
 	->aliases(array(
 		'table' => 'authors'
 	))
-	->values(array(
+	->data(array(
 		'name' => 'Richar K. Morgan', // (sic)
 		'nationality' => 'British'
 	))
@@ -861,24 +861,24 @@ ae::database()
 $morgan_id = ae::database()->insert_id();
 ```
 
-In this example we are using `{keys}` and `{values}` placeholders and specify keys and values via `aeDatabase::values()` method. Now, I made a typo in the authors name, so let's fix it:
+In this example we are using `{data:names}` and `{data:values}` placeholders and specify column names and corresponding values via `aeDatabase::data()` method. Now, I made a typo in the authors name, so let's fix it:
 
 ```php
 ae::database()
-	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
+	->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
 	->aliases(array(
 		'table' => 'authors'
 	))
-	->values(array(
+	->data(array(
 		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), aeDatabase::statement) // don' escape
+	), aeDatabase::statement) // don't escape
 	->variables(array(
 		'author_id' => $morgan_id
 	), aeDatabase::value) // escape
 	->make();
 ```
 
-In this example we are using `{keys=values}` placeholder and specifying its value via `aeDatabase::values()` method, while `aeDatabase::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
+In this example we are using `{data:set}` placeholder and specifying its value via `aeDatabase::data()` method, while `aeDatabase::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
 
 Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 

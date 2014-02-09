@@ -28,11 +28,11 @@ Authors::install();
 
 // EXAMPLE: Insert
 ae::database()
-	->query("INSERT INTO {table} ({keys}) VALUES ({values})")
+	->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
 	->aliases(array(
 		'table' => 'authors'
 	))
-	->values(array(
+	->data(array(
 		'name' => 'Richar K. Morgan', // (sic)
 		'nationality' => 'British'
 	))
@@ -44,11 +44,11 @@ $transaction = ae::database()->transaction();
 
 // EXAMPLE: Update
 ae::database()
-	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
+	->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
 	->aliases(array(
 		'table' => 'authors'
 	))
-	->values(array(
+	->data(array(
 		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
 	), aeDatabase::statement) // don' escape
 	->variables(array(

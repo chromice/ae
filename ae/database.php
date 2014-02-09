@@ -390,9 +390,9 @@ class aeDatabase
 				$keys_values[] = $key . ' = ' . $value;
 			}
 			
-			$placeholders['keys'] = implode(', ', $keys);
-			$placeholders['values'] = implode(', ', $values);
-			$placeholders['keys=values'] = implode(', ', $keys_values);
+			$placeholders['data:names'] = implode(', ', $keys);
+			$placeholders['data:values'] = implode(', ', $values);
+			$placeholders['data:set'] = implode(', ', $keys_values);
 		}
 
 		$tokens = preg_replace('/.+/', '{$0}', array_keys($placeholders));
@@ -482,14 +482,14 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function values($values, $type = aeDatabase::value)
+	public function data($values, $type = aeDatabase::value)
 	/*
 		Accepts an associative array of key/value pairs
 		used to replace the following placeholders:
 		
-		- {keys} with `key_1`, `key_2`, ...
-		- {values} with "value 1", "value 2", ...
-		- {keys_values} with `key_1` = "value 1", `key_2` = "value 2", ...
+		- {data:names} with `key_1`, `key_2`, ...
+		- {data:values} with "value 1", "value 2", ...
+		- {data:set} with `key_1` = "value 1", `key_2` = "value 2", ...
 		
 		Useful for writing INSERT and UPDATE queries.
 	*/
@@ -707,11 +707,11 @@ class aeDatabase
 		Insert a new row and returns its autoincremented primary key or NULL.
 	*/
 	{
-		return $this->query("INSERT INTO {table:primary} ({keys}) VALUES ({values})")
+		return $this->query("INSERT INTO {table:primary} ({data:names}) VALUES ({data:values})")
 			->aliases(array(
 				'table:primary' => $table
 			))
-			->values($values)
+			->data($values)
 			->make() > 0 ? $this->insert_id() : null;
 	}
 	
@@ -734,13 +734,13 @@ class aeDatabase
 		$insert_keys = implode(', ', $insert_keys);
 		$insert_values = implode(', ', $insert_values);
 		
-		return $this->query("INSERT INTO {table:primary} ({keys}, $insert_keys) 
-				VALUES ({values}, $insert_values) 
-				ON DUPLICATE KEY UPDATE {keys=values}")
+		return $this->query("INSERT INTO {table:primary} ({data:names}, $insert_keys) 
+				VALUES ({data:values}, $insert_values) 
+				ON DUPLICATE KEY UPDATE {data:set}")
 			->aliases(array(
 				'table:primary' => $table
 			))
-			->values($values)
+			->data($values)
 			->make();
 	}
 	
@@ -749,11 +749,11 @@ class aeDatabase
 		Updates existing row(s) and returns the number of affected rows.
 	*/
 	{
-		return $this->query("UPDATE {table:primary} SET {keys=values} {sql:where}")
+		return $this->query("UPDATE {table:primary} SET {data:set} {sql:where}")
 			->aliases(array(
 				'table:primary' => $table
 			))
-			->values($values)
+			->data($values)
 			->where($where, $where_value)
 			->make();
 	}
