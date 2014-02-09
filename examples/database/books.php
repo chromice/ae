@@ -38,14 +38,10 @@ class Novels extends aeDatabaseTable
 	{
 		return static::database()
 			->select(self::name())
-			->join('{authors} ON {authors}.`id` = {table:primary}.`author_id`')
-			->where('{table:primary}.`id` = {book_id}', array(
+			->joining('Authors', 'author')
+			->where('{table}.`id` = {book_id}', array(
 				'book_id' => $id
 			))
-			->aliases(array(
-				'authors' => Authors::name()
-			))
-			->using('Authors', 'author')
 			->one('Novels');
 	}
 	
@@ -53,12 +49,8 @@ class Novels extends aeDatabaseTable
 	{
 		return static::database()
 			->select(self::name())
-			->join('{authors} ON {authors}.`id` = {table:primary}.`author_id`')
+			->joining('Authors', 'author')
 			->limit($limit, $offset)
-			->aliases(array(
-				'authors' => Authors::name()
-			))
-			->using('Authors', 'author')
 			->many('Novels');
 	}
 	
@@ -66,12 +58,8 @@ class Novels extends aeDatabaseTable
 	{
 		return static::database()
 			->select(self::name())
-			->join('{authors} ON {authors}.`id` = {table:primary}.`author_id`')
-			->order_by('{table:primary}.`title`')
-			->aliases(array(
-				'authors' => Authors::name()
-			))
-			->using('Authors', 'author')
+			->joining('Authors', 'author')
+			->order_by('{table}.`title`')
 			->many('Novels');
 	}
 }

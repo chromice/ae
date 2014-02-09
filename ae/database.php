@@ -613,13 +613,37 @@ class aeDatabase
 	
 	public function using($class, $property = null)
 	/*
-		Specifies secondary/related table classes to use and what property 
+		Specifies secondary/related table class to use and what property 
 		of the primary object to assign the instances to.
 	*/
 	{
 		$this->using[$class] = $property;
 		
 		return $this;
+	}
+	
+	public function joining($class, $singular, $related = null)
+	/*
+		Specifies secondary/related table join and use.
+		
+		See `aeDatabaseResult::using()`.
+	*/
+	{
+		$table = $this->identifier($class::name());
+		$foreign_key = $this->identifier($singular . '_id');
+		
+		if (is_null($related))
+		{
+			$related = '{table}';
+		}
+		else
+		{
+			$related = $this->identifier($related::name());
+		}
+		
+		return $this
+			->join("$table ON $table.`id` = $related.$foreign_key")
+			->using($class, $singular);
 	}
 	
 	// ==================
@@ -632,9 +656,9 @@ class aeDatabase
 		they are primary keys (TRUE or FALSE) as values.
 	*/
 	{
-		$result = $this->query("SHOW COLUMNS FROM {table:primary}")
+		$result = $this->query("SHOW COLUMNS FROM {table}")
 			->aliases(array(
-				'table:primary' => $table
+				'table' => $table
 			))
 			->result();
 		
@@ -697,9 +721,9 @@ class aeDatabase
 			$columns = implode(', ', $columns);
 		}
 		
-		return $this->query("SELECT $columns FROM {table:primary} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
+		return $this->query("SELECT $columns FROM {table} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
 			->aliases(array(
-				'table:primary' => $table
+				'table' => $table
 			));
 	}
 	
@@ -708,9 +732,9 @@ class aeDatabase
 		Insert a new row and returns its autoincremented primary key or NULL.
 	*/
 	{
-		return $this->query("INSERT INTO {table:primary} ({data:names}) VALUES ({data:values})")
+		return $this->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
 			->aliases(array(
-				'table:primary' => $table
+				'table' => $table
 			))
 			->data($values)
 			->make() > 0 ? $this->insert_id() : null;
@@ -735,11 +759,11 @@ class aeDatabase
 		$insert_keys = implode(', ', $insert_keys);
 		$insert_values = implode(', ', $insert_values);
 		
-		return $this->query("INSERT INTO {table:primary} ({data:names}, $insert_keys) 
+		return $this->query("INSERT INTO {table} ({data:names}, $insert_keys) 
 				VALUES ({data:values}, $insert_values) 
 				ON DUPLICATE KEY UPDATE {data:set}")
 			->aliases(array(
-				'table:primary' => $table
+				'table' => $table
 			))
 			->data($values)
 			->make();
@@ -750,9 +774,9 @@ class aeDatabase
 		Updates existing row(s) and returns the number of affected rows.
 	*/
 	{
-		return $this->query("UPDATE {table:primary} SET {data:set} {sql:where}")
+		return $this->query("UPDATE {table} SET {data:set} {sql:where}")
 			->aliases(array(
-				'table:primary' => $table
+				'table' => $table
 			))
 			->data($values)
 			->where($where, $where_value)
@@ -764,9 +788,9 @@ class aeDatabase
 		Deletes existing row(s) and returns the number of affected rows.
 	*/
 	{
-		return $this->query("DELETE FROM {table:primary} {sql:where}")
+		return $this->query("DELETE FROM {table} {sql:where}")
 			->aliases(array(
-				'table:primary' => $table
+				'table' => $table
 			))
 			->where($where, $where_value)
 			->make();
