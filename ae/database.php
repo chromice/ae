@@ -76,7 +76,7 @@ class aeDatabase
 			'password' => null,
 			'database' => null,
 			'port' => null,
-			'socket' => null,
+			'socket' => null
 		));
 		
 		$class = $params->get('class');
@@ -325,18 +325,23 @@ class aeDatabase
 		if (is_array($where))
 		{
 			$_where = array();
-
+			
 			foreach ($where as $_key => $_value)
 			{
 				$_where[] = $this->identifier($_key) . ' = ' . $this->value($_value);
 			}
-
-			return implode(' AND ', $_where);
+			
+			$where = implode(' AND ', $_where);
 		}
-		else
+		
+		if (is_array($value))
 		{
-			return $where;
+			$tokens = preg_replace('/.+/', '{$0}', array_keys($value));
+			$values = array_map(array($this, 'value'), array_values($value));
+			$where = str_replace($tokens, $values, $where);
 		}
+		
+		return $where;
 	}
 	
 	protected function _query()
@@ -397,11 +402,7 @@ class aeDatabase
 
 		$tokens = preg_replace('/.+/', '{$0}', array_keys($placeholders));
 
-		$query = str_replace(
-			$tokens,
-			$placeholders,
-			$query
-		);
+		$query = str_replace($tokens, $placeholders, $query);
 		
 		$this->query = null;
 		$this->parts = null;
