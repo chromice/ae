@@ -148,7 +148,7 @@ class aeDatabase
 	protected $sql_order_by;
 	protected $sql_limit;
 	
-	protected $names = array();
+	protected $aliases = array();
 	protected $variables = array();
 	protected $values = array();
 	
@@ -367,9 +367,9 @@ class aeDatabase
 		
 		$placeholders = array();
 		
-		if (!empty($this->names))
+		if (!empty($this->aliases))
 		{
-			$placeholders = array_map(array($this, 'identifier'), $this->names);
+			$placeholders = array_map(array($this, 'identifier'), $this->aliases);
 		}
 		
 		if (!empty($this->variables))
@@ -405,7 +405,7 @@ class aeDatabase
 		
 		$this->query = null;
 		$this->parts = null;
-		$this->names = array();
+		$this->aliases = array();
 		$this->variables = array();
 		$this->values = array();
 		
@@ -455,13 +455,13 @@ class aeDatabase
 		return $value;
 	}
 	
-	public function names($names)
+	public function aliases($aliases)
 	/*
 		Accepts an associative array of placeholder/indetifier pairs
 		used in the current query.
 	*/
 	{
-		$this->names = array_merge($this->names, $names);
+		$this->aliases = array_merge($this->aliases, $aliases);
 		
 		return $this;
 	}
@@ -632,7 +632,7 @@ class aeDatabase
 	*/
 	{
 		$result = $this->query("SHOW COLUMNS FROM {table:primary}")
-			->names(array(
+			->aliases(array(
 				'table:primary' => $table
 			))
 			->result();
@@ -697,7 +697,7 @@ class aeDatabase
 		}
 		
 		return $this->query("SELECT $columns FROM {table:primary} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
-			->names(array(
+			->aliases(array(
 				'table:primary' => $table
 			));
 	}
@@ -708,7 +708,7 @@ class aeDatabase
 	*/
 	{
 		return $this->query("INSERT INTO {table:primary} ({keys}) VALUES ({values})")
-			->names(array(
+			->aliases(array(
 				'table:primary' => $table
 			))
 			->values($values)
@@ -737,7 +737,7 @@ class aeDatabase
 		return $this->query("INSERT INTO {table:primary} ({keys}, $insert_keys) 
 				VALUES ({values}, $insert_values) 
 				ON DUPLICATE KEY UPDATE {keys=values}")
-			->names(array(
+			->aliases(array(
 				'table:primary' => $table
 			))
 			->values($values)
@@ -750,7 +750,7 @@ class aeDatabase
 	*/
 	{
 		return $this->query("UPDATE {table:primary} SET {keys=values} {sql:where}")
-			->names(array(
+			->aliases(array(
 				'table:primary' => $table
 			))
 			->values($values)
@@ -764,7 +764,7 @@ class aeDatabase
 	*/
 	{
 		return $this->query("DELETE FROM {table:primary} {sql:where}")
-			->names(array(
+			->aliases(array(
 				'table:primary' => $table
 			))
 			->where($where, $where_value)

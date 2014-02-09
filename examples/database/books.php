@@ -19,7 +19,7 @@ class Novels extends aeDatabaseTable
 				`content` text NOT NULL,
 				PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-			->names(array(
+			->aliases(array(
 				'books' => static::name()
 			))
 			->make();
@@ -28,7 +28,7 @@ class Novels extends aeDatabaseTable
 	public static function uninstall()
 	{
 		static::database()->query("DROP TABLE IF EXISTS {books}")
-			->names(array(
+			->aliases(array(
 				'books' => static::name()
 			))
 			->make();
@@ -44,7 +44,7 @@ class Novels extends aeDatabaseTable
 			->variables(array(
 				'book_id' => $id
 			))
-			->names(array(
+			->aliases(array(
 				'books' => static::name(),
 				'authors' => Authors::name()
 			))
@@ -60,7 +60,7 @@ class Novels extends aeDatabaseTable
 				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
 				{sql:limit}')
 			->limit($limit, $offset)
-			->names(array(
+			->aliases(array(
 				'books' => static::name(),
 				'authors' => Authors::name()
 			))
@@ -75,7 +75,7 @@ class Novels extends aeDatabaseTable
 				FROM {books} 
 				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
 				ORDER BY {books}.`title`')
-			->names(array(
+			->aliases(array(
 				'books' => static::name(),
 				'authors' => Authors::name()
 			))

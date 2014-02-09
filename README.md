@@ -834,13 +834,13 @@ ae::database()
 		`nationality` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-	->names(array(
+	->aliases(array(
 		'table' => 'authors'
 	))
 	->make();
 ```
 
-Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::names()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
+Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::aliases()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
 
 While not particularly useful in this example, placeholders are generally a good way to keep you query code readable.
 
@@ -849,7 +849,7 @@ Let's fill this table with some data:
 ```php
 ae::database()
 	->query("INSERT INTO {table} ({keys}) VALUES ({values})")
-	->names(array(
+	->aliases(array(
 		'table' => 'authors'
 	))
 	->values(array(
@@ -866,7 +866,7 @@ In this example we are using `{keys}` and `{values}` placeholders and specify ke
 ```php
 ae::database()
 	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
-	->names(array(
+	->aliases(array(
 		'table' => 'authors'
 	))
 	->values(array(
@@ -1137,7 +1137,7 @@ class Novels extends aeDatabaseTable
 				FROM {books} 
 				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
 				ORDER BY {books}.`title`')
-			->names(array(
+			->aliases(array(
 				'books' => static::name(),
 				'authors' => Authors::name()
 			))

@@ -29,7 +29,7 @@ Authors::install();
 // EXAMPLE: Insert
 ae::database()
 	->query("INSERT INTO {table} ({keys}) VALUES ({values})")
-	->names(array(
+	->aliases(array(
 		'table' => 'authors'
 	))
 	->values(array(
@@ -45,7 +45,7 @@ $transaction = ae::database()->transaction();
 // EXAMPLE: Update
 ae::database()
 	->query("UPDATE {table} SET {keys=values} WHERE `id` = {author_id}")
-	->names(array(
+	->aliases(array(
 		'table' => 'authors'
 	))
 	->values(array(

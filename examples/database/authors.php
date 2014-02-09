@@ -22,7 +22,7 @@ class Authors extends aeDatabaseTable
 				`nationality` varchar(255) NOT NULL,
 				PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-			->names(array(
+			->aliases(array(
 				'authors' => static::name()
 			))
 			->make();
@@ -31,7 +31,7 @@ class Authors extends aeDatabaseTable
 	public static function uninstall()
 	{
 		static::database()->query("DROP TABLE IF EXISTS {authors}")
-			->names(array(
+			->aliases(array(
 				'authors' => static::name()
 			))
 			->make();
