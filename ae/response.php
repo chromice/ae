@@ -54,7 +54,7 @@ class aeResponse
 		$this->headers = array();
 		$this->buffer = new aeBuffer();
 		
-		array_unshift(self::$buffers, &$this->buffer);
+		array_unshift(self::$buffers, $this->buffer);
 		
 		if (empty($type))
 		{
