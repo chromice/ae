@@ -364,6 +364,26 @@ class aeImage
 		return $this;
 	}
 	
+	public function progressive($whether = true)
+	/*
+		Sets JPEG images as progressive.
+	*/
+	{
+		$this->_load();
+		
+		imageinterlace($this->source, $whether);
+		
+		return $this;
+	}
+	
+	public function interlaced($whether = true)
+	/*
+		Sets PNG and GIF images as interlaced.
+	*/
+	{
+		return $this->progressive($whether);
+	}
+	
 	public function suffix($suffix)
 	/*
 		Sets the suffix of the new image name.
