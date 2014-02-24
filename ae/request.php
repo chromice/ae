@@ -199,7 +199,7 @@ class aeRequest
 	
 	protected static function _parse_request()
 	{
-		if (!empty(self::$_uri)) 
+		if (!is_null(self::$_uri)) 
 		{
 			return;
 		}
@@ -233,7 +233,7 @@ class aeRequest
 		}
 		
 		$type = 'html';
-		$uri = trim($uri, '/');
+		$uri = urldecode(trim($uri, '/'));
 		$base_path = self::_base_url();
 		
 		if (strlen($base_path) > 0 && strpos($uri, $base_path) === 0)
@@ -247,10 +247,18 @@ class aeRequest
 			$uri = substr($uri, 0, strlen($uri) - strlen($type) - 1);
 		}
 		
-		
-		self::$_uri = '/' . urldecode($uri) . ($type !== 'html' ? '.' . $type  : '');
-		self::$_type = $type;
-		self::$_segments = array_map('urldecode', explode('/', $uri));
+		if (empty($uri))
+		{
+			self::$_uri = '';
+			self::$_type = $type;
+			self::$_segments = array();
+		}
+		else
+		{
+			self::$_uri = '/' . $uri . ($type !== 'html' ? '.' . $type  : '');
+			self::$_type = $type;
+			self::$_segments = explode('/', $uri);
+		}
 	}
 	
 	protected static function _base_url()
