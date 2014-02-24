@@ -371,7 +371,7 @@ class aeImage
 	{
 		$this->_load();
 		
-		imageinterlace($this->source, $whether);
+		imageinterlace($this->source, $whether && $this->type === IMAGETYPE_JPEG);
 		
 		return $this;
 	}
@@ -381,7 +381,11 @@ class aeImage
 		Sets PNG and GIF images as interlaced.
 	*/
 	{
-		return $this->progressive($whether);
+		$this->_load();
+		
+		imageinterlace($this->source, $whether && $this->type !== IMAGETYPE_JPEG);
+		
+		return $this;
 	}
 	
 	public function suffix($suffix)
