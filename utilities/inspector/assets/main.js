@@ -266,7 +266,7 @@ Zepto(function() {
 					
 					property = '';
 				} else {
-					return text;
+					return text.replace(/</g, '&lt;');
 				}
 			}
 		);
