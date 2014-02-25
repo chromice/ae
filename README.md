@@ -1133,21 +1133,15 @@ class Novels extends aeDatabaseTable
 	public static function all()
 	{
 		return static::database()
-			->query('SELECT * 
-				FROM {books} 
-				JOIN {authors} ON {authors}.`id` = {books}.`author_id`
-				ORDER BY {books}.`title`')
-			->aliases(array(
-				'books' => static::name(),
-				'authors' => Authors::name()
-			))
-			->using('Authors', 'author')
+			->select(self::name())
+			->joining('Authors', 'author')
+			->order_by('{table}.`title`')
 			->many('Novels');
 	}
 }
 ```
 
-Most of this code should be familiar to you. The only novelty is `aeDatabase::using()` method. The query will retrieve data from both "books" and "authors" tables, so we need to instruct the database driver to return "books" data as an instance of `Novels` class, and "authors" data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
+Most of this code should be familiar to you. The only novelty is `aeDatabase::joining()` method. The query will retrieve data from both "books" and "authors" tables, and we instruct the database driver to return "books" data as an instance of `Novels` class, and "authors" data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
 
 Let's inventory our novel collection:
 
