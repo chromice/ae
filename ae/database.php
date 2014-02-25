@@ -328,7 +328,7 @@ class aeDatabase
 			
 			foreach ($where as $_key => $_value)
 			{
-				$_where[] = $this->identifier($_key) . ' = ' . $this->value($_value);
+				$_where[] = $this->backtick($_key) . ' = ' . $this->escape($_value);
 			}
 			
 			$where = implode(' AND ', $_where);
@@ -337,7 +337,7 @@ class aeDatabase
 		if (is_array($value))
 		{
 			$tokens = preg_replace('/.+/', '{$0}', array_keys($value));
-			$values = array_map(array($this, 'value'), array_values($value));
+			$values = array_map(array($this, 'escape'), array_values($value));
 			$where = str_replace($tokens, $values, $where);
 		}
 		
@@ -374,7 +374,7 @@ class aeDatabase
 		
 		if (!empty($this->aliases))
 		{
-			$placeholders = array_map(array($this, 'identifier'), $this->aliases);
+			$placeholders = array_map(array($this, 'backtick'), $this->aliases);
 		}
 		
 		if (!empty($this->variables))
@@ -390,7 +390,7 @@ class aeDatabase
 			
 			foreach ($this->values as $key => $value)
 			{
-				$keys[] = $key = $this->identifier($key);
+				$keys[] = $key = $this->backtick($key);
 				$values[] = $value;
 				$keys_values[] = $key . ' = ' . $value;
 			}
@@ -420,7 +420,7 @@ class aeDatabase
 		return $query;
 	}
 	
-	public function identifier($name)
+	public function backtick($name)
 	/*
 		Protects an alias, table or column name with backticks.
 	*/
@@ -428,7 +428,7 @@ class aeDatabase
 		return '`' . str_replace('`', '``', $name) . '`';
 	}
 	
-	public function value($value)
+	public function escape($value)
 	/*
 		Returns an escaped value:
 		
@@ -475,7 +475,7 @@ class aeDatabase
 	{
 		if ($type !== aeDatabase::statement)
 		{
-			$variables = array_map(array($this, 'value'), $variables);
+			$variables = array_map(array($this, 'escape'), $variables);
 		}
 		
 		$this->variables = array_merge($this->variables, $variables);
@@ -497,7 +497,7 @@ class aeDatabase
 	{
 		if ($type !== aeDatabase::statement)
 		{
-			$values = array_map(array($this, 'value'), $values);
+			$values = array_map(array($this, 'escape'), $values);
 		}
 
 		$this->values = array_merge($this->values, $values);
@@ -511,7 +511,7 @@ class aeDatabase
 	*/
 	{
 		$query = $this->_query();
-		$query = str_replace($this->value('?'), '?', $query);
+		$query = str_replace($this->escape('?'), '?', $query);
 		
 		return $this->db->prepare($query);
 	}
@@ -629,8 +629,8 @@ class aeDatabase
 		See `aeDatabaseResult::using()`.
 	*/
 	{
-		$table = $this->identifier($class::name());
-		$foreign_key = $this->identifier($singular . '_id');
+		$table = $this->backtick($class::name());
+		$foreign_key = $this->backtick($singular . '_id');
 		
 		if (is_null($related))
 		{
@@ -638,7 +638,7 @@ class aeDatabase
 		}
 		else
 		{
-			$related = $this->identifier($related::name());
+			$related = $this->backtick($related::name());
 		}
 		
 		return $this
@@ -717,7 +717,7 @@ class aeDatabase
 		}
 		else if (is_array($columns))
 		{
-			$columns = array_map(array($this, 'identifier'), $columns);
+			$columns = array_map(array($this, 'backtick'), $columns);
 			$columns = implode(', ', $columns);
 		}
 		
@@ -752,8 +752,8 @@ class aeDatabase
 		
 		foreach ($where as $key => $value)
 		{
-			$insert_keys[] = $this->identifier($key);
-			$insert_values[] = $this->value($value);
+			$insert_keys[] = $this->backtick($key);
+			$insert_values[] = $this->escape($value);
 		}
 		
 		$insert_keys = implode(', ', $insert_keys);
@@ -904,7 +904,7 @@ class aeDatabaseResult
 			
 			$related = new $class($values, true);
 			
-			$object->attach($table['alias'], $related);
+			$object->attach($related, $table['alias']);
 		}
 		
 		return $object;
@@ -958,7 +958,7 @@ abstract class aeDatabaseTable
 	
 	Now you can easily perform CRUD actions on "my_table" table:
 	
-		$row = MyTable::create(arrat('column' => 'value'))->save();
+		$row = MyTable::create(array('column' => 'value'))->save();
 		
 		$row_ids = $row->ids();
 		
@@ -1129,7 +1129,7 @@ abstract class aeDatabaseTable
 		}
 	}
 	
-	public function attach($property, $object)
+	public function attach($object, $property)
 	/*
 		Attaches an instance of (usually) related entity.
 	*/
@@ -1152,8 +1152,7 @@ abstract class aeDatabaseTable
 	/*
 		Sets supplied $values or returns current values.
 		
-		If second argument is TRUE, $values are unserialized and set as data 
-		before being set.
+		If second argument is TRUE, $values are unserialized and set as data.
 	*/
 	{
 		if (is_array($values))
@@ -1365,7 +1364,7 @@ abstract class aeDatabaseTable
 		$this->values = array();
 		$this->transient = array();
 		$this->related = array();
-	
+		
 		return $this;
 	}
 	
