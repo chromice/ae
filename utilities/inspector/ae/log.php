@@ -102,7 +102,7 @@ class aeLog
 		$options = ae::options('inspector');
 		$dump_context = $options->get('dump_context');
 		
-		if (!$dump_context && count(self::$log) === 0)
+		if (connection_aborted() || !$dump_context && count(self::$log) === 0)
 		{
 			return;
 		}
