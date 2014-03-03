@@ -518,3 +518,10 @@ class aeSwitch
 		$this->var = $this->previous;
 	}
 }
+
+// =============================
+// = Get/set default time zone =
+// =============================
+
+// FIXME: May cause all sorts of date-related problems in non-ae code.
+date_default_timezone_set(@date_default_timezone_get());
