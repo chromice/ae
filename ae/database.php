@@ -71,7 +71,7 @@ class aeDatabase
 		
 		$params = ae::options('ae.database.' . $database, array(
 			'class' => get_called_class(),
-			'host' => 'localhost',
+			'host' => '127.0.0.1',
 			'user' => null,
 			'password' => null,
 			'database' => null,

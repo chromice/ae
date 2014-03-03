@@ -765,7 +765,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 		}
 		
 		$count = count($this->values);
-				
+		
 		return $result && $count >= $this->min && (is_null($this->max) || $count <= $this->max);
 	}
 	

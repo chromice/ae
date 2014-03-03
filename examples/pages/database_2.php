@@ -11,6 +11,9 @@ ae::options('ae.database.default')
 	->set('password', 'root')
 	->set('database', 'ae');
 
+// When socket cannot be detected automatically...
+// ae::options('ae.database.default')->set('socket', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock');
+
 echo '<h1>Official database example</h1>';
 
 // New context

@@ -221,7 +221,7 @@ class aeRequest
 				$uri = substr($uri, 0, $pos);
 			}
 			
-			if ($var !== 'PATH_INFO')
+			if ($var !== 'PATH_INFO' && $uri !== $script_name)
 			{
 				$uri = str_replace($script_name, '', $uri);
 			}
