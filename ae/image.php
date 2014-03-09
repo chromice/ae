@@ -111,13 +111,13 @@ class aeImage
 	// = Manipulation =
 	// ================
 	
-	const left = 0;
+	const left   = 0.0;
 	const center = 0.5;
-	const right = 1;
+	const right  = 1.0;
 	
-	const top = 0;
-	const middle = 0.5;
-	const bottom = 1;
+	const top    = null;
+	const middle = -0.5;
+	const bottom = -1.0;
 	
 	protected $align_x = 0.5;
 	protected $align_y = 0.5;
@@ -126,7 +126,7 @@ class aeImage
 	protected $source_width;
 	protected $source_height;
 	
-	public function align($horizontal, $vertial)
+	public function align($horizontal, $vertical)
 	/*
 		Sets the origin point along horizontal and vertical axis.
 		
@@ -135,8 +135,18 @@ class aeImage
 		1.0 - right or bottom.
 	*/
 	{
+		if ($horizontal < 0 || is_null($horizontal))
+		{
+			$t = $vertical;
+			$vertical = $horizontal;
+			$horizontal = $t;
+		}
+		
+		$horizontal = abs($horizontal);
+		$vertical   = abs($vertical);
+		
 		$this->align_x = min(1, max(0, (float)$horizontal));
-		$this->align_y = min(1, max(0, (float)$vertial));
+		$this->align_y = min(1, max(0, (float)$vertical));
 		
 		return $this;
 	}
