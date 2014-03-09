@@ -61,7 +61,15 @@ final class ae
 			trigger_error('Cannot register "' . $path . '", because it is not a directory.', E_USER_ERROR);
 		}
 		
-		self::$contexts[] = $path;
+		// Application's context must always be at the top
+		if ($type === ae::application)
+		{
+			array_unshift(self::$contexts, $path);
+		}
+		else
+		{
+			array_push(self::$contexts, $path);
+		}
 		
 		if ($type !== ae::context && file_exists($path . '/index.php'))
 		{
