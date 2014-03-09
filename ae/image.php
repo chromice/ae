@@ -278,26 +278,6 @@ class aeImage
 		return $this;
 	}
 	
-	public function apply()
-	/*
-		Applies a filter to the image.
-		
-		Uses PHP's `imagefilter()` function.
-	*/
-	{
-		$this->_load();
-		
-		$arguments = func_get_args();
-		array_unshift($arguments, $this->source);
-		
-		if (false === call_user_func_array('imagefilter', $arguments))
-		{
-			throw new aeImageException('Could not apply filter.');
-		}
-		
-		return $this;
-	}
-	
 	protected function _dimensions($width, $height)
 	{
 		if ((empty($width) || $width < 0)
@@ -356,6 +336,112 @@ class aeImage
 		
 		$this->source = null;
 	}
+	
+	// ===========
+	// = Filters =
+	// ===========
+	
+	public function apply()
+	/*
+		Applies a filter to the image
+		
+			$image->apply(IMG_FILTER_GRAYSCALE);
+		
+		Uses PHP's `imagefilter()` function.
+	*/
+	{
+		$this->_load();
+		
+		$arguments = func_get_args();
+		array_unshift($arguments, $this->source);
+		
+		if (false === call_user_func_array('imagefilter', $arguments))
+		{
+			throw new aeImageException('Could not apply filter.');
+		}
+		
+		return $this;
+	}
+	
+	public function blur()
+	/*
+		Blurs the image using the Gaussian method.
+	*/
+	{
+		return $this->apply(IMG_FILTER_GAUSSIAN_BLUR);
+	}
+	
+	public function brightness($value)
+	/*
+		Changes the brightness of the image.
+	
+		Brightness value must be bewteen -1.0 and +1.0.
+	*/
+	{
+		return $this->apply(IMG_FILTER_BRIGHTNESS, round(min(1, max(-1, (float) $value)) * 255));
+	}
+
+	public function contast($value)
+	/*
+		Changes the contrast of the image.
+	
+		Constast value must be bewteen -1.0 and +1.0.
+	*/
+	{
+		return $this->apply(IMG_FILTER_BRIGHTNESS, round(min(1, max(-1, (float) $value)) * 100));
+	}
+	
+	public function colorize($red, $green, $blue, $alpha = 0)
+	/*
+		Shifts the value of each component.
+		
+		Values must be bewteen -1.0 and +1.0.
+	*/
+	{
+		$red = round(min(1, max(-1, (float) $red)) * 255);
+		$green = round(min(1, max(-1, (float) $green)) * 255);
+		$blue = round(min(1, max(-1, (float) $blue)) * 255);
+		$alpha = round(min(1, max(-1, (float) $alpha)) * 255);
+		
+		// var_dump($red, $green, $blue, $alpha);
+		
+		return $this->apply(IMG_FILTER_COLORIZE, $red, $green, $blue, $alpha);
+	}
+	
+	public function grayscale()
+	/*
+		Converts the image into grayscale.
+	*/
+	{
+		return $this->apply(IMG_FILTER_GRAYSCALE);
+	}
+	
+	public function negate()
+	/*
+		Reverses all colors of the image.
+	*/
+	{
+		return $this->apply(IMG_FILTER_NEGATE);
+	}
+	
+	public function pixelate($size, $advanced = false)
+	/*
+		Applies pixelation effect to the image.
+	*/
+	{
+		return $this->apply(IMG_FILTER_PIXELATE, $size, $advanced === true);
+	}
+	
+	public function smooth($value)
+	/*
+		Makes the image smoother.
+	
+		Any float value is accepted.
+	*/
+	{
+		return $this->apply(IMG_FILTER_SMOOTH, (float) $value);
+	}
+	
 	
 	// ==========
 	// = Output =

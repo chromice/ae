@@ -46,7 +46,7 @@ $image
 // Apply colorize filter
 // using http://uk3.php.net/manual/en/function.imagefilter.php
 $image
-	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
+	->colorize(55 / 255, 0, 0)
 	->cache(aeResponseCache::year, $request->uri())
 	->dispatch($request::uri()); // clean all output, set the correct headers, return the image content and... die!
 	
