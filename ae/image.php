@@ -33,6 +33,8 @@ class aeImage
 			->suffix('_thumb')
 			->save(); 
 	
+	Constructor throw `Exception`, if path to image cannot be resolved.
+	All methods throw `aeImageException`, if operation is not successful.
 */
 {
 	protected $path;

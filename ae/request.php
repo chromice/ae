@@ -82,6 +82,8 @@ class aeRequest
 	public function route($rules, $target = null)
 	/*
 		Returns an instance of `aeRouter` for current URI.
+	
+		Throws `aeRequestException`, if target path cannot be resolved.
 	*/
 	{
 		$uri = implode('/', array_slice($this->segments, $this->depth));
@@ -290,6 +292,8 @@ class aeRouter
 	public static function request($segments = null)
 	/*
 		Returns an instance of `aeRequest` object for given segments.
+	
+		Throws `aeRequestException` for non-HTTP requests.
 	*/
 	{
 		if (aeRequest::is_cli)
@@ -347,9 +351,11 @@ class aeRouter
 
 	protected function _route_uri($base, $uri)
 	{
-		$base = ae::resolve($base);
-		
-		if (!file_exists($base))
+		try 
+		{
+			$base = ae::resolve($base);
+		} 
+		catch (Exception $e) 
 		{
 			throw new aeRequestException('Request could not be routed. Base directory "' . $base . '" does not exist.');
 		}
@@ -395,6 +401,8 @@ class aeRouter
 	public function follow()
 	/*
 		Attempts to route the request.
+	
+		Throws `aeRequestException`, if there is no path to follow.
 	*/
 	{
 		if (is_callable($this->callback))

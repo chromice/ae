@@ -28,6 +28,7 @@ class aeFile
 			->write('This is a test')
 			->close();
 	
+	All methods throw `aeFileException` on failure.
 */
 {
 	protected $path;

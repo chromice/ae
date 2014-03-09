@@ -45,6 +45,9 @@ class aeDatabase
 		$db = ae::database('default');
 		
 		$db->query('SELECT 1')->make();
+	
+	All methods throw `aeDatabaseException` on driver level failure, and 
+	trigger an error for user space failures, i.e. wrong paramereter, empty query, etc.
 */
 {
 	// Value types
