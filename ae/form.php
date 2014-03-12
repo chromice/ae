@@ -20,7 +20,7 @@ ae::import('ae/request.php');
 
 ae::invoke('aeForm');
 
-class aeForm
+class aeForm implements ArrayAccess
 /*
 	Form rendering and validation library.
 	
@@ -210,6 +210,37 @@ class aeForm
 		}
 		
 		return implode(' ', $output);
+	}
+	
+	// ==============================
+	// = ArrayAccess implementation =
+	// ==============================
+	
+	public function offsetExists($name)
+	{
+		return isset($this->fields[$name]);
+	}
+	
+	public function offsetGet($name)
+	{
+		if (!isset($this->fields[$name]))
+		{
+			trigger_error('Unknown field "' . $name . '".', E_USER_ERROR);
+			
+			return;
+		}
+		
+		return $this->fields[$name];
+	}
+	
+	public function offsetSet($name, $field)
+	{
+		trigger_error('Form fields cannot be set directly. Please use an appropriate factory method.', E_USER_ERROR);
+	}
+	
+	public function offsetUnset($name)
+	{
+		unset($this->fields[$name], $this->values[$name], $this->errors[$name]);
 	}
 }
 

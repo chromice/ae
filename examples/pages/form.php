@@ -6,14 +6,14 @@ $form = ae::form('form-id');
 if (!$form->is_submitted())
 {
 	$form->values(array(
-		'text' => '1',
+		'number' => '1',
 		'select' => 'bar',
 		// 'textarea' => array(123, 124)
 	));
 }
 
 // Create a single field that accepts integers from 0 to 1000
-$number = $form->single('text')
+$number = $form->single('number')
 	->required('Please enter some number.')
 	->valid_pattern('Please enter a valid integer number.', aeValidator::integer)
 	->valid_value('Devils are not allowed!', function ($value, $index) {
@@ -66,7 +66,7 @@ else if ($form->is_submitted())
 	{
 		$values = $form->values();
 
-		echo '<h1>' . $values['text'] . '</h1>';
+		echo '<h1>' . $values['number'] . '</h1>';
 		echo '<p>' . implode('</p><p>', $values['textarea']) . '</p>';
 		echo '<dl>';
 		echo '<dt>Selected:</dt>';
@@ -81,7 +81,7 @@ else if ($form->is_submitted())
 		$errors = $form->errors();
 		
 		// $errors = array(
-		// 	'text' => '...',
+		// 	'number' => '...',
 		// 	'textarea' => array(...),
 		// 	'select' => '...',
 		// 	'check' => array(0 => '...', 1 => null)
@@ -104,8 +104,8 @@ else if ($form->is_submitted())
 	<input type="submit" tabindex="-1" style="position:absolute;left:-9999px;"> -->
 <div class="field">
 	<label for="<?= $number->id() ?>">Number input:</label>
-	<?= $number->input('text') ?>
-	<?= $number->error('<em class="error">', '</em>') ?>
+	<?= $form['number']->input('text') ?>
+	<?= $form['number']->error('<em class="error">', '</em>') ?>
 </div>
 <?php foreach ($textarea as $k => $_ta):
 	// You could use fields from other sequences in the same loop like this:
