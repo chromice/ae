@@ -175,12 +175,12 @@ class aeForm implements ArrayAccess
 	*/
 	{
 		$attributes = array_merge(array(
-			'method' => 'post',
 			'action' => aeRequest::url(),
 			'novalidate' => !ae::options('ae.form')->get('frontend_validation')
 		), $attributes);
 		
 		$attributes['id'] = $this->id . '-form';
+		$attributes['method'] = 'post';
 		
 		return '<form ' . self::attributes($attributes) . '>'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
