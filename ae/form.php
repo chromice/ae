@@ -16,6 +16,10 @@
 # limitations under the License.
 # 
 
+ae::options('ae.form', array(
+	'frontend_validation' => true // whether to allow HTML5 validation in browsers that support it.
+));
+
 ae::import('ae/request.php');
 
 ae::invoke('aeForm');
@@ -172,7 +176,8 @@ class aeForm implements ArrayAccess
 	{
 		$attributes = array_merge(array(
 			'method' => 'post',
-			'action' => aeRequest::url()
+			'action' => aeRequest::url(),
+			'novalidate' => !ae::options('ae.form')->get('frontend_validation')
 		), $attributes);
 		
 		$attributes['id'] = $this->id . '-form';
@@ -334,11 +339,17 @@ class aeValidator
 	{
 		$this->validators['valid_value'] = function($value, $index = null) use ($message, $misc) {
 			if (is_scalar($misc))
+			{
 				return $value != $misc ? $message : null;
+			}
 			else if (is_array($misc))
+			{
 				return !in_array($value, $misc) ? $message : null;
+			}
 			else if (is_callable($misc))
+			{
 				return call_user_func($misc, $value, $index) === false ? $message : null;
+			}
 		};
 		
 		return $this;
