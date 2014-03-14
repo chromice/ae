@@ -73,7 +73,10 @@ class aeForm implements ArrayAccess
 			trigger_error('Form ID cannot be empty.', E_USER_ERROR);
 		}
 		
+		$nonces = ae::session('nonces');
+		
 		$this->id = $form_id;
+		$this->nonce = $nonces[$form_id];
 		
 		if ($this->is_submitted())
 		{
@@ -110,7 +113,8 @@ class aeForm implements ArrayAccess
 		Returns true if the form with such id is posted.
 	*/
 	{
-		return isset($_POST['__ae_form_id__']) && $_POST['__ae_form_id__'] === $this->id;
+		return isset($_POST['__ae_form_id__']) && $_POST['__ae_form_id__'] === $this->id
+			&& isset($_POST['__ae_form_nonce__']) && $_POST['__ae_form_nonce__'] === $this->nonce;
 	}
 
 	public function validate()
@@ -182,9 +186,14 @@ class aeForm implements ArrayAccess
 		$attributes['id'] = $this->id . '-form';
 		$attributes['method'] = 'post';
 		
+		// Update nonce
+		$nonces = ae::session('nonces');
+		$nonces[$this->id] = md5(uniqid(mt_rand(), true));
+		
 		return '<form ' . self::attributes($attributes) . '>'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
-			. '<input type="submit" tabindex="-1" style="position:absolute;left:-999em;width:0;overflow:hidden">';
+			. '<input type="hidden" name="__ae_form_nonce__" value="' . $nonces[$this->id] . '" />'
+			. '<input type="submit" tabindex="-1" style="position:absolute; left:-999em; width:0; overflow:hidden">';
 	}
 
 	public function close()
