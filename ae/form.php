@@ -346,7 +346,7 @@ class aeValidator
 		- if `$misc` is a function, and `$misc($value, $index)` returns FALSE.
 	*/
 	{
-		$this->validators['valid_value'] = function($value, $index = null) use ($message, $misc) {
+		$this->validators['valid_value'] = function ($value, $index = null) use ($message, $misc) {
 			if (is_scalar($misc))
 			{
 				return $value != $misc ? $message : null;
@@ -397,7 +397,7 @@ class aeValidator
 		}
 		
 		$this->html['pattern'] = '\s*' . $pattern . '\s*';
-		$this->validators['valid_pattern'] = function($value) use ($message, $pattern, $time) {
+		$this->validators['valid_pattern'] = function ($value) use ($message, $pattern, $time) {
 			return preg_match('/^(?:' . $pattern . ')$/', $value) !== 1 
 				|| $time && strtotime($value) === FALSE ? $message : null;
 		};
@@ -410,7 +410,7 @@ class aeValidator
 		Prevents user from submitting a value shorter then `$length`.
 	*/
 	{
-		$this->validators['min_length'] = function($value) use ($message, $length) {
+		$this->validators['min_length'] = function ($value) use ($message, $length) {
 			return strlen($value) < $length ? $message : null;
 		};
 
@@ -423,7 +423,7 @@ class aeValidator
 	*/
 	{
 		$this->html['maxlength'] = $length;
-		$this->validators['max_length'] = function($value) use ($message, $length) {
+		$this->validators['max_length'] = function ($value) use ($message, $length) {
 			return strlen($value) > $length ? $message : null;
 		};
 
@@ -441,14 +441,14 @@ class aeValidator
 		if (!empty($this->time_format))
 		{
 			$format = $this->time_format;
-			$this->validators['min_value'] = function($value) use ($message, $limit, $format) {
+			$this->validators['min_value'] = function ($value) use ($message, $limit, $format) {
 				return preg_match($format, $value) !== 1 || preg_match($format, $limit) !== 1
 					|| strtotime($value) < strtotime($limit) ? $message : null;
 			};
 		}
 		else
 		{
-			$this->validators['min_value'] = function($value) use ($message, $limit) {
+			$this->validators['min_value'] = function ($value) use ($message, $limit) {
 				return $value < $limit ? $message : null;
 			};
 		}
@@ -467,14 +467,14 @@ class aeValidator
 		if (!empty($this->time_format))
 		{
 			$format = $this->time_format;
-			$this->validators['max_value'] = function($value) use ($message, $limit, $format) {
+			$this->validators['max_value'] = function ($value) use ($message, $limit, $format) {
 				return preg_match($format, $value) !== 1 || preg_match($format, $limit) !== 1
 					|| strtotime($value) > strtotime($limit) ? $message : null;
 			};
 		}
 		else
 		{
-			$this->validators['max_value'] = function($value) use ($message, $limit) {
+			$this->validators['max_value'] = function ($value) use ($message, $limit) {
 				return $value > $limit ? $message : null;
 			};
 		}

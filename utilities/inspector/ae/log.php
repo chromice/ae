@@ -25,7 +25,7 @@ ae::options('inspector', array(
 ));
 
 // Call aeLog::log() whenever user is "loading" the library.
-ae::invoke(function() {
+ae::invoke(function () {
 	call_user_func_array(array('aeLog', 'log'), func_get_args());
 });
 

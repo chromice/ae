@@ -195,7 +195,7 @@ final class ae
 			ae::invoke(array('AnotherSingletonClassName', 'factory'));
 			
 			// Closure / singleton pattern
-			ae::invoke(function($param, $param_2) {
+			ae::invoke(function ($param, $param_2) {
 				static $instance;
 				
 				if (!empty($instance)) 
