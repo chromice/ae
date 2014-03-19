@@ -196,7 +196,7 @@ class aeResponse
 		{
 			$this->headers[$name][] = $value;
 		}
-		else if (empty($value) && $replace === true)
+		elseif (empty($value) && $replace === true)
 		{
 			unset($this->headers[$name]);
 		}

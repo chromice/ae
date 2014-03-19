@@ -65,11 +65,11 @@ class aeLog
 		{
 			$class = 'exception';
 		}
-		else if ($error['type'] & self::_error_mask())
+		elseif ($error['type'] & self::_error_mask())
 		{
 			$class = 'error';
 		}
-		else if ($error['type'] & self::_warning_mask())
+		elseif ($error['type'] & self::_warning_mask())
 		{
 			$class = 'warning';
 		}
@@ -191,17 +191,17 @@ class aeLog
 		{
 			fwrite(STDERR, "$o\n");
 		}
-		else if (!in_array($ip, $allowed_ips))
+		elseif (!in_array($ip, $allowed_ips))
 		{
 			return;
 		}
-		else if (aeRequest::is_ajax)
+		elseif (aeRequest::is_ajax)
 		{
 			if (!headers_sent())
 			{
 				header('X-ae-log: ' . base64_encode($o));
 			}
-			else if (self::$has_problems)
+			elseif (self::$has_problems)
 			{
 				echo $o;
 			}
@@ -325,23 +325,23 @@ class aeLog
 						$args[] = $name;
 						$dumps[] = self::_dump($name, $arg, 1);
 					}
-					else if (is_numeric($arg))
+					elseif (is_numeric($arg))
 					{
 						$args[] = $arg;
 					}
-					else if ($arg === false)
+					elseif ($arg === false)
 					{
 						$args[] = 'FALSE';
 					}
-					else if ($arg === true)
+					elseif ($arg === true)
 					{
 						$args[] = 'TRUE';
 					}
-					else if ($arg === null)
+					elseif ($arg === null)
 					{
 						$args[] = 'NULL';
 					}
-					else if (strlen($arg) > $max_argument_length)
+					elseif (strlen($arg) > $max_argument_length)
 					{
 						$name = '"' . substr($arg, 0, $max_argument_length) . '..."';
 						$args[] = $name;
@@ -369,11 +369,11 @@ class aeLog
 		{
 			$object = 'FALSE';
 		}
-		else if ($object === true)
+		elseif ($object === true)
 		{
 			$object = 'TRUE';
 		}
-		else if ($object === null)
+		elseif ($object === null)
 		{
 			$object = 'NULL';
 		}

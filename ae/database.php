@@ -718,7 +718,7 @@ class aeDatabase
 		{
 			$columns = '*';
 		}
-		else if (is_array($columns))
+		elseif (is_array($columns))
 		{
 			$columns = array_map(array($this, 'backtick'), $columns);
 			$columns = implode(', ', $columns);
@@ -1169,7 +1169,7 @@ abstract class aeDatabaseTable
 				$this->$key = $value;
 			}
 		}
-		else if (is_null($values))
+		elseif (is_null($values))
 		{
 			return array_merge($this->transient, $this->data, $this->values, $this->ids);
 		}
@@ -1217,7 +1217,7 @@ abstract class aeDatabaseTable
 		{
 			return $this->ids;
 		}
-		else if (in_array($name, static::columns()))
+		elseif (in_array($name, static::columns()))
 		{
 			if ($mutate === true || isset($this->values[$name]))
 			{
@@ -1263,7 +1263,7 @@ abstract class aeDatabaseTable
 				array_pop($accessor) => $ids
 			);
 		}
-		else if (count($accessor) !== count($ids))
+		elseif (count($accessor) !== count($ids))
 		{
 			throw new aeDatabaseException(get_called_class() 
 				. '::find() failed, because accessor value'

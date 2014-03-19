@@ -337,7 +337,7 @@ class aeRouter
 				{
 					$this->_route_uri($route, end($matches));
 				} 
-				else if (is_callable($route)) 
+				elseif (is_callable($route)) 
 				{
 					array_shift($matches);
 					$this->callback = $route;

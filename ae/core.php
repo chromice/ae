@@ -75,7 +75,7 @@ final class ae
 		{
 			__ae_include__($path . '/index.php');
 		}
-		else if ($type === ae::application)
+		elseif ($type === ae::application)
 		{
 			trigger_error('Cannot launch "' . $path . '/index.php". File does not exist.', E_USER_ERROR);
 		}
@@ -116,7 +116,7 @@ final class ae
 			
 			return;
 		}
-		else if (isset(self::$paths[$path]))
+		elseif (isset(self::$paths[$path]))
 		{
 			return $path;
 		}
@@ -246,7 +246,7 @@ final class ae
 		{
 			$instance = call_user_func_array($data['callback'], $arguments);
 		}
-		else if (count($arguments) == 0)
+		elseif (count($arguments) == 0)
 		{
 			$instance = new $data['class'];
 		}

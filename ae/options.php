@@ -102,7 +102,7 @@ class aeOptions
 		{
 			return $_values[$option];
 		}
-		else if (is_array($_defaults) && array_key_exists($option, $_defaults))
+		elseif (is_array($_defaults) && array_key_exists($option, $_defaults))
 		{
 			return $_defaults[$option];
 		}

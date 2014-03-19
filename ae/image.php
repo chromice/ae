@@ -290,7 +290,7 @@ class aeImage
 		{
 			$width = $height * $this->source_width / $this->source_height;
 		}
-		else if (empty($height) || $height < 0)
+		elseif (empty($height) || $height < 0)
 		{
 			$height = $width * $this->source_height / $this->source_width;
 		}

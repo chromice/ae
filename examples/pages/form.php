@@ -51,12 +51,12 @@ if ($form->value('add'))
 {
 	$textarea[] = ''; // Empty by default
 }
-else if ($index = $form->value('remove')) // NB! intentionally does not work for 0.
+elseif ($index = $form->value('remove')) // NB! intentionally does not work for 0.
 {
 	unset($textarea[$index]);
 }
 // Process the form only if no other actions are made, and the form is posted
-else if ($form->is_submitted())
+elseif ($form->is_submitted())
 {
 	// Run the validation, which will set errors
 	$is_valid = $form->validate();

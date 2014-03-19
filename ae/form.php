@@ -150,7 +150,7 @@ class aeForm implements ArrayAccess
 		{
 			return isset($this->values[$name]) ? $this->values[$name] : null;
 		}
-		else if (isset($this->values[$name][$index]))
+		elseif (isset($this->values[$name][$index]))
 		{
 			return $this->values[$name][$index];
 		}
@@ -351,11 +351,11 @@ class aeValidator
 			{
 				return $value != $misc ? $message : null;
 			}
-			else if (is_array($misc))
+			elseif (is_array($misc))
 			{
 				return !in_array($value, $misc) ? $message : null;
 			}
-			else if (is_callable($misc))
+			elseif (is_callable($misc))
 			{
 				return call_user_func($misc, $value, $index) === false ? $message : null;
 			}
@@ -660,7 +660,7 @@ class aeFormField extends aeValidator
 				$output[] = '<option value="' . ae::escape($key, ae::attribute) . '"' 
 					. ($this->_matches($key) ? ' selected' : '') . '>' . $value . '</option>';
 			}
-			else if (is_array($value))
+			elseif (is_array($value))
 			{
 				$output[] = '<optgroup label="' . ae::escape($key, ae::attribute) . '">' 
 					. $this->_options($value, $indent + 1)
