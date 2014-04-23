@@ -1162,7 +1162,10 @@ abstract class aeDatabaseTable
 		{
 			if ($_raw_data === true)
 			{
-				$this->data = static::unserialize($values);
+				$accessor = array_flip(self::accessor());
+				
+				$this->ids = array_intersect_key($values, $accessor);
+				$this->data = static::unserialize(array_diff_key($values, $accessor));
 			}
 			else foreach ($values as $key => $value)
 			{
@@ -1280,7 +1283,7 @@ abstract class aeDatabaseTable
 	*/
 	{
 		$accessor = static::accessor();
-		
+		ae::log('Accessor:', $accessor, 'Object:', $this);
 		if (count($accessor) !== count($this->ids))
 		{
 			throw new aeDatabaseException(get_class($this) 
