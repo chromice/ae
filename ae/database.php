@@ -1163,9 +1163,17 @@ abstract class aeDatabaseTable
 			if ($_raw_data === true)
 			{
 				$accessor = array_flip(self::accessor());
+				$ids = array_intersect_key($values, $accessor);
+				$values = array_diff_key($values, $accessor);
 				
-				$this->ids = array_intersect_key($values, $accessor);
-				$this->data = static::unserialize(array_diff_key($values, $accessor));
+				// Set data
+				$this->data = static::unserialize($values);
+				
+				// Only reset complete accessor values
+				if (count($accessor) === count($ids))
+				{
+					$this->ids = $ids;
+				}
 			}
 			else foreach ($values as $key => $value)
 			{
@@ -1283,7 +1291,7 @@ abstract class aeDatabaseTable
 	*/
 	{
 		$accessor = static::accessor();
-		ae::log('Accessor:', $accessor, 'Object:', $this);
+		
 		if (count($accessor) !== count($this->ids))
 		{
 			throw new aeDatabaseException(get_class($this) 
