@@ -24,7 +24,7 @@ $number = $form->single('number')
 
 
 // Create a sequence of 0 to 5 fields that accept tweet size chunks of text
-$textarea = $form->sequence('textarea', 1, 3) // the last field is validated only if not empty
+$textarea = $form->sequence('textarea', 1, 5) // the last field is validated only if not empty
 	->valid_value('Second box must contain 555.', function ($value, $index) {
 		return $index != 1 || $value == 555;
 	})
