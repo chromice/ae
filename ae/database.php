@@ -116,6 +116,8 @@ class aeDatabase
 		{
 			throw new aeDatabaseException('Could not switch character set to utf8: ' . $this->db->error);
 		}
+		
+		$this->query('SET SESSION sql_mode = "STRICT_ALL_TABLES"')->make();
 	}
 	
 	public function __destruct()
@@ -1352,11 +1354,25 @@ abstract class aeDatabaseTable
 		}
 		else
 		{
-			$db->insert_or_update(
-				static::name(), 
-				static::serialize($this->values), 
-				$this->ids()
-			);
+			$transaction = $db->transaction();
+			
+			if ($db->count(static::name(), $this->ids()) > 0)
+			{
+				$db->update(
+					static::name(),
+					static::serialize($this->values),
+					$this->ids()
+				);
+			}
+			else
+			{
+				$db->insert(
+					static::name(),
+					array_merge(static::serialize($this->values), $this->ids())
+				);
+			}
+			
+			$transaction->commit();
 		}
 		
 		$this->data = array_merge($this->data, $this->values);

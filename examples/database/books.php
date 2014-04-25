@@ -16,7 +16,6 @@ class Novels extends aeDatabaseTable
 				`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 				`author_id` int(10) unsigned NOT NULL,
 				`title` varchar(255) NOT NULL,
-				`content` text NOT NULL,
 				PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
 			->aliases(array(
