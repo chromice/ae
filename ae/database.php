@@ -944,7 +944,7 @@ class aeDatabaseResult
 			{
 				$all[] = $row;
 			}
-		
+			
 			$this->seek(0);
 		}
 		
