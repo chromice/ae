@@ -241,6 +241,7 @@ class aeLog
 		if (!empty($_SERVER)) $o.= self::_dump('$_SERVER', $_SERVER);
 		if (!empty($_GET)) $o.= self::_dump('$_GET', $_GET);
 		if (!empty($_POST)) $o.= self::_dump('$_POST', $_POST);
+		if (!empty($_FILES)) $o.= self::_dump('$_FILES', $_FILES);
 		if (!empty($_COOKIE)) $o.= self::_dump('$_COOKIE', $_COOKIE);
 		if (!empty($_SESSION)) $o.= self::_dump('$_SESSION', $_SESSION);
 		
