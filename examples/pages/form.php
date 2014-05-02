@@ -1,5 +1,11 @@
 <?php 
 
+ae::register('utilities/inspector');
+
+ae::options('inspector')
+	->set('dump_context', true);
+
+
 $form = ae::form('form-id');
 
 // Set default values
@@ -22,6 +28,11 @@ $number = $form->single('number')
 	->min_value('Cannot be less then zero.', 0)
 	->max_value('Cannot be higher then a thousand.', 1000);
 
+$file = $form->file('single_file', '/uploads')
+	->required('Please choose a file to upload.');
+$gallery = $form->files('gallery', '/uploads')
+	->required('Please choose one or more images to upload.')
+	->accept('{name} is not an image.', 'image/*');
 
 // Create a sequence of 0 to 5 fields that accept tweet size chunks of text
 $textarea = $form->sequence('textarea', 1, 5) // the last field is validated only if not empty
@@ -34,7 +45,6 @@ $textarea = $form->sequence('textarea', 1, 5) // the last field is validated onl
 $textarea->required('Please enter some text.', function ($index) use ($textarea) {
 	return $textarea->count() - 1 > $index || $index === 0;
 });
-
 
 // Create a single field, that accepts only 'foo' and 'bar' values
 $select = $form->single('select')
@@ -60,6 +70,8 @@ elseif ($form->is_submitted())
 {
 	// Run the validation, which will set errors
 	$is_valid = $form->validate();
+	$file->upload('/uploads');
+	$gallery->upload('/uploads');
 	
 	// If form is valid, do something with it.
 	if ($is_valid)
@@ -75,6 +87,7 @@ elseif ($form->is_submitted())
 		echo '<dd>' . implode(', ', $values['check']) . '</dd>';
 		echo '</dl>';
 		
+		ae::log('Form values:', $values);
 	}
 	else
 	{
@@ -143,6 +156,16 @@ elseif ($form->is_submitted())
 	<label><?= $checkboxes->input('checkbox', 'foo') ?>foo</label>
 	<label><?= $checkboxes->input('checkbox', 'bar') ?>bar</label>
 	<?= $checkboxes->error() ?>
+</div>
+<div class="field">
+	<label for="<?= $file->id() ?>">Single file:</label>
+	<?= $file->input(); ?>
+	<?= $file->error(); ?>
+</div>
+<div class="field">
+	<label for="<?= $gallery->id() ?>">Gallery:</label>
+	<?= $gallery->input(); ?>
+	<?= $gallery->error(); ?>
 </div>
 <div class="field">
 	<button type="submit">Submit</button>

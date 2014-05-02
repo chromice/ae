@@ -65,6 +65,7 @@ class aeForm implements ArrayAccess
 	protected $fields = array();
 	protected $values = array();
 	protected $errors = array();
+	protected $has_files = false;
 	
 	public function __construct($form_id)
 	{
@@ -107,7 +108,25 @@ class aeForm implements ArrayAccess
 	{
 		return $this->fields[$name] = new aeFormFieldSequence($this->id, $name, $this->values[$name], $this->errors[$name], $min, $max);
 	}
-
+	
+	public function file($name)
+	{
+		return $this->_file($name, false);
+	}
+	
+	public function files($name)
+	{
+		return $this->_file($name, true);
+	}
+	
+	protected function _file($name, $multiple)
+	{
+		$this->has_files = true;
+		$this->fields[$name] = new aeFormFileField($this->id, $name, $multiple, $this->values[$name], $this->errors[$name]);
+		
+		return $this->fields[$name];
+	}
+	
 	public function is_submitted()
 	/*
 		Returns true if the form with such id is posted.
@@ -185,6 +204,11 @@ class aeForm implements ArrayAccess
 		
 		$attributes['id'] = $this->id . '-form';
 		$attributes['method'] = 'post';
+		
+		if ($this->has_files)
+		{
+			$attributes['enctype'] = 'multipart/form-data';
+		}
 		
 		// Update nonce
 		$nonces = ae::session('nonces');
@@ -884,5 +908,465 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
 	public function valid()
 	{
 		return !is_null(key($this->fields));
+	}
+}
+
+class aeFormFileField
+{
+	protected $form_id;
+	
+	protected $name;
+	protected $multiple;
+	protected $value;
+	protected $error;
+	
+	protected $required;
+	protected $accept;
+	protected $validators = array();
+	
+	public function __construct($form_id, $name, $multiple, &$value, &$error)
+	{
+		$this->form_id = $form_id;
+		$this->name = $name;
+		
+		$this->multiple = $multiple;
+		$this->value =& $value;
+		$this->error =& $error;
+		
+		$this->error = array();
+		
+		if ($this->multiple && is_array($this->value))
+		{
+			foreach ($this->value as $index => $value)
+			{
+				if (empty($value['name']) || empty($value['path']))
+				{
+					continue;
+				}
+				
+				$file = ae::file($value['path'], $value['name']);
+				
+				if ($file->exists())
+				{
+					$this->value[$index] = $file;
+				}
+				else
+				{
+					unset($this->value[$index]);
+				}
+			}
+		}
+		elseif (!$this->multiple && !empty($this->value))
+		{
+			$value = $this->value;
+			
+			if (empty($value['name']) || empty($value['path']))
+			{
+				return;
+			}
+			
+			$file = ae::file($value['path'], $value['name']);
+			
+			if ($file->exists())
+			{
+				$this->value = $file;
+			}
+			else
+			{
+				$this->value = null;
+			}
+		}
+	}
+	
+	public function upload($path)
+	{
+		// TODO: Validate if destination exits and is writable.
+		$destination = ae::resolve($path, false);
+		
+		// Check if there any files to handle
+		if (empty($_FILES[$this->name]))
+		{
+			return;
+		}
+		
+		if (is_array($_FILES[$this->name]['error']))
+		{
+			// Streamline files array
+			$files = array();
+			
+			foreach ($_FILES[$this->name] as $attribute => $values)
+			{
+				foreach ($values as $index => $value)
+				{
+					$files[$index][$attribute] = $value; 
+				}
+			}
+			
+			foreach ($files as $file)
+			{
+				$file = $this->_upload($file, $destination);
+				
+				if (is_a($file, 'aeFile'))
+				{
+					$this->value[] = $file;
+				}
+			}
+		}
+		else
+		{
+			$file = $this->_upload($_FILES[$this->name], $destination);
+			
+			if (is_a($file, 'aeFile'))
+			{
+				$this->value = $file;
+			}
+		}
+		
+		return $this;
+	}
+	
+	protected function _upload($file, $destination)
+	{
+		// Check if all necessary data is there
+		if (!isset($file['tmp_name']) || !isset($file['name']) || !isset($file['error']))
+		{
+			return;
+		}
+		
+		// Check if file is uploaded at all
+		switch ($file['error'])
+		{
+			case UPLOAD_ERR_OK:
+				break;
+			case UPLOAD_ERR_NO_FILE:
+				if (!empty($this->required))
+				{
+					$this->error[] = $this->required;
+				}
+				return;
+			case UPLOAD_ERR_INI_SIZE:
+			case UPLOAD_ERR_FORM_SIZE:
+				$this->error[] = 'Exceeded filesize limit.';
+				return;
+			default:
+				$this->error[] = 'File could not be uploaded.';
+				return;
+		}
+		
+		$file = ae::file($file['tmp_name'], $file['name']);
+		
+		// Check if the file is indeed uploaded
+		if (!$file->is_uploaded())
+		{
+			return;
+		}
+		
+		// Check if the file meets all constraints
+		$error = $this->_validate($file);
+		
+		if (!empty($error))
+		{
+			$this->error[] = $error;
+			
+			return;
+		}
+		
+		try 
+		{
+			// Move file to the destination
+			$target = $destination . '/' . $file->hash() . '.' . $file->type();
+			
+			$file->move($target);
+		} 
+		catch (aeFileException $e)
+		{
+			$this->error[] = 'File could not be uploaded.';
+			
+			return;
+		}
+		
+		return $file;
+	}
+	
+	public function id()
+	/*
+		Returns value of the element's id attribute, or empty string for field 
+		with multple values.
+	*/
+	{
+		return $this->form_id . '-' . preg_replace('/[\s_]+/', '-', $this->name);
+	}
+	
+	public function name()
+	/*
+		Returns value of the element's name attribute.
+	*/
+	{
+		return $this->name . ($this->multiple ? '[]' : '');
+	}
+	
+	public function value($index = null)
+	/*
+		Returns uploaded file(s).
+	
+		See aeFile class.
+	*/
+	{
+		if (!$this->multiple || is_null($index))
+		{
+			return $this->value;
+		}
+		else
+		{
+			return isset($this->value[$index]) ? $this->value[$index] : null;
+		}
+	}
+	
+	public function input($attributes = array())
+	/*
+		Renders a <input> element for file field.
+	*/
+	{
+		$files = array();
+		
+		if ($this->multiple && is_array($this->value))
+		{
+			$files = $this->value;
+		}
+		elseif (is_a($this->value, 'aeFile'))
+		{
+			$files = array($this->value);
+		}
+		
+		// Render file input
+		$attributes['type'] = 'file';
+		$attributes['multiple'] = $this->multiple === true;
+		
+		$output =  '<input ' . $this->_attributes($attributes) . ">\n";
+		
+		// Add uploaded file data as hidden inputs.
+		foreach ($files as $index => $file)
+		{
+			$output.= '<input ' . aeForm::attributes(array(
+				'type' => 'hidden',
+				'name' => $this->name() . '[name]',
+				'value' => $file->name()
+			)) . ">\n";
+			
+			$output.= '<input ' . aeForm::attributes(array(
+				'type' => 'hidden',
+				'name' => $this->name() . '[path]',
+				'value' => $file->path()
+			)) . ">\n";
+		}
+		
+		return $output;
+	}
+	
+	protected function _attributes($attributes)
+	{
+		if (!isset($attributes['name']) 
+		|| $attributes['name'] !== false)
+		{
+			$attributes['name'] = $this->name();
+		}
+		
+		if (!isset($attributes['id']))
+		{
+			$attributes['id'] = $this->id();
+		}
+		
+		return aeForm::attributes($attributes);
+	}
+	
+	public function validate()
+	/*
+		Validates the field and returns validation status as TRUE or FALSE.
+	*/
+	{
+		if (empty($this->value))
+		{
+			return empty($this->error);
+		}
+		
+		if ($this->multiple === true)
+		{
+			foreach ($this->value as $file)
+			{
+				if ($errors = $this->_validate($file))
+				{
+					$this->error += (array) $errors;
+				}
+			}
+		}
+		else
+		{
+			if ($errors = $this->_validate($this->value))
+			{
+				$this->error += (array) $errors;
+			}
+		}
+		
+		return empty($this->error);
+	}
+	
+	protected function _validate($file)
+	{
+		if (empty($file))
+		{
+			return;
+		}
+		
+		$accept = $this->accept;
+		
+		// Validate type first
+		if (is_callable($accept))
+		{
+			if ($error = $accept($file))
+			{
+				return $error;
+			}
+		}
+		
+		// Validate size and dimensions
+		$errors = array();
+		
+		foreach ($this->validators as $validator)
+		{
+			if ($error = $validator($file))
+			{
+				$errors[] = $error;
+			}
+		}
+		
+		if (!empty($errors))
+		{
+			return $errors;
+		}
+	}
+	
+	public function has_error()
+	/*
+		Returns TRUE, if field has an error, or FALSE otherwise.
+	*/
+	{
+		return !empty($this->error);
+	}
+	
+	public function error($before = '<em class="error">', $after = '</em>', $before_item = null, $after_item = null)
+	/*
+		If present, returns an error message wrapped in customisable HTML.
+	*/
+	{
+		$error = $before_item 
+			. implode($after_item . ' ' . $before_item, $this->error) 
+			. $after_item;
+		
+		return !empty($error) ? $before . $error . $after : '';
+	}
+	
+	// ==============
+	// = Validators =
+	// ==============
+	
+	public function required($message)
+	{
+		$this->required = $message;
+		
+		return $this;
+	}
+	
+	public function accept($message, $types)
+	{
+		if (!is_array($types))
+		{
+			$types = explode(',', $types);
+		}
+		
+		$types = array_map(function ($type) {
+			return trim($type, '* ');
+		}, $types);
+		
+		$this->accept = function ($file) use ($types, $message) {
+			try
+			{
+				$type = preg_quote($file->type());
+				$mimetype = preg_quote($file->mimetype());
+			}
+			catch (aeFileException $e)
+			{
+				return $message;
+			}
+				
+			foreach ($types as $_type)
+			{
+				if ($type{0} === '.' && '.' . $type === $_type)
+				{
+					return;
+				}
+				elseif ($type{0} !== '.' && strpos($mimetype, $_type) !== false)
+				{
+					return;
+				}
+			}
+			
+			return $message;
+		};
+		
+		return $this;
+	}
+	
+	public function min_size($message, $size)
+	{
+		$this->validators[] = function ($file) use ($size, $message) {
+			return $file->size() < $size ? $message : null;
+		};
+		
+		return $this;
+	}
+	
+	public function max_size($message, $size)
+	{
+		$this->validators[] = function ($file) use ($size, $message) {
+			return $file->size() > $size ? $message : null;
+		};
+		
+		return $this;
+	}
+	
+	public function min_width($message, $width)
+	{
+		$this->validators[] = function ($file) use ($width, $message) {
+			return $file->width() < $width ? $message : null;
+		};
+		
+		return $this;
+	}
+	
+	public function max_width($message, $width)
+	{
+		$this->validators[] = function ($file) use ($width, $message) {
+			return $file->width() > $width ? $message : null;
+		};
+		
+		return $this;
+	}
+	
+	public function min_height($message, $height)
+	{
+		$this->validators[] = function ($file) use ($height, $message) {
+			return $file->height() < $height ? $message : null;
+		};
+		
+		return $this;
+	}
+
+	public function max_height($message, $height)
+	{
+		$this->validators[] = function ($file) use ($height, $message) {
+			return $file->height() > $height ? $message : null;
+		};
+		
+		return $this;
 	}
 }

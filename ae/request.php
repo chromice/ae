@@ -401,7 +401,7 @@ class aeRouter
 	public function follow()
 	/*
 		Attempts to route the request.
-	
+		
 		Throws `aeRequestException`, if there is no path to follow.
 	*/
 	{
