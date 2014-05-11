@@ -93,9 +93,11 @@ class aeFile
 			return $candidate[0] === $mimetype && (empty($type) || $candidate[1] === $type);
 		});
 		
-		if (isset($found[0][1]))
+		$found = array_pop($found);
+		
+		if (isset($found[1]))
 		{
-			return $found[0][1];
+			return $found[1];
 		}
 		
 		if (!empty($type))
@@ -202,14 +204,12 @@ class aeFile
 	protected static function _destination($destination, $name, $type, $overwrite)
 	{
 		// FIXME: Destination may have subdirectories missing.
-		if (is_file($destination))
+		if (!is_dir($destination) && is_dir(pathinfo($destination, PATHINFO_DIRNAME)))
 		{
 			$name = pathinfo($destination, PATHINFO_FILENAME);
 			$type = pathinfo($destination, PATHINFO_EXTENSION);
-		}
-		elseif (!is_dir($destination))
-		{
-			throw new aeFileException('Destination must be an existing directory.');
+			
+			$destination = pathinfo($destination, PATHINFO_DIRNAME);
 		}
 		
 		$i = 0;
