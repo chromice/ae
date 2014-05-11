@@ -132,8 +132,7 @@ class aeForm implements ArrayAccess
 		Returns true if the form with such id is posted.
 	*/
 	{
-		return isset($_POST['__ae_form_id__']) && $_POST['__ae_form_id__'] === $this->id
-			&& isset($_POST['__ae_form_nonce__']) && $_POST['__ae_form_nonce__'] === $this->nonce;
+		return isset($_POST['__ae_form_id__']) && $_POST['__ae_form_id__'] === $this->id;
 	}
 
 	public function validate()
@@ -142,7 +141,7 @@ class aeForm implements ArrayAccess
 		on failure.
 	*/
 	{
-		$result = true;
+		$result = isset($_POST['__ae_form_nonce__']) && $_POST['__ae_form_nonce__'] === $this->nonce;
 		
 		foreach ($this->fields as $field)
 		{
