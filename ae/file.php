@@ -157,8 +157,8 @@ class aeFile
 			$overwrite
 		);
 		
-		if ($this->is_uploaded() && false === move_uploaded_file($this->path, $path)
-		|| !$this->is_uploaded() && false === rename($this->path, $path))
+		if (!$this->is_uploaded() && false === rename($this->path, $path)
+		|| $this->is_uploaded() && false === move_uploaded_file($this->path, $path))
 		{
 			throw new aeFileException('Failed to move file.');
 		}
