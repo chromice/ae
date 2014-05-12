@@ -68,14 +68,14 @@ class aeFile
 	// = File info =
 	// =============
 	
-	public function name()
-	{
-		return $this->name;
-	}
-	
 	public function path()
 	{
 		return $this->path;
+	}
+	
+	public function name()
+	{
+		return $this->name;
 	}
 	
 	public function type($validate = true)
@@ -157,8 +157,8 @@ class aeFile
 			$overwrite
 		);
 		
-		if (!$this->is_uploaded() && false === rename($this->path, $path)
-		|| $this->is_uploaded() && false === move_uploaded_file($this->path, $path))
+		if (!$this->is_uploaded() && false === @rename($this->path, $path)
+		|| $this->is_uploaded() && false === @move_uploaded_file($this->path, $path))
 		{
 			throw new aeFileException('Failed to move file.');
 		}
@@ -179,7 +179,7 @@ class aeFile
 			$overwrite
 		);
 		
-		if (false === copy($this->path, $path))
+		if (false === @copy($this->path, $path))
 		{
 			throw new aeFileException('Failed to copy file.');
 		}
@@ -193,7 +193,7 @@ class aeFile
 	{
 		$this->_cannot('delete file');
 		
-		if (false === unlink($this->path))
+		if (false === @unlink($this->path))
 		{
 			throw new aeFileException('Failed to delete file.');
 		}
