@@ -5,7 +5,6 @@ ae::register('utilities/inspector');
 ae::options('inspector')
 	->set('dump_context', true);
 
-
 $form = ae::form('form-id');
 
 // Set default values

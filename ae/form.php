@@ -241,9 +241,15 @@ class aeForm implements ArrayAccess
 				continue;
 			}
 			
-			$output[] = $name === $value && $name !== 'name' || $value === true
-				? ae::escape($name, ae::tag)
-				: ae::escape($name, ae::tag) . '="' . ae::escape($value, ae::attribute) . '"';
+			if ($name === $value && !in_array($name, array('id', 'name', 'value'))
+			|| $value === true)
+			{
+				$output[] = ae::escape($name, ae::tag);
+			}
+			else
+			{
+				$output[] = ae::escape($name, ae::tag) . '="' . ae::escape($value, ae::attribute) . '"';
+			}
 		}
 		
 		return implode(' ', $output);
@@ -712,9 +718,11 @@ class aeFormField extends aeValidator
 	
 	protected function _matches($value)
 	{
-		return $this->index === true 
-			? in_array((string) $value, $this->value)
-			: $this->value === (string) $value;
+		$value = (string) $value;
+		
+		return $this->index === true
+			? in_array($value, $this->value)
+			: $this->value === $value;
 	}
 	
 	public function validate()
@@ -744,7 +752,7 @@ class aeFormField extends aeValidator
 	}
 }
 
-class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator
+class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, Countable
 {
 	protected $form_id;
 	protected $name;
@@ -1296,7 +1304,7 @@ class aeFormFileField
 			{
 				return $message;
 			}
-				
+			
 			foreach ($types as $_type)
 			{
 				if ($type{0} === '.' && '.' . $type === $_type)
