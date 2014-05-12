@@ -7,6 +7,11 @@ $form = ae::form('example');
 */
 $user = $form->group('user');
 
+$avatar = $user->file('avatar', '/uploads/avatars')
+	->accept('Please choose .png or .jpeg file as your avatar.', '.png, .jpeg')
+	->min_width('{file} is less than 500 pixels wide.', 500)
+	->min_height('{file} is less than 500 pixels high.', 500);
+
 $first_name = $user->single('first_name')
 	->required('Please enter your first name.', function ($value, $index) {
 		// $index is always NULL for grouped fields
@@ -44,16 +49,22 @@ $titles = $files->single('title')
 		return $index > 0 || !empty($value);
 	});
 
-$images = $files->files('image')
+$images = $files->files('image', '/uploads/gallery')
 	->required('You have to upload at least one image.', function ($values, $index) {
 		return $index > 0 || is_array($values) && count($values) > 0;
 	})
-	->max_size('{file} is larger than {size}.', 4 * 1024 * 1024)
-	->accept('{file} is not an image.', 'images/*');
+	->accept('{file} is not an image.', 'images/*')
+	->max_size('{file} is larger than 4 megabytes.', 4 * 1024 * 1024)
+	->min_width('{file} is less than 256 pixels wide.', 256)
+	->min_height('{file} is less than 256 pixels high.', 256);
 
 $descriptions = $files->single('description')
 	->min_length('The description must be longer than {length} characters.', 10)
 	->max_length('The description must not be longer than {length} characters.', 5000);
+
+$appears_on = $files->multiple('appears_on')
+	->required('Please choose a service.')
+	->valid_value('You are not using one of these services.', $services->value());
 
 /*
 	Validate the form
@@ -74,6 +85,11 @@ if ($form->is_submitted() && $form->is_valid())
 <?= $form->open() ?> 
 <fieldset>
 	<legend>Account</legend>
+	<div class="field">
+		<label for="<?= $avatar->id() ?>">Avatar</label>
+		<?= $avatar->input() ?>
+		<?= $avatar->error() ?>
+	</div>
 	<div class="field">
 		<label for="<?= $first_name->id() ?>">First&nbsp;name</label>
 		<?= $first_name->input('text') ?>
@@ -120,6 +136,12 @@ if ($form->is_submitted() && $form->is_valid())
 		<label for="<?= $images[$index]->id() ?>">Images</label>
 		<?= $images[$index]->input() ?>
 		<?= $images[$index]->error() ?>
+	</div>
+	<div class="field">
+		<span class="label">Appears on</span>
+		<?php foreach ($service_options as $value => $label): ?>
+		<?= $appears_on[$index]->input('checkbox', $value) ?>&nbsp;<label for="<?= $appears_on[$index]->id($value) ?>"><?= $label ?></label>
+		<?php endforeach ?>
 	</div>
 </fieldset>
 <?php endforeach ?>
