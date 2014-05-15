@@ -110,6 +110,11 @@ class aeFile
 		}
 	}
 	
+	public function full_name($validate = true)
+	{
+		return $this->name() . '.' . $this->type($validate);
+	}
+	
 	public function mimetype()
 	{
 		$info = new finfo(FILEINFO_MIME_TYPE);
