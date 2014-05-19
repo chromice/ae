@@ -85,7 +85,7 @@ class aeFile
 			return $this->type;
 		}
 		
-		$type = $this->type;
+		$type = strtolower($this->type);
 		$mimetype = $this->mimetype();
 		
 		$found = array_filter(self::$types, function ($candidate) use ($mimetype, $type)
