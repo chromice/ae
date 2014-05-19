@@ -12,7 +12,7 @@ $form = ae::form_new('example');
 */
 $user = $form->group('user');
 
-$avatar = $user->file('avatar', '/uploads/avatars')
+$avatar = $user->files('avatar', '/uploads/avatars')
 	->accept('Please choose .png or .jpeg file as your avatar.', '.png, .jpeg')
 	->min_width('{file} is less than 500 pixels wide.', 500)
 	->min_height('{file} is less than 500 pixels high.', 500);
@@ -47,35 +47,47 @@ $terms = $user->single('terms')
 /*
 	Sequence example
 */
-// $files = $form->sequence('files', 1, null); // One or more sequence elements
-// 
-// $titles = $files->single('title')
-// 	->required('Please enter the gallery title.', function ($value, $index) {
-// 		return $index > 0 || !empty($value);
-// 	});
-// 
-// $images = $files->files('image', '/uploads/gallery')
-// 	->required('You have to upload at least one image.', function ($values, $index) {
-// 		return $index > 0 || is_array($values) && count($values) > 0;
-// 	})
-// 	->accept('{file} is not an image.', 'images/*')
-// 	->max_size('{file} is larger than 4 megabytes.', 4 * 1024 * 1024)
-// 	->min_width('{file} is less than 256 pixels wide.', 256)
-// 	->min_height('{file} is less than 256 pixels high.', 256);
-// 
-// $descriptions = $files->single('description')
-// 	->min_length('The description must be longer than {length} characters.', 10)
-// 	->max_length('The description must not be longer than {length} characters.', 5000);
-// 
-// $appears_on = $files->multiple('appears_on')
-// 	->required('Please choose a service.')
-// 	->valid_value('You are not using one of these services.', $services->value());
+$files = $form->sequence('files', 1, null); // One or more sequence elements
+
+$titles = $files->single('title')
+	->required('Please enter the gallery title.', function ($value, $index) {
+		return $index > 0 || !empty($value);
+	});
+
+$images = $files->files('image', '/uploads/gallery')
+	->required('You have to upload at least one image.', function ($values, $index) {
+		return $index > 0 || is_array($values) && count($values) > 0;
+	})
+	->accept('{file} is not an image.', 'images/*')
+	->max_size('{file} is larger than 4 megabytes.', 4 * 1024 * 1024)
+	->min_width('{file} is less than 256 pixels wide.', 256)
+	->min_height('{file} is less than 256 pixels high.', 256);
+
+$descriptions = $files->single('description')
+	->min_length('The description must be longer than {length} characters.', 10)
+	->max_length('The description must not be longer than {length} characters.', 5000);
+
+$appears_on = $files->multiple('appears_on')
+	->required('Please choose a service.')
+	->valid_value('You are not using one of these services.', $services->value());
+
+if ($form->is_submitted() && isset($_POST['add_file']))
+{
+	$files->add();
+}
+
+if ($form->is_submitted() && !empty($_POST['remove_file']) && is_numeric($_POST['remove_file']))
+{
+	$files->remove($_POST['remove_file']);
+}
 
 /*
 	Validate the form
 */
 if ($form->is_submitted() && !$form->validate())
 {
+	echo '<p>The form is submitted and valid!</p>';
+	
 	// $account = Users::create($user->values())->save();
 	
 	// foreach ($files->values() as $values)
@@ -87,6 +99,13 @@ if ($form->is_submitted() && !$form->validate())
 }
 
 ?>
+<?php if ($form->is_submitted()): ?>
+<h1>Values</h1>
+<?php var_dump($form->values()) ?>
+<h1>Errors</h1>
+<?php var_dump($form->errors()) ?>
+<?php endif ?>
+<h1>Form</h1>
 <?= $form->open() ?> 
 <fieldset>
 	<legend>Account</legend>
@@ -122,9 +141,7 @@ if ($form->is_submitted() && !$form->validate())
 		<?= $terms->error() ?>
 	</div>
 </fieldset>
-<button type="submit">Submit</button>
-<?= $form->close() ?>
-<?php exit; foreach ($files as $index => $file): ?>
+<?php foreach ($files as $index => $file): ae::log('file', $file); ?>
 <fieldset>
 	<legent>
 		Gallery #<?= $index + 1 ?>
@@ -141,14 +158,14 @@ if ($form->is_submitted() && !$form->validate())
 		<?= $file['description']->error() ?>
 	</div>
 	<div class="field">
-		<label for="<?= $images[$index]->id() ?>">Images</label>
-		<?= $images[$index]->input() ?>
-		<?= $images[$index]->error() ?>
+		<label for="<?= $file['image']->id() ?>">Images</label>
+		<?= $file['image']->input() ?>
+		<?= $file['image']->errors() ?>
 	</div>
 	<div class="field">
 		<span class="label">Appears on</span>
 		<?php foreach ($service_options as $value => $label): ?>
-		<?= $appears_on[$index]->input('checkbox', $value) ?>&nbsp;<label for="<?= $appears_on[$index]->id($value) ?>"><?= $label ?></label>
+		<?= $file['appears_on']->input('checkbox', $value) ?>&nbsp;<label for="<?= $file['appears_on']->id($value) ?>"><?= $label ?></label>
 		<?php endforeach ?>
 	</div>
 </fieldset>
@@ -156,4 +173,5 @@ if ($form->is_submitted() && !$form->validate())
 <?php if (count($files) < $files->max()): ?>
 	<!-- <button type="submit" name="__ae_form_action__[add][files]" value="0">Add another gallery</button> -->
 <?php endif ?>
+	<button type="submit">Submit</button>
 <?= $form->close() ?> 
