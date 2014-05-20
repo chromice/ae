@@ -12,7 +12,7 @@ $form = ae::form_new('example');
 */
 $user = $form->group('user');
 
-$avatar = $user->files('avatar', '/uploads/avatars')
+$avatar = $user->file('avatar', '/uploads/avatars')
 	->accept('Please choose .png or .jpeg file as your avatar.', '.png, .jpeg')
 	->min_width('{file} is less than 500 pixels wide.', 500)
 	->min_height('{file} is less than 500 pixels high.', 500);
@@ -47,7 +47,7 @@ $terms = $user->single('terms')
 /*
 	Sequence example
 */
-$files = $form->sequence('files', 1, null); // One or more sequence elements
+$files = $form->sequence('files', 1, 5); // One or more sequence elements
 
 $titles = $files->single('title')
 	->required('Please enter the gallery title.', function ($value, $index) {
@@ -58,10 +58,10 @@ $images = $files->files('image', '/uploads/gallery')
 	->required('You have to upload at least one image.', function ($values, $index) {
 		return $index > 0 || is_array($values) && count($values) > 0;
 	})
-	->accept('{file} is not an image.', 'images/*')
+	->accept('{file} is not an image.', 'image/*')
 	->max_size('{file} is larger than 4 megabytes.', 4 * 1024 * 1024)
-	->min_width('{file} is less than 256 pixels wide.', 256)
-	->min_height('{file} is less than 256 pixels high.', 256);
+	->min_width('{file} is less than {width} pixels wide.', 256)
+	->min_height('{file} is less than {height} pixels high.', 256);
 
 $descriptions = $files->single('description')
 	->min_length('The description must be longer than {length} characters.', 10)
@@ -71,20 +71,22 @@ $appears_on = $files->multiple('appears_on')
 	->required('Please choose a service.')
 	->valid_value('You are not using one of these services.', $services->value());
 
-if ($form->is_submitted() && isset($_POST['add_file']))
+if (!$form->is_submitted())
+{
+	// do nothing
+}
+elseif (isset($_POST['add_file']))
 {
 	$files->add();
 }
-
-if ($form->is_submitted() && !empty($_POST['remove_file']) && is_numeric($_POST['remove_file']))
+elseif (isset($_POST['remove_file']) && is_numeric($_POST['remove_file']))
 {
 	$files->remove($_POST['remove_file']);
 }
-
 /*
 	Validate the form
 */
-if ($form->is_submitted() && !$form->validate())
+elseif ($form->validate())
 {
 	echo '<p>The form is submitted and valid!</p>';
 	
@@ -99,12 +101,6 @@ if ($form->is_submitted() && !$form->validate())
 }
 
 ?>
-<?php if ($form->is_submitted()): ?>
-<h1>Values</h1>
-<?php var_dump($form->values()) ?>
-<h1>Errors</h1>
-<?php var_dump($form->errors()) ?>
-<?php endif ?>
 <h1>Form</h1>
 <?= $form->open() ?> 
 <fieldset>
@@ -112,7 +108,7 @@ if ($form->is_submitted() && !$form->validate())
 	<div class="field">
 		<label for="<?= $avatar->id() ?>">Avatar</label>
 		<?= $avatar->input() ?>
-		<?= $avatar->errors() ?>
+		<?= $avatar->error() ?>
 	</div>
 	<div class="field">
 		<label for="<?= $first_name->id() ?>">First&nbsp;name</label>
@@ -141,11 +137,11 @@ if ($form->is_submitted() && !$form->validate())
 		<?= $terms->error() ?>
 	</div>
 </fieldset>
-<?php foreach ($files as $index => $file): ae::log('file', $file); ?>
+<?php foreach ($files as $index => $file): ?>
 <fieldset>
 	<legent>
 		Gallery #<?= $index + 1 ?>
-		<!-- <button type="submit" name="__ae_form_action__[remove][files]" value="<?= $index ?>">Remove</button> -->
+		<button type="submit" name="remove_file" value="<?= $index ?>">Remove</button>
 	</legent>
 	<div class="field">
 		<label for="<?= $file['title']->id() ?>">Title</label>
@@ -160,18 +156,19 @@ if ($form->is_submitted() && !$form->validate())
 	<div class="field">
 		<label for="<?= $file['image']->id() ?>">Images</label>
 		<?= $file['image']->input() ?>
-		<?= $file['image']->errors() ?>
+		<?= $file['image']->error() ?>
 	</div>
 	<div class="field">
 		<span class="label">Appears on</span>
 		<?php foreach ($service_options as $value => $label): ?>
 		<?= $file['appears_on']->input('checkbox', $value) ?>&nbsp;<label for="<?= $file['appears_on']->id($value) ?>"><?= $label ?></label>
 		<?php endforeach ?>
+		<?= $file['appears_on']->error() ?>
 	</div>
 </fieldset>
 <?php endforeach ?>
 <?php if (count($files) < $files->max()): ?>
-	<!-- <button type="submit" name="__ae_form_action__[add][files]" value="0">Add another gallery</button> -->
+	<button type="submit" name="add_file" value="add">Add another gallery</button>
 <?php endif ?>
 	<button type="submit">Submit</button>
 <?= $form->close() ?> 

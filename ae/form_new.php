@@ -145,6 +145,7 @@ trait aeFormGroupValueContainer
 {
 	public function initial($values)
 	{
+		// FIXME: Cascade the initial() method just like value()
 		if (is_array($values) && !$this->form->is_submitted())
 		{
 			self::_merge_values($values, $this->values);
@@ -329,7 +330,11 @@ trait aeFormGroupErrorContainer
 			}
 		};
 		
-		$errors = array_filter($errors);
+		if (is_array($this->errors))
+		{
+			array_filter($this->errors, $flatten);
+			$errors = array_filter($errors);
+		}
 		
 		if (empty($errors))
 		{
@@ -453,6 +458,8 @@ trait aeFormTextFieldValidator
 	
 	public function min_length($message, $length)
 	{
+		$message = str_replace(array('{length}', '{min}'), $length, $message);
+		
 		$this->html['minlength'] = $length;
 		$this->validators[aeTextValidator::order_min_length] = function ($value) use ($message, $length)
 		{
@@ -464,6 +471,8 @@ trait aeFormTextFieldValidator
 
 	public function max_length($message, $length)
 	{
+		$message = str_replace(array('{length}', '{max}'), $length, $message);
+		
 		$this->html['maxlength'] = $length;
 		$this->validators[aeTextValidator::order_max_length] = function ($value) use ($message, $length)
 		{
@@ -475,6 +484,8 @@ trait aeFormTextFieldValidator
 
 	public function min_value($message, $limit)
 	{
+		$message = str_replace(array('{limit}', '{min}'), $limit, $message);
+		
 		$this->html['min'] = $limit;
 		
 		if (!empty($this->time_format))
@@ -500,6 +511,8 @@ trait aeFormTextFieldValidator
 	
 	public function max_value($message, $limit)
 	{
+		$message = str_replace(array('{limit}', '{max}'), $limit, $message);
+		
 		$this->html['max'] = $limit;
 		
 		if (!empty($this->time_format))
@@ -548,10 +561,17 @@ trait aeFormFileFieldValidator
 			$types = explode(',', $types);
 		}
 		
+		// Trim any whitespace
+		$types = array_map(function ($type) {
+			return trim($type, ' ');
+		}, $types);
+		
+		// Set accept attribute
 		$this->html['accept'] = implode(',', $types);
 		
+		// Trim wildcard
 		$types = array_map(function ($type) {
-			return trim($type, '* ');
+			return trim($type, '*');
 		}, $types);
 		
 		$this->validators[aeFileValidator::order_accept] = function ($file) use ($types, $message) 
@@ -563,22 +583,22 @@ trait aeFormFileFieldValidator
 			}
 			catch (aeFileException $e)
 			{
-				return $message;
+				return str_replace('{file}', $file->full_name(false), $message);
 			}
 			
 			foreach ($types as $_type)
 			{
-				if ($type{0} === '.' && '.' . $type === $_type)
+				if ($_type{0} === '.' && '.' . $type === $_type)
 				{
 					return;
 				}
-				elseif ($type{0} !== '.' && strpos($mimetype, $_type) !== false)
+				elseif ($_type{0} !== '.' && strpos($mimetype, $_type) !== false)
 				{
 					return;
 				}
 			}
 			
-			return $message;
+			return str_replace('{file}', $file->full_name(false), $message);
 		};
 		
 		return $this;
@@ -586,9 +606,14 @@ trait aeFormFileFieldValidator
 	
 	public function min_size($message, $size)
 	{
+		$message = str_replace(array('{size}', '{min}'), $size, $message);
+		
 		$this->validators[aeFileValidator::order_min_size] = function ($file) use ($size, $message)
 		{
-			return $file->size() < $size ? $message : null;
+			if ($file->size() < $size)
+			{
+				return str_replace('{file}', $file->full_name(false), $message);
+			}
 		};
 		
 		return $this;
@@ -596,9 +621,14 @@ trait aeFormFileFieldValidator
 	
 	public function max_size($message, $size)
 	{
+		$message = str_replace(array('{size}', '{max}'), $size, $message);
+		
 		$this->validators[aeFileValidator::order_max_size] = function ($file) use ($size, $message)
 		{
-			return $file->size() > $size ? $message : null;
+			if ($file->size() > $size)
+			{
+				return str_replace('{file}', $file->full_name(false), $message);
+			}
 		};
 		
 		return $this;
@@ -606,9 +636,14 @@ trait aeFormFileFieldValidator
 	
 	public function min_width($message, $width)
 	{
+		$message = str_replace(array('{width}', '{min}'), $width, $message);
+		
 		$this->validators[aeFileValidator::order_min_width] = function ($file) use ($width, $message)
 		{
-			return $file->width() < $width ? $message : null;
+			if ($file->width() < $width)
+			{
+				return str_replace('{file}', $file->full_name(false), $message);
+			}
 		};
 		
 		return $this;
@@ -616,9 +651,14 @@ trait aeFormFileFieldValidator
 	
 	public function max_width($message, $width)
 	{
+		$message = str_replace(array('{width}', '{max}'), $width, $message);
+		
 		$this->validators[aeFileValidator::order_max_width] = function ($file) use ($width, $message)
 		{
-			return $file->width() > $width ? $message : null;
+			if ($file->width() > $width)
+			{
+				return str_replace('{file}', $file->full_name(false), $message);
+			}
 		};
 		
 		return $this;
@@ -626,9 +666,14 @@ trait aeFormFileFieldValidator
 	
 	public function min_height($message, $height)
 	{
+		$message = str_replace(array('{height}', '{min}'), $height, $message);
+		
 		$this->validators[aeFileValidator::order_min_height] = function ($file) use ($height, $message)
 		{
-			return $file->height() < $height ? $message : null;
+			if ($file->height() < $height)
+			{
+				return str_replace('{file}', $file->full_name(false), $message);
+			}
 		};
 		
 		return $this;
@@ -636,9 +681,14 @@ trait aeFormFileFieldValidator
 	
 	public function max_height($message, $height)
 	{
+		$message = str_replace(array('{height}', '{max}'), $height, $message);
+		
 		$this->validators[aeFileValidator::order_max_height] = function ($file) use ($height, $message)
 		{
-			return $file->height() > $height ? $message : null;
+			if ($file->height() > $height)
+			{
+				return str_replace('{file}', $file->full_name(false), $message);
+			}
 		};
 		
 		return $this;
@@ -685,71 +735,111 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			$this->values = $_POST;
 		}
 		
-		ae::log('POSTed values:', $this->values);
-		
-		// Rearrange $_FILES array and merge it into values.
-		if (!empty($_FILES) && is_array($_FILES))
+		if (empty($_FILES) || !is_array($_FILES))
 		{
-			$properties = array('name', 'type', 'tmp_name', 'error', 'size');
-			$rearrange = function (&$array, $property, $key, $value) use (&$rearrange)
+			return;
+		}
+		
+		ae::log('Submitted data', $this->values);
+		
+		// Rearrange $_FILES array first
+		$files = array();
+		$properties = array('name', 'type', 'tmp_name', 'error', 'size');
+		$rearrange = function (&$array, $property, $key, $value) use (&$rearrange)
+		{
+			if (!is_array($value))
 			{
-				if (!is_array($value))
+				if (!is_array($array))
 				{
-					if (!is_array($array))
-					{
-						$array[$key] = array($property => $value);
-					}
-					else
-					{
-						$array[$key][$property] = $value;
-					}
+					$array[$key] = array($property => $value);
 				}
-				else foreach ($value as $_key => $_value)
+				else
 				{
-					$rearrange($array[$key], $property, $_key, $_value);
+					$array[$key][$property] = $value;
 				}
-			};
+			}
+			else foreach ($value as $_key => $_value)
+			{
+				$rearrange($array[$key], $property, $_key, $_value);
+			}
+		};
+		
+		foreach ($_FILES as $name => $structure)
+		{
+			// Validate the structure first
+			// and make sure rearrangement is required.
+			$is_scalar = true;
 			
-			foreach ($_FILES as $name => $structure)
+			foreach ($properties as $p)
 			{
-				// Validate the structure first
-				// and make sure rearrangement is required.
-				$is_scalar = true;
-				
-				foreach ($properties as $p)
+				if (!array_key_exists($p, $structure))
 				{
-					if (!array_key_exists($p, $structure))
-					{
-						continue 2;
-					}
-					
-					$is_scalar &= !is_array($structure[$p]);
+					continue 2;
 				}
 				
-				if ($is_scalar)
-				{
-					$this->values[$name] = $structure;
-					
-					continue;
-				}
+				$is_scalar &= !is_array($structure[$p]);
+			}
+			
+			if ($is_scalar)
+			{
+				$files[$name] = $structure;
 				
-				// Rearrange the structure
-				foreach ($properties as $p)
+				continue;
+			}
+			
+			// Rearrange the structure
+			foreach ($properties as $p)
+			{
+				foreach ($structure[$p] as $key => $value)
 				{
-					foreach ($structure[$p] as $key => $value)
-					{
-						$rearrange($this->values[$name], $p, $key, $value);
-					}
+					$rearrange($files[$name], $p, $key, $value);
 				}
 			}
 		}
 		
-		ae::log('POSTed + FILES values:', $this->values);
+		ae::log('Uploaded files', $files);
+		
+		// Append files
+		$append_files = function ($from, &$to) use (&$append_files)
+		{
+			foreach ($from as $index => $value)
+			{
+				if (!is_array($value))
+				{
+					trigger_error('Could not merge file and value arrays.', E_USER_ERROR);
+					return;
+				}
+		
+				if (!isset($value['tmp_name']))
+				{
+					$append_files($value, $to[$index]);
+				}
+				else
+				{
+					if (!is_numeric($index))
+					{
+						$to[$index] = $value;
+					}
+					else if (!empty($to) && is_array($to))
+					{
+						$to[] = $value;
+					}
+					else
+					{
+						$to = array($index => $value);
+					}
+				}
+			}
+		};
+		
+		$append_files($files, $this->values);
+		
+		ae::log('Merged data:', $this->values);
 	}
 	
-	// =====================================
+	// =================================
 	// = aeFieldFactory implementation =
-	// =====================================
+	// =================================
 	
 	public function single($name)
 	{
@@ -780,9 +870,9 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		$this->has_files = $value;
 	}
 	
-	// =====================================
+	// =================================
 	// = aeGroupFactory implementation =
-	// =====================================
+	// =================================
 	
 	public function group($name)
 	{
@@ -918,9 +1008,9 @@ class aeFormGroup implements ArrayAccess, aeFieldFactory, aeGroupErrorContainer,
 		$this->errors =& $errors;
 	}
 	
-	// =====================================
+	// =================================
 	// = aeFieldFactory implementation =
-	// =====================================
+	// =================================
 	
 	public function single($name)
 	{
@@ -983,9 +1073,22 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		return $this->max;
 	}
 	
-	// =====================================
+	public function add()
+	{
+		foreach ($this->fields as &$sequence)
+		{
+			$sequence->_add();
+		}
+	}
+	
+	public function remove($offset)
+	{
+		return $this->offsetUnset($offset);
+	}
+	
+	// =================================
 	// = aeFieldFactory implementation =
-	// =====================================
+	// =================================
 
 	public function single($name)
 	{
@@ -1019,7 +1122,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	{
 		$base = reset($this->fields);
 		
-		return count($base);
+		return $base->count();
 	}
 	
 	// ==============================
@@ -1054,7 +1157,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	{
 		foreach ($this->fields as &$sequence)
 		{
-			unset($sequence[$offset], $sequence[$offset], $sequence[$offset]);
+			unset($sequence[$offset]);
 		}
 	}
 	
@@ -1122,7 +1225,6 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 	protected $min;
 	protected $max;
 	
-	
 	protected $constructor;
 	protected $validators = array();
 	protected $html = array();
@@ -1167,6 +1269,20 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 				$this->fields[$index] = $constructor($index, $this->validators, $this->html);
 			}
 		}
+	}
+	
+	public function _add()
+	{
+		$count = count($this->fields);
+		$index = max(array_keys($this->fields)) + 1;
+		
+		if (!is_null($this->max) && $count + 1 > $this->max)
+		{
+			return;
+		}
+		
+		$constructor = $this->constructor;
+		$this->fields[$index] = $constructor($index, $this->validators, $this->html);
 	}
 	
 	// ============================
@@ -1238,7 +1354,7 @@ class aeFormTextFieldSequence extends aeFormFieldSequence
 	
 	public function __construct($name, $multiple, &$form, &$values, &$errors, &$min, &$max)
 	{
-		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, &$form, &$values, &$errors, &$validators, &$html)
+		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, &$form, &$values, &$errors)
 		{
 			return new aeFormTextField($name, $index, $multiple, $form, $values[$index], $errors[$index], $validators, $html);
 		};
@@ -1263,8 +1379,6 @@ class aeFormFileFieldSequence extends aeFormFieldSequence
 		parent::__construct($name, $multiple, $form, $values, $errors, $min, $max);
 	}
 }
-
-
 
 
 // ===============
@@ -1589,6 +1703,63 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 		return $file;
 	}
 	
+	public function validate()
+	{
+		$validators = $this->validators;
+		
+		if (isset($validators[aeValidator::order_required])
+		&& $error = $validators[aeValidator::order_required]($this->value, $this->index))
+		{
+			$this->errors[] = $error;
+			
+			return false;
+		}
+		
+		unset($validators[aeValidator::order_required]);
+		
+		$is_valid = true;
+		
+		if ($this->multiple)
+		{
+			foreach ($this->value as $value)
+			{
+				if (empty($value))
+				{
+					continue;
+				}
+				
+				foreach ($validators as $func)
+				{
+					if ($error = $func($value, $this->index))
+					{
+						$this->errors[] = $error;
+						
+						$is_valid = false;
+					}
+				}
+			}
+		}
+		else
+		{
+			if (empty($value))
+			{
+				return $is_valid;
+			}
+			
+			foreach ($validators as $func)
+			{
+				if ($error = $func($this->value, $this->index))
+				{
+					$this->errors[] = $error;
+					
+					$is_valid = false;
+				}
+			}
+		}
+		
+		return $is_valid;
+	}
+	
 	// ===============
 	// = HTML output =
 	// ===============
@@ -1630,19 +1801,16 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 			}
 			
 			$output.= '<span class="file">' . $full_name;
-			
 			$output.= '<input ' . aeForm::attributes(array(
 				'type'  => 'hidden',
 				'name'  => $this->name($file_offset) . '[full_name]',
 				'value' => $full_name
 			)) . '>';
-			
 			$output.= '<input ' . aeForm::attributes(array(
 				'type'  => 'hidden',
 				'name'  => $this->name($file_offset) . '[path]',
 				'value' => str_replace($this->destination, '', $file->path())
 			)) . '>';
-			
 			$output.= '</span>';
 			
 			$file_offset++;
@@ -1657,9 +1825,15 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 		// Render file input.
 		$attributes['type'] = 'file';
 		$attributes['multiple'] = $this->multiple;
+		$attributes = array_merge($this->html, $attributes);
 		
 		$output.= '<input ' . $this->_attributes($attributes) . ">\n";
 		
 		return $output;
+	}
+	
+	public function error($before = '<em class="error">', $after = '</em>')
+	{
+		return $this->errors($before, $after, null, null);
 	}
 }
