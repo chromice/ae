@@ -54,7 +54,7 @@ interface aeGroupValueContainer
 
 interface aeFieldValueContainer
 {
-	public function initial($values);
+	public function initial($value);
 	public function value();
 	public function validate();
 }
@@ -145,11 +145,12 @@ trait aeFormGroupValueContainer
 {
 	public function initial($values)
 	{
-		// FIXME: Cascade the initial() method just like value()
 		if (is_array($values) && !$this->form->is_submitted())
 		{
 			self::_merge_values($values, $this->values);
 		}
+		
+		return $this;
 	}
 	
 	protected static function _merge_values($from, &$to)
@@ -197,7 +198,10 @@ trait aeFormGroupValueContainer
 		
 		foreach ($this->fields as &$field)
 		{
-			$is_valid &= $field->validate();
+			if (is_a($field, 'aeGroupValueContainer') || is_a($field, 'aeFieldValueContainer'))
+			{
+				$is_valid &= $field->validate();
+			}
 		}
 		
 		return $is_valid;
@@ -213,6 +217,8 @@ trait aeFormFieldValueContainer
 			$this->value = $value;
 			$this->_normalize_value();
 		}
+		
+		return $this;
 	}
 	
 	protected function _normalize_value()
@@ -606,7 +612,7 @@ trait aeFormFileFieldValidator
 	
 	public function min_size($message, $size)
 	{
-		$message = str_replace(array('{size}', '{min}'), $size, $message);
+		$message = str_replace(array('{size}', '{min}'), self::_format_size($size), $message);
 		
 		$this->validators[aeFileValidator::order_min_size] = function ($file) use ($size, $message)
 		{
@@ -621,7 +627,7 @@ trait aeFormFileFieldValidator
 	
 	public function max_size($message, $size)
 	{
-		$message = str_replace(array('{size}', '{max}'), $size, $message);
+		$message = str_replace(array('{size}', '{max}'), self::_format_size($size), $message);
 		
 		$this->validators[aeFileValidator::order_max_size] = function ($file) use ($size, $message)
 		{
@@ -632,6 +638,15 @@ trait aeFormFileFieldValidator
 		};
 		
 		return $this;
+	}
+	
+	protected static function _format_size($bytes)
+	{
+		$units = array('byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte', 'exabyte', 'zettabyte', 'yottabyte');
+		$factor = floor((strlen(round($bytes)) - 1) / 3);
+		$value = sprintf("%.2f", $bytes / pow(1024, $factor));
+		
+		return rtrim($value, '.0') . ' ' . @$units[$factor] . ($value === '1.00' ? '' : 's');
 	}
 	
 	public function min_width($message, $width)
@@ -718,10 +733,10 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			trigger_error('Form ID cannot be empty.', E_USER_ERROR);
 		}
 		
-		$nonces = ae::session('nonces');
+		$nonces = ae::session('form-nonces');
 		
 		$this->id = $form_id;
-		$this->nonce = $nonces[$form_id];
+		$this->nonce = $nonces[$this->id];
 		
 		// Stop, if form has not been submitted
 		if (!$this->is_submitted())
@@ -739,8 +754,6 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		{
 			return;
 		}
-		
-		ae::log('Submitted data', $this->values);
 		
 		// Rearrange $_FILES array first
 		$files = array();
@@ -797,8 +810,6 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			}
 		}
 		
-		ae::log('Uploaded files', $files);
-		
 		// Append files
 		$append_files = function ($from, &$to) use (&$append_files)
 		{
@@ -833,8 +844,6 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		};
 		
 		$append_files($files, $this->values);
-		
-		ae::log('Merged data:', $this->values);
 	}
 	
 	// =================================
@@ -895,10 +904,12 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	public function initial($values)
 	{
-		if (is_array($values) && !$this->form->is_submitted())
+		if (is_array($values) && !$this->is_submitted())
 		{
 			self::_merge_values($values, $this->values);
 		}
+		
+		return $this;
 	}
 	
 	public function validate()
@@ -941,7 +952,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		}
 		
 		// Update nonce
-		$nonces = ae::session('nonces');
+		$nonces = ae::session('form-nonces');
 		$nonces[$this->id] = md5(uniqid(mt_rand(), true));
 		
 		return '<form ' . self::attributes($attributes) . '>'
@@ -1305,7 +1316,7 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 	
 	public function offsetGet($offset)
 	{
-		return isset($this->fields[$offset]);
+		return $this->fields[$offset];
 	}
 	
 	public function offsetSet($offset, $value)
@@ -1505,7 +1516,7 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 		{
 			$attributes = array_merge($this->html, $attributes);
 		}
-	
+		
 		if (!in_array($type, array('text', 'search', 'url', 'tel', 'email', 'password')))
 		{
 			unset($attributes['pattern']);
@@ -1606,7 +1617,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 	{
 		if (!$this->multiple)
 		{
-			if (isset($this->value['tmp_name']) || isset($this->value['path']))
+			if (is_array($this->value) && (isset($this->value['tmp_name']) || isset($this->value['path'])))
 			{
 				$this->value = $this->_parse_file($this->value);
 			}
@@ -1634,7 +1645,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 					return;
 				}
 				
-				if (isset($value['tmp_name']) || isset($value['path']))
+				if (is_array($value) && (isset($value['tmp_name']) || isset($value['path'])))
 				{
 					$this->value[$index] = self::_parse_file($value);
 				}

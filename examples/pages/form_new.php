@@ -5,7 +5,19 @@ ae::register('utilities/inspector');
 ae::options('inspector')
 	->set('dump_context', true);
 
-$form = ae::form_new('example');
+$form = ae::form_new('example')
+	->initial(array(
+		'user' => array(
+			'first_name' => 'Tester',
+			'last_name' => 'Numero Uno',
+			'terms' => 'on',
+		),
+		'files' => array(
+			'title' => array(
+				'This is a gallery title',
+			),
+		),
+	));
 
 /*
 	Single group example
@@ -27,6 +39,7 @@ $last_name = $user->single('last_name')
 	->required('Please enter your last name.');
 
 $email = $user->single('email')
+	->initial('tester@gmail.com')
 	->required('Please enter your email address.')
 	->valid_pattern('This email address does not seem to be valid.', aeTextValidator::email);
 
@@ -36,6 +49,7 @@ $service_options = array(
 	'shop' => 'Shop',
 );
 $services = $user->multiple('services')
+	->initial(array('shop'))
 	->required('Please choose at least two services.', function ($values, $index) {
 		return is_array($values) && count($values) > 1;
 	})
@@ -59,7 +73,7 @@ $images = $files->files('image', '/uploads/gallery')
 		return $index > 0 || is_array($values) && count($values) > 0;
 	})
 	->accept('{file} is not an image.', 'image/*')
-	->max_size('{file} is larger than 4 megabytes.', 4 * 1024 * 1024)
+	->max_size('{file} is larger than {size}.', 4 * 1024 * 1024)
 	->min_width('{file} is less than {width} pixels wide.', 256)
 	->min_height('{file} is less than {height} pixels high.', 256);
 
@@ -98,10 +112,24 @@ elseif ($form->validate())
 	// 	
 	// 	Files::create($values)->save();
 	// }
+	
+	echo '<pre>';
+	
+	var_export($form->values());
+	
+	echo '</pre>';
+}
+else
+{
+	echo '<p>The form is <strong>invalid</strong>!</p>';
 }
 
 ?>
 <h1>Form</h1>
+<?php if ($form->has_errors()): ?>
+<h2>Form has errors</h2>
+<?php $form->errors() ?>
+<?php endif ?>
 <?= $form->open() ?> 
 <fieldset>
 	<legend>Account</legend>
@@ -155,8 +183,8 @@ elseif ($form->validate())
 	</div>
 	<div class="field">
 		<label for="<?= $file['image']->id() ?>">Images</label>
-		<?= $file['image']->input() ?>
-		<?= $file['image']->error() ?>
+		<?= $images[$index]->input() ?>
+		<?= $images[$index]->error() ?>
 	</div>
 	<div class="field">
 		<span class="label">Appears on</span>
