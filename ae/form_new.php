@@ -145,9 +145,33 @@ trait aeFormGroupValueContainer
 {
 	public function initial($values)
 	{
-		if (is_array($values) && !$this->form->is_submitted())
+		// If no values to set or form is submitted.
+		if (!is_array($values) || empty($values) || $this->form->is_submitted())
+		{
+			return $this;
+		}
+		
+		// If no fields were set up yet, simply merge values.
+		if (empty($this->fields))
 		{
 			self::_merge_values($values, $this->values);
+			
+			return $this;
+		}
+		
+		// Initialise field for each value, or simply merge them.
+		foreach ($values as $_n => $_v)
+		{
+			if (isset($this->fields[$_n])
+			&& (is_a($this->fields[$_n], 'aeGroupValueContainer')
+			|| is_a($this->fields[$_n], 'aeFieldValueContainer')))
+			{
+				$this->fields[$_n]->initial($_v);
+			}
+			else
+			{
+				self::_merge_values($_v, $this->values[$_n]);
+			}
 		}
 		
 		return $this;
@@ -721,10 +745,12 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		aeFormGroupValueContainer;
 	
 	protected $id;
+	protected $form;
 	protected $fields = array();
 	protected $values = array();
 	protected $errors = array();
 	protected $has_files = false;
+	protected $has_command = false;
 	
 	public function __construct($form_id)
 	{
@@ -733,9 +759,10 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			trigger_error('Form ID cannot be empty.', E_USER_ERROR);
 		}
 		
-		$nonces = ae::session('form-nonces');
-		
 		$this->id = $form_id;
+		$this->form =& $this;
+		
+		$nonces = ae::session('form-nonces');
 		$this->nonce = $nonces[$this->id];
 		
 		// Stop, if form has not been submitted
@@ -846,6 +873,16 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		$append_files($files, $this->values);
 	}
 	
+	public function _has_files()
+	{
+		$this->has_files = true;
+	}
+	
+	public function _has_command()
+	{
+		$this->has_command = true;
+	}
+	
 	// =================================
 	// = aeFieldFactory implementation =
 	// =================================
@@ -874,11 +911,6 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		return $this->fields[$name] = new aeFormFileField($name, null, true, $destination, $this, $this->values[$name], $this->errors[$name]);
 	}
 	
-	public function _has_files($value = true)
-	{
-		$this->has_files = $value;
-	}
-	
 	// =================================
 	// = aeGroupFactory implementation =
 	// =================================
@@ -902,19 +934,14 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		return isset($_POST['__ae_form_id__']) && $_POST['__ae_form_id__'] === $this->id;
 	}
 	
-	public function initial($values)
-	{
-		if (is_array($values) && !$this->is_submitted())
-		{
-			self::_merge_values($values, $this->values);
-		}
-		
-		return $this;
-	}
-	
 	public function validate()
 	{
 		$is_valid = isset($_POST['__ae_form_nonce__']) && $_POST['__ae_form_nonce__'] === $this->nonce;
+		
+		if ($this->has_command && $is_valid)
+		{
+			return false;
+		}
 		
 		foreach ($this->fields as $index => $field)
 		{
@@ -1052,7 +1079,9 @@ class aeFormGroup implements ArrayAccess, aeFieldFactory, aeGroupErrorContainer,
 class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory, aeGroupErrorContainer, aeGroupValueContainer
 {
 	use aeFormGroupErrorContainer,
-		aeFormGroupValueContainer;
+		aeFormGroupValueContainer {
+			initial as _initial;
+		}
 	
 	protected $name;
 	protected $form;
@@ -1060,41 +1089,168 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	protected $values;
 	protected $errors;
 	
+	protected $constructors = array();
+	
 	protected $min;
 	protected $max;
+	protected $length;
 	
 	public function __construct($name, &$form, &$values, &$errors, $min = 1, $max = null)
 	{
 		$this->name = $name;
+		
 		$this->form =& $form;
 		$this->values =& $values;
 		$this->errors =& $errors;
 		
 		$this->min = $min;
 		$this->max = $max;
+		
+		if (isset($this->values['__ae_length__']))
+		{
+			$this->length = (int) $this->values['__ae_length__'];
+			
+			unset($this->values['__ae_length__']);
+		}
+		else
+		{
+			$this->_estimate_length();
+		}
+		
+		if (isset($this->values['__ae_add__']))
+		{
+			$this->form->_has_command();
+			
+			$index = (int) $this->values['__ae_add__'];
+			
+			$this->length += $index;
+			
+			unset($this->values['__ae_add__']);
+		}
+		elseif (isset($this->values['__ae_remove__']))
+		{
+			$this->form->_has_command();
+			
+			$index = (int) $this->values['__ae_remove__'];
+			
+			if (!empty($this->values) && is_array($this->values))
+			{
+				foreach ($this->values as &$_values)
+				{
+					if (is_array($_values))
+					{
+						unset($_values[$index]);
+					}
+				}
+			}
+			
+			$this->length--;
+			
+			unset($this->values['__ae_remove__']);
+		}
+		
+		$this->length = min($this->max, max($this->min, $this->length));
 	}
 	
-	public function min()
+	public function min_length()
 	{
 		return $this->min;
 	}
 	
-	public function max()
+	public function max_length()
 	{
 		return $this->max;
 	}
 	
-	public function add()
+	public function initial($values)
 	{
-		foreach ($this->fields as &$sequence)
+		$this->_initial($values);
+		$this->_estimate_length();
+		$this->_construct_fields();
+		
+		return $this;
+	}
+	
+	protected function _estimate_length()
+	{
+		if (is_null($this->length))
 		{
-			$sequence->_add();
+			$this->length = $this->min;
+		}
+		
+		foreach ($this->values as $name => $_values)
+		{
+			if (!is_array($_values))
+			{
+				continue;
+			}
+			
+			$this->length = min($this->max, max($this->length, count($_values)));
 		}
 	}
 	
-	public function remove($offset)
+	protected function _construct_fields()
 	{
-		return $this->offsetUnset($offset);
+		foreach (array_keys($this->constructors) as $name)
+		{
+			$this->_contruct_field($name);
+		}
+	}
+	
+	protected function _contruct_field($name)
+	{
+		if (!isset($this->constructors[$name]))
+		{
+			return;
+		}
+		
+		if (isset($this->fields[$name]))
+		{
+			unset($this->fields[$name]);
+		}
+		
+		return $this->fields[$name] = $this->constructors[$name]->__invoke($name);
+	}
+	
+	// ===============
+	// = HTML output =
+	// ===============
+	
+	public function add_button($label = 'Add another', $attributes = array())
+	{
+		if (!is_array($attributes))
+		{
+			$attributes = array();
+		}
+		
+		$attributes['type'] = 'submit';
+		$attributes['name'] = $this->name . '[__ae_add__]';
+		$attributes['value'] = '1';
+		
+		$button = '<button ' . aeForm::attributes($attributes) . '>' 
+			. $label . '</button>';
+		
+		$counter = '<input ' . aeForm::attributes(array(
+			'type' => 'hidden',
+			'name' => $this->name . '[__ae_length__]',
+			'value' => $this->length
+		)) . '>';
+		
+		return $counter . ($this->length >= $this->max ? '' : $button);
+	}
+	
+	public function remove_button($offset, $label = 'Remove', $attributes = array())
+	{
+		if (!is_array($attributes))
+		{
+			$attributes = array();
+		}
+		
+		$attributes['type'] = 'submit';
+		$attributes['name'] = $this->name . '[__ae_remove__]';
+		$attributes['value'] = $offset;
+		
+		return '<button ' . aeForm::attributes($attributes) . '>' . $label . '</button>';
 	}
 	
 	// =================================
@@ -1103,26 +1259,50 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 
 	public function single($name)
 	{
-		return $this->fields[$name] = new aeFormTextFieldSequence($this->name . '[' . $name . ']', false, $this->form, $this->values[$name], $this->errors[$name], $this->min, $this->max);
+		$parent =& $this;
+		
+		$this->constructors[$name] = function ($name) use (&$parent) {
+			return new aeFormTextFieldSequence($parent->name . '[' . $name . ']', false, $parent->form, $parent->values[$name], $parent->errors[$name], $parent->length);
+		};
+		
+		return $this->_contruct_field($name);
 	}
 	
 	public function multiple($name)
 	{
-		return $this->fields[$name] = new aeFormTextFieldSequence($this->name . '[' . $name . ']', true, $this->form, $this->values[$name], $this->errors[$name], $this->min, $this->max);
+		$parent =& $this;
+		
+		$this->constructors[$name] = function ($name) use (&$parent) {
+			return new aeFormTextFieldSequence($parent->name . '[' . $name . ']', true, $parent->form, $parent->values[$name], $parent->errors[$name], $parent->length);
+		};
+		
+		return $this->_contruct_field($name);
 	}
 	
 	public function file($name, $destination)
 	{
-		$this->form->_has_files();
+		$parent =& $this;
 		
-		return $this->fields[$name] = new aeFormFileFieldSequence($this->name . '[' . $name . ']', false, $destination, $this->form, $this->values[$name], $this->errors[$name], $this->min, $this->max);
+		$this->constructors[$name] = function ($name) use (&$parent, $destination) {
+			$parent->form->_has_files();
+			
+			return new aeFormFileFieldSequence($parent->name . '[' . $name . ']', false, $destination, $parent->form, $parent->values[$name], $parent->errors[$name], $parent->length);
+		};
+		
+		return $this->_contruct_field($name);
 	}
 	
 	public function files($name, $destination)
 	{
-		$this->form->_has_files();
+		$parent =& $this;
 		
-		return $this->fields[$name] = new aeFormFileFieldSequence($this->name . '[' . $name . ']', true, $destination, $this->form, $this->values[$name], $this->errors[$name], $this->min, $this->max);
+		$this->constructors[$name] = function ($name) use (&$parent, $destination) {
+			$parent->form->_has_files();
+			
+			return new aeFormFileFieldSequence($parent->name . '[' . $name . ']', true, $destination, $parent->form, $parent->values[$name], $parent->errors[$name], $parent->length);
+		};
+		
+		return $this->_contruct_field($name);
 	}
 	
 	// ============================
@@ -1220,11 +1400,11 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 }
 
 
-abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, aeGroupErrorContainer, aeGroupValueContainer
+abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, aeValidator, aeGroupErrorContainer, aeGroupValueContainer
 {
-	use aeFormGroupErrorContainer,
-		aeFormGroupValueContainer,
-		aeFormFieldValidator;
+	use aeFormFieldValidator,
+		aeFormGroupErrorContainer,
+		aeFormGroupValueContainer;
 	
 	protected $name;
 	protected $multiple;
@@ -1233,67 +1413,36 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 	protected $values;
 	protected $errors;
 	
-	protected $min;
-	protected $max;
+	protected $length;
 	
 	protected $constructor;
 	protected $validators = array();
 	protected $html = array();
 	
-	public function __construct($name, $multiple, &$form, &$values, &$errors, &$min, &$max)
+	public function __construct($name, $multiple, &$form, &$values, &$errors, &$length)
 	{
 		$this->name = $name;
 		$this->multiple = $multiple;
+		
 		$this->form =& $form;
 		$this->values =& $values;
 		$this->errors =& $errors;
 		
-		$this->min =& $min;
-		$this->max =& $max;
-		
-		$count = 0;
-		$index = -1;
-		$constructor = $this->constructor;
+		$this->length =& $length;
 		
 		if (!is_array($this->values))
 		{
 			$this->values = array();
 		}
-		
-		foreach ($this->values as $index => $value)
+		else
 		{
-			if (!is_null($this->max) && $count > $this->max)
-			{
-				break;
-			}
-			
-			$this->fields[$index] = $constructor($index, $this->validators, $this->html);
-			
-			$count++;
+			$this->values = array_values($this->values);
 		}
 		
-		if ($count < $this->min)
-		{
-			for ($i = 0; $i < $this->min - $count; $i++)
-			{ 
-				$index++;
-				$this->fields[$index] = $constructor($index, $this->validators, $this->html);
-			}
+		for ($index = 0; $index < $this->length; $index++)
+		{ 
+			$this->fields[$index] = $this->constructor->__invoke($index, $this->validators, $this->html);
 		}
-	}
-	
-	public function _add()
-	{
-		$count = count($this->fields);
-		$index = max(array_keys($this->fields)) + 1;
-		
-		if (!is_null($this->max) && $count + 1 > $this->max)
-		{
-			return;
-		}
-		
-		$constructor = $this->constructor;
-		$this->fields[$index] = $constructor($index, $this->validators, $this->html);
 	}
 	
 	// ============================
@@ -1359,26 +1508,26 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 	}
 }
 
-class aeFormTextFieldSequence extends aeFormFieldSequence
+class aeFormTextFieldSequence extends aeFormFieldSequence implements aeTextValidator
 {
 	use aeFormTextFieldValidator;
 	
-	public function __construct($name, $multiple, &$form, &$values, &$errors, &$min, &$max)
+	public function __construct($name, $multiple, &$form, &$values, &$errors, &$length)
 	{
 		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, &$form, &$values, &$errors)
 		{
 			return new aeFormTextField($name, $index, $multiple, $form, $values[$index], $errors[$index], $validators, $html);
 		};
 		
-		parent::__construct($name, $multiple, $form, $values, $errors, $min, $max);
+		parent::__construct($name, $multiple, $form, $values, $errors, $length);
 	}
 }
 
-class aeFormFileFieldSequence extends aeFormFieldSequence
+class aeFormFileFieldSequence extends aeFormFieldSequence implements aeFileValidator
 {
 	use aeFormFileFieldValidator;
 	
-	public function __construct($name, $multiple, $destination, &$form, &$values, &$errors, &$min, &$max)
+	public function __construct($name, $multiple, $destination, &$form, &$values, &$errors, &$length)
 	{
 		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, $destination, &$form, &$values, &$errors)
 		{
@@ -1387,7 +1536,7 @@ class aeFormFileFieldSequence extends aeFormFieldSequence
 			return new aeFormFileField($name, $index, $multiple, $destination, $form, $values[$index], $errors[$index], $validators, $html);
 		};
 		
-		parent::__construct($name, $multiple, $form, $values, $errors, $min, $max);
+		parent::__construct($name, $multiple, $form, $values, $errors, $length);
 	}
 }
 

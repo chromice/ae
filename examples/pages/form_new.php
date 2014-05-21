@@ -5,19 +5,7 @@ ae::register('utilities/inspector');
 ae::options('inspector')
 	->set('dump_context', true);
 
-$form = ae::form_new('example')
-	->initial(array(
-		'user' => array(
-			'first_name' => 'Tester',
-			'last_name' => 'Numero Uno',
-			'terms' => 'on',
-		),
-		'files' => array(
-			'title' => array(
-				'This is a gallery title',
-			),
-		),
-	));
+$form = ae::form_new('example');
 
 /*
 	Single group example
@@ -43,6 +31,19 @@ $email = $user->single('email')
 	->required('Please enter your email address.')
 	->valid_pattern('This email address does not seem to be valid.', aeTextValidator::email);
 
+$form->initial(array(
+	'user' => array(
+		'first_name' => 'Tester',
+		'last_name' => 'Numero Uno',
+		'terms' => 'on',
+	),
+	'files' => array(
+		'title' => array(
+			'This is a gallery title',
+		),
+	),
+));
+
 $service_options = array(
 	'blog' => 'Blog',
 	'cms' => 'CMS',
@@ -62,6 +63,9 @@ $terms = $user->single('terms')
 	Sequence example
 */
 $files = $form->sequence('files', 1, 5); // One or more sequence elements
+	// ->initial(array(
+	// 	'title' => array('Fuck', 'Cock', 'Suck')
+	// ));
 
 $titles = $files->single('title')
 	->required('Please enter the gallery title.', function ($value, $index) {
@@ -84,6 +88,7 @@ $descriptions = $files->single('description')
 $appears_on = $files->multiple('appears_on')
 	->required('Please choose a service.')
 	->valid_value('You are not using one of these services.', $services->value());
+
 
 if (!$form->is_submitted())
 {
@@ -169,7 +174,7 @@ else
 <fieldset>
 	<legent>
 		Gallery #<?= $index + 1 ?>
-		<button type="submit" name="remove_file" value="<?= $index ?>">Remove</button>
+		<?= $files->remove_button($index) ?>
 	</legent>
 	<div class="field">
 		<label for="<?= $file['title']->id() ?>">Title</label>
@@ -178,8 +183,8 @@ else
 	</div>
 	<div class="field">
 		<label for="<?= $file['description']->id() ?>">Description</label>
-		<?= $file['description']->textarea() ?>
-		<?= $file['description']->error() ?>
+		<?= $files[$index]['description']->textarea() ?>
+		<?= $files[$index]['description']->error() ?>
 	</div>
 	<div class="field">
 		<label for="<?= $file['image']->id() ?>">Images</label>
@@ -195,8 +200,6 @@ else
 	</div>
 </fieldset>
 <?php endforeach ?>
-<?php if (count($files) < $files->max()): ?>
-	<button type="submit" name="add_file" value="add">Add another gallery</button>
-<?php endif ?>
+	<?= $files->add_button() ?>
 	<button type="submit">Submit</button>
 <?= $form->close() ?> 
