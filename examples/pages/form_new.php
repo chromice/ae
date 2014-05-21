@@ -90,22 +90,10 @@ $appears_on = $files->multiple('appears_on')
 	->valid_value('You are not using one of these services.', $services->value());
 
 
-if (!$form->is_submitted())
-{
-	// do nothing
-}
-elseif (isset($_POST['add_file']))
-{
-	$files->add();
-}
-elseif (isset($_POST['remove_file']) && is_numeric($_POST['remove_file']))
-{
-	$files->remove($_POST['remove_file']);
-}
 /*
 	Validate the form
 */
-elseif ($form->validate())
+if ($form->is_submitted() && $form->validate())
 {
 	echo '<p>The form is submitted and valid!</p>';
 	
