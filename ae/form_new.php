@@ -1106,6 +1106,11 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		$this->min = $min;
 		$this->max = $max;
 		
+		if (!is_array($this->values))
+		{
+			$this->values = array();
+		}
+		
 		if (isset($this->values['__ae_length__']))
 		{
 			$this->length = (int) $this->values['__ae_length__'];
@@ -1150,6 +1155,8 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		}
 		
 		$this->length = min($this->max, max($this->min, $this->length));
+		
+		$this->_normalize_values();
 	}
 	
 	public function min_length()
@@ -1165,10 +1172,41 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	public function initial($values)
 	{
 		$this->_initial($values);
+		$this->_normalize_values();
 		$this->_estimate_length();
 		$this->_construct_fields();
 		
 		return $this;
+	}
+	
+	protected function _normalize_values()
+	{
+		$values = $this->values;
+		$arrays = array_filter(array_map('is_array', $values));
+		
+		if (count($arrays) !== count($values))
+		{
+			return;
+		}
+		
+		$vectors = array_map('array_keys', array_values($values));
+		$indexes = array_unique(call_user_func_array('array_merge', $vectors), SORT_NUMERIC);
+		
+		$index = 0;
+		$this->values = array();
+		
+		foreach ($indexes as $_index)
+		{
+			foreach ($values as $name => $_values)
+			{
+				if (isset($_values[$_index]))
+				{
+					$this->values[$name][$index] = $_values[$_index];
+				}
+			}
+			
+			$index++;
+		}
 	}
 	
 	protected function _estimate_length()
@@ -1380,7 +1418,10 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	{
 		$base = reset($this->fields);
 		
-		return $base->key();
+		if (is_a($base, 'aeFormFieldSequence'))
+		{
+			return $base->key();
+		}
 	}
 	
 	public function next()
@@ -1395,7 +1436,12 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	{
 		$base = reset($this->fields);
 		
-		return $base->valid();
+		if (is_a($base, 'aeFormFieldSequence'))
+		{
+			return $base->valid();
+		}
+		
+		return false;
 	}
 }
 
@@ -1433,10 +1479,6 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 		if (!is_array($this->values))
 		{
 			$this->values = array();
-		}
-		else
-		{
-			$this->values = array_values($this->values);
 		}
 		
 		for ($index = 0; $index < $this->length; $index++)
@@ -1831,10 +1873,10 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 				return;
 			case UPLOAD_ERR_INI_SIZE:
 			case UPLOAD_ERR_FORM_SIZE:
-				$this->error[] = $file_name . ' exceeds filesize limit.';
+				$this->errors[] = $file_name . ' exceeds filesize limit.';
 				return;
 			default:
-				$this->error[] = $file_name . ' could not be uploaded.';
+				$this->errors[] = $file_name . ' could not be uploaded.';
 				return;
 		}
 		
@@ -1855,7 +1897,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 		} 
 		catch (aeFileException $e)
 		{
-			$this->error[] = $file_name . ' could not be uploaded.';
+			$this->errors[] = $file_name . ' could not be uploaded.';
 			
 			return;
 		}
