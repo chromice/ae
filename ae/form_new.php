@@ -1114,7 +1114,6 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		if (isset($this->values['__ae_length__']))
 		{
 			$this->length = (int) $this->values['__ae_length__'];
-			
 			unset($this->values['__ae_length__']);
 		}
 		else
@@ -1125,32 +1124,27 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		if (isset($this->values['__ae_add__']))
 		{
 			$this->form->_has_command();
-			
-			$index = (int) $this->values['__ae_add__'];
-			
-			$this->length += $index;
-			
+			$this->_add_item((int) $this->values['__ae_add__']);
 			unset($this->values['__ae_add__']);
+		}
+		elseif (isset($this->values['__ae_move__']))
+		{
+			$this->form->_has_command();
+			
+			$move = explode(',', $this->values['__ae_move__']);
+			$move = array_map('trim', $move);
+			
+			if (count($move) === 2)
+			{
+				$this->_move_item((int) $move[0], (int) $move[1]);
+			}
+			
+			unset($this->values['__ae_move__']);
 		}
 		elseif (isset($this->values['__ae_remove__']))
 		{
 			$this->form->_has_command();
-			
-			$index = (int) $this->values['__ae_remove__'];
-			
-			if (!empty($this->values) && is_array($this->values))
-			{
-				foreach ($this->values as &$_values)
-				{
-					if (is_array($_values))
-					{
-						unset($_values[$index]);
-					}
-				}
-			}
-			
-			$this->length--;
-			
+			$this->_remove_item((int) $this->values['__ae_remove__']);
 			unset($this->values['__ae_remove__']);
 		}
 		
@@ -1177,6 +1171,32 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		$this->_construct_fields();
 		
 		return $this;
+	}
+	
+	protected function _add_item($index)
+	{
+		$this->length += 1;
+	}
+	
+	protected function _remove_item($index)
+	{
+		if (!empty($this->values) && is_array($this->values))
+		{
+			foreach ($this->values as &$_values)
+			{
+				if (is_array($_values))
+				{
+					unset($_values[$index]);
+				}
+			}
+		}
+		
+		$this->length--;
+	}
+	
+	protected function _move_item($from, $to)
+	{
+		# code...
 	}
 	
 	protected function _normalize_values()
@@ -1254,7 +1274,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	// = HTML output =
 	// ===============
 	
-	public function add_button($label = 'Add another', $attributes = array())
+	public function add_button($offset = -1, $label = 'Add another', $attributes = array())
 	{
 		if (!is_array($attributes))
 		{
@@ -1263,9 +1283,9 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		
 		$attributes['type'] = 'submit';
 		$attributes['name'] = $this->name . '[__ae_add__]';
-		$attributes['value'] = '1';
+		$attributes['value'] = $offset;
 		
-		$button = '<button ' . aeForm::attributes($attributes) . '>' 
+		$button = '<button ' . aeForm::attributes($attributes) . '>'
 			. $label . '</button>';
 		
 		$counter = '<input ' . aeForm::attributes(array(
@@ -1275,6 +1295,25 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		)) . '>';
 		
 		return $counter . ($this->length >= $this->max ? '' : $button);
+	}
+	
+	public function move_button($from, $to, $label = null, $attributes = array())
+	{
+		if (is_null($label))
+		{
+			$label = $from > $to ? 'Move down' : 'Move up';
+		}
+		
+		if (!is_array($attributes))
+		{
+			$attributes = array();
+		}
+		
+		$attributes['type'] = 'submit';
+		$attributes['name'] = $this->name . '[__ae_move__]';
+		$attributes['value'] = $from . ',' . $to;
+		
+		return '<button ' . aeForm::attributes($attributes) . '>' . $label . '</button>';
 	}
 	
 	public function remove_button($offset, $label = 'Remove', $attributes = array())
