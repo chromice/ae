@@ -1204,7 +1204,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		$values = $this->values;
 		$arrays = array_filter(array_map('is_array', $values));
 		
-		if (count($arrays) !== count($values))
+		if (count($arrays) !== count($values) || count($arrays) === 0)
 		{
 			return;
 		}
