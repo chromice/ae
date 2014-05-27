@@ -1148,7 +1148,12 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 			unset($this->values['__ae_remove__']);
 		}
 		
-		$this->length = min($this->max, max($this->min, $this->length));
+		$this->length = max($this->min, $this->length);
+		
+		if (!is_null($this->max))
+		{
+			$this->length = min($this->max, $this->length);
+		}
 		
 		$this->_normalize_values();
 	}
@@ -1243,7 +1248,12 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 				continue;
 			}
 			
-			$this->length = min($this->max, max($this->length, count($_values)));
+			$this->length = max($this->min, $this->length);
+		
+			if (!is_null($this->max))
+			{
+				$this->length = min($this->max, $this->length);
+			}
 		}
 	}
 	
@@ -1294,7 +1304,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 			'value' => $this->length
 		)) . '>';
 		
-		return $counter . ($this->length >= $this->max ? '' : $button);
+		return $counter . (!is_null($this->max) && $this->length >= $this->max ? '' : $button);
 	}
 	
 	public function move_button($from, $to, $label = null, $attributes = array())
