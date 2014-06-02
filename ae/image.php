@@ -517,7 +517,10 @@ class aeImage
 		$this->_load();
 		list($path, $type) = $this->_path_type($uri);
 		
-		while(ob_get_level()) ob_end_clean();
+		while (ob_get_level())
+		{
+			ob_end_clean();
+		}
 		
 		ob_start();
 		
@@ -603,7 +606,10 @@ class aeImage
 		$this->_load();
 		list($path, $type) = $this->_path_type($name);
 		
-		while(ob_get_level()) ob_end_clean();
+		while (ob_get_level())
+		{
+			ob_end_clean();
+		}
 		
 		foreach ($this->headers as $key => $value) 
 		{
