@@ -34,13 +34,21 @@ class aeFile
 	protected $path;
 	protected $name;
 	protected $type;
+	protected $meta;
 	
 	protected $file;
 	protected $is_locked = false;
 	
-	public function __construct($path, $name = null)
+	public function __construct($path, $name = null, $meta = array())
 	{
+		if (is_array($name) && empty($meta))
+		{
+			$meta = $name;
+			$name = null;
+		}
+		
 		$this->path = $path;
+		$this->meta = is_array($meta) ? $meta : array();
 		$this->name = pathinfo(is_null($name) ? $path : $name, PATHINFO_FILENAME);
 		$this->type = pathinfo(is_null($name) ? $path : $name, PATHINFO_EXTENSION);
 	}
@@ -76,6 +84,11 @@ class aeFile
 	public function name()
 	{
 		return $this->name;
+	}
+	
+	public function meta()
+	{
+		return $this->meta;
 	}
 	
 	public function type($validate = true)

@@ -266,6 +266,8 @@ trait aeFormFieldValueContainer
 	
 	public function validate()
 	{
+		ksort($this->validators);
+		
 		foreach ($this->validators as $order => $func)
 		{
 			if ($order !== aeValidator::order_required && empty($this->value))
@@ -488,7 +490,7 @@ trait aeFormTextFieldValidator
 	
 	public function min_length($message, $length)
 	{
-		$message = str_replace(array('{length}', '{min}'), $length, $message);
+		$message = str_replace('{length}', $length, $message);
 		
 		$this->html['minlength'] = $length;
 		$this->validators[aeTextValidator::order_min_length] = function ($value) use ($message, $length)
@@ -501,7 +503,7 @@ trait aeFormTextFieldValidator
 
 	public function max_length($message, $length)
 	{
-		$message = str_replace(array('{length}', '{max}'), $length, $message);
+		$message = str_replace('{length}', $length, $message);
 		
 		$this->html['maxlength'] = $length;
 		$this->validators[aeTextValidator::order_max_length] = function ($value) use ($message, $length)
@@ -514,7 +516,7 @@ trait aeFormTextFieldValidator
 
 	public function min_value($message, $limit)
 	{
-		$message = str_replace(array('{limit}', '{min}'), $limit, $message);
+		$message = str_replace('{value}', $limit, $message);
 		
 		$this->html['min'] = $limit;
 		
@@ -541,7 +543,7 @@ trait aeFormTextFieldValidator
 	
 	public function max_value($message, $limit)
 	{
-		$message = str_replace(array('{limit}', '{max}'), $limit, $message);
+		$message = str_replace('{value}', $limit, $message);
 		
 		$this->html['max'] = $limit;
 		
@@ -578,7 +580,7 @@ trait aeFormFileFieldValidator
 				return $callback($file, $index) === false ? $message : null;
 			}
 			
-			return !is_a($file, 'aeFile') || $file->exists() ? $message : null;
+			return !is_a($file, 'aeFile') || !$file->exists() ? $message : null;
 		};
 		
 		return $this;
@@ -636,7 +638,7 @@ trait aeFormFileFieldValidator
 	
 	public function min_size($message, $size)
 	{
-		$message = str_replace(array('{size}', '{min}'), self::_format_size($size), $message);
+		$message = str_replace('{size}', self::_format_size($size), $message);
 		
 		$this->validators[aeFileValidator::order_min_size] = function ($file) use ($size, $message)
 		{
@@ -651,7 +653,7 @@ trait aeFormFileFieldValidator
 	
 	public function max_size($message, $size)
 	{
-		$message = str_replace(array('{size}', '{max}'), self::_format_size($size), $message);
+		$message = str_replace('{size}', self::_format_size($size), $message);
 		
 		$this->validators[aeFileValidator::order_max_size] = function ($file) use ($size, $message)
 		{
@@ -675,7 +677,7 @@ trait aeFormFileFieldValidator
 	
 	public function min_width($message, $width)
 	{
-		$message = str_replace(array('{width}', '{min}'), $width, $message);
+		$message = str_replace('{width}', $width, $message);
 		
 		$this->validators[aeFileValidator::order_min_width] = function ($file) use ($width, $message)
 		{
@@ -690,7 +692,7 @@ trait aeFormFileFieldValidator
 	
 	public function max_width($message, $width)
 	{
-		$message = str_replace(array('{width}', '{max}'), $width, $message);
+		$message = str_replace('{width}', $width, $message);
 		
 		$this->validators[aeFileValidator::order_max_width] = function ($file) use ($width, $message)
 		{
@@ -705,7 +707,7 @@ trait aeFormFileFieldValidator
 	
 	public function min_height($message, $height)
 	{
-		$message = str_replace(array('{height}', '{min}'), $height, $message);
+		$message = str_replace('{height}', $height, $message);
 		
 		$this->validators[aeFileValidator::order_min_height] = function ($file) use ($height, $message)
 		{
@@ -720,7 +722,7 @@ trait aeFormFileFieldValidator
 	
 	public function max_height($message, $height)
 	{
-		$message = str_replace(array('{height}', '{max}'), $height, $message);
+		$message = str_replace('{height}', $height, $message);
 		
 		$this->validators[aeFileValidator::order_max_height] = function ($file) use ($height, $message)
 		{
@@ -937,8 +939,9 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	public function validate()
 	{
 		$is_valid = isset($_POST['__ae_form_nonce__']) && $_POST['__ae_form_nonce__'] === $this->nonce;
+		$has_command = $this->has_command || isset($_POST['__ae_command__']);
 		
-		if ($this->has_command && $is_valid)
+		if ($has_command && $is_valid)
 		{
 			return false;
 		}
@@ -982,9 +985,39 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		$nonces = ae::session('form-nonces');
 		$nonces[$this->id] = md5(uniqid(mt_rand(), true));
 		
+		// Get max file size
+		$limits['post_max_size'] = @ini_get('post_max_size');
+		$limits['upload_max_filesize'] = @ini_get('upload_max_filesize');
+		
+		// TODO: Array map this function instead: http://www.php.net/manual/en/function.ini-get.php#96996
+		foreach ($limits as $key => $value)
+		{
+			if (preg_match('/^(\d+)(K|M|G)?$/i', trim($value), $parts) === 1)
+			{
+				$limit = (int) $parts[1];
+				
+				if (isset($parts[2])) switch (strtoupper($parts[2]))
+				{
+					case 'G':
+						$limit*= 1024;
+					case 'M':
+						$limit*= 1024;
+					case 'K':
+						$limit*= 1024;
+				}
+				
+				$limits[$key] = $limit;
+			}
+			else
+			{
+				unset($limits[$key]);
+			}
+		}
+		
 		return '<form ' . self::attributes($attributes) . '>'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
 			. '<input type="hidden" name="__ae_form_nonce__" value="' . $nonces[$this->id] . '" />'
+			. '<input type="hidden" name="MAX_FILE_SIZE" value="' . (count($limits) > 0 ? min($limits) : 1024 * 1024) . '" />'
 			. '<input type="submit" tabindex="-1" style="position:absolute; left:-999em; width:0; overflow:hidden">';
 	}
 	
@@ -1790,8 +1823,8 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 			$attributes['minlength'] = $this->html['minlength'];
 		}
 	
-		return '<textarea ' . $this->_attributes($attributes) . '>' 
-			. ae::escape($this->value, ae::attribute) 
+		return '<textarea ' . $this->_attributes($attributes) . '>'
+			. ae::escape($this->value, ae::attribute)
 			. '</textarea>';
 	}
 	
@@ -1837,7 +1870,7 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 	}
 }
 
-class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErrorContainer
+class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErrorContainer, aeGroupErrorContainer
 {
 	use aeFormGroupErrorContainer,
 		aeFormFileFieldValidator;
@@ -1859,7 +1892,15 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 		{
 			if (is_array($this->value) && (isset($this->value['tmp_name']) || isset($this->value['path'])))
 			{
-				$this->value = $this->_parse_file($this->value);
+				if (isset($this->value['__ae_remove__']))
+				{
+					$this->form->_has_command();
+					$this->value = null;
+				}
+				else
+				{
+					$this->value = $this->_parse_file($this->value);
+				}
 			}
 			
 			if (!is_a($this->value, 'aeFile')/* || !$this->value->exists()*/)
@@ -1887,7 +1928,17 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 				
 				if (is_array($value) && (isset($value['tmp_name']) || isset($value['path'])))
 				{
-					$this->value[$index] = self::_parse_file($value);
+					if (isset($value['__ae_remove__']))
+					{
+						$this->form->_has_command();
+						unset($this->value[$index]);
+						
+						continue;
+					}
+					else
+					{
+						$this->value[$index] = self::_parse_file($value);
+					}
 				}
 				
 				if (!is_a($this->value[$index], 'aeFile')/* || !$this->value[$index]->exists()*/)
@@ -1902,7 +1953,13 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 	{
 		if (!empty($file['path']) && !empty($file['full_name']))
 		{
-			return ae::file(rtrim($this->destination, '/') . '/' . ltrim($file['path'], '/'), $file['full_name']);
+			// FIXME: File may be located somewhere else.
+			$path = rtrim($this->destination, '/') . '/' . ltrim($file['path'], '/');
+			$full_name = $file['full_name'];
+			
+			unset($file['path'], $file['full_name']);
+			
+			return ae::file($path, $full_name, $file);
 		}
 		
 		// Check if all necessary data is there
@@ -1940,7 +1997,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 		try
 		{
 			// Move file to the destination
-			$target = rtrim($this->destination, '/') . '/' . $file->hash() . '.' . $file->type();
+			$target = rtrim($this->destination, '/') . '/' . $file->name() . '.' . $file->type();
 			
 			$file->move($target);
 		} 
@@ -2045,6 +2102,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 			}
 			
 			$full_name = $file->full_name(false);
+			$meta = $file->meta();
 			
 			if ($file_offset > 0)
 			{
@@ -2062,6 +2120,25 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 				'name'  => $this->name($file_offset) . '[path]',
 				'value' => str_replace($this->destination, '', $file->path())
 			)) . '>';
+			
+			foreach ($meta as $key => $value)
+			{
+				if (is_scalar($key) && is_scalar($value))
+				{
+					$output.= '<input ' . aeForm::attributes(array(
+						'type'  => 'hidden',
+						'name'  => $this->name($file_offset) . '[' . $key . ']',
+						'value' => $value
+					)) . '>';
+				}
+			}
+			
+			$output.= ' <button ' . aeForm::attributes(array(
+				'type' => 'submit',
+				'name' => $this->name($file_offset) . '[__ae_remove__]',
+				'value' => '1'
+			)) . '>Remove</button>';
+			
 			$output.= '</span>';
 			
 			$file_offset++;
@@ -2081,6 +2158,15 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeGroupErr
 		$output.= '<input ' . $this->_attributes($attributes) . ">\n";
 		
 		return $output;
+	}
+	
+	// ========================================
+	// = aeFieldErrorContainer implementation =
+	// ========================================
+	
+	public function has_error()
+	{
+		return $this->has_errors();
 	}
 	
 	public function error($before = '<em class="error">', $after = '</em>')
