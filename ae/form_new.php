@@ -1263,7 +1263,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 				continue;
 			}
 			
-			$this->length = max($this->min, $this->length);
+			$this->length = max($this->min, $this->length, count($_values));
 		
 			if (!is_null($this->max))
 			{

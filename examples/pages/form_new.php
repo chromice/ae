@@ -39,7 +39,7 @@ $form->initial(array(
 	),
 	'files' => array(
 		'title' => array(
-			'This is a gallery title',
+			'This is a gallery title', 'This is another title'
 		),
 	),
 ));
@@ -63,9 +63,6 @@ $terms = $user->single('terms')
 	Sequence example
 */
 $files = $form->sequence('files', 1, null); // One or more sequence elements
-	// ->initial(array(
-	// 	'title' => array('Fuck', 'Cock', 'Suck')
-	// ));
 
 $titles = $files->single('title')
 	->required('Please enter the gallery title.', function ($value, $index) {
