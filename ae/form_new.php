@@ -348,8 +348,7 @@ trait aeFormGroupErrorContainer
 		
 		$errors = array();
 		
-		$flatten = function ($error) use (&$flatten, &$errors)
-		{
+		$flatten = function ($error) use (&$flatten, &$errors) {
 			if (!is_array($error))
 			{
 				$errors[] = $error;
@@ -424,8 +423,7 @@ trait aeFormFieldValidator
 {
 	public function required($message, $callback = null)
 	{
-		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback)
-		{
+		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback) {
 			if (is_callable($callback))
 			{
 				return $callback($value, $index) === false ? $message : null;
@@ -479,8 +477,7 @@ trait aeFormTextFieldValidator
 		}
 		
 		$this->html['pattern'] = '\s*' . $pattern . '\s*';
-		$this->validators[aeTextValidator::order_valid_pattern] = function ($value) use ($message, $pattern, $time)
-		{
+		$this->validators[aeTextValidator::order_valid_pattern] = function ($value) use ($message, $pattern, $time) {
 			return preg_match('/^(?:' . $pattern . ')$/', $value) !== 1 
 				|| $time && strtotime($value) === FALSE ? $message : null;
 		};
@@ -493,8 +490,7 @@ trait aeFormTextFieldValidator
 		$message = str_replace('{length}', $length, $message);
 		
 		$this->html['minlength'] = $length;
-		$this->validators[aeTextValidator::order_min_length] = function ($value) use ($message, $length)
-		{
+		$this->validators[aeTextValidator::order_min_length] = function ($value) use ($message, $length) {
 			return strlen($value) < $length ? $message : null;
 		};
 		
@@ -506,8 +502,7 @@ trait aeFormTextFieldValidator
 		$message = str_replace('{length}', $length, $message);
 		
 		$this->html['maxlength'] = $length;
-		$this->validators[aeTextValidator::order_max_length] = function ($value) use ($message, $length)
-		{
+		$this->validators[aeTextValidator::order_max_length] = function ($value) use ($message, $length) {
 			return strlen($value) > $length ? $message : null;
 		};
 		
@@ -523,8 +518,7 @@ trait aeFormTextFieldValidator
 		if (!empty($this->time_format))
 		{
 			$format = $this->time_format;
-			$this->validators[aeTextValidator::order_min_value] = function ($value) use ($message, $limit, $format)
-			{
+			$this->validators[aeTextValidator::order_min_value] = function ($value) use ($message, $limit, $format) {
 				return preg_match($format, $value) !== 1 
 					|| preg_match($format, $limit) !== 1
 					|| strtotime($value) < strtotime($limit) ? $message : null;
@@ -532,8 +526,7 @@ trait aeFormTextFieldValidator
 		}
 		else
 		{
-			$this->validators[aeTextValidator::order_min_value] = function ($value) use ($message, $limit)
-			{
+			$this->validators[aeTextValidator::order_min_value] = function ($value) use ($message, $limit) {
 				return $value < $limit ? $message : null;
 			};
 		}
@@ -550,8 +543,7 @@ trait aeFormTextFieldValidator
 		if (!empty($this->time_format))
 		{
 			$format = $this->time_format;
-			$this->validators[aeTextValidator::order_max_value] = function ($value) use ($message, $limit, $format)
-			{
+			$this->validators[aeTextValidator::order_max_value] = function ($value) use ($message, $limit, $format) {
 				return preg_match($format, $value) !== 1 
 					|| preg_match($format, $limit) !== 1
 					|| strtotime($value) > strtotime($limit) ? $message : null;
@@ -559,8 +551,7 @@ trait aeFormTextFieldValidator
 		}
 		else
 		{
-			$this->validators[aeTextValidator::order_max_value] = function ($value) use ($message, $limit)
-			{
+			$this->validators[aeTextValidator::order_max_value] = function ($value) use ($message, $limit) {
 				return $value > $limit ? $message : null;
 			};
 		}
@@ -573,8 +564,7 @@ trait aeFormFileFieldValidator
 {
 	public function required($message, $callback = null)
 	{
-		$this->validators[aeValidator::order_required] = function ($file, $index = null) use ($message, $callback)
-		{
+		$this->validators[aeValidator::order_required] = function ($file, $index = null) use ($message, $callback) {
 			if (is_callable($callback))
 			{
 				return $callback($file, $index) === false ? $message : null;
@@ -606,8 +596,7 @@ trait aeFormFileFieldValidator
 			return trim($type, '*');
 		}, $types);
 		
-		$this->validators[aeFileValidator::order_accept] = function ($file) use ($types, $message) 
-		{
+		$this->validators[aeFileValidator::order_accept] = function ($file) use ($types, $message) {
 			try
 			{
 				$type = preg_quote($file->type());
@@ -640,8 +629,7 @@ trait aeFormFileFieldValidator
 	{
 		$message = str_replace('{size}', self::_format_size($size), $message);
 		
-		$this->validators[aeFileValidator::order_min_size] = function ($file) use ($size, $message)
-		{
+		$this->validators[aeFileValidator::order_min_size] = function ($file) use ($size, $message) {
 			if ($file->size() < $size)
 			{
 				return str_replace('{file}', $file->full_name(false), $message);
@@ -655,8 +643,7 @@ trait aeFormFileFieldValidator
 	{
 		$message = str_replace('{size}', self::_format_size($size), $message);
 		
-		$this->validators[aeFileValidator::order_max_size] = function ($file) use ($size, $message)
-		{
+		$this->validators[aeFileValidator::order_max_size] = function ($file) use ($size, $message) {
 			if ($file->size() > $size)
 			{
 				return str_replace('{file}', $file->full_name(false), $message);
@@ -679,8 +666,7 @@ trait aeFormFileFieldValidator
 	{
 		$message = str_replace('{width}', $width, $message);
 		
-		$this->validators[aeFileValidator::order_min_width] = function ($file) use ($width, $message)
-		{
+		$this->validators[aeFileValidator::order_min_width] = function ($file) use ($width, $message) {
 			if ($file->width() < $width)
 			{
 				return str_replace('{file}', $file->full_name(false), $message);
@@ -694,8 +680,7 @@ trait aeFormFileFieldValidator
 	{
 		$message = str_replace('{width}', $width, $message);
 		
-		$this->validators[aeFileValidator::order_max_width] = function ($file) use ($width, $message)
-		{
+		$this->validators[aeFileValidator::order_max_width] = function ($file) use ($width, $message) {
 			if ($file->width() > $width)
 			{
 				return str_replace('{file}', $file->full_name(false), $message);
@@ -709,8 +694,7 @@ trait aeFormFileFieldValidator
 	{
 		$message = str_replace('{height}', $height, $message);
 		
-		$this->validators[aeFileValidator::order_min_height] = function ($file) use ($height, $message)
-		{
+		$this->validators[aeFileValidator::order_min_height] = function ($file) use ($height, $message) {
 			if ($file->height() < $height)
 			{
 				return str_replace('{file}', $file->full_name(false), $message);
@@ -724,8 +708,7 @@ trait aeFormFileFieldValidator
 	{
 		$message = str_replace('{height}', $height, $message);
 		
-		$this->validators[aeFileValidator::order_max_height] = function ($file) use ($height, $message)
-		{
+		$this->validators[aeFileValidator::order_max_height] = function ($file) use ($height, $message) {
 			if ($file->height() > $height)
 			{
 				return str_replace('{file}', $file->full_name(false), $message);
@@ -787,8 +770,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		// Rearrange $_FILES array first
 		$files = array();
 		$properties = array('name', 'type', 'tmp_name', 'error', 'size');
-		$rearrange = function (&$array, $property, $key, $value) use (&$rearrange)
-		{
+		$rearrange = function (&$array, $property, $key, $value) use (&$rearrange) {
 			if (!is_array($value))
 			{
 				if (!is_array($array))
@@ -840,8 +822,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		}
 		
 		// Append files
-		$append_files = function ($from, &$to) use (&$append_files)
-		{
+		$append_files = function ($from, &$to) use (&$append_files) {
 			foreach ($from as $index => $value)
 			{
 				if (!is_array($value))
@@ -1250,6 +1231,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		$vectors = array_map('array_keys', array_values($values));
 		$indexes = array_unique(call_user_func_array('array_merge', $vectors), SORT_NUMERIC);
 		
+		
 		$index = 0;
 		$this->values = array();
 		
@@ -1638,8 +1620,7 @@ class aeFormTextFieldSequence extends aeFormFieldSequence implements aeTextValid
 	
 	public function __construct($name, $multiple, &$form, &$values, &$errors, &$length)
 	{
-		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, &$form, &$values, &$errors)
-		{
+		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, &$form, &$values, &$errors) {
 			return new aeFormTextField($name, $index, $multiple, $form, $values[$index], $errors[$index], $validators, $html);
 		};
 		
@@ -1653,8 +1634,7 @@ class aeFormFileFieldSequence extends aeFormFieldSequence implements aeFileValid
 	
 	public function __construct($name, $multiple, $destination, &$form, &$values, &$errors, &$length)
 	{
-		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, $destination, &$form, &$values, &$errors)
-		{
+		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, $destination, &$form, &$values, &$errors) {
 			$form->_has_files();
 		
 			return new aeFormFileField($name, $index, $multiple, $destination, $form, $values[$index], $errors[$index], $validators, $html);
