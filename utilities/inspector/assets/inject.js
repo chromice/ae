@@ -95,7 +95,7 @@ var ae_log_severity = function(level) {
 			
 			var offset = el.nodeValue.search(' ae-log');
 			
-			if (offset > 0) {
+			if (offset !== -1) {
 				comments.push(el.nodeValue.substr(offset + 7));
 			}
 	
