@@ -86,8 +86,19 @@ class aeFile
 		return $this->name;
 	}
 	
-	public function meta()
+	public function meta($name = null, $value = null)
 	{
+		if (!is_null($name) && !is_null($value))
+		{
+			$this->meta[$name] = $value;
+			
+			return $this;
+		}
+		elseif (!is_null($name))
+		{
+			return isset($this->meta[$name]) ? $this->meta[$name] : null;
+		}
+		
 		return $this->meta;
 	}
 	
@@ -144,14 +155,14 @@ class aeFile
 	{
 		$info = getimagesize($this->path);
 		
-		return isset($info[0]) ? $info[0] : null;
+		return $info && isset($info[0]) ? $info[0] : null;
 	}
 	
 	public function height()
 	{
 		$info = getimagesize($this->path);
 		
-		return isset($info[1]) ? $info[1] : null;
+		return $info && isset($info[1]) ? $info[1] : null;
 	}
 	
 	public function hash()
@@ -1051,6 +1062,18 @@ class aeFile
 		array('x-world/x-vrt', 'vrt'),
 		array('xgl/drawing', 'xgz'),
 		array('xgl/movie', 'xmz'),
+		
+		// New MS Office mime-types
+		array('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx'),
+		array('application/vnd.openxmlformats-officedocument.spreadsheetml.template', 'xltx'),
+		array('application/vnd.openxmlformats-officedocument.presentationml.template', 'potx'),
+		array('application/vnd.openxmlformats-officedocument.presentationml.slideshow', 'ppsx'),
+		array('application/vnd.openxmlformats-officedocument.presentationml.presentation', 'pptx'),
+		array('application/vnd.openxmlformats-officedocument.presentationml.slide', 'sldx'),
+		array('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx'),
+		array('application/vnd.openxmlformats-officedocument.wordprocessingml.template', 'dotx'),
+		array('application/vnd.ms-excel.addin.macroEnabled.12', 'xlam'),
+		array('application/vnd.ms-excel.sheet.binary.macroEnabled.12', 'xlsb'),
 	);
 }
 
