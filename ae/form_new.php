@@ -426,7 +426,7 @@ trait aeFormFieldValidator
 		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback) {
 			if (is_callable($callback))
 			{
-				return $callback($value, $index) === false ? $message : null;
+				return $callback($value, $index) ? $message : null;
 			}
 			
 			return empty($value) ? $message : null;
@@ -1230,7 +1230,6 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		
 		$vectors = array_map('array_keys', array_values($values));
 		$indexes = array_unique(call_user_func_array('array_merge', $vectors), SORT_NUMERIC);
-		
 		
 		$index = 0;
 		$this->values = array();
