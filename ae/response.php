@@ -181,7 +181,10 @@ class aeResponse
 		
 		if (!empty($path)) 
 		{
-			ae::output($path, array('code' => $code, 'status' => self::$http_errors[$code]));
+			ae::output($path, array(
+				'code' => $code, 
+				'status' => self::$http_errors[$code])
+			);
 		}
 		
 		exit;
