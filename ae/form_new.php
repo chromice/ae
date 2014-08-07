@@ -723,15 +723,20 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		aeFormGroupErrorContainer,
 		aeFormGroupValueContainer;
 	
+	const get = 1;
+	const post = 2;
+	
 	protected $id;
 	protected $form;
+	protected $method;
+	protected $source;
 	protected $fields = array();
 	protected $values = array();
 	protected $errors = array();
 	protected $has_files = false;
 	protected $has_command = false;
 	
-	public function __construct($form_id)
+	public function __construct($form_id, $method = 'post')
 	{
 		if (empty($form_id))
 		{
@@ -740,6 +745,19 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		
 		$this->id = $form_id;
 		$this->form =& $this;
+		$this->method = $method;
+		
+		switch ($method)
+		{
+			case 'post':
+				$this->source =& $_POST;
+				break;
+			case 'get':
+				$this->source =& $_GET;
+				break;
+			default:
+				throw new aeFormException('Unknown form method: ' . $method);
+		}
 		
 		$nonces = ae::session('form-nonces');
 		$this->nonce = $nonces[$this->id];
@@ -750,13 +768,13 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			return;
 		}
 		
-		// Set $_POST values.
-		if (!empty($_POST) && is_array($_POST))
+		// Set values.
+		if (!empty($this->source) && is_array($this->source))
 		{
-			$this->values = $_POST;
+			$this->values = $this->source;
 		}
 		
-		if (empty($_FILES) || !is_array($_FILES))
+		if ($this->method === 'get' || empty($_FILES) || !is_array($_FILES))
 		{
 			return;
 		}
@@ -852,6 +870,11 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	public function _has_files()
 	{
+		if ($this->method !== 'post')
+		{
+			throw new aeFormException('The form must use POST method for file inputs to work.');
+		}
+		
 		$this->has_files = true;
 	}
 	
@@ -908,13 +931,13 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	public function is_submitted()
 	{
-		return isset($_POST['__ae_form_id__']) && $_POST['__ae_form_id__'] === $this->id;
+		return isset($this->source['__ae_form_id__']) && $this->source['__ae_form_id__'] === $this->id;
 	}
 	
 	public function validate()
 	{
-		$is_valid = isset($_POST['__ae_form_nonce__']) && $_POST['__ae_form_nonce__'] === $this->nonce;
-		$has_command = $this->has_command || isset($_POST['__ae_command__']);
+		$is_valid = isset($this->source['__ae_form_nonce__']) && $this->source['__ae_form_nonce__'] === $this->nonce;
+		$has_command = $this->has_command || isset($this->source['__ae_command__']);
 		
 		if ($has_command && $is_valid)
 		{
@@ -949,7 +972,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		), $attributes);
 		
 		$attributes['id'] = $this->id() . '-form';
-		$attributes['method'] = 'post';
+		$attributes['method'] = $this->method;
 		
 		if ($this->has_files)
 		{
@@ -2147,3 +2170,5 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		return $this->errors($before, $after, null, null);
 	}
 }
+
+class aeFormException extends Exception {}
