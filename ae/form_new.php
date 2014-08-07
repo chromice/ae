@@ -2171,4 +2171,4 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 	}
 }
 
-class aeFormException extends Exception {}
+class aeFormException extends aeException {}

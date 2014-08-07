@@ -1409,4 +1409,4 @@ abstract class aeDatabaseTable
 	}
 }
 
-class aeDatabaseException extends Exception {}
+class aeDatabaseException extends aeException {}

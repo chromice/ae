@@ -46,7 +46,7 @@ final class ae
 		
 		See `ae::resolve()` for more information.
 		
-		Throws `Exception`, if path cannot be resolved.
+		Throws `aeException`, if path cannot be resolved.
 	*/
 	{
 		$path = self::resolve($path, true);
@@ -107,7 +107,7 @@ final class ae
 		
 			$request = ae::load('ae/request.php');
 	
-		Throws `Exception`, if path cannot be resolved.
+		Throws `aeException`, if path cannot be resolved.
 	*/
 	{
 		if (empty($path))
@@ -147,7 +147,7 @@ final class ae
 			return realpath($__path);
 		}
 		
-		throw new Exception('Could not resolve path: ' . $path);
+		throw new aeException('Could not resolve path: ' . $path);
 	}
 	
 	public static function import($path)
@@ -156,7 +156,7 @@ final class ae
 		
 			ae::import('path/to/script.php');
 		
-		Throws `Exception`, if path cannot be resolved.
+		Throws `aeException`, if path cannot be resolved.
 	*/
 	{
 		$path = self::resolve($path);
@@ -231,7 +231,7 @@ final class ae
 		Please consult with the source code of the core libraries for 
 		more real life examples.
 	
-		Throws `Exception`, if path cannot be resolved.
+		Throws `aeException`, if path cannot be resolved.
 	*/
 	{
 		$arguments = func_get_args();
@@ -283,7 +283,7 @@ final class ae
 		
 		You can pass some variables to the script via the second argument.
 		
-		Throws `Exception`, if path cannot be resolved.
+		Throws `aeException`, if path cannot be resolved.
 	*/
 	{
 		$ob = new aeBuffer();
@@ -299,7 +299,7 @@ final class ae
 		
 		You can pass some variables to the script via the second argument.
 		
-		Throws `Exception`, if path cannot be resolved.
+		Throws `aeException`, if path cannot be resolved.
 	*/
 	{
 		$path = self::resolve($path);
@@ -345,6 +345,8 @@ final class ae
 		return $value;
 	}
 }
+
+class aeException extends Exception {}
 
 
 // =================================

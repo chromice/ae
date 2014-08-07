@@ -422,7 +422,7 @@ class aeRouter
 	}
 }
 
-class aeRequestException extends Exception {}
+class aeRequestException extends aeException {}
 
 // Calculate class constants.
 define('__ae_request_cli__', defined('STDIN'));

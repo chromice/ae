@@ -1077,4 +1077,4 @@ class aeFile
 	);
 }
 
-class aeFileException extends Exception {}
+class aeFileException extends aeException {}
