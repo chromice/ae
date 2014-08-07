@@ -19,8 +19,7 @@ $avatar = $user->file('avatar', '/uploads/avatars')
 
 $first_name = $user->single('first_name')
 	->required('Please enter your first name.', function ($value, $index) {
-		// $index is always NULL for grouped fields
-		return !empty($value);
+		return true;
 	});
 
 $last_name = $user->single('last_name')
@@ -52,7 +51,7 @@ $service_options = array(
 $services = $user->multiple('services')
 	->initial(array('shop'))
 	->required('Please choose at least two services.', function ($values, $index) {
-		return is_array($values) && count($values) > 1;
+		return !is_array($values) || count($values) < 2;
 	})
 	->valid_value('Unknown service selected.', array_keys($service_options));
 
@@ -66,12 +65,12 @@ $files = $form->sequence('files', 1, null); // One or more sequence elements
 
 $titles = $files->single('title')
 	->required('Please enter the gallery title.', function ($value, $index) {
-		return $index > 0 || !empty($value);
+		return $index === 0;
 	});
 
 $images = $files->files('image', '/uploads/gallery')
 	->required('You have to upload at least one image.', function ($values, $index) {
-		return $index > 0 || is_array($values) && count($values) > 0;
+		return $index === 0;
 	})
 	->accept('{file} is not an image.', 'image/*')
 	->max_size('{file} is larger than {size}.', 4 * 1024 * 1024)

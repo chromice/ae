@@ -125,7 +125,7 @@ class aeOptions
 		}
 		
 		self::$values[$this->namespace][$option] = $value;
-
+		
 		return $this;
 	}
 }

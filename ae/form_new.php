@@ -228,7 +228,7 @@ trait aeFormGroupValueContainer
 			}
 		}
 		
-		return $is_valid;
+		return (bool) $is_valid;
 	}
 }
 
@@ -424,12 +424,9 @@ trait aeFormFieldValidator
 	public function required($message, $callback = null)
 	{
 		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback) {
-			if (is_callable($callback))
-			{
-				return $callback($value, $index) ? $message : null;
-			}
+			$is_required = is_callable($callback) ? $callback($value, $index) : true;
 			
-			return empty($value) ? $message : null;
+			return $is_required && empty($value) ? $message : null;
 		};
 		
 		return $this;
@@ -565,12 +562,9 @@ trait aeFormFileFieldValidator
 	public function required($message, $callback = null)
 	{
 		$this->validators[aeValidator::order_required] = function ($file, $index = null) use ($message, $callback) {
-			if (is_callable($callback))
-			{
-				return $callback($file, $index) === false ? $message : null;
-			}
+			$is_required = is_callable($callback) ? $callback($file, $index) : true;
 			
-			return !is_a($file, 'aeFile') || !$file->exists() ? $message : null;
+			return $is_required && (!is_a($file, 'aeFile') || !$file->exists()) ? $message : null;
 		};
 		
 		return $this;
@@ -935,7 +929,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			}
 		}
 		
-		return $is_valid;
+		return (bool) $is_valid;
 	}
 	
 	// ===============
