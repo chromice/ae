@@ -273,7 +273,19 @@ final class ae
 	{
 		array_unshift($arguments, 'ae/' . $name . '.php');
 		
-		return call_user_func_array(array('ae', 'load'), $arguments);
+		try
+		{
+			return call_user_func_array(array('ae', 'load'), $arguments);
+		}
+		catch (aeException $e) 
+		{
+			if (in_array($name, array('log', 'probe')))
+			{
+				return new aeStud();
+			}
+			
+			throw $e;
+		}
 	}
 	
 	
@@ -371,6 +383,26 @@ function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 	unset($__ae_secret_array__);
 	
 	require $__ae_path__;
+}
+
+class aeStud
+/*
+	A simple stud object that returns a stud object for any method call.
+	
+		$stud = new aeStud();
+		
+		$stud->can('pretend')->to('be')->any('other', 'library');
+*/
+{
+	public function __call($name, $arguments)
+	{
+		return $this;
+	}
+	
+	public static function __callStatic($name, $arguments)
+	{
+		return new aeStud();
+	}
 }
 
 
