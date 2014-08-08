@@ -265,6 +265,10 @@ final class ae
 		
 			ae::load('ae/{method}.php', ...arguments...);
 		
+		I.e. the following statement evaluates to TRUE:
+		
+			ae::request() === ae::load('ae/request.php');
+			
 	*/
 	{
 		array_unshift($arguments, 'ae/' . $name . '.php');
@@ -369,17 +373,18 @@ function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
 	require $__ae_path__;
 }
 
-class aeBlackhole
+
+class aeTrap
 /*
 	PHP output buffer abstraction layer. 
 	
-		$buffer = new aeBlackhole();
+		$buffer = new aeTrap();
 		
 		echo 'Hello world!';
 		
 		echo $buffer->render();
 	
-	The blackhole buffer content is never flushed.
+	The trapped content has to be flushed manually.
 */
 {
 	protected $content;
@@ -401,13 +406,13 @@ class aeBlackhole
 	/*
 		Returns the captured output as a string and stops capturing.
 		
-		Buffered content may be used as a template:
+		Trapped content may be used as a template:
 		
-			$buffer = new aeBuffer();
+			$content = new aeTrap();
 			
 			echo '<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>';
 			
-			$output = $buffer->render(array(
+			$output = $content->render(array(
 				'url' => $article->url,
 				'name' => (
 					strlen($article->name) > 20 
@@ -442,7 +447,7 @@ class aeBlackhole
 	}
 }
 
-class aeBuffer extends aeBlackhole
+class aeBuffer extends aeTrap
 /*
 	PHP output buffer abstraction layer. 
 	
@@ -452,7 +457,7 @@ class aeBuffer extends aeBlackhole
 		
 		echo $buffer->render();
 	
-	The buffer content is flushed, if not manually rendered.
+	The buffered content is flushed, if not caught.
 */
 {
 	public function __destruct()
