@@ -30,11 +30,12 @@
 			ae::log('Let\'s dump $_ENV:', $_ENV);
 			
 			trigger_error("This is a notice.", E_USER_NOTICE);
-			trigger_error("This is a warning.", E_USER_WARNING);
+			trigger_error("This&rsquo; a <samp>warning</samp>.", E_USER_WARNING);
 			
 			$c = ae::container('/examples/container/container_html.php')
 				->set('title', 'Example: Log inspector');
 			
+			ae::log('Let&rsquo;s dump some <abbr title="HyperText Markup Language">HTML</abbr>', (object)'<h1>Dumps should be properly escaped too.</h1><p>As well as entities, like <samp>&amp;</samp></p>');
 			ae::log("Hello kitty. This is a number: ", 24, "And this is a boolean: ", true, ' And a bit of void: ', NULL);
 			ae::log("Hello again. This is a string: ", "foo", "As you can see, strings are not dumped.");
 ?>

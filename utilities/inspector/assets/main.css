@@ -272,6 +272,9 @@ pre.code {
 	line-height: 2;
 	white-space: pre-wrap;
 }
+ol.backtrace > li pre.code:first-child {
+	padding-top: 0.25em;
+}
 
 
 /* Temp */

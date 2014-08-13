@@ -141,7 +141,7 @@ Zepto(function() {
 						id = uniqueID();
 						
 						message.push('<a class="dump" href="#' + id + '">' 
-							+ (type ? type[1] : $.trim(m.Variable)) + '</a>');
+							+ (type ? type[1] : parseMessage(m.Variable)) + '</a>');
 						$('<pre />')
 							.attr('id', id)
 							.addClass('dump')
@@ -152,13 +152,13 @@ Zepto(function() {
 					var _class, _text;
 					
 					if (m.Notice) {
-						message.push('<span class="text notice">' + $.trim(m.Notice) + '</span>');
+						message.push('<span class="text notice">' + parseMessage(m.Notice) + '</span>');
 					} else if (m.Warning) {
-						message.push('<span class="text warning">' + $.trim(m.Warning) + '</span>');
+						message.push('<span class="text warning">' + parseMessage(m.Warning) + '</span>');
 					} else if (m.Error) {
-						message.push('<span class="text error">' + $.trim(m.Error) + '</span>');
+						message.push('<span class="text error">' + parseMessage(m.Error) + '</span>');
 					} else if (m.Exception) {
-						message.push('<span class="text exception">' + $.trim(m.Exception) + '</span>');
+						message.push('<span class="text exception">' + parseMessage(m.Exception) + '</span>');
 					}
 
 					if (m.File && m.Line) {
@@ -266,7 +266,7 @@ Zepto(function() {
 					
 					property = '';
 				} else {
-					return text.replace(/</g, '&lt;');
+					return parseMessage(text);
 				}
 			}
 		);
@@ -285,9 +285,12 @@ Zepto(function() {
 		return parsed;
 	}
 	
+	function parseMessage(message) {
+		return $.trim(message.replace(/\&/g, '&amp;').replace(/</g, '&lt;'));
+	}
+	
 	function parseDump(dump) {
 		return dump
-			.replace(/</g, '&lt;')
 			.replace(/\n\s*\n/, '')
 			.replace(/^\n+/, '')
 			.replace(/\n+$/, '')
@@ -339,7 +342,7 @@ Zepto(function() {
 				} else if (dumpID) {
 					dumps.push('<pre id="' + dumpID + '" class="dump">' + parseDump(text) + '</pre>');
 				} else if (!code) {
-					code = '<pre class="code">' + $.trim(text.replace(/</g, '&lt;')) + '</pre>';
+					code = '<pre class="code">' + parseMessage(text) + '</pre>';
 				}
 				
 				return text;
