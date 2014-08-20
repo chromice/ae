@@ -94,8 +94,8 @@ interface aeTextValidator extends aeValidator
 	const color = '#[0-9a-fA-F]{6}';
 	
 	// Complex patterns
-	const email = '([0-9a-zA-Z]([-\+\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})';
-	const url = '((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)';
+	const email = '[a-zA-Z0-9!#$%&\'*+\/=?^_`{|}~\-]+(?:\.[a-zA-Z0-9!#$%&\'*+\/=?^_`{|}~\-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?';
+	const url = '(https?|ftp):\/\/(-\.)?([^\s\/?\.#-]+\.?)+(\/[^\s]*)?';
 	const postcode_uk = '(([a-pr-uw-zA-PR-UW-Z]{1}[a-ik-yA-IK-Y]?)([0-9]?[a-hjks-uwA-HJKS-UW]?[abehmnprvwxyABEHMNPRVWXY]?|[0-9]?[0-9]?))\s*([0-9]{1}[abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2})';
 	
 	// Validator order
@@ -224,11 +224,11 @@ trait aeFormGroupValueContainer
 		{
 			if (is_a($field, 'aeGroupValueContainer') || is_a($field, 'aeFieldValueContainer'))
 			{
-				$is_valid &= $field->validate();
+				$is_valid = $is_valid && $field->validate();
 			}
 		}
 		
-		return (bool) $is_valid;
+		return $is_valid;
 	}
 }
 
@@ -268,6 +268,7 @@ trait aeFormFieldValueContainer
 	{
 		ksort($this->validators);
 		
+		// FIXME: Validation is a bit wonky in this case.
 		foreach ($this->validators as $order => $func)
 		{
 			if ($order !== aeValidator::order_required && empty($this->value))
@@ -332,7 +333,7 @@ trait aeFormGroupErrorContainer
 		
 			foreach ($errors as $error)
 			{
-				$has_errors |= self::_has_errors($error);
+				$has_errors = $has_errors || self::_has_errors($error);
 			}
 		
 			return $has_errors;
@@ -423,10 +424,11 @@ trait aeFormFieldValidator
 {
 	public function required($message, $callback = null)
 	{
+		// FIXME: Must validate scalar and array of scalars properly.
 		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback) {
 			$is_required = is_callable($callback) ? $callback($value, $index) : true;
 			
-			return $is_required && empty($value) ? $message : null;
+			return $is_required && (is_string($value) && strlen($value) === 0) ? $message : null;
 		};
 		
 		return $this;
@@ -476,7 +478,7 @@ trait aeFormTextFieldValidator
 		$this->html['pattern'] = '\s*' . $pattern . '\s*';
 		$this->validators[aeTextValidator::order_valid_pattern] = function ($value) use ($message, $pattern, $time) {
 			return preg_match('/^(?:' . $pattern . ')$/', $value) !== 1 
-				|| $time && strtotime($value) === FALSE ? $message : null;
+				|| $time && strtotime($value) === false ? $message : null;
 		};
 		
 		return $this;
@@ -561,10 +563,25 @@ trait aeFormFileFieldValidator
 {
 	public function required($message, $callback = null)
 	{
-		$this->validators[aeValidator::order_required] = function ($file, $index = null) use ($message, $callback) {
-			$is_required = is_callable($callback) ? $callback($file, $index) : true;
+		// FIXME: Must validate single file and multiple files properly.
+		$multiple = $this->multiple;
+		
+		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $multiple) {
+			$is_required = is_callable($callback) ? $callback($value, $index) : true;
 			
-			return $is_required && (!is_a($file, 'aeFile') || !$file->exists()) ? $message : null;
+			if (!$is_required)
+			{
+				return;
+			}
+			
+			if ($multiple)
+			{
+				$is_valid = true;
+			}
+			else
+			{
+				return $is_required && (!is_a($value, 'aeFile') || !$file->exists()) ? $message : null;
+			}
 		};
 		
 		return $this;
@@ -723,13 +740,11 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		aeFormGroupErrorContainer,
 		aeFormGroupValueContainer;
 	
-	const get = 1;
-	const post = 2;
-	
 	protected $id;
 	protected $form;
 	protected $method;
 	protected $source;
+	protected $nonces;
 	protected $fields = array();
 	protected $values = array();
 	protected $errors = array();
@@ -745,9 +760,9 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		
 		$this->id = $form_id;
 		$this->form =& $this;
-		$this->method = $method;
+		$this->method = strtolower($method);
 		
-		switch ($method)
+		switch ($this->method)
 		{
 			case 'post':
 				$this->source =& $_POST;
@@ -759,8 +774,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 				throw new aeFormException('Unknown form method: ' . $method);
 		}
 		
-		$nonces = ae::session('form-nonces');
-		$this->nonce = $nonces[$this->id];
+		$this->nonces = ae::session('form-nonces');
 		
 		// Stop, if form has not been submitted
 		if (!$this->is_submitted())
@@ -813,7 +827,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 					continue 2;
 				}
 				
-				$is_scalar &= !is_array($structure[$p]);
+				$is_scalar = $is_scalar && !is_array($structure[$p]);
 			}
 			
 			if ($is_scalar)
@@ -936,7 +950,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	public function validate()
 	{
-		$is_valid = isset($this->source['__ae_form_nonce__']) && $this->source['__ae_form_nonce__'] === $this->nonce;
+		$is_valid = isset($this->source['__ae_form_nonce__']) && $this->source['__ae_form_nonce__'] === $this->nonces[$this->id];
 		$has_command = $this->has_command || isset($this->source['__ae_command__']);
 		
 		if ($has_command && $is_valid)
@@ -948,11 +962,21 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		{
 			if (is_a($field, 'aeGroupValueContainer') || is_a($field, 'aeFieldValueContainer'))
 			{
-				$is_valid &= $field->validate();
+				$is_valid = $is_valid && $field->validate();
 			}
 		}
 		
-		return (bool) $is_valid;
+		if ($is_valid)
+		{
+			$this->nonces[$this->id] = self::_generate_nonce();
+		}
+		
+		return $is_valid;
+	}
+	
+	protected static function _generate_nonce()
+	{
+		return md5(uniqid(mt_rand(), true));
 	}
 	
 	// ===============
@@ -978,10 +1002,6 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		{
 			$attributes['enctype'] = 'multipart/form-data';
 		}
-		
-		// Update nonce
-		$nonces = ae::session('form-nonces');
-		$nonces[$this->id] = md5(uniqid(mt_rand(), true));
 		
 		// Get max file size
 		$limits['post_max_size'] = @ini_get('post_max_size');
@@ -1012,9 +1032,14 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			}
 		}
 		
+		if (empty($this->nonces[$this->id]))
+		{
+			$this->nonces[$this->id] = self::_generate_nonce();
+		}
+		
 		return '<form ' . self::attributes($attributes) . '>'
 			. '<input type="hidden" name="__ae_form_id__" value="' . $this->id . '" />'
-			. '<input type="hidden" name="__ae_form_nonce__" value="' . $nonces[$this->id] . '" />'
+			. '<input type="hidden" name="__ae_form_nonce__" value="' . $this->nonces[$this->id] . '" />'
 			. '<input type="hidden" name="MAX_FILE_SIZE" value="' . (count($limits) > 0 ? min($limits) : 1024 * 1024) . '" />'
 			. '<input type="submit" tabindex="-1" style="position:absolute; left:-999em; width:0; overflow:hidden">';
 	}
@@ -1232,7 +1257,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	
 	protected function _move_item($from, $to)
 	{
-		# code...
+		// TODO: Implement sequence item moving functionality.
 	}
 	
 	protected function _normalize_values()
@@ -1899,7 +1924,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 				}
 			}
 			
-			if (!is_a($this->value, 'aeFile')/* || !$this->value->exists()*/)
+			if (!is_a($this->value, 'aeFile'))
 			{
 				$this->value = null;
 			}
@@ -1937,7 +1962,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 					}
 				}
 				
-				if (!is_a($this->value[$index], 'aeFile')/* || !$this->value[$index]->exists()*/)
+				if (!is_a($this->value[$index], 'aeFile'))
 				{
 					unset($this->value[$index]);
 				}
@@ -2010,55 +2035,50 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 	public function validate()
 	{
 		$validators = $this->validators;
+		$errors = &$this->errors;
+		ksort($validators);
 		
+		// Validate required constraint first
 		if (isset($validators[aeValidator::order_required])
 		&& $error = $validators[aeValidator::order_required]($this->value, $this->index))
 		{
-			$this->errors[] = $error;
+			$errors[] = $error;
 			
 			return false;
 		}
 		
 		unset($validators[aeValidator::order_required]);
 		
+		// Validate other constraints
 		$is_valid = true;
+		$validate = function ($value, $index) use (&$is_valid, &$errors, $validators)
+		{
+			// FIXME: Should we check if it's a file that exists here as well?
+			if (empty($value))
+			{
+				return;
+			}
+			
+			foreach ($validators as $func)
+			{
+				if ($error = $func($value, $index))
+				{
+					$errors[] = $error;
+					$is_valid = false;
+				}
+			}
+		};
 		
 		if ($this->multiple)
 		{
 			foreach ($this->value as $value)
 			{
-				if (empty($value))
-				{
-					continue;
-				}
-				
-				foreach ($validators as $func)
-				{
-					if ($error = $func($value, $this->index))
-					{
-						$this->errors[] = $error;
-						
-						$is_valid = false;
-					}
-				}
+				$validate($value, $this->index);
 			}
 		}
 		else
 		{
-			if (empty($value))
-			{
-				return $is_valid;
-			}
-			
-			foreach ($validators as $func)
-			{
-				if ($error = $func($this->value, $this->index))
-				{
-					$this->errors[] = $error;
-					
-					$is_valid = false;
-				}
-			}
+			$validate($this->value, $this->index);
 		}
 		
 		return $is_valid;

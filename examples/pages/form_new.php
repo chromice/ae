@@ -50,9 +50,8 @@ $service_options = array(
 );
 $services = $user->multiple('services')
 	->initial(array('shop'))
-	->required('Please choose at least two services.', function ($values, $index) {
-		return !is_array($values) || count($values) < 2;
-	})
+	->required('Please choose at least two services.')
+	// ->min_count('Please choose at least two services.', 2)
 	->valid_value('Unknown service selected.', array_keys($service_options));
 
 $terms = $user->single('terms')
@@ -69,9 +68,7 @@ $titles = $files->single('title')
 	});
 
 $images = $files->files('image', '/uploads/gallery')
-	->required('You have to upload at least one image.', function ($values, $index) {
-		return $index === 0;
-	})
+	->required('You have to upload at least one image.')
 	->accept('{file} is not an image.', 'image/*')
 	->max_size('{file} is larger than {size}.', 4 * 1024 * 1024)
 	->min_width('{file} is less than {width} pixels wide.', 256)
