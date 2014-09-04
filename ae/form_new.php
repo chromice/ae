@@ -28,7 +28,7 @@ ae::options('ae.form', array(
 ae::invoke('aeForm');
 
 // ======================
-// = Vairous interfaces =
+// = Various interfaces =
 // ======================
 
 interface aeFieldFactory
@@ -976,6 +976,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	protected static function _generate_nonce()
 	{
+		// FIXME: Is this a good enough random string with enough entropy?
 		return md5(uniqid(mt_rand(), true));
 	}
 	
