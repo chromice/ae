@@ -74,8 +74,12 @@ interface aeFieldErrorContainer
 interface aeValidator
 {
 	const order_required = 0;
+	const order_min_count = 5;
+	const order_max_count = 6;
 	
 	public function required($message, $callback = null);
+	public function min_count($message, $misc);
+	public function max_count($message, $misc);
 }
 
 interface aeTextValidator extends aeValidator
@@ -224,7 +228,7 @@ trait aeFormGroupValueContainer
 		{
 			if (is_a($field, 'aeGroupValueContainer') || is_a($field, 'aeFieldValueContainer'))
 			{
-				$is_valid = $is_valid && $field->validate();
+				$is_valid = $field->validate() && $is_valid;
 			}
 		}
 		
@@ -266,20 +270,42 @@ trait aeFormFieldValueContainer
 	
 	public function validate()
 	{
-		ksort($this->validators);
+		$validators = $this->validators;
+		ksort($validators);
 		
-		// FIXME: Validation is a bit wonky in this case.
-		foreach ($this->validators as $order => $func)
+		// Validate required, min_count and max_count constraints first.
+		foreach (array(aeValidator::order_required, aeValidator::order_min_count, aeValidator::order_max_count) as $validator)
 		{
-			if ($order !== aeValidator::order_required && empty($this->value))
+			if (isset($validators[$validator])
+			&& $error = $validators[$validator]($this->value, $this->index))
 			{
-				return true;
+				if (is_a($this, 'aeGroupErrorContainer'))
+				{
+					$this->errors[] = $error;
+				}
+				elseif (is_a($this, 'aeFieldErrorContainer'))
+				{
+					$this->error = $error;
+				}
+				
+				return false;
 			}
-			
-			if ($this->multiple && $order !== aeValidator::order_required)
+		
+			unset($validators[$validator]);
+		}
+		
+		// Check the rest of the constraints
+		foreach ($validators as $func)
+		{
+			if ($this->multiple)
 			{
 				foreach ($this->value as $value)
 				{
+					if (empty($value))
+					{
+						continue;
+					}
+					
 					if ($error = $func($value, $this->index))
 					{
 						if (is_a($this, 'aeGroupErrorContainer'))
@@ -294,6 +320,10 @@ trait aeFormFieldValueContainer
 						return false;
 					}
 				}
+			}
+			elseif (empty($this->value))
+			{
+				break;
 			}
 			elseif ($error = $func($this->value, $this->index))
 			{
@@ -424,11 +454,58 @@ trait aeFormFieldValidator
 {
 	public function required($message, $callback = null)
 	{
-		// FIXME: Must validate scalar and array of scalars properly.
-		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback) {
-			$is_required = is_callable($callback) ? $callback($value, $index) : true;
+		$is_multiple = $this->multiple;
+		
+		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple) {
+			$is_required = is_callable($callback) ? $callback($index) : true;
+			$not_empty = function ($value) {
+				return is_string($value) && strlen($value) > 0;
+			};
 			
-			return $is_required && (is_string($value) && strlen($value) === 0) ? $message : null;
+			if (!$is_required)
+			{
+				return;
+			}
+			elseif (!$is_multiple)
+			{
+				return !$not_empty($value) ? $message : null;
+			}
+			else
+			{
+				return !is_array($value) || count(array_filter($value, $not_empty)) === 0 ? $message : null;
+			}
+		};
+		
+		return $this;
+	}
+	
+	public function min_count($message, $misc)
+	{
+		if (!$this->multiple)
+		{
+			trigger_error('Cannot set min_count() constraint on a scalar field.', E_USER_ERROR);
+		}
+		
+		$this->validators[aeValidator::order_min_count] = function ($value, $index = null) use ($message, $misc) {
+			$min_count = (int) (is_callable($misc) ? $misc($index) : $misc);
+			
+			return !is_array($value) || count($value) < $min_count ? $message : null;
+		};
+		
+		return $this;
+	}
+	
+	public function max_count($message, $misc)
+	{
+		if (!$this->multiple)
+		{
+			trigger_error('Cannot set max_count() constraint on a scalar field.', E_USER_ERROR);
+		}
+		
+		$this->validators[aeValidator::order_max_count] = function ($value, $index = null) use ($message, $misc) {
+			$max_count = (int) (is_callable($misc) ? $misc($index) : $misc);
+			
+			return !is_array($value) || count($value) > $max_count ? $message : null;
 		};
 		
 		return $this;
@@ -563,24 +640,26 @@ trait aeFormFileFieldValidator
 {
 	public function required($message, $callback = null)
 	{
-		// FIXME: Must validate single file and multiple files properly.
-		$multiple = $this->multiple;
+		// FIXME: This is almost a duplicate of aeFormFieldValidator::required()
+		$is_multiple = $this->multiple;
 		
-		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $multiple) {
-			$is_required = is_callable($callback) ? $callback($value, $index) : true;
+		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple) {
+			$is_required = is_callable($callback) ? $callback($index) : true;
+			$not_empty = function ($value) {
+				return is_a($value, 'aeFile') && $value->exists();
+			};
 			
 			if (!$is_required)
 			{
 				return;
 			}
-			
-			if ($multiple)
+			elseif (!$is_multiple)
 			{
-				$is_valid = true;
+				return !$not_empty($value) ? $message : null;
 			}
 			else
 			{
-				return $is_required && (!is_a($value, 'aeFile') || !$file->exists()) ? $message : null;
+				return !is_array($value) || count(array_filter($value, $not_empty)) === 0 ? $message : null;
 			}
 		};
 		
@@ -827,7 +906,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 					continue 2;
 				}
 				
-				$is_scalar = $is_scalar && !is_array($structure[$p]);
+				$is_scalar = !is_array($structure[$p]) && $is_scalar;
 			}
 			
 			if ($is_scalar)
@@ -962,7 +1041,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		{
 			if (is_a($field, 'aeGroupValueContainer') || is_a($field, 'aeFieldValueContainer'))
 			{
-				$is_valid = $is_valid && $field->validate();
+				$is_valid = $field->validate() && $is_valid;
 			}
 		}
 		
@@ -1678,7 +1757,7 @@ class aeFormFileFieldSequence extends aeFormFieldSequence implements aeFileValid
 	{
 		$this->constructor = function ($index, &$validators, &$html) use ($name, $multiple, $destination, &$form, &$values, &$errors) {
 			$form->_has_files();
-		
+			
 			return new aeFormFileField($name, $index, $multiple, $destination, $form, $values[$index], $errors[$index], $validators, $html);
 		};
 		
@@ -1698,7 +1777,7 @@ abstract class aeFormField implements aeValidator, aeFieldValueContainer
 	
 	protected $name;
 	protected $index;
-	protected $multiple = false;
+	protected $multiple;
 	protected $form;
 	protected $value;
 	
@@ -2039,18 +2118,21 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		$errors = &$this->errors;
 		ksort($validators);
 		
-		// Validate required constraint first
-		if (isset($validators[aeValidator::order_required])
-		&& $error = $validators[aeValidator::order_required]($this->value, $this->index))
+		// Validate required, min_count and max_count constraints first.
+		foreach (array(aeValidator::order_required, aeValidator::order_min_count, aeValidator::order_max_count) as $validator)
 		{
-			$errors[] = $error;
+			if (isset($validators[$validator])
+			&& $error = $validators[$validator]($this->value, $this->index))
+			{
+				$errors[] = $error;
 			
-			return false;
+				return false;
+			}
+		
+			unset($validators[$validator]);
 		}
 		
-		unset($validators[aeValidator::order_required]);
-		
-		// Validate other constraints
+		// Validate other constraints.
 		$is_valid = true;
 		$validate = function ($value, $index) use (&$is_valid, &$errors, $validators)
 		{

@@ -18,7 +18,7 @@ $avatar = $user->file('avatar', '/uploads/avatars')
 	->min_height('{file} is less than 500 pixels high.', 500);
 
 $first_name = $user->single('first_name')
-	->required('Please enter your first name.', function ($value, $index) {
+	->required('Please enter your first name.', function ($index) {
 		return true;
 	});
 
@@ -50,8 +50,9 @@ $service_options = array(
 );
 $services = $user->multiple('services')
 	->initial(array('shop'))
-	->required('Please choose at least two services.')
-	// ->min_count('Please choose at least two services.', 2)
+	->required('Please choose one or two services.')
+	->min_count('Please choose at least one service.', 1)
+	->max_count('Please choose no more than two services.', 2)
 	->valid_value('Unknown service selected.', array_keys($service_options));
 
 $terms = $user->single('terms')
@@ -63,7 +64,7 @@ $terms = $user->single('terms')
 $files = $form->sequence('files', 1, null); // One or more sequence elements
 
 $titles = $files->single('title')
-	->required('Please enter the gallery title.', function ($value, $index) {
+	->required('Please enter the gallery title.', function ($index) {
 		return $index === 0;
 	});
 
