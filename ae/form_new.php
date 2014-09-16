@@ -2114,6 +2114,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 	
 	public function validate()
 	{
+		// FIXME: This is almost a duplicate of aeFormFieldValueContainer::validate()
 		$validators = $this->validators;
 		$errors = &$this->errors;
 		ksort($validators);
