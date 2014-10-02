@@ -157,6 +157,8 @@ else
 	<legent>
 		Gallery #<?= $index + 1 ?>
 		<?= $files->remove_button($index) ?>
+		<?= $files->move_button($index, $index - 1) ?>
+		<?= $files->move_button($index, $index + 1) ?>
 	</legent>
 	<div class="field">
 		<label for="<?= $file['title']->id() ?>">Title</label>

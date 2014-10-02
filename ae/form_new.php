@@ -1260,8 +1260,11 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 		if (isset($this->values['__ae_add__']))
 		{
 			$this->form->_has_command();
-			$this->_add_item((int) $this->values['__ae_add__']);
+			
+			$add = (int) $this->values['__ae_add__'];
 			unset($this->values['__ae_add__']);
+			
+			$this->_add_item($add);
 		}
 		elseif (isset($this->values['__ae_move__']))
 		{
@@ -1269,19 +1272,21 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 			
 			$move = explode(',', $this->values['__ae_move__']);
 			$move = array_map('trim', $move);
+			unset($this->values['__ae_move__']);
 			
 			if (count($move) === 2)
 			{
 				$this->_move_item((int) $move[0], (int) $move[1]);
 			}
-			
-			unset($this->values['__ae_move__']);
 		}
 		elseif (isset($this->values['__ae_remove__']))
 		{
 			$this->form->_has_command();
-			$this->_remove_item((int) $this->values['__ae_remove__']);
+			
+			$remove = (int) $this->values['__ae_remove__'];
 			unset($this->values['__ae_remove__']);
+			
+			$this->_remove_item($remove);
 		}
 		
 		$this->length = max($this->min, $this->length);
@@ -1337,7 +1342,22 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	
 	protected function _move_item($from, $to)
 	{
-		// TODO: Implement sequence item moving functionality.
+		if (empty($this->values) && !is_array($this->values))
+		{
+			return;
+		}
+		
+		foreach ($this->values as &$_values)
+		{
+			
+			if (is_array($_values) && isset($_values[$from]) && isset($_values[$to]))
+			{
+				ksort($_values);
+				
+				$out = array_splice($_values, $from, 1);
+				array_splice($_values, $to, 0, $out);
+			}
+		}
 	}
 	
 	protected function _normalize_values()
@@ -1447,7 +1467,12 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	{
 		if (is_null($label))
 		{
-			$label = $from > $to ? 'Move down' : 'Move up';
+			$label = $from > $to ? 'Move up' : 'Move down';
+		}
+		
+		if ($from < 0 || $from >= $this->count() || $to < 0 || $to >= $this->count())
+		{
+			return;
 		}
 		
 		if (!is_array($attributes))
