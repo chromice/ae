@@ -384,7 +384,8 @@ class aeRouter
 				{
 					$this->path = $path;
 					$this->offset = $l;
-					break;
+					
+					return;
 				}
 			}
 		} 
