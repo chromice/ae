@@ -21,27 +21,32 @@ ae::invoke('aeOptions');
 class aeOptions
 /*
 	A simple key/value storage class used for configuration:
-	
+		
+		// Set options
 		$lib_options = ae::options('library');
+		$lib_options->set('bar', 'foo');
 		
-		$lib_options->set('bar','foo');
-		
+		// Use options
 		$lib_options_copy = ae::options('library');
-		
 		echo $lib_options_copy->get('bar'); // echoes 'foo'
 	
-	Preferably you should provide an exhaustive list of keys/default values via
-	second argument. This method leaves no room for typos.
+	Preferably you should provide an exhaustive list of keys/default values
+	via second argument:
 	
-		$predefined = ae::options('namespace', array(
+		// Define all options
+		ae::options('library', array(
 			'bar' => 'foo'
 		));
 		
-		echo $predefined->get('bar', 'not used'); // echoes 'foo'
+		// Use the defined options
+		$options = ae::options('library');
 		
-		$predefined->set('bar', 'bar');
-		
-		echo $predefined->get('bar'); // echoes 'bar'
+		echo $options->get('bar'); // echoes 'foo'
+		$options->set('bar', 'bar');
+		echo $options->get('bar'); // echoes 'bar'
+	
+	This method leaves no room for typos, because using an undefined option
+	will trigger an error.
 */
 {
 	protected static $values;

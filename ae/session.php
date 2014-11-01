@@ -20,7 +20,12 @@ ae::invoke('aeSession');
 
 class aeSession implements ArrayAccess, Iterator
 /*
-	Provides an inteface for $_SESSION.
+	Provides a standard safe(r) inteface to $_SESSION variable:
+	
+		$storage = ae::session('namespace'); // $_SESSION['namespace'];
+		$storage['foo'] = 'bar'; // $_SESSION['namespace'] = 'bar';
+		echo $storage['foo']; // echos 'bar';
+	
 */
 {
 	protected $reference;

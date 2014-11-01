@@ -20,7 +20,8 @@ ae::invoke('aeContainer');
 
 class aeContainer
 /*
-	Wraps output of a script with another script.
+	Wraps output of a script into another script and helps you avoid
+	the mess that using separate header / footer scripts usually entails.
 	
 	Example of container.php:
 	
