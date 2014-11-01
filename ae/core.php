@@ -18,7 +18,13 @@
 
 final class ae
 /*
-	Holds everything together.
+	This is a godly essence that holds everything together.
+	
+	- It lets you register directories as contexts, modules or apps.
+	- It helps you resolve relative paths against registered directories.
+	- It manages loading (and overloading) libraries for you.
+	- It exposes an interface to get/flush script output.
+	- It lets you escape strings for various parts of HTML.
 */
 {
 	// ======================
@@ -331,29 +337,29 @@ final class ae
 	
 	const html = 0;
 	const text = 1;
-	const tag = 2;
-	const attribute = 3;
+	const name = 2;
+	const value = 3;
 	const identifier = 4;
 	
 	public static function escape($value, $context = ae::text)
 	/*
-		Escape the string to be used in the selected utility:
+		Escape the string to be used in the chosen context:
 		
 		`ae::html` - don't escape;
 		`ae::text` - escape all HTML code, but preserve entities;
-		`ae::tag` - safe for tag or attribute names;
-		`ae::attribute` - safe for attribute values;
+		`ae::name` - safe for tag or attribute names;
+		`ae::value` - safe for attribute values;
 		`ae::identifier` - alphnumerics, dashes and underscores only.
 		
 	*/
 	{
 		switch ($context) 
 		{
-			case ae::tag:
+			case ae::name:
 				return strtolower(preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value));
 			case ae::identifier:
 				return strtolower(preg_replace('/[^a-zA-Z0-9_\-]/', '', $value));
-			case ae::attribute:
+			case ae::value:
 			case ae::text:
 				return preg_replace('/&amp;([a-z\d]+|#\d+|#x[a-f\d]+);/i', '&$1;', htmlspecialchars($value, ENT_QUOTES));
 		}

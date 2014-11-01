@@ -25,7 +25,8 @@ ae::invoke(array('aeRouter', 'request'));
 
 class aeRequest
 /*
-	Request URI abstraction.
+	Provides easy access to URI segments and allows request routing and redirection.
+	
 	Provided the application is accessed with "/some/arbitrary/request.json":
 	
 		$request = ae::request();
@@ -384,7 +385,8 @@ class aeRouter
 				{
 					$this->path = $path;
 					$this->offset = $l;
-					break;
+					
+					return;
 				}
 			}
 		} 

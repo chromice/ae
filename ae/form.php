@@ -244,11 +244,11 @@ class aeForm implements ArrayAccess
 			if ($name === $value && !in_array($name, array('id', 'name', 'value'))
 			|| $value === true)
 			{
-				$output[] = ae::escape($name, ae::tag);
+				$output[] = ae::escape($name, ae::name);
 			}
 			else
 			{
-				$output[] = ae::escape($name, ae::tag) . '="' . ae::escape($value, ae::attribute) . '"';
+				$output[] = ae::escape($name, ae::name) . '="' . ae::escape($value, ae::value) . '"';
 			}
 		}
 		
@@ -659,7 +659,7 @@ class aeFormField extends aeValidator
 		}
 		
 		return '<textarea ' . $this->_attributes($attributes) . '>' 
-			. ae::escape($this->value, ae::attribute) 
+			. ae::escape($this->value, ae::value) 
 			. '</textarea>';
 	}
 	
@@ -686,12 +686,12 @@ class aeFormField extends aeValidator
 		{
 			if (is_scalar($value))
 			{
-				$output[] = '<option value="' . ae::escape($key, ae::attribute) . '"' 
+				$output[] = '<option value="' . ae::escape($key, ae::value) . '"' 
 					. ($this->_matches($key) ? ' selected' : '') . '>' . $value . '</option>';
 			}
 			elseif (is_array($value))
 			{
-				$output[] = '<optgroup label="' . ae::escape($key, ae::attribute) . '">' 
+				$output[] = '<optgroup label="' . ae::escape($key, ae::value) . '">' 
 					. $this->_options($value, $indent + 1)
 					. '</optgroup>';
 			}

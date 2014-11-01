@@ -1145,11 +1145,11 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 				'required', 'novalidate', 'formnovalidate', 'autofocus'
 			)) || $value === true)
 			{
-				$output[] = ae::escape($name, ae::tag);
+				$output[] = ae::escape($name, ae::name);
 			}
 			else
 			{
-				$output[] = ae::escape($name, ae::tag) . '="' . ae::escape($value, ae::attribute) . '"';
+				$output[] = ae::escape($name, ae::name) . '="' . ae::escape($value, ae::value) . '"';
 			}
 		}
 		
@@ -1950,7 +1950,7 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 		}
 	
 		return '<textarea ' . $this->_attributes($attributes) . '>'
-			. ae::escape($this->value, ae::attribute)
+			. ae::escape($this->value, ae::value)
 			. '</textarea>';
 	}
 	
@@ -1974,12 +1974,12 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 		{
 			if (is_scalar($value))
 			{
-				$output[] = '<option value="' . ae::escape($key, ae::attribute) . '"' 
+				$output[] = '<option value="' . ae::escape($key, ae::value) . '"' 
 					. ($this->_matches($key) ? ' selected' : '') . '>' . $value . '</option>';
 			}
 			elseif (is_array($value))
 			{
-				$output[] = '<optgroup label="' . ae::escape($key, ae::attribute) . '">' 
+				$output[] = '<optgroup label="' . ae::escape($key, ae::value) . '">' 
 					. $this->_options($value, $indent + 1)
 					. '</optgroup>';
 			}
