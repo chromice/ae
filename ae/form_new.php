@@ -1087,30 +1087,15 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		$limits['post_max_size'] = @ini_get('post_max_size');
 		$limits['upload_max_filesize'] = @ini_get('upload_max_filesize');
 		
-		// TODO: Array map this function instead: http://www.php.net/manual/en/function.ini-get.php#96996
-		foreach ($limits as $key => $value)
-		{
-			if (preg_match('/^(\d+)(K|M|G)?$/i', trim($value), $parts) === 1)
+		$limits = array_filter(array_map(function ($limit) {
+			switch (substr($limit, -1))
 			{
-				$limit = (int) $parts[1];
-				
-				if (isset($parts[2])) switch (strtoupper($parts[2]))
-				{
-					case 'G':
-						$limit*= 1024;
-					case 'M':
-						$limit*= 1024;
-					case 'K':
-						$limit*= 1024;
-				}
-				
-				$limits[$key] = $limit;
+				case 'K': case 'k': return (int)$limit * 1024;
+				case 'M': case 'm': return (int)$limit * 1048576;
+				case 'G': case 'g': return (int)$limit * 1073741824;
+				default: return $limit;
 			}
-			else
-			{
-				unset($limits[$key]);
-			}
-		}
+		}, $limits));
 		
 		if (empty($this->nonces[$this->id]))
 		{
