@@ -309,39 +309,40 @@ trait aeFormFieldValueContainer
 			unset($validators[$validator]);
 		}
 		
-		// Check the rest of the constraints
-		foreach ($validators as $func)
-		{
-			if ($this->multiple)
+		// Validate other constraints.
+		$is_valid = true;
+		$not_empty = array($this, '_not_empty');
+		$validate = function ($value, $index) use (&$is_valid, $not_empty, $show_error, $validators) {
+			if (!call_user_func($not_empty, $value))
 			{
-				foreach ($this->value as $value)
+				return;
+			}
+			
+			foreach ($validators as $func)
+			{
+				if ($error = $func($value, $index))
 				{
-					if (!$this->_not_empty($value))
-					{
-						continue;
-					}
+					$is_valid = false;
+					$show_error($error);
 					
-					if ($error = $func($value, $this->index))
-					{
-						$show_error($error);
-						
-						return false;
-					}
+					return;
 				}
 			}
-			elseif (!$this->_not_empty($this->value))
+		};
+		
+		if ($this->multiple)
+		{
+			foreach ($this->value as $value)
 			{
-				break;
-			}
-			elseif ($error = $func($this->value, $this->index))
-			{
-				$show_error($error);
-				
-				return false;
+				$validate($value, $this->index);
 			}
 		}
+		else
+		{
+			$validate($this->value, $this->index);
+		}
 		
-		return true;
+		return $is_valid;
 	}
 }
 
