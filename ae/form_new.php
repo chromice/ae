@@ -949,6 +949,16 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 		$append_files($files, $this->values);
 	}
 	
+	public static function valid_name($name)
+	{
+		if ($name !== trim($name, '_ '))
+		{
+			trigger_error('Invalid form field name: ' . $name, E_USER_ERROR);
+		}
+		
+		return $name;
+	}
+	
 	public function _has_files()
 	{
 		if ($this->method !== 'post')
@@ -1149,7 +1159,7 @@ class aeFormGroup implements ArrayAccess, aeFieldFactory, aeGroupErrorContainer,
 	
 	public function __construct($name, &$form, &$values, &$errors)
 	{
-		$this->name = $name;
+		$this->name = aeForm::valid_name($name);
 		$this->form =& $form;
 		$this->values =& $values;
 		$this->errors =& $errors;
@@ -1206,7 +1216,7 @@ class aeFormSequence implements ArrayAccess, Iterator, Countable, aeFieldFactory
 	
 	public function __construct($name, &$form, &$values, &$errors, $min = 1, $max = null)
 	{
-		$this->name = $name;
+		$this->name = aeForm::valid_name($name);
 		
 		$this->form =& $form;
 		$this->values =& $values;
@@ -1650,7 +1660,7 @@ abstract class aeFormFieldSequence implements ArrayAccess, Iterator, Countable, 
 	
 	public function __construct($name, $multiple, &$form, &$values, &$errors, &$length)
 	{
-		$this->name = $name;
+		$this->name = aeForm::valid_name($name);
 		$this->multiple = $multiple;
 		
 		$this->form =& $form;
@@ -1785,7 +1795,7 @@ abstract class aeFormField implements aeValidator, aeFieldValueContainer
 	
 	public function __construct($name, $index, $multiple, &$form, &$value, &$validators = null, &$html = null)
 	{
-		$this->name = $name;
+		$this->name = aeForm::valid_name($name);
 		$this->index = $index;
 		$this->multiple = $multiple;
 		$this->form =& $form;
