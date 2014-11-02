@@ -309,10 +309,11 @@ trait aeFormFieldValueContainer
 			unset($validators[$validator]);
 		}
 		
-		// Validate other constraints.
+		// Prepare for validation of other constraints
 		$is_valid = true;
+		$is_text = is_a($this, 'aeTextValidator');
 		$not_empty = array($this, '_not_empty');
-		$validate = function ($value, $index) use (&$is_valid, $not_empty, $show_error, $validators) {
+		$validate = function ($value, $index) use (&$is_valid, $is_text, $not_empty, $show_error, $validators) {
 			if (!call_user_func($not_empty, $value))
 			{
 				return;
@@ -325,11 +326,15 @@ trait aeFormFieldValueContainer
 					$is_valid = false;
 					$show_error($error);
 					
-					return;
+					if ($is_text)
+					{
+						return;
+					}
 				}
 			}
 		};
 		
+		// Run validation
 		if ($this->multiple)
 		{
 			foreach ($this->value as $value)
@@ -2105,61 +2110,6 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		return $file;
 	}
 	
-	public function validate()
-	{
-		// FIXME: This is almost a duplicate of aeFormFieldValueContainer::validate()
-		$validators = $this->validators;
-		ksort($validators);
-		
-		$errors = &$this->errors;
-		
-		// Validate required, min_count and max_count constraints first.
-		foreach (array(aeValidator::order_required, aeValidator::order_min_count, aeValidator::order_max_count) as $validator)
-		{
-			if (isset($validators[$validator])
-			&& $error = $validators[$validator]($this->value, $this->index))
-			{
-				$errors[] = $error;
-			
-				return false;
-			}
-		
-			unset($validators[$validator]);
-		}
-		
-		// Validate other constraints.
-		$is_valid = true;
-		$not_empty = array($this, '_not_empty');
-		$validate = function ($value, $index) use (&$is_valid, $not_empty, &$errors, $validators) {
-			if (!call_user_func($not_empty, $value))
-			{
-				return;
-			}
-			
-			foreach ($validators as $func)
-			{
-				if ($error = $func($value, $index))
-				{
-					$errors[] = $error;
-					$is_valid = false;
-				}
-			}
-		};
-		
-		if ($this->multiple)
-		{
-			foreach ($this->value as $value)
-			{
-				$validate($value, $this->index);
-			}
-		}
-		else
-		{
-			$validate($this->value, $this->index);
-		}
-		
-		return $is_valid;
-	}
 	
 	// ===============
 	// = HTML output =
