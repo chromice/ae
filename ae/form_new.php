@@ -455,12 +455,10 @@ trait aeFormFieldValidator
 	public function required($message, $callback = null)
 	{
 		$is_multiple = $this->multiple;
+		$not_empty = array($this, '_not_empty');
 		
-		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple) {
+		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple, $not_empty) {
 			$is_required = is_callable($callback) ? $callback($index) : true;
-			$not_empty = function ($value) {
-				return is_string($value) && strlen($value) > 0;
-			};
 			
 			if (!$is_required)
 			{
@@ -468,7 +466,7 @@ trait aeFormFieldValidator
 			}
 			elseif (!$is_multiple)
 			{
-				return !$not_empty($value) ? $message : null;
+				return !call_user_func($not_empty, $value) ? $message : null;
 			}
 			else
 			{
@@ -477,6 +475,11 @@ trait aeFormFieldValidator
 		};
 		
 		return $this;
+	}
+	
+	protected function _not_empty($value)
+	{
+		return is_string($value) && strlen($value) > 0;
 	}
 	
 	public function min_count($message, $misc)
@@ -638,32 +641,9 @@ trait aeFormTextFieldValidator
 
 trait aeFormFileFieldValidator
 {
-	public function required($message, $callback = null)
+	protected function _not_empty($value)
 	{
-		// FIXME: This is almost a duplicate of aeFormFieldValidator::required()
-		$is_multiple = $this->multiple;
-		
-		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple) {
-			$is_required = is_callable($callback) ? $callback($index) : true;
-			$not_empty = function ($value) {
-				return is_a($value, 'aeFile') && $value->exists();
-			};
-			
-			if (!$is_required)
-			{
-				return;
-			}
-			elseif (!$is_multiple)
-			{
-				return !$not_empty($value) ? $message : null;
-			}
-			else
-			{
-				return !is_array($value) || count(array_filter($value, $not_empty)) === 0 ? $message : null;
-			}
-		};
-		
-		return $this;
+		return is_a($value, 'aeFile') && $value->exists();
 	}
 	
 	public function accept($message, $types)
@@ -699,6 +679,7 @@ trait aeFormFileFieldValidator
 			
 			foreach ($types as $_type)
 			{
+				// FIXME: This does not work when .jpeg !== .jpg which is a support headache
 				if ($_type{0} === '.' && '.' . $type === $_type)
 				{
 					return;
@@ -2145,8 +2126,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		
 		// Validate other constraints.
 		$is_valid = true;
-		$validate = function ($value, $index) use (&$is_valid, &$errors, $validators)
-		{
+		$validate = function ($value, $index) use (&$is_valid, &$errors, $validators) {
 			// FIXME: Should we check if it's a file that exists here as well?
 			if (empty($value))
 			{
