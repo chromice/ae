@@ -270,8 +270,30 @@ trait aeFormFieldValueContainer
 	
 	public function validate()
 	{
+		// Prepare validators
 		$validators = $this->validators;
 		ksort($validators);
+		
+		// Figure out how to show errors, based on container type
+		if (is_a($this, 'aeGroupErrorContainer'))
+		{
+			$_errors =& $this->errors;
+			$show_error = function ($error) use (&$_errors) {
+				$_errors[] = $error;
+			};
+		}
+		elseif (is_a($this, 'aeFieldErrorContainer'))
+		{
+			$_error =& $this->error;
+			$show_error = function ($error) use (&$_error) {
+				$_error = $error;
+			};
+		}
+		else
+		{
+			// Show no errors
+			$show_error = function ($error) {};
+		}
 		
 		// Validate required, min_count and max_count constraints first.
 		foreach (array(aeValidator::order_required, aeValidator::order_min_count, aeValidator::order_max_count) as $validator)
@@ -279,14 +301,7 @@ trait aeFormFieldValueContainer
 			if (isset($validators[$validator])
 			&& $error = $validators[$validator]($this->value, $this->index))
 			{
-				if (is_a($this, 'aeGroupErrorContainer'))
-				{
-					$this->errors[] = $error;
-				}
-				elseif (is_a($this, 'aeFieldErrorContainer'))
-				{
-					$this->error = $error;
-				}
+				$show_error($error);
 				
 				return false;
 			}
@@ -301,40 +316,26 @@ trait aeFormFieldValueContainer
 			{
 				foreach ($this->value as $value)
 				{
-					if (empty($value))
+					if (!$this->_not_empty($value))
 					{
 						continue;
 					}
 					
 					if ($error = $func($value, $this->index))
 					{
-						if (is_a($this, 'aeGroupErrorContainer'))
-						{
-							$this->errors[] = $error;
-						}
-						elseif (is_a($this, 'aeFieldErrorContainer'))
-						{
-							$this->error = $error;
-						}
+						$show_error($error);
 						
 						return false;
 					}
 				}
 			}
-			elseif (empty($this->value))
+			elseif (!$this->_not_empty($this->value))
 			{
 				break;
 			}
 			elseif ($error = $func($this->value, $this->index))
 			{
-				if (is_a($this, 'aeGroupErrorContainer'))
-				{
-					$this->errors[] = $error;
-				}
-				elseif (is_a($this, 'aeFieldErrorContainer'))
-				{
-					$this->error = $error;
-				}
+				$show_error($error);
 				
 				return false;
 			}
@@ -2107,8 +2108,9 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 	{
 		// FIXME: This is almost a duplicate of aeFormFieldValueContainer::validate()
 		$validators = $this->validators;
-		$errors = &$this->errors;
 		ksort($validators);
+		
+		$errors = &$this->errors;
 		
 		// Validate required, min_count and max_count constraints first.
 		foreach (array(aeValidator::order_required, aeValidator::order_min_count, aeValidator::order_max_count) as $validator)
@@ -2126,9 +2128,9 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		
 		// Validate other constraints.
 		$is_valid = true;
-		$validate = function ($value, $index) use (&$is_valid, &$errors, $validators) {
-			// FIXME: Should we check if it's a file that exists here as well?
-			if (empty($value))
+		$not_empty = array($this, '_not_empty');
+		$validate = function ($value, $index) use (&$is_valid, $not_empty, &$errors, $validators) {
+			if (!call_user_func($not_empty, $value))
 			{
 				return;
 			}
