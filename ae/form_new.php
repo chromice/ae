@@ -676,7 +676,7 @@ trait aeFormFileFieldValidator
 		$this->validators[aeFileValidator::order_accept] = function ($file) use ($types, $message) {
 			try
 			{
-				$type = preg_quote($file->type());
+				$type = preg_quote($file->extension());
 				$mimetype = preg_quote($file->mimetype());
 			}
 			catch (aeFileException $e)
@@ -2096,7 +2096,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		try
 		{
 			// Move file to the destination
-			$target = rtrim($this->destination, '/') . '/' . $file->name() . '.' . $file->type();
+			$target = rtrim($this->destination, '/') . '/' . $file->name() . '.' . $file->extension();
 			
 			$file->move($target);
 		} 

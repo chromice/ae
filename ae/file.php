@@ -102,7 +102,7 @@ class aeFile
 		return $this->meta;
 	}
 	
-	public function type($validate = true)
+	public function extension($validate = true)
 	{
 		if ($validate === false)
 		{
@@ -112,11 +112,7 @@ class aeFile
 		$type = strtolower($this->type);
 		$mimetype = $this->mimetype();
 		
-		$found = array_filter(self::$types, function ($candidate) use ($mimetype, $type)
-		{
-			return $candidate[0] === $mimetype && (empty($type) || $candidate[1] === $type);
-		});
-		
+		$found = self::find_matching_types($mimetype, $type);
 		$found = array_pop($found);
 		
 		if (isset($found[1]))
@@ -132,6 +128,19 @@ class aeFile
 		{
 			throw new aeFileException($type . ' is an invalid file type for MIME: ' . $mimetype);
 		}
+	}
+	
+	public static function find_matching_types($mimetype, $extension)
+	{
+		if (empty($mimetype) && empty($extension))
+		{
+			trigger_error('Cannot find matching type candidates: no mimetype or extension were specified.');
+		}
+		
+		return array_filter(self::$types, function ($candidate) use ($mimetype, $extension) {
+			return (empty($mimetype) || $candidate[0] === $mimetype)
+				&& (empty($extension) || $candidate[1] === $extension);
+		});
 	}
 	
 	public function full_name($validate = true)

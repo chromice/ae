@@ -1081,7 +1081,7 @@ class aeFormFileField
 		try 
 		{
 			// Move file to the destination
-			$target = $destination . '/' . $file->hash() . '.' . $file->type();
+			$target = $destination . '/' . $file->hash() . '.' . $file->extension();
 			
 			$file->move($target);
 		} 
@@ -1297,7 +1297,7 @@ class aeFormFileField
 		$this->accept = function ($file) use ($types, $message) {
 			try
 			{
-				$type = preg_quote($file->type());
+				$type = preg_quote($file->extension());
 				$mimetype = preg_quote($file->mimetype());
 			}
 			catch (aeFileException $e)
