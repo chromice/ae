@@ -686,8 +686,8 @@ trait aeFormFileFieldValidator
 			
 			foreach ($types as $_type)
 			{
-				// FIXME: This does not work when .jpeg !== .jpg which is a support headache
-				if ($_type{0} === '.' && '.' . $type === $_type)
+				if ($_type{0} === '.' 
+				&& count($file::find_matching_types($mime, substr($_type, 1))) > 0)
 				{
 					return;
 				}
