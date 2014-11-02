@@ -52,7 +52,7 @@ class aeImage
 		$this->width = $info[0];
 		$this->height = $info[1];
 		$this->type = $info[2];
-		$this->mimetype = $info['mime'];
+		$this->mime = $info['mime'];
 	}
 	
 	public function __destruct()
@@ -67,7 +67,7 @@ class aeImage
 	protected $width;
 	protected $height;
 	protected $type;
-	protected $mimetype;
+	protected $mime;
 	
 	public function width()
 	/*
@@ -98,12 +98,12 @@ class aeImage
 		}
 	}
 	
-	public function mimetype()
+	public function mime()
 	/*
 		Returns the mime type of the image.
 	*/
 	{
-		return $this->mimetype;
+		return $this->mime;
 	}
 	
 	// ================
@@ -526,15 +526,15 @@ class aeImage
 		switch ($type)
 		{
 			case IMAGETYPE_GIF:
-				$mimetype = 'image/gif';
+				$mime = 'image/gif';
 				imagegif($this->source);
 				break;
 			case IMAGETYPE_PNG:
-				$mimetype = 'image/png';
+				$mime = 'image/png';
 				imagepng($this->source);
 				break;
 			case IMAGETYPE_JPEG:
-				$mimetype = 'image/jpeg';
+				$mime = 'image/jpeg';
 				imagejpeg($this->source, null, $this->quality);
 				break;
 		}
@@ -549,7 +549,7 @@ class aeImage
 			$cache
 				->duration($minutes)
 				->headers(array_merge($this->headers, array(
-					'Content-Type' => $mimetype
+					'Content-Type' => $mime
 				)))
 				->content(ob_get_clean())
 				->save($uri);

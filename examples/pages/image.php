@@ -12,7 +12,7 @@ if (!in_array($request->type(), array('jpeg','jpg','png','gif')))
 $width = $image->width();
 $height = $image->height();
 $type = $image->type(); // png, jpeg or gif
-$mimetype = $image->mimetype();
+$mime = $image->mime();
 
 // Test transparent PNG cropping
 ae::image('examples/image/test.png')

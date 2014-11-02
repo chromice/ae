@@ -1298,7 +1298,7 @@ class aeFormFileField
 			try
 			{
 				$type = preg_quote($file->extension());
-				$mimetype = preg_quote($file->mimetype());
+				$mime = preg_quote($file->mime());
 			}
 			catch (aeFileException $e)
 			{
@@ -1311,7 +1311,7 @@ class aeFormFileField
 				{
 					return;
 				}
-				elseif ($type{0} !== '.' && strpos($mimetype, $_type) !== false)
+				elseif ($type{0} !== '.' && strpos($mime, $_type) !== false)
 				{
 					return;
 				}

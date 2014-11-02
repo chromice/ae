@@ -677,7 +677,7 @@ trait aeFormFileFieldValidator
 			try
 			{
 				$type = preg_quote($file->extension());
-				$mimetype = preg_quote($file->mimetype());
+				$mime = preg_quote($file->mime());
 			}
 			catch (aeFileException $e)
 			{
@@ -691,7 +691,7 @@ trait aeFormFileFieldValidator
 				{
 					return;
 				}
-				elseif ($_type{0} !== '.' && strpos($mimetype, $_type) !== false)
+				elseif ($_type{0} !== '.' && strpos($mime, $_type) !== false)
 				{
 					return;
 				}

@@ -50,7 +50,7 @@ class aeFile
 		$this->path = $path;
 		$this->meta = is_array($meta) ? $meta : array();
 		$this->name = pathinfo(is_null($name) ? $path : $name, PATHINFO_FILENAME);
-		$this->type = pathinfo(is_null($name) ? $path : $name, PATHINFO_EXTENSION);
+		$this->extension = pathinfo(is_null($name) ? $path : $name, PATHINFO_EXTENSION);
 	}
 	
 	public function __destruct()
@@ -106,13 +106,13 @@ class aeFile
 	{
 		if ($validate === false)
 		{
-			return $this->type;
+			return $this->extension;
 		}
 		
-		$type = strtolower($this->type);
-		$mimetype = $this->mimetype();
+		$extension = strtolower($this->extension);
+		$mime = $this->mime();
 		
-		$found = self::find_matching_types($mimetype, $type);
+		$found = self::find_matching_types($mime, $extension);
 		$found = array_pop($found);
 		
 		if (isset($found[1]))
@@ -120,35 +120,35 @@ class aeFile
 			return $found[1];
 		}
 		
-		if (!empty($type))
+		if (!empty($extension))
 		{
-			throw new aeFileException('No valid file type found for MIME: ' . $mimetype);
+			throw new aeFileException('No valid file extension found for MIME: ' . $mime);
 		}
 		else
 		{
-			throw new aeFileException($type . ' is an invalid file type for MIME: ' . $mimetype);
+			throw new aeFileException($extension . ' is an invalid file extension for MIME: ' . $mime);
 		}
 	}
 	
-	public static function find_matching_types($mimetype, $extension)
+	public static function find_matching_types($mime, $extension)
 	{
-		if (empty($mimetype) && empty($extension))
+		if (empty($mime) && empty($extension))
 		{
-			trigger_error('Cannot find matching type candidates: no mimetype or extension were specified.');
+			trigger_error('Cannot find matching type candidates: no MIME or extension were specified.');
 		}
 		
-		return array_filter(self::$types, function ($candidate) use ($mimetype, $extension) {
-			return (empty($mimetype) || $candidate[0] === $mimetype)
+		return array_filter(self::$types, function ($candidate) use ($mime, $extension) {
+			return (empty($mime) || $candidate[0] === $mime)
 				&& (empty($extension) || $candidate[1] === $extension);
 		});
 	}
 	
 	public function full_name($validate = true)
 	{
-		return $this->name() . '.' . $this->type($validate);
+		return $this->name() . '.' . $this->extension($validate);
 	}
 	
-	public function mimetype()
+	public function mime()
 	{
 		$info = new finfo(FILEINFO_MIME_TYPE);
 		
@@ -191,7 +191,7 @@ class aeFile
 		$path = self::_destination(
 			$destination,
 			$this->name(),
-			$this->type(false),
+			$this->extension(false),
 			$overwrite
 		);
 		
@@ -213,7 +213,7 @@ class aeFile
 		$path = self::_destination(
 			$destination,
 			$this->name(),
-			$this->type(false),
+			$this->extension(false),
 			$overwrite
 		);
 		
@@ -239,23 +239,23 @@ class aeFile
 		return $this;
 	}
 	
-	protected static function _destination($destination, $name, $type, $overwrite)
+	protected static function _destination($destination, $name, $extension, $overwrite)
 	{
 		// FIXME: Destination may have subdirectories missing.
 		if (!is_dir($destination) && is_dir(pathinfo($destination, PATHINFO_DIRNAME)))
 		{
 			$name = pathinfo($destination, PATHINFO_FILENAME);
-			$type = pathinfo($destination, PATHINFO_EXTENSION);
+			$extension = pathinfo($destination, PATHINFO_EXTENSION);
 			
 			$destination = pathinfo($destination, PATHINFO_DIRNAME);
 		}
 		
 		$i = 0;
-		$path = rtrim($destination, '/') . '/' . $name . '.' . $type;
+		$path = rtrim($destination, '/') . '/' . $name . '.' . $extension;
 		
 		while (file_exists($path) && !$overwrite)
 		{
-			$path = rtrim($destination, '/') . '/' . $name . ' ' . ++$i . '.' . $type;
+			$path = rtrim($destination, '/') . '/' . $name . ' ' . ++$i . '.' . $extension;
 		}
 		
 		return $path;
