@@ -1055,7 +1055,6 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	protected static function _generate_nonce()
 	{
-		// FIXME: Is this a good enough random string with enough entropy?
 		return md5(uniqid(mt_rand(), true));
 	}
 	
@@ -1097,6 +1096,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			}
 		}, $limits));
 		
+		// Generate a nonce, if none exists yet
 		if (empty($this->nonces[$this->id]))
 		{
 			$this->nonces[$this->id] = self::_generate_nonce();
