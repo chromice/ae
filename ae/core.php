@@ -127,6 +127,11 @@ final class ae
 			return $path;
 		}
 		
+		if ($path === '/')
+		{
+			return dirname(__DIR__);
+		}
+		
 		$_path = str_replace('\\','/', $path);
 		$_path = trim($_path, '/');
 		

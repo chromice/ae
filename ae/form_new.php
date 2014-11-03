@@ -21,7 +21,8 @@ ae::import('ae/request.php');
 
 // Define options
 ae::options('ae.form', array(
-	'novalidate' => false // whether to prevent HTML5 validation in browsers that support it.
+	'novalidate' => false, // whether to prevent HTML5 validation in browsers that support it;
+	'base_dir' => ae::resolve('/') // a file path relative to which all uploaded files are.
 ));
 
 // Invoke form object
@@ -2063,7 +2064,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 		if (!empty($file['path']) && !empty($file['full_name']))
 		{
 			// FIXME: File may be located somewhere else.
-			$path = rtrim($this->destination, '/') . '/' . ltrim($file['path'], '/');
+			$path = $file['path'];
 			$full_name = $file['full_name'];
 			
 			unset($file['path'], $file['full_name']);
@@ -2143,6 +2144,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 			$files = array($this->value);
 		}
 		
+		$base_dir = ae::options('ae.form')->get('base_dir');
 		$file_offset = 0;
 		$output = '';
 		
@@ -2171,7 +2173,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 			$output.= '<input ' . aeForm::attributes(array(
 				'type'  => 'hidden',
 				'name'  => $this->name($file_offset) . '[path]',
-				'value' => str_replace($this->destination, '', $file->path())
+				'value' => str_replace($base_dir, '', $file->path())
 			)) . '>';
 			
 			foreach ($meta as $key => $value)
