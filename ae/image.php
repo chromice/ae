@@ -660,4 +660,4 @@ class aeImage
 	}
 }
 
-class aeImageException extends Exception {}
+class aeImageException extends aeException {}
