@@ -574,11 +574,9 @@ trait aeFormTextFieldValidator
 	
 	public function min_length($message, $length)
 	{
-		$message = str_replace('{length}', $length, $message);
-		
 		$this->html['minlength'] = $length;
 		$this->validators[aeTextValidator::order_min_length] = function ($value) use ($message, $length) {
-			return strlen($value) < $length ? $message : null;
+			return strlen($value) < $length ? str_replace('{length}', strlen($value), $message) : null;
 		};
 		
 		return $this;
@@ -586,11 +584,9 @@ trait aeFormTextFieldValidator
 
 	public function max_length($message, $length)
 	{
-		$message = str_replace('{length}', $length, $message);
-		
 		$this->html['maxlength'] = $length;
 		$this->validators[aeTextValidator::order_max_length] = function ($value) use ($message, $length) {
-			return strlen($value) > $length ? $message : null;
+			return strlen($value) > $length ? str_replace('{length}', strlen($value), $message) : null;
 		};
 		
 		return $this;
@@ -598,8 +594,6 @@ trait aeFormTextFieldValidator
 
 	public function min_value($message, $limit)
 	{
-		$message = str_replace('{value}', $limit, $message);
-		
 		$this->html['min'] = $limit;
 		
 		if (!empty($this->time_format))
@@ -614,7 +608,7 @@ trait aeFormTextFieldValidator
 		else
 		{
 			$this->validators[aeTextValidator::order_min_value] = function ($value) use ($message, $limit) {
-				return $value < $limit ? $message : null;
+				return $value < $limit ? str_replace('{value}', $value, $message) : null;
 			};
 		}
 
@@ -623,8 +617,6 @@ trait aeFormTextFieldValidator
 	
 	public function max_value($message, $limit)
 	{
-		$message = str_replace('{value}', $limit, $message);
-		
 		$this->html['max'] = $limit;
 		
 		if (!empty($this->time_format))
@@ -639,7 +631,7 @@ trait aeFormTextFieldValidator
 		else
 		{
 			$this->validators[aeTextValidator::order_max_value] = function ($value) use ($message, $limit) {
-				return $value > $limit ? $message : null;
+				return $value > $limit ? str_replace('{value}', $value, $message) : null;
 			};
 		}
 
@@ -706,12 +698,15 @@ trait aeFormFileFieldValidator
 	
 	public function min_size($message, $size)
 	{
-		$message = str_replace('{size}', self::_format_size($size), $message);
-		
 		$this->validators[aeFileValidator::order_min_size] = function ($file) use ($size, $message) {
 			if ($file->size() < $size)
 			{
-				return str_replace('{file}', $file->full_name(false), $message);
+				$replace = array(
+					'{file}' => $file->full_name(false),
+					'{size}' => $file->human_size()
+				);
+				
+				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
 		};
 		
@@ -720,35 +715,32 @@ trait aeFormFileFieldValidator
 	
 	public function max_size($message, $size)
 	{
-		$message = str_replace('{size}', self::_format_size($size), $message);
-		
 		$this->validators[aeFileValidator::order_max_size] = function ($file) use ($size, $message) {
 			if ($file->size() > $size)
 			{
-				return str_replace('{file}', $file->full_name(false), $message);
+				$replace = array(
+					'{file}' => $file->full_name(false),
+					'{size}' => $file->human_size()
+				);
+				
+				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
 		};
 		
 		return $this;
 	}
-	
-	protected static function _format_size($bytes)
-	{
-		$units = array('byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte', 'exabyte', 'zettabyte', 'yottabyte');
-		$factor = floor((strlen(round($bytes)) - 1) / 3);
-		$value = sprintf("%.2f", $bytes / pow(1024, $factor));
 		
-		return rtrim($value, '.0') . ' ' . @$units[$factor] . ($value === '1.00' ? '' : 's');
-	}
-	
 	public function min_width($message, $width)
 	{
-		$message = str_replace('{width}', $width, $message);
-		
 		$this->validators[aeFileValidator::order_min_width] = function ($file) use ($width, $message) {
 			if ($file->width() < $width)
 			{
-				return str_replace('{file}', $file->full_name(false), $message);
+				$replace = array(
+					'{file}' => $file->full_name(false),
+					'{width}' => $file->width()
+				);
+				
+				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
 		};
 		
@@ -757,12 +749,15 @@ trait aeFormFileFieldValidator
 	
 	public function max_width($message, $width)
 	{
-		$message = str_replace('{width}', $width, $message);
-		
 		$this->validators[aeFileValidator::order_max_width] = function ($file) use ($width, $message) {
 			if ($file->width() > $width)
 			{
-				return str_replace('{file}', $file->full_name(false), $message);
+				$replace = array(
+					'{file}' => $file->full_name(false),
+					'{width}' => $file->width()
+				);
+				
+				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
 		};
 		
@@ -776,7 +771,12 @@ trait aeFormFileFieldValidator
 		$this->validators[aeFileValidator::order_min_height] = function ($file) use ($height, $message) {
 			if ($file->height() < $height)
 			{
-				return str_replace('{file}', $file->full_name(false), $message);
+				$replace = array(
+					'{file}' => $file->full_name(false),
+					'{height}' => $file->height()
+				);
+				
+				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
 		};
 		
@@ -790,7 +790,12 @@ trait aeFormFileFieldValidator
 		$this->validators[aeFileValidator::order_max_height] = function ($file) use ($height, $message) {
 			if ($file->height() > $height)
 			{
-				return str_replace('{file}', $file->full_name(false), $message);
+				$replace = array(
+					'{file}' => $file->full_name(false),
+					'{height}' => $file->height()
+				);
+				
+				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
 		};
 		
@@ -2063,8 +2068,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 	{
 		if (!empty($file['path']) && !empty($file['full_name']))
 		{
-			// FIXME: File may be located somewhere else.
-			$path = $file['path'];
+			$path = ae::options('ae.form')->get('base_dir') . $file['path'];
 			$full_name = $file['full_name'];
 			
 			unset($file['path'], $file['full_name']);

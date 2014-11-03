@@ -14,6 +14,7 @@ $user = $form->group('user');
 
 $avatar = $user->file('avatar', '/uploads/avatars')
 	->accept('Please choose .png or .jpeg file as your avatar.', '.png, .jpeg')
+	->max_size('File must be less than 1Mb. {file} is {size}.', 1024 * 1024)
 	->min_width('{file} is less than 500 pixels wide.', 500)
 	->min_height('{file} is less than 500 pixels high.', 500);
 

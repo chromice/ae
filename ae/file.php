@@ -160,6 +160,17 @@ class aeFile
 		return filesize($this->path);
 	}
 	
+	public function human_size()
+	{
+		$units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+		
+		$bytes = $this->size();
+		$factor = floor((strlen(round($bytes)) - 1) / 3);
+		$value = sprintf("%.2f", $bytes / pow(1024, $factor));
+		
+		return rtrim($value, '.0') . @$units[$factor] . ($value === '1.00' ? '' : 's');
+	}
+	
 	public function width()
 	{
 		$info = getimagesize($this->path);
