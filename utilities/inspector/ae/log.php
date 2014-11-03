@@ -125,7 +125,7 @@ class aeLog
 					trigger_error('Log directory is not writable.', E_USER_ERROR);
 				}
 			} 
-			catch (Exception $e)
+			catch (aeException $e)
 			{
 				trigger_error('Log directory does not exist.', E_USER_ERROR);
 			}
@@ -212,11 +212,11 @@ class aeLog
 			
 			// Try displaying the button
 			try {
-				echo '<script charset="utf-8">' 
-					. 'var base_path = "' . ae::options('ae.request')->get('base_url') . '";' 
-					. file_get_contents(ae::resolve('/utilities/inspector/assets/inject.js')) 
+				echo '<script charset="utf-8">'
+					. 'var base_path = "' . ae::options('ae.request')->get('base_url') . '";'
+					. file_get_contents(ae::resolve('/utilities/inspector/assets/inject.js'))
 					. '</script>';
-			} catch (Exception $e) {}
+			} catch (aeException $e) {}
 		}
 	}
 	
