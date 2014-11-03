@@ -2068,7 +2068,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 	{
 		if (!empty($file['path']) && !empty($file['full_name']))
 		{
-			$path = ae::options('ae.form')->get('base_dir') . $file['path'];
+			$path = rtrim(ae::options('ae.form')->get('base_dir'), '/') . '/' . ltrim($file['path'], '/');
 			$full_name = $file['full_name'];
 			
 			unset($file['path'], $file['full_name']);
@@ -2148,7 +2148,7 @@ class aeFormFileField extends aeFormField implements aeFileValidator, aeFieldErr
 			$files = array($this->value);
 		}
 		
-		$base_dir = ae::options('ae.form')->get('base_dir');
+		$base_dir = rtrim(ae::options('ae.form')->get('base_dir'), '/');
 		$file_offset = 0;
 		$output = '';
 		
