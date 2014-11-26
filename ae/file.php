@@ -961,6 +961,7 @@ class aeFile
 		array('text/richtext', 'rtf'),
 		array('text/richtext', 'rt'),
 		array('text/richtext', 'rtx'),
+		array('text/rtf', 'rtf'),
 		array('text/scriplet', 'wsc'),
 		array('text/sgml', 'sgm'),
 		array('text/sgml', 'sgml'),
