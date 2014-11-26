@@ -661,16 +661,16 @@ trait aeFormFileFieldValidator
 		// Set accept attribute
 		$this->html['accept'] = implode(',', $types);
 		
-		// Trim wildcard
+		// Trim wildcard from MIME masks, e.g. "image/*" -> "image/"
 		$types = array_map(function ($type) {
-			return trim($type, '*');
+			return rtrim($type, '*');
 		}, $types);
 		
 		$this->validators[aeFileValidator::order_accept] = function ($file) use ($types, $message) {
 			try
 			{
-				$type = preg_quote($file->extension());
-				$mime = preg_quote($file->mime());
+				$type = $file->extension();
+				$mime = $file->mime();
 			}
 			catch (aeFileException $e)
 			{
