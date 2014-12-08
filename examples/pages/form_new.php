@@ -14,9 +14,9 @@ $user = $form->group('user');
 
 $avatar = $user->file('avatar', '/uploads/avatars')
 	->accept('Please choose .png or .jpeg file as your avatar.', '.png, .jpeg')
-	->max_size('File must be less than 1Mb. {file} is {size}.', 1024 * 1024)
-	->min_width('{file} is less than 500 pixels wide.', 500)
-	->min_height('{file} is less than 500 pixels high.', 500);
+	->max_size('File must be less than {max-size}. {file} is {size}.', 1024 * 1024)
+	->min_width('{file} is less than {min-width} wide.', 500)
+	->min_height('{file} is less than {min-height} high.', 500);
 
 $first_name = $user->single('first_name')
 	->required('Please enter your first name.', function ($index) {
@@ -72,9 +72,9 @@ $titles = $files->single('title')
 $images = $files->files('image', '/uploads/gallery')
 	->required('You have to upload at least one image.')
 	->accept('{file} is not an image.', 'image/*')
-	->max_size('{file} is larger than {size}.', 4 * 1024 * 1024)
-	->min_width('{file} is less than {width} pixels wide.', 256)
-	->min_height('{file} is less than {height} pixels high.', 256);
+	->max_size('{file} is larger than {max-size}.', 4 * 1024 * 1024)
+	->min_width('{file} is less than {min-width} wide.', 256)
+	->min_height('{file} is less than {min-height} high.', 256);
 
 $descriptions = $files->single('description')
 	->min_length('The description must be longer than {length} characters.', 10)
