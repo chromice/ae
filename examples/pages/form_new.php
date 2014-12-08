@@ -47,7 +47,7 @@ $form->initial(array(
 $service_options = array(
 	'blog' => 'Blog',
 	'cms' => 'CMS',
-	'shop' => 'Shop',
+	'shop (test)' => 'Shop',
 );
 $services = $user->multiple('services')
 	->initial(array('shop'))

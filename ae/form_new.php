@@ -1136,7 +1136,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 	
 	public function id()
 	{
-		return $this->id;
+		return $this->id . '-form';
 	}
 	
 	public function open($attributes = array())
@@ -1146,7 +1146,7 @@ class aeForm implements ArrayAccess, aeFieldFactory, aeGroupFactory, aeGroupErro
 			'novalidate' => ae::options('ae.form')->get('novalidate')
 		), $attributes);
 		
-		$attributes['id'] = $this->id() . '-form';
+		$attributes['id'] = $this->id();
 		$attributes['method'] = $this->method;
 		
 		if ($this->has_files)
@@ -1907,10 +1907,9 @@ abstract class aeFormField implements aeValidator, aeFieldValueContainer
 	// = HTML output =
 	// ===============
 	
-	public function id()
+	public function id($value = null)
 	{
-		return trim($this->form->id() . '-' . preg_replace('/[\s_\[\]]+/', '-', $this->name), '-')
-			. (!is_null($this->index) ? '-' . $this->index : '');
+		return 'f' . crc32($this->form->id() . $this->name . $this->index . $value);
 	}
 	
 	public function name()
@@ -1960,11 +1959,6 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 	// ===============
 	// = HTML output =
 	// ===============
-	
-	public function id($value = null)
-	{
-		return parent::id() . (!empty($value) ? '-' . $value : '');
-	}
 	
 	public function input($type, $value = null, $attributes = array())
 	{
