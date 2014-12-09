@@ -7,3 +7,4 @@ examples/image/test_small.jpg
 examples/image/tiny_bit.png
 examples/image/preserve_opacity.png
 uploads/*
+composer.lock
