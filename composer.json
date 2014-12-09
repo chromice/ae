@@ -19,5 +19,9 @@
 	
 	"autoload": {
 		"files": ["ae/core.php"]
+	},
+	
+	"archive": {
+		"exclude": ["/.htaccess", "/index.php", "/ae/.htaccess", "/examples", "/cache"]
 	}
 }
