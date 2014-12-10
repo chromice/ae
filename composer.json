@@ -1,5 +1,5 @@
 {
-	"name": "chromice/ae",
+	"name": "ae/core",
 	"description": "Simple PHP framework",
 	"version": "1.0.0-alpha6",
 	"type": "framework",
