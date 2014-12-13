@@ -42,6 +42,7 @@ Here is a very a simple æ application:
 ```php
 <?php
 	include 'ae/core.php';
+	use \ae\Core as ae;
 	
 	echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 ?>
@@ -143,7 +144,7 @@ Which is the same as:
 
 ```php
 ae::import('ae/options.php');
-$options = new aeOptions();
+$options = new \ae\Options();
 ```
 
 You can configure the library by passing more arguments to `ae::load()`. æ will pass them to class constructor or object factory by value:
@@ -156,7 +157,7 @@ That would be identical to:
 
 ```php
 ae::import('ae/options.php');
-$lib_options = new aeOptions('my_library_namespace');
+$lib_options = new \ae\Options('my_library_namespace');
 ```
 
 All libraries located in *ae/* directory (either root or utility directory), can be loaded using a shorthand syntax, e.g.:
@@ -199,24 +200,24 @@ Please consult with the source code of the core libraries for real life examples
 
 ## Buffer
 
-`aeBuffer` is a core class used for capturing output.
+`\ae\Buffer` is a core class used for capturing output.
 
 You must create a buffer and assign it to a variable, in order to start capturing output:
 
 ```php
-$buffer = new aeBuffer();
+$buffer = new \ae\Buffer();
 ```
 
-All output is captured until you  either call `aeBuffer::output()` method to echo its content or `aeBuffer::render()` method to return its content as a string. If you do not use these methods, buffer's content will be flushed when the instance is destroyed. You can prevent autoflushing by using `aeBlackhole` class instead:
+All output is captured until you  either call `\ae\Buffer::output()` method to echo its content or `\ae\Buffer::render()` method to return its content as a string. If you do not use these methods, buffer's content will be flushed when the instance is destroyed. You can prevent autoflushing by using `\ae\Blackhole` class instead:
 
 ```php
-$auto_cleaned_buffer = new aeBlackhole();
+$auto_cleaned_buffer = new \ae\Blackhole();
 ```
 
 Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 ```html
-<?php $buffer = new aeBuffer() ?>
+<?php $buffer = new \ae\Buffer() ?>
 <p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
 <?php $buffer->output(array(
 	'url' => $article->url,
@@ -275,7 +276,7 @@ Options library is used by many core libraries and allows you to change their be
 $options = ae::options('namespace');
 ```
 
-For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library be able to return the correct IP address of the client:
+For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `\ae\Options::set()` method for the request library be able to return the correct IP address of the client:
 
 ```php
 $options = ae::options('ae.request');
@@ -283,7 +284,7 @@ $options = ae::options('ae.request');
 $options->set('proxy_ips', '83.14.1.1, 83.14.1.2');
 ```
 
-Request library will use `aeRequest::get()` method to retrieve the value of that option:
+Request library will use `\ae\Request::get()` method to retrieve the value of that option:
 
 ```php
 $options = ae::options('ae.request');
@@ -294,16 +295,16 @@ $proxies = $options->get('proxy_ips');
 
 ## Request
 
-Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `aeRequest::cli`, `aeRequest::ajax` and `aeRequest::method` constants:
+Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `\ae\Request::cli`, `\ae\Request::ajax` and `\ae\Request::method` constants:
 
 ```php
 ae::import('ae/request.php');
 
-if (aeRequest::is_cli)
+if (\ae\Request::is_cli)
 {
 	echo "Hello World!";
 }
-else if (aeRequest::is_ajax)
+else if (\ae\Request::is_ajax)
 {
 	echo "{message:'Hello world'}";
 }
@@ -311,18 +312,18 @@ else
 {
 	echo "<h1>Hello World!</h1>";
 	
-	if (aeRequest::method === 'GET')
+	if (\ae\Request::method === 'GET')
 	{
 		echo "<p>Nothing to get.</p>";
 	}
-	else if (aeRequest::method === 'POST')
+	else if (\ae\Request::method === 'POST')
 	{
 		echo "<p>Nothing to post.</p>";
 	}
 }
 ```
 
-You can access URI segments using `aeRequest::segment()`  method:
+You can access URI segments using `\ae\Request::segment()`  method:
 
 ```php
 // GET /some/arbitrary/request HTTP/1.1
@@ -344,7 +345,7 @@ $request = ae::request();
 echo $request->type(); // json
 ```
 
-In order to get the IP address of the client, you should use `aeRequest::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
+In order to get the IP address of the client, you should use `\ae\Request::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
 
 ```php
 ae::options('ae.request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
@@ -388,7 +389,7 @@ if (!$request->is_routed())
 $id = $request->segment(0);
 
 echo "Article ID is $id. ";
-echo "You can access it at " . aeRequest::uri();
+echo "You can access it at " . \ae\Request::uri();
 ```
 
 You can route different types of requests to different directories:
@@ -439,12 +440,12 @@ $response
 ?>
 ```
 
-You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html". When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response along with any HTTP headers set via `aeResponse::header()` method.
+You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html". When response object is created, it starts capturing all output. You have to call `\ae\Response::dispatch()` method to send the response along with any HTTP headers set via `\ae\Response::header()` method.
 
 
 ### Response caching
 
-If you want the response to be cached client-side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
+If you want the response to be cached client-side for a number of minutes, use `\ae\Response::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
 
 Response library supports server-side caching as well. The responses are saved to */cache* directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
 
@@ -481,26 +482,26 @@ And here's what *.htaccess* file in */cache* directory must be like:
 
 Apache would first look for a cached response, and only if it finds no valid response, will it route the request to */index.php*. No PHP code is actually involved in serving cached responses.
 
-In order to save a response use `aeResponse::cache()` method, passing the number of minutes it should be cached for via first argument and full request URI (including the file extension) via second argument:
+In order to save a response use `\ae\Response::cache()` method, passing the number of minutes it should be cached for via first argument and full request URI (including the file extension) via second argument:
 
 ```php
 $response->cache(5, '/hello-world.html');
 ```
 
-You can delete any cached response using `aeResponseCache::delete()` method by passing full or partial URL to it:
+You can delete any cached response using `\ae\ResponseCache::delete()` method by passing full or partial URL to it:
 
 ```php
 ae::import('ae/response.php');
 
-aeResponseCache::delete('/hello-world.html');
+\ae\ResponseCache::delete('/hello-world.html');
 ```
 
-You should also remove all stale cache entries via `aeResponseCache::collect_garbage()`:
+You should also remove all stale cache entries via `\ae\ResponseCache::collect_garbage()`:
 
 ```php
 ae::import('ae/response.php');
 
-aeResponseCache::collect_garbage();
+\ae\ResponseCache::collect_garbage();
 ```
 
 The garbage collection can be a very resource-intensive operation, so its usage should be restricted to an infrequent cron job.
@@ -529,7 +530,7 @@ $image
 
 // Crop to cover
 $image
-	->align(aeImage::center, aeImage::middle) // same as align(0.5, 0.5)
+	->align(\ae\Image::center, \ae\Image::middle) // same as align(0.5, 0.5)
 	->fill(100, 100)
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
@@ -555,7 +556,7 @@ Images can be cached just like responses:
 $image = ae::image('examples/image/test.jpg');
 
 $image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->cache(aeResponseCache::year, '/images/foo.png') // cache image for a year
+	->cache(\ae\ResponseCache::year, '/images/foo.png') // cache image for a year
 ```
 
 ## Form
@@ -571,12 +572,12 @@ Let's declare a simple form with three fields (text input, checkbox and select d
 ```php
 $form = ae::form('form-id');
 
-$input = $form->single('text')
+$input = $form->single('text_input')
 	->required('This field is required.')
 	->min_length('It should be at least 3 characters long.', 3)
 	->max_length('Please keep it shorter than 100 characters.', 100);
 
-$checkbox = $form->single('checkbox')
+$checkbox = $form->single('checkbox_input')
 	->required('You must check this checkbox!');
 
 $options = array(
@@ -584,7 +585,7 @@ $options = array(
 	'bar' => 'Bar'
 );
 
-$select = $this->single('select')
+$select = $this->single('select_input')
 	->valid_value('Wrong value selected.', $options);
 ```
 
@@ -615,7 +616,7 @@ if (!$form->is_submitted())
 }
 ```
 
-The HTML code of the form's content can be anything you like, but you must use `aeForm::open()` and `aeForm::close()` methods instead of `<form>` and `</form>` tags:
+The HTML code of the form's content can be anything you like, but you must use `\ae\Form::open()` and `\ae\Form::close()` methods instead of `<form>` and `</form>` tags:
 
 ```php
 <?= $form->open() ?>
@@ -666,39 +667,24 @@ You would then output this field like this:
 If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and (optionally) maximum length:
 
 ```php
-$tags = $form->sequence('tags', 1, 5)
+$tags = $form->sequence('tags', 1, 5);
+
+$tag_input = $tags->single('tag_input')
 	->min_length('Should be at least 2 character long', 2);
+
 ```
 
 The sequence will contain the minimum number of fields required, but you can let user control the length via "Add" and "Remove" buttons.
 
 ```php
-if ($form->value('add') === 'tag')
-{
-	$tags[] = ''; // Empty by default
-}
-else if ($index = $form->value('remove')) // NB! intentionally does not work for 0.
-{
-	unset($tags[$index]);
-}
-```
-
-And here is what the HTML of this field will look like:
-
-```php
-<?php $count = 0; foreach ($tags as $index => $tag): $count++; ?>
+<?php foreach ($tags as $index => $tag): ?>
 <div class="field">
 	<label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
-	<?= $tag->input('input') ?>
-<?php if ($count > 0): ?>
-	<button type="submit" name="remove" value="<?= $tag->index() ?>">Remove</button>
-<?php endif ?>
-	<?= $tag->error() ?>
+	<?= $tag['tag_input']->input('input') ?> <?= $files->remove_button($index) ?>
+	<?= $tag['tag_input']->error('<br><em class="error">', '</em>') ?>
 </div>
 <?php endforeach ?>
-<?php if ($tag->count() < 5): ?>
-<p><button type="submit" name="add" value="tag">Add another</button> tag.</p>
-<?php endif ?>
+<?= $files->add_button() ?>
 ```
 
 You can combine several sequences in one loop to create repeatable field groups.
@@ -716,37 +702,37 @@ $field->required('This field is required.');
 If the value of the field is a decimal/integer number or time/date/month/week, you can validate its format and minimum and maximum value:
 
 ```php
-$number->valid_pattern('Should contain a number.', aeValidator::integer)
+$number->valid_pattern('Should contain a number.', \ae\TextValidator::integer)
 	->min_value('Must be equal to 2 or greater.', 2)
 	->max_value('Must be equal to 4 or less.', 4);
-$date->valid_pattern('Should contain a date: YYYY-MM-DD.', aeValidator::date)
+$date->valid_pattern('Should contain a date: YYYY-MM-DD.', \ae\TextValidator::date)
 	->min_value('Cannot be in the past.', date('Y-m-d'));
 ```
 
 If value is a string you may validate its format and maximum and minimum length:
 
 ```php
-$field->valid_pattern('This should be a valid email.', aeValidator::email)
+$field->valid_pattern('This should be a valid email.', \ae\TextValidator::email)
 	->min_length('Cannot be shorter than 5 characters.', 5)
 	->max_length('Cannot be longer than 100 characters.', 100);
 ```
 
 The library comes with a few format validators:
 
-- `aeValidator::integer` — an integer number, e.g. -1, 0, 1, 2, 999;
-- `aeValidator::decimal` — a decimal number, e.g. 0.01, -.02, 25.00, 30;
-- `aeValidator::numeric` — a string consisting of numeric characters, e.g. 123, 000;
-- `aeValidator::alpha` — a string consisting of alphabetic characters, e.g. abc, cdef;
-- `aeValidator::alphanumeric` — a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
-- `aeValidator::color` — a hex value of a color, e.g. #fff000, #434343;
-- `aeValidator::time` — a valid time, e.g. 14:00:00, 23:59:59.99;
-- `aeValidator::date` — a valid date, e.g. 2009-10-15;
-- `aeValidator::datetime` — a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
-- `aeValidator::month` — a valid month, e.g. 2009-10;
-- `aeValidator::week` — a valid week, e.g. 2009-W42;
-- `aeValidator::email` — a valid email address;
-- `aeValidator::url` — a valid URL string;
-- `aeValidator::postcode_uk` — a valid UK postal code.
+- `\ae\TextValidator::integer` — an integer number, e.g. -1, 0, 1, 2, 999;
+- `\ae\TextValidator::decimal` — a decimal number, e.g. 0.01, -.02, 25.00, 30;
+- `\ae\TextValidator::numeric` — a string consisting of numeric characters, e.g. 123, 000;
+- `\ae\TextValidator::alpha` — a string consisting of alphabetic characters, e.g. abc, cdef;
+- `\ae\TextValidator::alphanumeric` — a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
+- `\ae\TextValidator::color` — a hex value of a color, e.g. #fff000, #434343;
+- `\ae\TextValidator::time` — a valid time, e.g. 14:00:00, 23:59:59.99;
+- `\ae\TextValidator::date` — a valid date, e.g. 2009-10-15;
+- `\ae\TextValidator::datetime` — a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
+- `\ae\TextValidator::month` — a valid month, e.g. 2009-10;
+- `\ae\TextValidator::week` — a valid week, e.g. 2009-W42;
+- `\ae\TextValidator::email` — a valid email address;
+- `\ae\TextValidator::url` — a valid URL string;
+- `\ae\TextValidator::postcode_uk` — a valid UK postal code.
 
 You may define any other pattern manually:
 
@@ -795,12 +781,12 @@ try {
 	$db = ae::database(); // same as ae::database("default");
 	
 	$db->query("SELECT 1")->make();
-} catch (aeDatabaseException $e) {
+} catch (\ae\DatabaseException $e) {
 	echo 'Something went wrong: ' . $e->getMessage();
 }
 ```
 
-As you can see, whenever something goes wrong on the database side, the library throws `aeDatabaseException`, which you can catch and handle gracefully.
+As you can see, whenever something goes wrong on the database side, the library throws `\ae\DatabaseException`, which you can catch and handle gracefully.
 
 If you want to know what queries are performed and how much memory and time they take, you can turn query logging on:
 
@@ -829,7 +815,7 @@ ae::database()
 	->make();
 ```
 
-Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::aliases()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
+Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `\ae\Database::aliases()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
 
 While not particularly useful in this example, placeholders are generally a good way to keep you query code readable.
 
@@ -850,7 +836,7 @@ ae::database()
 $morgan_id = ae::database()->insert_id();
 ```
 
-In this example we are using `{data:names}` and `{data:values}` placeholders and specify column names and corresponding values via `aeDatabase::data()` method. Now, I intentionally made a typo in the authors name, so let's fix it:
+In this example we are using `{data:names}` and `{data:values}` placeholders and specify column names and corresponding values via `\ae\Database::data()` method. Now, I intentionally made a typo in the authors name, so let's fix it:
 
 ```php
 ae::database()
@@ -860,14 +846,14 @@ ae::database()
 	))
 	->data(array(
 		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), aeDatabase::statement) // don't escape
+	), \ae\Database::statement) // don't escape
 	->variables(array(
 		'author_id' => $morgan_id
-	), aeDatabase::value) // escape
+	), \ae\Database::value) // escape
 	->make();
 ```
 
-In this example we are using `{data:set}` placeholder and specifying its value via `aeDatabase::data()` method, while `aeDatabase::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
+In this example we are using `{data:set}` placeholder and specifying its value via `\ae\Database::data()` method, while `\ae\Database::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
 
 Of course, these are just examples, there is actually a less verbose way to insert and update rows:
 
@@ -885,7 +871,7 @@ $gibson_id = ae::database()->insert('authors', array(
 ));
 ```
 
-> There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
+> There is also `\ae\Database::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `\ae\Database::count()` for counting rows; `\ae\Database::find()` for retrieving a particular row; and `\ae\Database::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
 
 ### Transactions
 
@@ -942,7 +928,7 @@ Now, let's change the query so that authors are ordered alphabetically:
 $authors = ae::database()
 	->select('authors') // equivalent to ->query('SELECT * FROM `authors` {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}')
 	->order_by('`name` ASC')
-	->result() // return an instance of aeDatabaseResult
+	->result() // return an instance of \ae\DatabaseResult
 	->all(); // return an array of rows
 $count = count($authors);
 
@@ -954,11 +940,11 @@ foreach ($authors as $author)
 }
 ```
 
-Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `aeDatabase::order_by()` method. 
+Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `\ae\Database::order_by()` method. 
 
 > Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source code of the database library to learn more about them.
 
-Note that we are also using `aeDatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. Please note that `aeDatabaseResult::fetch()` method is the most memory efficient way of retrieving results.
+Note that we are also using `\ae\DatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. Please note that `\ae\DatabaseResult::fetch()` method is the most memory efficient way of retrieving results.
 
 The example above will produce a list of authors in alphabetical order:
 
@@ -971,10 +957,10 @@ There are 3 authors in the database:
 
 ### Active record
 
-Database library has `aeDatabaseTable` abstract class that your table specific class can extend:
+Database library has `\ae\DatabaseTable` abstract class that your table specific class can extend:
 
 ```php
-class Authors extends aeDatabaseTable {}
+class Authors extends \ae\DatabaseTable {}
 ```
 
 This one line of code is enough to start performing basic CRUD operations for that table:
@@ -1016,7 +1002,7 @@ $shaky = Authors::create(array(
 $shaky->save();
 ```
 
-In order to retrieve several records from the database, you would make a regular query, but instead of calling `aeDatabase::result()` method, you should call `aeDatabaseTable::many()` method with the name of the table class as the first argument:
+In order to retrieve several records from the database, you would make a regular query, but instead of calling `\ae\Database::result()` method, you should call `\ae\DatabaseTable::many()` method with the name of the table class as the first argument:
 
 ```php
 $authors = ae::database()
@@ -1059,10 +1045,10 @@ ae::database()->query("CREATE TABLE IF NOT EXISTS `books` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8")->make();
 ```
 
-We also need a class to represent this table. To keep things interesting, we will name it `Novels`. Obviously `aeDatabaseTable` won't be able to guess the name of the table, so we will specify it manually by overriding the `aeDatabaseTable::name()` method:
+We also need a class to represent this table. To keep things interesting, we will name it `Novels`. Obviously `\ae\DatabaseTable` won't be able to guess the name of the table, so we will specify it manually by overriding the `\ae\DatabaseTable::name()` method:
 
 ```php
-class Novels extends aeDatabaseTable
+class Novels extends \ae\DatabaseTable
 {
 	public static function name()
 	{
@@ -1071,12 +1057,12 @@ class Novels extends aeDatabaseTable
 }
 ```
 
-> There are several methods you can override like this: `aeDatabaseTable::database()` to return a different database connection object; `aeDatabaseTable::accessor()` to return an array of primary keys; `aeDatabaseTable::columns()` to return an array of data columns.
+> There are several methods you can override like this: `\ae\DatabaseTable::database()` to return a different database connection object; `\ae\DatabaseTable::accessor()` to return an array of primary keys; `\ae\DatabaseTable::columns()` to return an array of data columns.
 
 We could start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
 
 ```php
-class Authors extends aeDatabaseTable
+class Authors extends \ae\DatabaseTable
 {
 	public function add_novel($title)
 	{
@@ -1112,7 +1098,7 @@ $morgan->add_novel('Woken Furies');
 So far so good. Let's add a method to `Novels` class that will return all book records sorted alphabetically:
 
 ```php
-class Novels extends aeDatabaseTable
+class Novels extends \ae\DatabaseTable
 {
 	public static function name()
 	{
@@ -1130,7 +1116,7 @@ class Novels extends aeDatabaseTable
 }
 ```
 
-Most of this code should be familiar to you. The only novelty is `aeDatabase::joining()` method. The query will retrieve data from both "books" and "authors" tables, and we instruct the database driver to return "books" data as an instance of `Novels` class, and "authors" data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
+Most of this code should be familiar to you. The only novelty is `\ae\Database::joining()` method. The query will retrieve data from both "books" and "authors" tables, and we instruct the database driver to return "books" data as an instance of `Novels` class, and "authors" data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
 
 Let's inventory our novel collection:
 

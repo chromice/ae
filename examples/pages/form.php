@@ -7,7 +7,7 @@ ae::register('utilities/inspector');
 ae::options('inspector')
 	->set('dump_context', true);
 
-$form = ae::form_new('example');
+$form = ae::form('example');
 
 /*
 	Single group example
@@ -157,12 +157,12 @@ else
 </fieldset>
 <?php foreach ($files as $index => $file): ?>
 <fieldset>
-	<legent>
+	<legend>
 		Gallery #<?= $index + 1 ?>
 		<?= $files->remove_button($index) ?>
 		<?= $files->move_button($index, $index - 1) ?>
 		<?= $files->move_button($index, $index + 1) ?>
-	</legent>
+	</legend>
 	<div class="field">
 		<label for="<?= $file['title']->id() ?>">Title</label>
 		<?= $file['title']->input('text') ?>
