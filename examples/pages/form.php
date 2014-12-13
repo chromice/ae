@@ -1,5 +1,7 @@
 <?php 
 
+use \ae\Core as ae;
+
 ae::register('utilities/inspector');
 
 ae::options('inspector')
@@ -20,7 +22,7 @@ if (!$form->is_submitted())
 // Create a single field that accepts integers from 0 to 1000
 $number = $form->single('number')
 	->required('Please enter some number.')
-	->valid_pattern('Please enter a valid integer number.', aeValidator::integer)
+	->valid_pattern('Please enter a valid integer number.', \ae\Validator::integer)
 	->valid_value('Devils are not allowed!', function ($value, $index) {
 		return $value !== '666';
 	})

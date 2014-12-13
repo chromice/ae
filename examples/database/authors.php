@@ -1,8 +1,10 @@
 <?php
 
+use \ae\Core as ae;
+
 ae::import('ae/database.php');
 
-class Authors extends aeDatabaseTable
+class Authors extends \ae\DatabaseTable
 {
 	public function add_novel($title)
 	{

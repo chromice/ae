@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,25 +16,27 @@
 # limitations under the License.
 # 
 
-ae::options('ae.response', array(
+namespace ae;
+
+Core::options('ae.response', array(
 	'compress_output' => false, // whether to gzip dispatched output;
 	'charset' => 'utf-8', // character set;
-	'error_path' => null // path to a script that is used by `aeResponse::error()`.
+	'error_path' => null // path to a script that is used by `Response::error()`.
 ));
 
-ae::options('ae.response.cache', array(
+Core::options('ae.response.cache', array(
 	'directory_path' => '/cache' // must be writable
 ));
 
-ae::invoke('aeResponse');
+Core::invoke('\ae\Response');
 
-class aeResponse
+class Response
 /*
 	HTTP response abstraction.
 	
 	The following code creates an HTML response, that is cached for 5 minutes:
 	
-		$response = ae::response('html')
+		$response = Core::response('html')
 			->header('X-Header-Example', 'Some value');
 		
 		echo '<h1>Hello world</h1>';
@@ -52,7 +54,7 @@ class aeResponse
 	public function __construct($type = null)
 	{
 		$this->headers = array();
-		$this->buffer = new aeBuffer();
+		$this->buffer = new Buffer();
 		
 		array_unshift(self::$buffers, $this->buffer);
 		
@@ -100,14 +102,14 @@ class aeResponse
 		}
 		
 		// Append character set
-		$type.= '; charset=' . ae::options('ae.response')->get('charset');
+		$type.= '; charset=' . Core::options('ae.response')->get('charset');
 
 		// Set content type
 		$this->header('Content-Type', $type);
 		
 		// Disable caching by default
 		$this
-			->header('Expires', gmdate('D, d M Y H:i:s', time() - aeResponseCache::year * 60) . ' GMT')
+			->header('Expires', gmdate('D, d M Y H:i:s', time() - ResponseCache::year * 60) . ' GMT')
 			->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT')
 			->header('Cache-Control', 'max-age=0, no-cache, must-revalidate, proxy-revalidate');
 	}
@@ -176,12 +178,12 @@ class aeResponse
 		
 		if (empty($path)) 
 		{
-			$path = ae::options('ae.response')->get('error_path');
+			$path = Core::options('ae.response')->get('error_path');
 		}
 		
 		if (!empty($path)) 
 		{
-			ae::output($path, array(
+			Core::output($path, array(
 				'code' => $code, 
 				'status' => self::$http_errors[$code])
 			);
@@ -223,7 +225,7 @@ class aeResponse
 		
 		if (!is_null($uri))
 		{
-			$cache = new aeResponseCache();
+			$cache = new ResponseCache();
 			
 			$cache
 				->duration($minutes)
@@ -252,7 +254,7 @@ class aeResponse
 		}
 		
 		// Compress output, if browser supports compression
-		if (ae::options('ae.response')->get('compress_output'))
+		if (Core::options('ae.response')->get('compress_output'))
 		{
 			$output = $this->_compress($output);
 			
@@ -301,7 +303,7 @@ class aeResponse
 	}
 }
 
-class aeResponseCache
+class ResponseCache
 /*
 	A server-side response caching abstraction.
 	
@@ -338,7 +340,7 @@ class aeResponseCache
 
 	With this in place, you can cache any HTTP response:
 
-		$cache = new aeResponseCache();
+		$cache = new ResponseCache();
 		
 		$cache
 			->headers(array(
@@ -428,15 +430,15 @@ class aeResponseCache
 		// Try opening and locking the files
 		try 
 		{
-			$htaccess = ae::file($cache_path . '.htaccess')
+			$htaccess = Core::file($cache_path . '.htaccess')
 				->open('w')
 				->lock();
 				
-			$content = ae::file($cache_path . 'index.' . $ext)
+			$content = Core::file($cache_path . 'index.' . $ext)
 				->open('w')
 				->lock();
 		} 
-		catch (aeFileException $e) 
+		catch (FileException $e) 
 		{
 			return $this;
 		}
@@ -463,7 +465,7 @@ class aeResponseCache
 		$rules.= "\n</IfModule>";
 		
 		// Add compression rules
-		if (ae::options('ae.response')->get('compress_output')
+		if (Core::options('ae.response')->get('compress_output')
 		&& preg_match('/^(?:gif|jpe?g|png)$/', $ext) === 0)
 		{
 			$rules.= "\n<IfModule mod_deflate.c>
@@ -484,7 +486,7 @@ class aeResponseCache
 			$htaccess->write($rules);
 			$content->write($this->content);
 		}
-		catch (aeFileException $e) 
+		catch (FileException $e) 
 		{
 			trigger_error('Coult not write cache files.', E_USER_NOTICE);
 			
@@ -566,7 +568,7 @@ class aeResponseCache
 		Returns cache directory path and checks if it is writable.
 	*/
 	{
-		$cache_path = trim(ae::options('ae.response.cache')->get('directory_path'), '/');
+		$cache_path = trim(Core::options('ae.response.cache')->get('directory_path'), '/');
 		
 		if (empty($cache_path))
 		{

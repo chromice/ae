@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,19 +16,21 @@
 # limitations under the License.
 # 
 
-ae::invoke('aeFile');
+namespace ae;
 
-class aeFile
+Core::invoke('\ae\File');
+
+class File
 /*
 	A thin wrapper that abstracts common file operations 
 	mostly for the sake of exception safety.
 	
-		$file = ae::file('example.txt')
+		$file = Core::file('example.txt')
 			->open('w')
 			->write('This is a test.')
 			->close();
 	
-	All methods throw `aeFileException` on failure.
+	All methods throw `FileException` on failure.
 */
 {
 	protected $path;
@@ -122,11 +124,11 @@ class aeFile
 		
 		if (!empty($extension))
 		{
-			throw new aeFileException('No valid file extension found for MIME: ' . $mime);
+			throw new FileException('No valid file extension found for MIME: ' . $mime);
 		}
 		else
 		{
-			throw new aeFileException($extension . ' is an invalid file extension for MIME: ' . $mime);
+			throw new FileException($extension . ' is an invalid file extension for MIME: ' . $mime);
 		}
 	}
 	
@@ -150,7 +152,7 @@ class aeFile
 	
 	public function mime()
 	{
-		$info = new finfo(FILEINFO_MIME_TYPE);
+		$info = new \finfo(FILEINFO_MIME_TYPE);
 		
 		return $info->file($this->path);
 	}
@@ -198,7 +200,7 @@ class aeFile
 		if (!$this->is_uploaded() && false === @rename($this->path, $path)
 		|| $this->is_uploaded() && false === @move_uploaded_file($this->path, $path))
 		{
-			throw new aeFileException('Failed to move file.');
+			throw new FileException('Failed to move file.');
 		}
 		
 		$this->path = $path;
@@ -219,7 +221,7 @@ class aeFile
 		
 		if (false === @copy($this->path, $path))
 		{
-			throw new aeFileException('Failed to copy file.');
+			throw new FileException('Failed to copy file.');
 		}
 		
 		$this->path = $path;
@@ -233,7 +235,7 @@ class aeFile
 		
 		if (false === @unlink($this->path))
 		{
-			throw new aeFileException('Failed to delete file.');
+			throw new FileException('Failed to delete file.');
 		}
 		
 		return $this;
@@ -270,7 +272,7 @@ class aeFile
 	{
 		if (is_resource($this->file))
 		{
-			throw new aeFileException('File is already opened.');
+			throw new FileException('File is already opened.');
 		}
 		
 		$this->file = is_resource($context)
@@ -279,7 +281,7 @@ class aeFile
 		
 		if (false === $this->file)
 		{
-			throw new aeFileException('Failed to open file.');
+			throw new FileException('Failed to open file.');
 		}
 		
 		return $this;
@@ -296,7 +298,7 @@ class aeFile
 		
 		if (false === fclose($this->file))
 		{
-			throw new aeFileException('Failed to close file.');
+			throw new FileException('Failed to close file.');
 		}
 		
 		$this->file = null;
@@ -320,7 +322,7 @@ class aeFile
 		
 		if (false === flock($this->file, $mode)) 
 		{
-			throw new aeFileException('Failed to lock file.');
+			throw new FileException('Failed to lock file.');
 		}
 		
 		$this->is_locked = true;
@@ -339,7 +341,7 @@ class aeFile
 		
 		if (false === flock($this->file, LOCK_UN))
 		{
-			throw new aeFileException('Failed to unlock file.');
+			throw new FileException('Failed to unlock file.');
 		}
 		
 		$this->is_locked = false;
@@ -353,7 +355,7 @@ class aeFile
 		
 		if (false === ftruncate($this->file, $size))
 		{
-			throw new aeFileException('Failed to truncate file.');
+			throw new FileException('Failed to truncate file.');
 		}
 		
 		return $this;
@@ -367,7 +369,7 @@ class aeFile
 			? fwrite($this->file, $content)
 			: fwrite($this->file, $content, $length)))
 		{
-			throw new aeFileException('Failed to write to file.');
+			throw new FileException('Failed to write to file.');
 		}
 		
 		return $this;
@@ -379,7 +381,7 @@ class aeFile
 		
 		if (false === fread($this->file, $length))
 		{
-			throw new aeFileException('Failed to write to file.');
+			throw new FileException('Failed to write to file.');
 		}
 
 		return $this;
@@ -391,7 +393,7 @@ class aeFile
 		
 		if (-1 === fseek($this->file, $offset, $whence))
 		{
-			throw new aeFileException('Failed to seek the position.');
+			throw new FileException('Failed to seek the position.');
 		}
 		
 		return $this;
@@ -403,7 +405,7 @@ class aeFile
 		
 		if (flase === ($offset = ftell($this->file)))
 		{
-			throw new aeFileException('Failed to return the offset.');
+			throw new FileException('Failed to return the offset.');
 		}
 		
 		return $offset;
@@ -413,14 +415,14 @@ class aeFile
 	{
 		if (!is_resource($this->file))
 		{
-			throw new aeFileException('Cannot ' . $intent . '. File is not opened.');
+			throw new FileException('Cannot ' . $intent . '. File is not opened.');
 		}
 	}
 	protected function _cannot($intent)
 	{
 		if (is_resource($this->file))
 		{
-			throw new aeFileException('Cannot ' . $intent . '. File is opened.');
+			throw new FileException('Cannot ' . $intent . '. File is opened.');
 		}
 	}
 	
@@ -1087,4 +1089,4 @@ class aeFile
 	);
 }
 
-class aeFileException extends aeException {}
+class FileException extends CoreException {}

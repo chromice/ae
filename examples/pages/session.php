@@ -1,5 +1,7 @@
 <?php 
 
+use \ae\Core as ae;
+
 $general = ae::session();
 $named = ae::session('foo');
 

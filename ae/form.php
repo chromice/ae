@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,21 +16,23 @@
 # limitations under the License.
 # 
 
-ae::options('ae.form', array(
+namespace ae;
+
+Core::options('ae.form', array(
 	'frontend_validation' => true // whether to allow HTML5 validation in browsers that support it.
 ));
 
-ae::import('ae/request.php');
+Core::import('ae/request.php');
 
-ae::invoke('aeForm');
+Core::invoke('\ae\Form');
 
-class aeForm implements ArrayAccess
+class Form implements \ArrayAccess
 /*
 	Form rendering and validation library.
 	
 	Here is an example of form and input initialisation and validation:
 	
-		$form = ae::form('example-form');
+		$form = Core::form('example-form');
 		
 		$input = $form->single('example-input')
 			->required('This field is required!');
@@ -74,7 +76,7 @@ class aeForm implements ArrayAccess
 			trigger_error('Form ID cannot be empty.', E_USER_ERROR);
 		}
 		
-		$nonces = ae::session('nonces');
+		$nonces = Core::session('nonces');
 		
 		$this->id = $form_id;
 		$this->nonce = $nonces[$form_id];
@@ -90,7 +92,7 @@ class aeForm implements ArrayAccess
 		Add a field for scalar value.
 	*/
 	{
-		return $this->fields[$name] = new aeFormField($this->id, $name, false, $this->values[$name], $this->errors[$name]);
+		return $this->fields[$name] = new FormField($this->id, $name, false, $this->values[$name], $this->errors[$name]);
 	}
 
 	public function multiple($name)
@@ -98,7 +100,7 @@ class aeForm implements ArrayAccess
 		Add a field for an array of values (arbitrary length).
 	*/
 	{
-		return $this->fields[$name] = new aeFormField($this->id, $name, true, $this->values[$name], $this->errors[$name]);
+		return $this->fields[$name] = new FormField($this->id, $name, true, $this->values[$name], $this->errors[$name]);
 	}
 
 	public function sequence($name, $min = 1, $max = null)
@@ -106,7 +108,7 @@ class aeForm implements ArrayAccess
 		Add a field for an array of values (controlled length).
 	*/
 	{
-		return $this->fields[$name] = new aeFormFieldSequence($this->id, $name, $this->values[$name], $this->errors[$name], $min, $max);
+		return $this->fields[$name] = new FormFieldSequence($this->id, $name, $this->values[$name], $this->errors[$name], $min, $max);
 	}
 	
 	public function file($name)
@@ -122,7 +124,7 @@ class aeForm implements ArrayAccess
 	protected function _file($name, $multiple)
 	{
 		$this->has_files = true;
-		$this->fields[$name] = new aeFormFileField($this->id, $name, $multiple, $this->values[$name], $this->errors[$name]);
+		$this->fields[$name] = new FormFileField($this->id, $name, $multiple, $this->values[$name], $this->errors[$name]);
 		
 		return $this->fields[$name];
 	}
@@ -197,8 +199,8 @@ class aeForm implements ArrayAccess
 	*/
 	{
 		$attributes = array_merge(array(
-			'action' => aeRequest::url(),
-			'novalidate' => !ae::options('ae.form')->get('frontend_validation')
+			'action' => Request::url(),
+			'novalidate' => !Core::options('ae.form')->get('frontend_validation')
 		), $attributes);
 		
 		$attributes['id'] = $this->id . '-form';
@@ -210,7 +212,7 @@ class aeForm implements ArrayAccess
 		}
 		
 		// Update nonce
-		$nonces = ae::session('nonces');
+		$nonces = Core::session('nonces');
 		$nonces[$this->id] = md5(uniqid(mt_rand(), true));
 		
 		return '<form ' . self::attributes($attributes) . '>'
@@ -244,11 +246,11 @@ class aeForm implements ArrayAccess
 			if ($name === $value && !in_array($name, array('id', 'name', 'value'))
 			|| $value === true)
 			{
-				$output[] = ae::escape($name, ae::name);
+				$output[] = Core::escape($name, Core::name);
 			}
 			else
 			{
-				$output[] = ae::escape($name, ae::name) . '="' . ae::escape($value, ae::value) . '"';
+				$output[] = Core::escape($name, Core::name) . '="' . Core::escape($value, Core::value) . '"';
 			}
 		}
 		
@@ -287,7 +289,7 @@ class aeForm implements ArrayAccess
 	}
 }
 
-class aeValidator
+class Validator
 /*
 	Provides validation functionality to the field classes.
 	
@@ -404,17 +406,17 @@ class aeValidator
 		datetime, time) the library also validates the value and switches 
 		min_value(), max_value() constraints to time format:
 		
-			$field->valid_pattern('Invalid date format', aeValidator::date)
+			$field->valid_pattern('Invalid date format', Validator::date)
 				->min_value('Must be from now on and till the end of times', 
 				date('Y-m-d'));
 	*/
 	{
 		if (in_array($pattern, array(
-			aeValidator::month,
-			aeValidator::week,
-			aeValidator::date,
-			aeValidator::datetime,
-			aeValidator::time
+			Validator::month,
+			Validator::week,
+			Validator::date,
+			Validator::datetime,
+			Validator::time
 		)))
 		{
 			$time = true;
@@ -512,7 +514,7 @@ class aeValidator
 	}
 }
 
-class aeFormField extends aeValidator
+class FormField extends Validator
 {
 	protected $form_id;
 	
@@ -659,7 +661,7 @@ class aeFormField extends aeValidator
 		}
 		
 		return '<textarea ' . $this->_attributes($attributes) . '>' 
-			. ae::escape($this->value, ae::value) 
+			. Core::escape($this->value, Core::value) 
 			. '</textarea>';
 	}
 	
@@ -686,12 +688,12 @@ class aeFormField extends aeValidator
 		{
 			if (is_scalar($value))
 			{
-				$output[] = '<option value="' . ae::escape($key, ae::value) . '"' 
+				$output[] = '<option value="' . Core::escape($key, Core::value) . '"' 
 					. ($this->_matches($key) ? ' selected' : '') . '>' . $value . '</option>';
 			}
 			elseif (is_array($value))
 			{
-				$output[] = '<optgroup label="' . ae::escape($key, ae::value) . '">' 
+				$output[] = '<optgroup label="' . Core::escape($key, Core::value) . '">' 
 					. $this->_options($value, $indent + 1)
 					. '</optgroup>';
 			}
@@ -713,7 +715,7 @@ class aeFormField extends aeValidator
 			$attributes['id'] = $this->id();
 		}
 		
-		return aeForm::attributes($attributes);
+		return Form::attributes($attributes);
 	}
 	
 	protected function _matches($value)
@@ -752,7 +754,7 @@ class aeFormField extends aeValidator
 	}
 }
 
-class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, Countable
+class FormFieldSequence extends Validator implements \ArrayAccess, \Iterator, \Countable
 {
 	protected $form_id;
 	protected $name;
@@ -793,7 +795,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, 
 
 		foreach ($this->values as $i => $value)
 		{
-			$this->fields[$i] = new aeFormField($this->form_id, $this->name, $i, $this->values[$i], $this->errors[$i], $this->html);
+			$this->fields[$i] = new FormField($this->form_id, $this->name, $i, $this->values[$i], $this->errors[$i], $this->html);
 		}
 	}
 
@@ -807,7 +809,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, 
 	
 	public function required($message, $callback = null)
 	/*
-		Overloads `aeValidator::required()` to allow setting a callback 
+		Overloads `Validator::required()` to allow setting a callback 
 		function, which accepts field index as the only argument and must 
 		return TRUE, if the field is required.
 	*/
@@ -863,7 +865,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, 
 	{
 		return isset($this->fields[$offset]) 
 			? $this->fields[$offset] 
-			: $this->fields[$offset] = new aeFormField($this->form_id, $this->name, $offset, $this->values[$offset], $this->errors[$offset], $this->html);
+			: $this->fields[$offset] = new FormField($this->form_id, $this->name, $offset, $this->values[$offset], $this->errors[$offset], $this->html);
 	}
 	
 	public function offsetSet($offset, $value)
@@ -880,7 +882,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, 
 		}
 		
 		$this->values[$offset] = $value;
-		$this->fields[$offset] = new aeFormField($this->form_id, $this->name, $offset, $this->values[$offset], $this->errors[$offset], $this->html);
+		$this->fields[$offset] = new FormField($this->form_id, $this->name, $offset, $this->values[$offset], $this->errors[$offset], $this->html);
 	}
 	
 	public function offsetUnset($offset)
@@ -918,7 +920,7 @@ class aeFormFieldSequence extends aeValidator implements ArrayAccess, Iterator, 
 	}
 }
 
-class aeFormFileField
+class FormFileField
 {
 	protected $form_id;
 	
@@ -951,7 +953,7 @@ class aeFormFileField
 					continue;
 				}
 				
-				$file = ae::file($value['path'], $value['name']);
+				$file = Core::file($value['path'], $value['name']);
 				
 				if ($file->exists())
 				{
@@ -972,7 +974,7 @@ class aeFormFileField
 				return;
 			}
 			
-			$file = ae::file($value['path'], $value['name']);
+			$file = Core::file($value['path'], $value['name']);
 			
 			if ($file->exists())
 			{
@@ -988,7 +990,7 @@ class aeFormFileField
 	public function upload($path)
 	{
 		// TODO: Validate if destination exits and is writable.
-		$destination = ae::resolve($path, false);
+		$destination = Core::resolve($path, false);
 		
 		// Check if there any files to handle
 		if (empty($_FILES[$this->name]))
@@ -1013,7 +1015,7 @@ class aeFormFileField
 			{
 				$file = $this->_upload($file, $destination);
 				
-				if (is_a($file, 'aeFile'))
+				if (is_a($file, '\ae\File'))
 				{
 					$this->value[] = $file;
 				}
@@ -1023,7 +1025,7 @@ class aeFormFileField
 		{
 			$file = $this->_upload($_FILES[$this->name], $destination);
 			
-			if (is_a($file, 'aeFile'))
+			if (is_a($file, '\ae\File'))
 			{
 				$this->value = $file;
 			}
@@ -1060,7 +1062,7 @@ class aeFormFileField
 				return;
 		}
 		
-		$file = ae::file($file['tmp_name'], $file['name']);
+		$file = Core::file($file['tmp_name'], $file['name']);
 		
 		// Check if the file is indeed uploaded
 		if (!$file->is_uploaded())
@@ -1085,7 +1087,7 @@ class aeFormFileField
 			
 			$file->move($target);
 		} 
-		catch (aeFileException $e)
+		catch (FileException $e)
 		{
 			$this->error[] = 'File could not be uploaded.';
 			
@@ -1116,7 +1118,7 @@ class aeFormFileField
 	/*
 		Returns uploaded file(s).
 	
-		See aeFile class.
+		See File class.
 	*/
 	{
 		if (!$this->multiple || is_null($index))
@@ -1140,7 +1142,7 @@ class aeFormFileField
 		{
 			$files = $this->value;
 		}
-		elseif (is_a($this->value, 'aeFile'))
+		elseif (is_a($this->value, '\ae\File'))
 		{
 			$files = array($this->value);
 		}
@@ -1154,13 +1156,13 @@ class aeFormFileField
 		// Add uploaded file data as hidden inputs.
 		foreach ($files as $index => $file)
 		{
-			$output.= '<input ' . aeForm::attributes(array(
+			$output.= '<input ' . Form::attributes(array(
 				'type' => 'hidden',
 				'name' => $this->name() . '[name]',
 				'value' => $file->name()
 			)) . ">\n";
 			
-			$output.= '<input ' . aeForm::attributes(array(
+			$output.= '<input ' . Form::attributes(array(
 				'type' => 'hidden',
 				'name' => $this->name() . '[path]',
 				'value' => $file->path()
@@ -1183,7 +1185,7 @@ class aeFormFileField
 			$attributes['id'] = $this->id();
 		}
 		
-		return aeForm::attributes($attributes);
+		return Form::attributes($attributes);
 	}
 	
 	public function validate()
@@ -1300,7 +1302,7 @@ class aeFormFileField
 				$type = preg_quote($file->extension());
 				$mime = preg_quote($file->mime());
 			}
-			catch (aeFileException $e)
+			catch (FileException $e)
 			{
 				return $message;
 			}

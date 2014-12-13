@@ -1,5 +1,7 @@
 <?php
 
+use \ae\Core as ae;
+
 // Turn on query logging
 ae::options('ae.database')
 	->set('log', true);
@@ -15,9 +17,6 @@ ae::options('ae.database.default')
 // ae::options('ae.database.default')->set('socket', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock');
 
 echo '<h1>Official database example</h1>';
-
-// New context
-$example = new ae('examples.database');
 
 // Import entity classes
 ae::import('examples/database/authors.php');
@@ -53,10 +52,10 @@ ae::database()
 	))
 	->data(array(
 		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), aeDatabase::statement) // don' escape
+	), \ae\Database::statement) // don' escape
 	->variables(array(
 		'author_id' => $morgan_id
-	), aeDatabase::value) // escape
+	), \ae\Database::value) // escape
 	->make();
 
 // Commit previous insert statement.
@@ -107,7 +106,7 @@ echo '<pre>';
 $authors = ae::database()
 	->select('authors')
 	->order_by('`name` ASC')
-	->result() // return an instance of aeDatabaseResult
+	->result() // return an instance of DatabaseResult
 	->all(); // return an array of rows
 $count = count($authors);
 

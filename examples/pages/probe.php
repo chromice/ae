@@ -1,5 +1,7 @@
 <?php
 
+use \ae\Core as ae;
+
 ae::register('utilities/inspector');
 
 // class ProbeTest {

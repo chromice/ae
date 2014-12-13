@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,20 +16,22 @@
 # limitations under the License.
 # 
 
-ae::options('ae.request', array(
+namespace ae;
+
+Core::options('ae.request', array(
 	'base_url' => '/',
 	'proxy_ips' => !empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : null
 ));
 
-ae::invoke(array('aeRouter', 'request'));
+Core::invoke(array('\ae\Router', 'request'));
 
-class aeRequest
+class Request
 /*
 	Provides easy access to URI segments and allows request routing and redirection.
 	
 	Provided the application is accessed with "/some/arbitrary/request.json":
 	
-		$request = ae::request();
+		$request = Core::request();
 		
 		echo $request->segment(0); // some
 		echo $request->segment(1); // arbitrary
@@ -82,9 +84,9 @@ class aeRequest
 	
 	public function route($rules, $target = null)
 	/*
-		Returns an instance of `aeRouter` for current URI.
+		Returns an instance of `Router` for current URI.
 	
-		Throws `aeRequestException`, if target path cannot be resolved.
+		Throws `RequestException`, if target path cannot be resolved.
 	*/
 	{
 		$uri = implode('/', array_slice($this->segments, $this->depth));
@@ -94,7 +96,7 @@ class aeRequest
 			$rules = array($rules => $target);
 		}
 		
-		return new aeRouter($uri, $rules);
+		return new Router($uri, $rules);
 	}
 	
 	// ================================
@@ -108,14 +110,14 @@ class aeRequest
 	/*
 		Returns a URI, prefixed with base URL.
 		
-			ae::options('ae.request')->set('base_url', 'https://domain.com/')
+			Core::options('ae.request')->set('base_url', 'https://domain.com/')
 			echo $request::url('blah'); // echo "https://domain.com/blah"
 	*/
 	{
-		return self::_base_url() . '/' . ltrim((is_null($uri) ? aeRequest::uri() : $uri), '/');
+		return self::_base_url() . '/' . ltrim((is_null($uri) ? Request::uri() : $uri), '/');
 	}
 	
-	public static function redirect($uri, $http_response_code = aeRequest::temporarily)
+	public static function redirect($uri, $http_response_code = Request::temporarily)
 	/*
 		Redirects to a specific URI.
 	*/
@@ -179,7 +181,7 @@ class aeRequest
 		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 		{
 			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
-			$whitelist = ae::options('ae.request')->get('proxy_ips');
+			$whitelist = Core::options('ae.request')->get('proxy_ips');
 			
 			if (empty($whitelist))
 			{
@@ -266,19 +268,19 @@ class aeRequest
 	
 	protected static function _base_url()
 	{
-		return rtrim(ae::options('ae.request')->get('base_url'), '/');
+		return rtrim(Core::options('ae.request')->get('base_url'), '/');
 	}
 }
 
 
-class aeRouter
+class Router
 /*
-	Provides URI routing capabilities to `aeRequest`.
+	Provides URI routing capabilities to `Request`.
 	
 	You can route a request based on its URI to either a closure or
 	a directory:
 	
-		ae::request()->route(array(
+		Core::request()->route(array(
 			'/special/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
 				echo 'Special request URI: /special/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
 			},
@@ -292,22 +294,22 @@ class aeRouter
 	
 	public static function request($segments = null)
 	/*
-		Returns an instance of `aeRequest` object for given segments.
+		Returns an instance of `Request` object for given segments.
 	
-		Throws `aeRequestException` for non-HTTP requests.
+		Throws `RequestException` for non-HTTP requests.
 	*/
 	{
-		if (aeRequest::is_cli)
+		if (Request::is_cli)
 		{
-			throw new aeRequestException("Cannot handle a non-HTTP request.");
+			throw new RequestException("Cannot handle a non-HTTP request.");
 		}
 		
 		if (!is_null($segments))
 		{
-			return new aeRequest(0, $segments);
+			return new Request(0, $segments);
 		}
 		
-		return new aeRequest(self::$depth, aeRequest::segments());
+		return new Request(self::$depth, Request::segments());
 	}
 	
 	// ===========
@@ -354,11 +356,11 @@ class aeRouter
 	{
 		try 
 		{
-			$base = ae::resolve($base);
+			$base = Core::resolve($base);
 		} 
 		catch (Exception $e) 
 		{
-			throw new aeRequestException('Request could not be routed. Base directory "' . $base . '" does not exist.');
+			throw new RequestException('Request could not be routed. Base directory "' . $base . '" does not exist.');
 		}
 		
 		if (is_file($base))
@@ -371,7 +373,7 @@ class aeRouter
 		
 		$uri = trim($uri, '/');
 		$segments = explode('/', $uri);
-		$extensions = array('.' . aeRequest::type() . '.php', '.php');
+		$extensions = array('.' . Request::type() . '.php', '.php');
 		
 		for ($l = count($segments); $l > 0; $l--)
 		{
@@ -404,7 +406,7 @@ class aeRouter
 	/*
 		Attempts to route the request.
 		
-		Throws `aeRequestException`, if there is no path to follow.
+		Throws `RequestException`, if there is no path to follow.
 	*/
 	{
 		if (is_callable($this->callback))
@@ -414,17 +416,17 @@ class aeRouter
 		
 		if (is_null($this->path))
 		{
-			throw new aeRequestException('Request could not be routed. No matches found.');
+			throw new RequestException('Request could not be routed. No matches found.');
 		}
 		
 		$depth = self::$depth + $this->offset;
-		$ds = new aeSwitch(self::$depth, $depth);
+		$ds = new ValueSwitch(self::$depth, $depth);
 		
-		ae::output($this->path);
+		Core::output($this->path);
 	}
 }
 
-class aeRequestException extends aeException {}
+class RequestException extends CoreException {}
 
 // Calculate class constants.
 define('__ae_request_cli__', defined('STDIN'));

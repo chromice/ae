@@ -1,4 +1,7 @@
 <?php
+	
+	use \ae\Core as ae;
+	
 	ae::register('utilities/inspector');
 	ae::options('inspector')
 		// ->set('directory_path', '/logs')

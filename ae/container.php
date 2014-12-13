@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,9 +16,11 @@
 # limitations under the License.
 # 
 
-ae::invoke('aeContainer');
+namespace ae;
 
-class aeContainer
+Core::invoke('\ae\Container');
+
+class Container
 /*
 	Wraps output of a script into another script and helps you avoid
 	the mess that using separate header / footer scripts usually entails.
@@ -37,7 +39,7 @@ class aeContainer
 	Example of content.php:
 	
 		<?php 
-		$container = ae::container('container.php')
+		$container = Core::container('container.php')
 			->set('title', 'Container example');
 		?>
 		<h1>Hello World!</h1>
@@ -62,15 +64,15 @@ class aeContainer
 	public function __construct($path)
 	{
 		$this->path = $path;
-		$this->buffer = new aeBuffer();
-		$this->context = new aeSwitch(self::$vars, self::$vars);
+		$this->buffer = new Buffer();
+		$this->context = new ValueSwitch(self::$vars, self::$vars);
 	}
 	
 	public function __destruct()
 	{
 		self::$vars['content'] = $this->buffer->render();
 		
-		ae::output($this->path, self::$vars);
+		Core::output($this->path, self::$vars);
 	}
 	
 	public function set($name, $value)

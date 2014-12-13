@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,13 +16,15 @@
 # limitations under the License.
 #
 
-ae::invoke('aeSession');
+namespace ae;
 
-class aeSession implements ArrayAccess, Iterator
+Core::invoke('\ae\Session');
+
+class Session implements \ArrayAccess, \Iterator
 /*
 	Provides a standard safe(r) inteface to $_SESSION variable:
 	
-		$storage = ae::session('namespace'); // $_SESSION['namespace'];
+		$storage = Core::session('namespace'); // $_SESSION['namespace'];
 		$storage['foo'] = 'bar'; // $_SESSION['namespace'] = 'bar';
 		echo $storage['foo']; // echos 'bar';
 	

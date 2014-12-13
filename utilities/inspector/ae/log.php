@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,23 +16,25 @@
 # limitations under the License.
 # 
 
-ae::import('ae/request.php');
+namespace ae;
 
-ae::options('inspector', array(
+Core::import('ae/request.php');
+
+Core::options('inspector', array(
 	'dump_context' => false, // whether to dump global variables and error contexts;
 	'allowed_ips' => '127.0.0.1, ::1', // an array or comma-separated list of IP addresses;
 	'directory_path' => null // path to log directory.
 ));
 
-// Call aeLog::log() whenever user is "loading" the library.
-ae::invoke(function () {
-	call_user_func_array(array('aeLog', 'log'), func_get_args());
+// Call Log::log() whenever user is "loading" the library.
+Core::invoke(function () {
+	call_user_func_array(array('\ae\Log', 'log'), func_get_args());
 });
 
 // Setup all error handling hooks
-aeLog::_setup();
+Log::_setup();
 
-class aeLog
+class Log
 /*
 	Logs errors, notices, dumps, etc.,  outputs them in the response body 
 	or X-ae-log header, or appends them to a log file.
@@ -99,7 +101,7 @@ class aeLog
 	
 	protected static function on_shutdown()
 	{
-		$options = ae::options('inspector');
+		$options = Core::options('inspector');
 		$dump_context = $options->get('dump_context');
 		
 		if (connection_aborted() || !$dump_context && count(self::$log) === 0)
@@ -113,11 +115,11 @@ class aeLog
 		{
 			try 
 			{
-				$path = ae::resolve($path);
+				$path = Core::resolve($path);
 				
 				if (is_dir($path) && is_writable($path)) 
 				{
-					$log = ae::file($path . '/log_' . gmdate('Y_m_d'))
+					$log = Core::file($path . '/log_' . gmdate('Y_m_d'))
 						->open('a');
 				}
 				else
@@ -125,7 +127,7 @@ class aeLog
 					trigger_error('Log directory is not writable.', E_USER_ERROR);
 				}
 			} 
-			catch (aeException $e)
+			catch (CoreException $e)
 			{
 				trigger_error('Log directory does not exist.', E_USER_ERROR);
 			}
@@ -179,7 +181,7 @@ class aeLog
 		}
 		
 		// Is client's IP address in the whitelist?
-		$ip = aeRequest::ip_address();
+		$ip = Request::ip_address();
 		$allowed_ips = $options->get('allowed_ips');
 		
 		if (is_string($allowed_ips))
@@ -187,7 +189,7 @@ class aeLog
 			$allowed_ips = preg_split('/,\s+?/', trim($allowed_ips));
 		}
 		
-		if (aeRequest::is_cli)
+		if (Request::is_cli)
 		{
 			fwrite(STDERR, "$o\n");
 		}
@@ -195,7 +197,7 @@ class aeLog
 		{
 			return;
 		}
-		elseif (aeRequest::is_ajax)
+		elseif (Request::is_ajax)
 		{
 			if (!headers_sent())
 			{
@@ -213,10 +215,10 @@ class aeLog
 			// Try displaying the button
 			try {
 				echo '<script charset="utf-8">'
-					. 'var base_path = "' . ae::options('ae.request')->get('base_url') . '";'
-					. file_get_contents(ae::resolve('/utilities/inspector/assets/inject.js'))
+					. 'var base_path = "' . Core::options('ae.request')->get('base_url') . '";'
+					. file_get_contents(Core::resolve('/utilities/inspector/assets/inject.js'))
 					. '</script>';
-			} catch (aeException $e) {}
+			} catch (CoreException $e) {}
 		}
 	}
 	
@@ -256,7 +258,7 @@ class aeLog
 	protected static function _error($class, $error)
 	{
 		$max_argument_length = 80;
-		$dump_context = ae::options('inspector')->get('dump_context');
+		$dump_context = Core::options('inspector')->get('dump_context');
 			
 		$o = self::_ruler() . "\n";
 		
@@ -396,9 +398,9 @@ class aeLog
 	public static function _setup()
 	{
 		// Set up all handlers
-		set_error_handler(array('aeLog','_handle_error'), E_ALL | E_STRICT);
-		set_exception_handler(array('aeLog','_handle_exception'));
-		register_shutdown_function(array('aeLog','_handle_shutdown'));
+		set_error_handler(array('\ae\Log','_handle_error'), E_ALL | E_STRICT);
+		set_exception_handler(array('\ae\Log','_handle_exception'));
+		register_shutdown_function(array('\ae\Log','_handle_shutdown'));
 		
 		// We are in total control of error output
 		error_reporting(0);
@@ -416,7 +418,7 @@ class aeLog
 		$trace = debug_backtrace();
 		array_shift($trace);
 		
-		if (ae::options('inspector')->get('dump_context'))
+		if (Core::options('inspector')->get('dump_context'))
 		{
 			$error['context'] = $context;
 		}

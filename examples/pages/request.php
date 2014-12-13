@@ -1,5 +1,7 @@
 <?php
 
+use \ae\Core as ae;
+
 $request = ae::request();
 // or
 // $request = ae::request('foo/bar/fubar');
@@ -12,18 +14,18 @@ $request = ae::request();
 */
 echo "<pre>\n";
 
-echo 'Client IP address: ' . aeRequest::ip_address() . "\n";
+echo 'Client IP address: ' . \ae\Request::ip_address() . "\n";
 echo 'Server IP address: ' . $_SERVER['SERVER_ADDR'] . "\n\n";
 
-echo aeRequest::method . ' ' . aeRequest::uri() . ' ' . aeRequest::protocol . "\n";
-echo 'Is CLI: ' . (aeRequest::is_cli ? 'Yes' : 'No') . "\n";
-echo 'Is AJAX: ' . (aeRequest::is_ajax ? 'Yes' : 'No') . "\n";
+echo \ae\Request::method . ' ' . \ae\Request::uri() . ' ' . \ae\Request::protocol . "\n";
+echo 'Is CLI: ' . (\ae\Request::is_cli ? 'Yes' : 'No') . "\n";
+echo 'Is AJAX: ' . (\ae\Request::is_ajax ? 'Yes' : 'No') . "\n";
 echo 'Is Routed: ' . ($request->is_routed() ? 'Yes' : 'No') . "\n\n";
 
-$segments = aeRequest::segments();
+$segments = \ae\Request::segments();
 var_dump($segments);
 
-echo aeRequest::type();
+echo \ae\Request::type();
 echo "\n";
 echo $request->segment(0); // 'segment-1'
 echo "\n";

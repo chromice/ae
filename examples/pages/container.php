@@ -1,5 +1,5 @@
 <?php
-	$container = ae::container('/examples/container/container_inner.php')
+	$container = \ae\Core::container('/examples/container/container_inner.php')
 		->set('title', 'Example: Container')
 		->set('header', 'Hello World!');
 ?>
@@ -7,7 +7,7 @@
 <ul>
 <?php 
 	for ($i=1; $i <= 5; $i++):
-		$b = new aeBuffer(); 
+		$b = new \ae\Buffer(); 
 ?>
 	<li>{number}</li>
 <?php

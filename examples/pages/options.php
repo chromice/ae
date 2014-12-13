@@ -1,5 +1,7 @@
 <?php
 
+use \ae\Core as ae;
+
 $options = ae::options('foo.bar')
 	// ->set('goo', 'fail') // triggers an error
 	->set('bar','foo')

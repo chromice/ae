@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,18 +16,21 @@
 # limitations under the License.
 # 
 
-ae::options('ae.database', array(
+namespace ae;
+
+Core::options('ae.database', array(
 	'log' => false
 ));
 
-ae::invoke(array('aeDatabase', 'connection'));
+Core::invoke(array('\ae\Database', 'connection'));
 
-class aeDatabase
+class Database
 /*
 	A MySQL database abstraction layer.
 	
 	Use `ae.database.[connection name]` options to configure connection:
-		`class`     - connection class: 'aeDatabase' by default;
+	
+		`class`     - connection class: '\ae\Database' by default;
 		`host`      - connection host;
 		`port`      - connection port;
 		`socket`    - connection socket;
@@ -38,15 +41,15 @@ class aeDatabase
 	This library must be invoked with the connection name, 
 	otherise 'default' connection is used.
 	
-		ae::options('ae.database.default')
+		Core::options('ae.database.default')
 			->set('host', 'localhost')
 			->set('user', 'root');
 		
-		$db = ae::database('default');
+		$db = Core::database('default');
 		
 		$db->query('SELECT 1')->make();
 	
-	All methods throw `aeDatabaseException` on driver level failure, and 
+	All methods throw `DatabaseException` on driver level failure, and 
 	trigger an error for user space failures, i.e. wrong paramereter, empty query, etc.
 */
 {
@@ -72,7 +75,7 @@ class aeDatabase
 			return self::$connections[$database];
 		}
 		
-		$params = ae::options('ae.database.' . $database, array(
+		$params = Core::options('ae.database.' . $database, array(
 			'class' => get_called_class(),
 			'host' => '127.0.0.1',
 			'user' => null,
@@ -105,16 +108,16 @@ class aeDatabase
 			$port = (int) $port;
 		}
 
-		$this->db = new MySQLi($host, $user, $password, $database, $port, $socket);
+		$this->db = new \MySQLi($host, $user, $password, $database, $port, $socket);
 		
 		if ($this->db->connect_error)
 		{
-			throw new aeDatabaseException($this->db->connect_error);
+			throw new DatabaseException($this->db->connect_error);
 		}
 		
 		if ($this->db->set_charset('utf8') === false)
 		{
-			throw new aeDatabaseException('Could not switch character set to utf8: ' . $this->db->error);
+			throw new DatabaseException('Could not switch character set to utf8: ' . $this->db->error);
 		}
 		
 		$this->query('SET SESSION sql_mode = "STRICT_ALL_TABLES"')->make();
@@ -134,10 +137,10 @@ class aeDatabase
 		Returns a transaction object, which opens up a new transaction, and 
 		rolls it back, unless it has been explicitly committed.
 		
-		See `aeDatabaseTransaction` for more details.
+		See `DatabaseTransaction` for more details.
 	*/
 	{
-		return new aeDatabaseTransaction($this->db);
+		return new DatabaseTransaction($this->db);
 	}
 	
 	// =========
@@ -472,13 +475,13 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function variables($variables, $type = aeDatabase::value)
+	public function variables($variables, $type = Database::value)
 	/*
 		Accepts an associative array of placeholder/variable pairs
 		used in the current query.
 	*/
 	{
-		if ($type !== aeDatabase::statement)
+		if ($type !== Database::statement)
 		{
 			$variables = array_map(array($this, 'escape'), $variables);
 		}
@@ -488,7 +491,7 @@ class aeDatabase
 		return $this;
 	}
 	
-	public function data($values, $type = aeDatabase::value)
+	public function data($values, $type = Database::value)
 	/*
 		Accepts an associative array of key/value pairs
 		used to replace the following placeholders:
@@ -500,7 +503,7 @@ class aeDatabase
 		Useful for writing INSERT and UPDATE queries.
 	*/
 	{
-		if ($type !== aeDatabase::statement)
+		if ($type !== Database::statement)
 		{
 			$values = array_map(array($this, 'escape'), $values);
 		}
@@ -540,27 +543,27 @@ class aeDatabase
 		return $this->db->insert_id !== 0 ? $this->db->insert_id : null;
 	}
 	
-	public function result($result = 'aeDatabaseResult')
+	public function result($result = '\ae\DatabaseResult')
 	/*
 		Runs current query and returns the result set.
 		
-		See `aeDatabaseResult` for more details.
+		See `DatabaseResult` for more details.
 	*/
 	{
 		return $this->_result($result);
 	}
 	
-	protected function _result($result = 'aeDatabaseResult', $class = null, $related = null)
+	protected function _result($result = '\ae\DatabaseResult', $class = null, $related = null)
 	{
 		static $query_counter = 0;
 		
 		$query = $this->_query();
 		
-		if (ae::options('ae.database')->get('log') === true)
+		if (Core::options('ae.database')->get('log') === true)
 		{
-			ae::register('utilities/inspector');
+			Core::register('utilities/inspector');
 			
-			$probe = ae::probe('Query #' . ++$query_counter)->mark();
+			$probe = Core::probe('Query #' . ++$query_counter)->mark();
 		}
 		
 		$return = $this->db->query($query, MYSQLI_STORE_RESULT);
@@ -572,7 +575,7 @@ class aeDatabase
 		
 		if ($return === false)
 		{
-			throw new aeDatabaseException($this->db->error . ': "' . $query . '"');
+			throw new DatabaseException($this->db->error . ': "' . $query . '"');
 		}
 		
 		if (class_exists($result))
@@ -587,7 +590,7 @@ class aeDatabase
 	
 	protected $using = array();
 	
-	public function one($class, $result = 'aeDatabaseResult')
+	public function one($class, $result = '\ae\DatabaseResult')
 	/*
 		Executes the query and returns an instance of table class.
 	*/
@@ -602,11 +605,11 @@ class aeDatabase
 		return null;
 	}
 	
-	public function many($class, $result = 'aeDatabaseResult')
+	public function many($class, $result = '\ae\DatabaseResult')
 	/*
 		Executes the query and returns a instance of result class.
 		
-		See `aeDatabaseResult` for more details.
+		See `DatabaseResult` for more details.
 	*/
 	{
 		$return = $this->_result($result, $class, $this->using);
@@ -631,7 +634,7 @@ class aeDatabase
 	/*
 		Specifies secondary/related table join and use.
 		
-		See `aeDatabaseResult::using()`.
+		See `DatabaseResult::using()`.
 	*/
 	{
 		$table = $this->backtick($class::name());
@@ -802,9 +805,9 @@ class aeDatabase
 	}
 }
 
-class aeDatabaseTransaction
+class DatabaseTransaction
 /*
-	Used by `aeDatabase::transaction()`.
+	Used by `Database::transaction()`.
 */
 {
 	protected $db;
@@ -827,9 +830,9 @@ class aeDatabaseTransaction
 	}
 }
 
-class aeDatabaseResult
+class DatabaseResult
 /*
-	Used by `aeDatabase::many()` and `aeDatabase::result()`.
+	Used by `Database::many()` and `Database::result()`.
 */
 {
 	protected $result;
@@ -952,14 +955,14 @@ class aeDatabaseResult
 	}
 }
 
-abstract class aeDatabaseTable
+abstract class DatabaseTable
 /*
 	A database table abstraction class that provides active record style
 	access to data in a specifc table.
 	
 	Table specific class must extend this class:
 	
-		class MyTable extends aeDatabaseTable {}
+		class MyTable extends DatabaseTable {}
 	
 	Now you can easily perform CRUD actions on "my_table" table:
 	
@@ -993,7 +996,7 @@ abstract class aeDatabaseTable
 		
 		if (!isset(self::$tables[$class]['database']))
 		{
-			self::$tables[$class]['database'] = ae::database('default');
+			self::$tables[$class]['database'] = Core::database('default');
 		}
 		
 		return self::$tables[$class]['database'];
@@ -1106,7 +1109,7 @@ abstract class aeDatabaseTable
 	/*
 		NB! Must not be used directly. 
 		
-		Use `aeDatabaseTable::create()` method instead.
+		Use `DatabaseTable::create()` method instead.
 	*/
 	{
 		$table = static::name();
@@ -1139,7 +1142,7 @@ abstract class aeDatabaseTable
 		Attaches an instance of (usually) related entity.
 	*/
 	{
-		if (!is_a($object, 'aeDatabaseTable'))
+		if (!is_a($object, '\ae\DatabaseTable'))
 		{
 			trigger_error('Cannot attach an instance of "' . get_class($object) . '" class.', E_USER_ERROR);
 		}
@@ -1278,7 +1281,7 @@ abstract class aeDatabaseTable
 		}
 		elseif (count($accessor) !== count($ids))
 		{
-			throw new aeDatabaseException(get_called_class() 
+			throw new DatabaseException(get_called_class() 
 				. '::find() failed, because accessor value'
 				. (count($accessor) > 1 ? 's are' : ' is') 
 				. ' not defined.');
@@ -1296,7 +1299,7 @@ abstract class aeDatabaseTable
 		
 		if (count($accessor) !== count($this->ids))
 		{
-			throw new aeDatabaseException(get_class($this) 
+			throw new DatabaseException(get_class($this) 
 				. '::ids() failed, because accessor value' 
 				. (count($accessor) > 1 ? 's are' : ' is') 
 				. ' not defined.');
@@ -1320,7 +1323,7 @@ abstract class aeDatabaseTable
 		
 		if (!is_array($values))
 		{
-			throw new aeDatabaseException(get_class($this) 
+			throw new DatabaseException(get_class($this) 
 				. '::load() failed, because accessor points ' 
 				. 'to nothing.');
 		}
@@ -1409,4 +1412,4 @@ abstract class aeDatabaseTable
 	}
 }
 
-class aeDatabaseException extends aeException {}
+class DatabaseException extends CoreException {}

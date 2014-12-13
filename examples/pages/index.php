@@ -1,9 +1,11 @@
 <?php
+	use \ae\Core as ae;
+	
 	// Test default response headers
 	$response = ae::response('html');
 	
 	// Test garbage collection
-	aeResponseCache::collect_garbage();
+	\ae\ResponseCache::collect_garbage();
 
 	$container = ae::container('/examples/container/container_html.php')
 		->set('title', 'æ');
@@ -31,7 +33,7 @@
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri',
 		'Session' => 'session'
-	) as $name => $uri): $b = new aeBuffer(); 
+	) as $name => $uri): $b = new \ae\Buffer(); 
 ?>
 	<li><a href="{uri}">{name}</a></li>
 <?php

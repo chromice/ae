@@ -1,5 +1,7 @@
 <?php 
 
+use \ae\Core as ae;
+
 $request = ae::request();
 $image = ae::image('examples/image/test.jpg');
 
@@ -31,7 +33,7 @@ $cropped = $image
 
 // Crop to cover
 $image
-	->align(aeImage::center, aeImage::top) // same as align(0.5, 0.0)
+	->align(\ae\Image::center, \ae\Image::top) // same as align(0.5, 0.0)
 	->fill(100, 100)
 	->prefix('cropped_')
 	->save(); // save as 'cropped_test.jpg'
@@ -47,7 +49,7 @@ $image
 // using http://uk3.php.net/manual/en/function.imagefilter.php
 $image
 	->colorize(55 / 255, 0, 0)
-	->cache(aeResponseCache::year, $request->uri())
+	->cache(\ae\ResponseCache::year, $request->uri())
 	->dispatch($request::uri()); // clean all output, set the correct headers, return the image content and... die!
 	
 ?>

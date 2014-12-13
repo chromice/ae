@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,37 +16,39 @@
 # limitations under the License.
 # 
 
-ae::import('ae/response.php');
+namespace ae;
 
-ae::invoke('aeImage');
+Core::import('ae/response.php');
 
-class aeImage
+Core::invoke('\ae\Image');
+
+class Image
 /*
 	An image manipulation library.
 	
 	The following example would crop the top part of the specified image 
 	to a 100x100 square thumbail and save it as "image_thumb.png":
 	
-		ae::image('path/to/image.png')
-			->align(aeImage::center, aeImage::top)
+		Core::image('path/to/image.png')
+			->align(Image::center, Image::top)
 			->fill(100, 100)
 			->suffix('_thumb')
 			->save(); 
 	
-	All methods throw `aeImageException`, if operation is not successful.
+	All methods throw `ImageException`, if operation is not successful.
 */
 {
 	protected $path;
 	
 	public function __construct($path)
 	{
-		$this->path = ae::resolve($path);
+		$this->path = Core::resolve($path);
 
 		$info = getimagesize($this->path);
 		
 		if (false === $info)
 		{
-			throw new aeImageException('Could not load image data for ' . $this->path);
+			throw new ImageException('Could not load image data for ' . $this->path);
 		}
 		
 		$this->width = $info[0];
@@ -186,7 +188,7 @@ class aeImage
 		}
 		else
 		{
-			throw new aeImageException('Failed to crop the image.');
+			throw new ImageException('Failed to crop the image.');
 		}
 		
 		return $this;
@@ -227,7 +229,7 @@ class aeImage
 		}
 		else
 		{
-			throw new aeImageException('Failed to scale the image.');
+			throw new ImageException('Failed to scale the image.');
 		}
 		
 		return $this;
@@ -322,7 +324,7 @@ class aeImage
 		
 		if (false === $this->source) 
 		{
-			throw new aeImageException('Failed to load the image: ' . $this->path);
+			throw new ImageException('Failed to load the image: ' . $this->path);
 		}
 	}
 	
@@ -356,7 +358,7 @@ class aeImage
 		
 		if (false === call_user_func_array('imagefilter', $arguments))
 		{
-			throw new aeImageException('Could not apply filter.');
+			throw new ImageException('Could not apply filter.');
 		}
 		
 		return $this;
@@ -544,7 +546,7 @@ class aeImage
 		
 		if (!is_null($uri))
 		{
-			$cache = new aeResponseCache();
+			$cache = new ResponseCache();
 			
 			$cache
 				->duration($minutes)
@@ -585,7 +587,7 @@ class aeImage
 		
 		if (!$success) 
 		{
-			throw new aeImageException('Failed to save the image: ' . $path);
+			throw new ImageException('Failed to save the image: ' . $path);
 		}
 		
 		$this->_unload();
@@ -594,7 +596,7 @@ class aeImage
 		$this->prefix = null;
 		$this->suffix = null;
 		
-		return new aeImage($path);
+		return new Image($path);
 	}
 
 	public function dispatch($name = null)
@@ -666,4 +668,4 @@ class aeImage
 	}
 }
 
-class aeImageException extends aeException {}
+class ImageException extends CoreException {}

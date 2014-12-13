@@ -1,4 +1,4 @@
-<?php if (!class_exists('ae')) exit;
+<?php
 
 #
 # Copyright 2011-2014 Anton Muraviev <chromice@gmail.com>
@@ -16,9 +16,11 @@
 # limitations under the License.
 #
 
-ae::invoke('aeProbe');
+namespace ae;
 
-class aeProbe
+Core::invoke('\ae\Probe');
+
+class Probe
 /*
 	Allows you to monitor memory and execution time.
 */
@@ -67,7 +69,7 @@ class aeProbe
 				self::_format($ms, 0), 
 				($dm < 0 ? '-' : '+') . self::_format(abs($dm), 0));
 			
-			ae::log($notice);
+			Core::log($notice);
 		}
 		
 		return $this;

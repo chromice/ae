@@ -1,9 +1,11 @@
 <?php
 
+use \ae\Core as ae;
+
 ae::import('ae/database.php');
 ae::import('examples/database/authors.php');
 
-class Novels extends aeDatabaseTable
+class Novels extends \ae\DatabaseTable
 {
 	public static function name()
 	{

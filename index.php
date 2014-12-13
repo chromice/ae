@@ -8,8 +8,12 @@ if (php_sapi_name() === 'cli-server'
 	return false;
 }
 
+// Make sure default timezone is set
+date_default_timezone_set(@date_default_timezone_get());
+
 // Default code path
 include 'ae/core.php';
+use \ae\Core as ae;
 
 $request = ae::request();
 $route = $request->route('/','/examples/pages/');

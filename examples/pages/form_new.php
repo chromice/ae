@@ -1,5 +1,7 @@
 <?php
 
+use \ae\Core as ae;
+
 ae::register('utilities/inspector');
 
 ae::options('inspector')
@@ -29,7 +31,7 @@ $last_name = $user->single('last_name')
 $email = $user->single('email')
 	->initial('tester@gmail.com')
 	->required('Please enter your email address.')
-	->valid_pattern('This email address does not seem to be valid.', aeTextValidator::email);
+	->valid_pattern('This email address does not seem to be valid.', \ae\TextValidator::email);
 
 $form->initial(array(
 	'user' => array(

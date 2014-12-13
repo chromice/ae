@@ -1,5 +1,7 @@
 <?php
-
+	
+	use \ae\Core as ae;
+	
 	// ae::import('log.php');
 	ae::options('ae.response')
 		->set('compress_output', true);
@@ -13,7 +15,7 @@
 	$type = $request::type() === 'json' ? 'json' : 'html';
 	$response = ae::response($type);
 	
-	// aeResponseCache::delete('caching/test');
+	// ResponseCache::delete('caching/test');
 
 ?>
 <?php if ($type === 'json'): ?>
