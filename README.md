@@ -8,30 +8,30 @@ It requires PHP version 5.4 or higher, and a recent version of MySQL and Apache 
 
 - [Getting started](#getting-started)
 - [Core](#core)
-	- [Importing code](#importing-code)
-	- [Running code](#running-code)
-	- [Loading libraries](#loading-libraries)
+    - [Importing code](#importing-code)
+    - [Running code](#running-code)
+    - [Loading libraries](#loading-libraries)
 - [Buffer](#buffer)
 - [Container](#container)
 - [Options](#options)
 - [Request](#request)
-	- [Request routing](#request-routing)
+    - [Request routing](#request-routing)
 - [Response](#response)
-	- [Response caching](#response-caching)
+    - [Response caching](#response-caching)
 - [Image](#image)
-	- [Image caching](#image-caching)
+    - [Image caching](#image-caching)
 - [Form](#form)
-	- [Field types](#field-types)
-	- [Validation](#validation)
+    - [Field types](#field-types)
+    - [Validation](#validation)
 - [Database](#database)
-	- [Making queries](#making-queries)
-	- [Transactions](#transactions)
-	- [Retrieving data](#retrieving-data)
-	- [Active record](#active-record)
-	- [Relationships](#relationships)
+    - [Making queries](#making-queries)
+    - [Transactions](#transactions)
+    - [Retrieving data](#retrieving-data)
+    - [Active record](#active-record)
+    - [Relationships](#relationships)
 - [Inspector](#inspector)
-	- [Log](#log)
-	- [Probe](#probe)
+    - [Log](#log)
+    - [Probe](#probe)
 - [Acknowledgments](#acknowledgments)
 
 
@@ -41,10 +41,10 @@ Here is a very a simple æ application:
 
 ```php
 <?php
-	include 'ae/core.php';
-	use \ae\Core as ae;
-	
-	echo 'Hello ' . ae::request()->segment(0, "world") . '!';
+    include 'ae/core.php';
+    use \ae\Core as ae;
+    
+    echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 ?>
 ```
 
@@ -52,12 +52,12 @@ You should put this code into *index.php* in the root web directory. */ae* direc
 
 ```apache
 <IfModule mod_rewrite.c>
-	RewriteEngine on
-	RewriteBase /
+    RewriteEngine on
+    RewriteBase /
 
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule ^(.*) index.php?/$1 [L,QSA]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*) index.php?/$1 [L,QSA]
 </IfModule>
 ```
 
@@ -105,8 +105,8 @@ ae::import('path/to/library.php');
 
 ```php
 $output = ae::render('your/page.php', array(
-	'title' => 'Example!',
-	'body' => '<h1>Hello world!</h1>'
+    'title' => 'Example!',
+    'body' => '<h1>Hello world!</h1>'
 ));
 ```
 
@@ -126,8 +126,8 @@ In order to echo the output of a script, you can use `ae::output()` method:
 
 ```php
 ae::output('your/page.php', array(
-	'title' => 'Example!',
-	'body' => '<h1>Hello world!</h1>'
+    'title' => 'Example!',
+    'body' => '<h1>Hello world!</h1>'
 ));
 ```
 
@@ -177,10 +177,10 @@ ae::invoke('LibraryClassName');
 
 class LibraryClassName
 {
-	function __construct($argument_1, $argument_2, /*...*/)
-	{
-		// ...
-	}
+    function __construct($argument_1, $argument_2, /*...*/)
+    {
+        // ...
+    }
 }
 ```
 
@@ -191,7 +191,7 @@ ae::invoke('a_factory_function');
 
 function a_factory_function($argument_1, $argument_2, /*...*/)
 {
-	// ...
+    // ...
 }
 ```
 
@@ -220,9 +220,9 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 <?php $buffer = new \ae\Buffer() ?>
 <p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
 <?php $buffer->output(array(
-	'url' => $article->url,
-	'name' => (strlen($article->name) > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
-	'visits' => number_format($article->visits)
+    'url' => $article->url,
+    'name' => (strlen($article->name) > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
+    'visits' => number_format($article->visits)
 )) ?>
 ```
 
@@ -236,10 +236,10 @@ Here's an example of HTML container, e.g. *container_html.php*:
 ```html
 <html>
 <head>
-	<title><?= $title ?></title>
+    <title><?= $title ?></title>
 </head>
 <body>
-	<?= $content ?>
+    <?= $content ?>
 </body>
 </html>
 ```
@@ -249,7 +249,7 @@ Another script (e.g. *hellow_world.php*) can use it like this:
 ```php
 <?php 
 $container = ae::container('path/to/container_html.php')
-	->set('title', 'Container example');
+    ->set('title', 'Container example');
 ?>
 <h1>Hello World!</h1>
 ```
@@ -259,10 +259,10 @@ When rendered, it will produce this:
 ```html
 <html>
 <head>
-	<title>Container example</title>
+    <title>Container example</title>
 </head>
 <body>
-	<h1>Hello World!</h1>
+    <h1>Hello World!</h1>
 </body>
 </html>
 ```
@@ -302,24 +302,24 @@ ae::import('ae/request.php');
 
 if (\ae\Request::is_cli)
 {
-	echo "Hello World!";
+    echo "Hello World!";
 }
 else if (\ae\Request::is_ajax)
 {
-	echo "{message:'Hello world'}";
+    echo "{message:'Hello world'}";
 }
 else
 {
-	echo "<h1>Hello World!</h1>";
-	
-	if (\ae\Request::method === 'GET')
-	{
-		echo "<p>Nothing to get.</p>";
-	}
-	else if (\ae\Request::method === 'POST')
-	{
-		echo "<p>Nothing to post.</p>";
-	}
+    echo "<h1>Hello World!</h1>";
+    
+    if (\ae\Request::method === 'GET')
+    {
+        echo "<p>Nothing to get.</p>";
+    }
+    else if (\ae\Request::method === 'POST')
+    {
+        echo "<p>Nothing to post.</p>";
+    }
 }
 ```
 
@@ -366,9 +366,9 @@ $route = $request->route('/', 'handlers/');
 
 if (!$route->exists())
 {
-	header('HTTP/1.1 404 Not Found');
-	echo "Page does not exist.";
-	exit;
+    header('HTTP/1.1 404 Not Found');
+    echo "Page does not exist.";
+    exit;
 }
 
 $route->follow();
@@ -382,7 +382,7 @@ $request = ae::request();
 
 if (!$request->is_routed())
 {
-	die('Direct request is not allowed!');
+    die('Direct request is not allowed!');
 }
 
 // NB! The /article/ part is pushed out because of routing.
@@ -396,8 +396,8 @@ You can route different types of requests to different directories:
 
 ```php
 $route = ae::request()->route(array(
-	'/admin' => 'cms/', // all requests starting with /admin 
-	'/' => 'webroot/' // other requests
+    '/admin' => 'cms/', // all requests starting with /admin 
+    '/' => 'webroot/' // other requests
 )->follow();
 ```
 
@@ -405,12 +405,12 @@ You can always provide an anonymous function instead of a directory and pass URI
 
 ```php
 ae::request()->route(array(
-	'/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
-		echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
-	},
-	'/' => function($uri) {
-		echo 'Default handler. Request URI: /' . $uri;
-	}
+    '/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
+        echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
+    },
+    '/' => function($uri) {
+        echo 'Default handler. Request URI: /' . $uri;
+    }
 ))->follow();
 ```
 
@@ -427,16 +427,16 @@ Here is an example of a simple application that creates gzip'ed response with a 
 include 'ae/core.php';
 
 ae::options('ae.response')
-	->set('compress_output', true); // turn on the g-zip compression
+    ->set('compress_output', true); // turn on the g-zip compression
 
 $response = ae::response('html')
-	->header('X-Header-Example', 'Some value');
+    ->header('X-Header-Example', 'Some value');
 ?>
 <h1>Hello world</h1>
 <?php 
 $response
-	->cache(5, '/hello-world.html') // cache for five minutes as /hello-world.html
-	->dispatch(); // dispatch the request
+    ->cache(5, '/hello-world.html') // cache for five minutes as /hello-world.html
+    ->dispatch(); // dispatch the request
 ?>
 ```
 
@@ -453,18 +453,18 @@ Here are the rules that *.htaccess* file in the web root directory must contain:
 
 ```apache
 <IfModule mod_rewrite.c>
-	RewriteEngine on
-	RewriteBase /
+    RewriteEngine on
+    RewriteBase /
 
-	# Append ".html", if there is no extension...
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteCond %{REQUEST_URI} !\.\w+$
-	RewriteRule ^(.*?)$ /$1.html [L]
+    # Append ".html", if there is no extension...
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !\.\w+$
+    RewriteRule ^(.*?)$ /$1.html [L]
 
-	# ...and redirect to cache directory ("/cache")
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+    # ...and redirect to cache directory ("/cache")
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
 </IfModule>
 ```
 
@@ -472,11 +472,11 @@ And here's what *.htaccess* file in */cache* directory must be like:
 
 ```apache
 <IfModule mod_rewrite.c>
-	RewriteEngine on
+    RewriteEngine on
 
-	# If no matching file found, redirect back to index.php
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*) /index.php?/$1 [L,QSA]
+    # If no matching file found, redirect back to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*) /index.php?/$1 [L,QSA]
 </IfModule>
 ```
 
@@ -522,30 +522,30 @@ $mimetype = $image->mimetype();
 
 // Blow one pixel up.
 $image
-	->crop(1,1)
-	->scale($width, null) // scale proportionately.
-	->save('tiny_bit.png');
+    ->crop(1,1)
+    ->scale($width, null) // scale proportionately.
+    ->save('tiny_bit.png');
 
 // save() resets state to default, i.e. no crop, scale, prefix, suffix, etc.
 
 // Crop to cover
 $image
-	->align(\ae\Image::center, \ae\Image::middle) // same as align(0.5, 0.5)
-	->fill(100, 100)
-	->prefix('cropped_')
-	->save(); // save as 'cropped_test.jpg'
+    ->align(\ae\Image::center, \ae\Image::middle) // same as align(0.5, 0.5)
+    ->fill(100, 100)
+    ->prefix('cropped_')
+    ->save(); // save as 'cropped_test.jpg'
 
 // Resize to fit (and preserve the result for next operation)
 $small = $image
-	->fit(320, 320)
-	->suffix('_small')
-	->save();  // save as 'test_small.jpg'
+    ->fit(320, 320)
+    ->suffix('_small')
+    ->save();  // save as 'test_small.jpg'
 
 // Apply colorize filter
 // using http://uk3.php.net/manual/en/function.imagefilter.php
 $small
-	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+    ->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
+    ->dispatch(); // clean all output, set the correct headers, return the image content and... die!
 ```
 
 ### Image caching
@@ -556,7 +556,7 @@ Images can be cached just like responses:
 $image = ae::image('examples/image/test.jpg');
 
 $image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->cache(\ae\ResponseCache::year, '/images/foo.png') // cache image for a year
+    ->cache(\ae\ResponseCache::year, '/images/foo.png') // cache image for a year
 ```
 
 ## Form
@@ -573,20 +573,20 @@ Let's declare a simple form with three fields (text input, checkbox and select d
 $form = ae::form('form-id');
 
 $input = $form->single('text_input')
-	->required('This field is required.')
-	->min_length('It should be at least 3 characters long.', 3)
-	->max_length('Please keep it shorter than 100 characters.', 100);
+    ->required('This field is required.')
+    ->min_length('It should be at least 3 characters long.', 3)
+    ->max_length('Please keep it shorter than 100 characters.', 100);
 
 $checkbox = $form->single('checkbox_input')
-	->required('You must check this checkbox!');
+    ->required('You must check this checkbox!');
 
 $options = array(
-	'foo' => 'Foo',
-	'bar' => 'Bar'
+    'foo' => 'Foo',
+    'bar' => 'Bar'
 );
 
 $select = $this->single('select_input')
-	->valid_value('Wrong value selected.', $options);
+    ->valid_value('Wrong value selected.', $options);
 ```
 
 Now, this declaration is enough to validate the form, has it been submitted:
@@ -594,14 +594,14 @@ Now, this declaration is enough to validate the form, has it been submitted:
 ```php
 if ($form->is_submitted())
 {
-	$is_valid = $form->validate();
-	
-	if ($is_valid)
-	{
-		$values = $form->values();
-		
-		var_dump($values);
-	}
+    $is_valid = $form->validate();
+    
+    if ($is_valid)
+    {
+        $values = $form->values();
+        
+        var_dump($values);
+    }
 }
 ```
 
@@ -610,9 +610,9 @@ If the form has not been submitted, you may want to populate it with default val
 ```php
 if (!$form->is_submitted())
 {
-	$form->value(array(
-		'text' => 'Foo'
-	));
+    $form->value(array(
+        'text' => 'Foo'
+    ));
 }
 ```
 
@@ -621,21 +621,21 @@ The HTML code of the form's content can be anything you like, but you must use `
 ```php
 <?= $form->open() ?>
 <div class="field">
-	<label for="<?= $input->id() ?>">Enter some text:</label>
-	<?= $input->input('text') ?>
-	<?= $input->error() ?>
+    <label for="<?= $input->id() ?>">Enter some text:</label>
+    <?= $input->input('text') ?>
+    <?= $input->error() ?>
 </div>
 <div class="field">
-	<label><?= $checkbox->input('checkbox') ?> Check me out!</label>
-	<?= $checkbox->error() ?>
+    <label><?= $checkbox->input('checkbox') ?> Check me out!</label>
+    <?= $checkbox->error() ?>
 </div>
 <div class="field">
-	<label for="<?= $select->id() ?>">Select something (totally optional):</label>
-	<?= $select->select(array('' => 'Nothing selected') + $options) ?>
-	<?= $select->error() ?>
+    <label for="<?= $select->id() ?>">Select something (totally optional):</label>
+    <?= $select->select(array('' => 'Nothing selected') + $options) ?>
+    <?= $select->error() ?>
 </div>
 <div class="field">
-	<button type="submit">Submit</button>
+    <button type="submit">Submit</button>
 </div>
 <?= $form->close() ?>
 ```
@@ -670,7 +670,7 @@ If you need a sequence of fields with the same validation rules, you should use 
 $tags = $form->sequence('tags', 1, 5);
 
 $tag_input = $tags->single('tag_input')
-	->min_length('Should be at least 2 character long', 2);
+    ->min_length('Should be at least 2 character long', 2);
 
 ```
 
@@ -679,9 +679,9 @@ The sequence will contain the minimum number of fields required, but you can let
 ```php
 <?php foreach ($tags as $index => $tag): ?>
 <div class="field">
-	<label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
-	<?= $tag['tag_input']->input('input') ?> <?= $files->remove_button($index) ?>
-	<?= $tag['tag_input']->error('<br><em class="error">', '</em>') ?>
+    <label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
+    <?= $tag['tag_input']->input('input') ?> <?= $files->remove_button($index) ?>
+    <?= $tag['tag_input']->error('<br><em class="error">', '</em>') ?>
 </div>
 <?php endforeach ?>
 <?= $files->add_button() ?>
@@ -703,18 +703,18 @@ If the value of the field is a decimal/integer number or time/date/month/week, y
 
 ```php
 $number->valid_pattern('Should contain a number.', \ae\TextValidator::integer)
-	->min_value('Must be equal to 2 or greater.', 2)
-	->max_value('Must be equal to 4 or less.', 4);
+    ->min_value('Must be equal to 2 or greater.', 2)
+    ->max_value('Must be equal to 4 or less.', 4);
 $date->valid_pattern('Should contain a date: YYYY-MM-DD.', \ae\TextValidator::date)
-	->min_value('Cannot be in the past.', date('Y-m-d'));
+    ->min_value('Cannot be in the past.', date('Y-m-d'));
 ```
 
 If value is a string you may validate its format and maximum and minimum length:
 
 ```php
 $field->valid_pattern('This should be a valid email.', \ae\TextValidator::email)
-	->min_length('Cannot be shorter than 5 characters.', 5)
-	->max_length('Cannot be longer than 100 characters.', 100);
+    ->min_length('Cannot be shorter than 5 characters.', 5)
+    ->max_length('Cannot be longer than 100 characters.', 100);
 ```
 
 The library comes with a few format validators:
@@ -744,7 +744,7 @@ You can also use an anonymous function as a validator:
 
 ```php
 $field->valid_value('Devils are not allowed.', function ($value) {
-	return $value != 666;
+    return $value != 666;
 });
 ```
 
@@ -752,7 +752,7 @@ If you let user choose a value (or multiple values) from a predefined list, you 
 
 ```php
 $field->valid_value('Wrong option selected.', array(
-	'foo', 'bar' //, '...'
+    'foo', 'bar' //, '...'
 ));
 ```
 
@@ -768,21 +768,21 @@ Before you can make queries to the database, you have to specify the connection 
 ```php
 // Configure the "default" database connection
 ae::options('ae.database.default')
-	->set('host', 'localhost')
-	->set('user', 'root')
-	->set('password', 'root')
-	->set('database', 'ae');
+    ->set('host', 'localhost')
+    ->set('user', 'root')
+    ->set('password', 'root')
+    ->set('database', 'ae');
 ```
 
 Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
 
 ```php
 try {
-	$db = ae::database(); // same as ae::database("default");
-	
-	$db->query("SELECT 1")->make();
+    $db = ae::database(); // same as ae::database("default");
+    
+    $db->query("SELECT 1")->make();
 } catch (\ae\DatabaseException $e) {
-	echo 'Something went wrong: ' . $e->getMessage();
+    echo 'Something went wrong: ' . $e->getMessage();
 }
 ```
 
@@ -792,7 +792,7 @@ If you want to know what queries are performed and how much memory and time they
 
 ```php
 ae::options('ae.database')
-	->set('log', true);
+    ->set('log', true);
 ```
 
 See [Inspector](#inspector) section for more details.
@@ -803,16 +803,16 @@ Let's create the "authors" table:
 
 ```php
 ae::database()
-	->query("CREATE TABLE IF NOT EXISTS {table} (
-		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`name` varchar(255) NOT NULL,
-		`nationality` varchar(255) NOT NULL,
-		PRIMARY KEY (`id`)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->make();
+    ->query("CREATE TABLE IF NOT EXISTS {table} (
+        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+        `name` varchar(255) NOT NULL,
+        `nationality` varchar(255) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+    ->aliases(array(
+        'table' => 'authors'
+    ))
+    ->make();
 ```
 
 Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `\ae\Database::aliases()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
@@ -823,15 +823,15 @@ Let's fill this table with some data:
 
 ```php
 ae::database()
-	->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->data(array(
-		'name' => 'Richar K. Morgan', // (sic)
-		'nationality' => 'British'
-	))
-	->make();
+    ->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
+    ->aliases(array(
+        'table' => 'authors'
+    ))
+    ->data(array(
+        'name' => 'Richar K. Morgan', // (sic)
+        'nationality' => 'British'
+    ))
+    ->make();
 
 $morgan_id = ae::database()->insert_id();
 ```
@@ -840,17 +840,17 @@ In this example we are using `{data:names}` and `{data:values}` placeholders and
 
 ```php
 ae::database()
-	->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->data(array(
-		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), \ae\Database::statement) // don't escape
-	->variables(array(
-		'author_id' => $morgan_id
-	), \ae\Database::value) // escape
-	->make();
+    ->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
+    ->aliases(array(
+        'table' => 'authors'
+    ))
+    ->data(array(
+        'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
+    ), \ae\Database::statement) // don't escape
+    ->variables(array(
+        'author_id' => $morgan_id
+    ), \ae\Database::value) // escape
+    ->make();
 ```
 
 In this example we are using `{data:set}` placeholder and specifying its value via `\ae\Database::data()` method, while `\ae\Database::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
@@ -859,15 +859,15 @@ Of course, these are just examples, there is actually a less verbose way to inse
 
 ```php
 ae::database()->update('authors', array(
-	'nationality' => 'English'
+    'nationality' => 'English'
 ), array('id' => $morgan_id));
 $stephenson_id = ae::database()->insert('authors', array(
-	'name' => 'Neal Stephenson',
-	'nationality' => 'American'
+    'name' => 'Neal Stephenson',
+    'nationality' => 'American'
 )); 
 $gibson_id = ae::database()->insert('authors', array(
-	'name' => 'William Ford Gibson',
-	'nationality' => 'Canadian'
+    'name' => 'William Ford Gibson',
+    'nationality' => 'Canadian'
 ));
 ```
 
@@ -909,7 +909,7 @@ echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
-	echo "- {$author['name']}\n";
+    echo "- {$author['name']}\n";
 }
 ```
 
@@ -926,17 +926,17 @@ Now, let's change the query so that authors are ordered alphabetically:
 
 ```php
 $authors = ae::database()
-	->select('authors') // equivalent to ->query('SELECT * FROM `authors` {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}')
-	->order_by('`name` ASC')
-	->result() // return an instance of \ae\DatabaseResult
-	->all(); // return an array of rows
+    ->select('authors') // equivalent to ->query('SELECT * FROM `authors` {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}')
+    ->order_by('`name` ASC')
+    ->result() // return an instance of \ae\DatabaseResult
+    ->all(); // return an array of rows
 $count = count($authors);
 
 echo "There are $count authors in the result set:\n";
 
 foreach ($authors as $author)
 {
-	echo "- {$author['name']}\n";
+    echo "- {$author['name']}\n";
 }
 ```
 
@@ -994,8 +994,8 @@ Let's create a new record and save it to the database:
 
 ```php
 $shaky = Authors::create(array(
-	'name' => 'William Shakespeare',
-	'nationality' => 'English'
+    'name' => 'William Shakespeare',
+    'nationality' => 'English'
 ));
 
 // Create a new record in the database
@@ -1006,15 +1006,15 @@ In order to retrieve several records from the database, you would make a regular
 
 ```php
 $authors = ae::database()
-	->query('SELECT * FROM `authors`')
-	->many('Authors');
+    ->query('SELECT * FROM `authors`')
+    ->many('Authors');
 $count = $authors->count();
 
 echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
-	echo "- {$author->name}\n";
+    echo "- {$author->name}\n";
 }
 ```
 
@@ -1038,10 +1038,10 @@ Let's make things more interesting by introducing a new class of objects: books.
 
 ```php
 ae::database()->query("CREATE TABLE IF NOT EXISTS `books` (
-	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`author_id` int(10) unsigned NOT NULL,
-	`title` varchar(255) NOT NULL,
-	PRIMARY KEY (`id`)
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `author_id` int(10) unsigned NOT NULL,
+    `title` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8")->make();
 ```
 
@@ -1050,10 +1050,10 @@ We also need a class to represent this table. To keep things interesting, we wil
 ```php
 class Novels extends \ae\DatabaseTable
 {
-	public static function name()
-	{
-		return 'books'; // that is the real name of the table
-	}
+    public static function name()
+    {
+        return 'books'; // that is the real name of the table
+    }
 }
 ```
 
@@ -1064,15 +1064,15 @@ We could start spawning new books using `Novels::create()` method, like we did w
 ```php
 class Authors extends \ae\DatabaseTable
 {
-	public function add_novel($title)
-	{
-		$ids = $this->ids();
-		
-		return Novels::create(array(
-			'author_id' => $ids['id'],
-			'title' => $title
-		))->save();
-	}
+    public function add_novel($title)
+    {
+        $ids = $this->ids();
+        
+        return Novels::create(array(
+            'author_id' => $ids['id'],
+            'title' => $title
+        ))->save();
+    }
 }
 ```
 
@@ -1100,19 +1100,19 @@ So far so good. Let's add a method to `Novels` class that will return all book r
 ```php
 class Novels extends \ae\DatabaseTable
 {
-	public static function name()
-	{
-		return 'books'; // that is the real name of the table
-	}
-	
-	public static function all()
-	{
-		return static::database()
-			->select(self::name())
-			->joining('Authors', 'author')
-			->order_by('{table}.`title`')
-			->many('Novels');
-	}
+    public static function name()
+    {
+        return 'books'; // that is the real name of the table
+    }
+    
+    public static function all()
+    {
+        return static::database()
+            ->select(self::name())
+            ->joining('Authors', 'author')
+            ->order_by('{table}.`title`')
+            ->many('Novels');
+    }
 }
 ```
 
@@ -1128,7 +1128,7 @@ echo "Here are all $count novels ordered alphabetically:\n";
 
 while ($novel = $novels->fetch())
 {
-	echo "- {$novel->title} by {$novel->author->name}\n";
+    echo "- {$novel->title} by {$novel->author->name}\n";
 }
 ```
 
