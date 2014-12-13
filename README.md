@@ -77,10 +77,11 @@ Congratulations! You may tinker with the examples (see */examples* directory) or
 
 ## Core
 
-In order to start using æ in your application, you must include *core.php* located in the */ae* directory:
+In order to start using æ in your application, you must include *core.php* located in the */ae* directory and import the Core:
 
 ```php
 include 'ae/core.php';
+use \ae\Core as ae;
 ```
 
 This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and load libraries and utilities. All these methods accept both absolute and relative file paths.
