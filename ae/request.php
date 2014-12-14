@@ -358,7 +358,7 @@ class Router
 		{
 			$base = Core::resolve($base);
 		} 
-		catch (Exception $e) 
+		catch (CoreException $e) 
 		{
 			throw new RequestException('Request could not be routed. Base directory "' . $base . '" does not exist.');
 		}
