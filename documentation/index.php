@@ -6,7 +6,8 @@ $doc = ae::documentation()
 	->explains('ae/core.php');
 
 ?>
-## Getting started
+
+## Hello world
 
 Here is a very a simple æ application:
 

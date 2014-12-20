@@ -101,12 +101,43 @@ class Example
 		}
 		else
 		{
-			$sourse = Core::file(Core::resolve($this->source_path));
-		
+			$source = (string) Core::file(Core::resolve($this->source_path));
+			
+			// Cut out hidden parts between '///+++' and '///---'
+			if (preg_match_all('/^\s*\/\/\/\s*(\-\-\-|\+\+\+)\s*$/m', $source, $found, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0)
+			{
+				$_source = '';
+				$_offset = strlen($source);
+				
+				while ($f = array_pop($found))
+				{
+					$f_length = strlen($f[0][0]);
+					$f_offset = $f[0][1];
+					$f_type = $f[1][0];
+					
+					if ($f_type === '+++' && !is_null($_offset))
+					{
+						$_source = substr($source, ($f_offset + $f_length), ($_offset - ($f_offset + $f_length))) . $_source;
+						$_offset = null;
+					}
+					elseif ($f_type === '---')
+					{
+						$_offset = $f_offset;
+					}
+				}
+				
+				if (!is_null($_offset))
+				{
+					$_source = substr($source, 0, $_offset) . $_source;
+				}
+				
+				$source = $_source;
+			}
+			
 			// Remove implied comment sequence "///"
-			$sourse = preg_replace('/^\/\/\/(.*)/m', '$1', $sourse);
+			$source = preg_replace('/^(\s*)\/\/\/\s*(.*)$/m', '$1$2', $source);
 		
-			return "\n```php\n" . $sourse . "\n```\n";
+			return "\n```php\n" . $source . "\n```\n";
 		}
 	}
 	
