@@ -27,12 +27,14 @@ class Documentation
 {
 	protected $buffer;
 	protected $base_uri;
+	protected $base_path;
 	protected $examples = array();
 	
-	public function __construct()
+	public function __construct($base_path = null)
 	{
 		$this->buffer = new Buffer();
 		$this->base_uri = Core::request()->uri();
+		$this->base_path = rtrim($base_path);
 	}
 	
 	public function __destruct()
@@ -72,6 +74,8 @@ class Documentation
 		See: Example.
 	*/
 	{
+		$path = $this->base_path . '/' . ltrim($path, '/');
+		
 		return $this->examples[] = new Example($path, $this->base_uri);
 	}
 }
@@ -84,11 +88,13 @@ class Example
 	protected $source_path;
 	protected $output_path;
 	protected $base_uri;
+	protected $base_path;
 	
 	public function __construct($source_path, $base_uri)
 	{
 		$this->source_path = $source_path;
 		$this->base_uri = $base_uri;
+		$this->base_path = dirname($source_path);
 	}
 	
 	public function __toString()
@@ -187,7 +193,7 @@ class Example
 		
 	*/
 	{
-		$this->output_path = $output_path;
+		$this->output_path = $this->base_path . '/' . ltrim($output_path, '/');
 		
 		if (!empty($this->condition))
 		{
