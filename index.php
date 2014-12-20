@@ -16,13 +16,9 @@ include 'ae/core.php';
 use \ae\Core as ae;
 
 $request = ae::request();
-$route = $request->route('/','/examples/pages/');
+$route = $request->route('/','/documentation');
 
 if ($route->exists())
 {
 	$route->follow();
-}
-else
-{
-	ae::response()->error(404, 'examples/error.php');
 }

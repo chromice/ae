@@ -63,6 +63,11 @@ class File
 		}
 	}
 	
+	public function __toString()
+	{
+		return file_get_contents($this->path);
+	}
+	
 	public function exists()
 	{
 		return is_file($this->path);
