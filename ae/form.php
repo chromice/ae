@@ -18,6 +18,17 @@
 
 namespace ae;
 
+// Require multibyte string extension...
+if (!extension_loaded('mbstring'))
+{
+	trigger_error('Multibyte string extension is not loaded!', E_USER_ERROR);
+}
+// FIXME: Set encoding to UTF-8 here may screw something else up elsewhere.
+else if (mb_internal_encoding() !== 'UTF-8')
+{
+	mb_internal_encoding('UTF-8');
+}
+
 // Import dependancies
 Core::import('ae/request.php');
 
@@ -583,7 +594,7 @@ trait FormTextFieldValidator
 		$message = str_replace('{min-length}', $length, $message);
 		$this->html['minlength'] = $length;
 		$this->validators[TextValidator::order_min_length] = function ($value) use ($message, $length) {
-			return strlen($value) < $length ? str_replace('{length}', strlen($value), $message) : null;
+			return mb_strlen($value) < $length ? str_replace('{length}', mb_strlen($value), $message) : null;
 		};
 		
 		return $this;
@@ -594,7 +605,8 @@ trait FormTextFieldValidator
 		$message = str_replace('{max-length}', $length, $message);
 		$this->html['maxlength'] = $length;
 		$this->validators[TextValidator::order_max_length] = function ($value) use ($message, $length) {
-			return strlen($value) > $length ? str_replace('{length}', strlen($value), $message) : null;
+			// FIXME: Does not work for UTF-8 strings.
+			return mb_strlen($value) > $length ? str_replace('{length}', mb_strlen($value), $message) : null;
 		};
 		
 		return $this;

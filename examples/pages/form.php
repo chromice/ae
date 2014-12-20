@@ -79,8 +79,8 @@ $images = $files->files('image', '/uploads/gallery')
 	->min_height('{file} is less than {min-height} high.', 256);
 
 $descriptions = $files->single('description')
-	->min_length('The description must be longer than {length} characters.', 10)
-	->max_length('The description must not be longer than {length} characters.', 5000);
+	->min_length('The description must be longer than {min-length} characters. {length} given.', 10)
+	->max_length('The description must not be longer than {max-length} characters. {length} given.', 5000);
 
 $appears_on = $files->multiple('appears_on')
 	->required('Please choose a service.')
