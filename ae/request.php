@@ -209,6 +209,7 @@ class Request
 			return;
 		}
 		
+		// FIXME: The following URI parsing code is like 5 years old. At least.
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
 		
 		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
@@ -246,10 +247,10 @@ class Request
 			$uri = trim(substr($uri, strlen($base_path)), '/');
 		}
 		
-		if (preg_match('/\.([a-z0-9_]+)$/', $uri, $match) == 1)
+		if (preg_match('/\.([a-zA-Z0-9_]+)$/', $uri, $match) === 1)
 		{
-			$type = $match[1];
-			$uri = substr($uri, 0, strlen($uri) - strlen($type) - 1);
+			$type = strtolower($match[1]);
+			$uri = substr($uri, 0, strlen($uri) - strlen($match[0]));
 		}
 		
 		if (empty($uri))

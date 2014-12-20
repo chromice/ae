@@ -120,7 +120,6 @@ class Response
 		{
 			unset(self::$buffers[$i]);
 		}
-		
 	}
 
 	protected static $http_errors = array(

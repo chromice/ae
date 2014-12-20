@@ -363,12 +363,12 @@ final class Core
 		switch ($context) 
 		{
 			case Core::name:
-				return strtolower(preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value));
+				return preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value);
 			case Core::identifier:
-				return strtolower(preg_replace('/[^a-zA-Z0-9_\-]/', '', $value));
+				return preg_replace('/[^a-zA-Z0-9_\-]/', '', $value);
 			case Core::value:
 			case Core::text:
-				return preg_replace('/&amp;([a-z\d]+|#\d+|#x[a-f\d]+);/i', '&$1;', htmlspecialchars($value, ENT_QUOTES));
+				return preg_replace('/&amp;([a-zA-Z\d]+|#\d+|#[xX][a-fA-F\d]+);/', '&$1;', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'));
 		}
 		
 		return $value;
