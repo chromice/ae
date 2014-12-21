@@ -110,7 +110,7 @@ class Example
 			$source = (string) Core::file(Core::resolve($this->source_path));
 			
 			// Cut out hidden parts between '///+++' and '///---'
-			if (preg_match_all('/^\s*\/\/\/\s*(\-\-\-|\+\+\+)\s*$/m', $source, $found, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0)
+			if (preg_match_all('/^\s*\/{3}\s*(\-{3}|\+{3})\s*$/m', $source, $found, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0)
 			{
 				$_source = '';
 				$_offset = strlen($source);
@@ -121,10 +121,10 @@ class Example
 					$f_offset = $f[0][1];
 					$f_type = $f[1][0];
 					
-					if ($f_type === '+++' && !is_null($_offset))
+					if ($f_type === '+++')
 					{
 						$_source = substr($source, ($f_offset + $f_length), ($_offset - ($f_offset + $f_length))) . $_source;
-						$_offset = null;
+						$_offset = $f_offset;
 					}
 					elseif ($f_type === '---')
 					{
@@ -132,16 +132,11 @@ class Example
 					}
 				}
 				
-				if (!is_null($_offset))
-				{
-					$_source = substr($source, 0, $_offset) . $_source;
-				}
-				
-				$source = $_source;
+				$source = substr($source, 0, $_offset) . $_source;
 			}
 			
 			// Remove implied comment sequence "///"
-			$source = preg_replace('/^(\s*)\/\/\/\s*(.*)$/m', '$1$2', $source);
+			$source = preg_replace('/^(\s*)\/{3}\s*(.*)$/m', '$1$2', $source);
 		
 			return "\n```php\n" . $source . "\n```\n";
 		}

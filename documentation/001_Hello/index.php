@@ -17,7 +17,7 @@ echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 
 $i = 2 + 3;
 
-// ...unless it's output.
+// ...unless it is echoed.
 
 /// +++
 
