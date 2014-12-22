@@ -19,8 +19,6 @@ This project has been created and maintained by its sole author to explore, vali
 
 There is nothing particularly groundbreaking or fancy about this toolkit. If you are just looking for a simple PHP framework, keep searching: you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com). 
 
-Feel free to poke around though.
-
 
 ## Getting started
 
@@ -45,7 +43,7 @@ require 'path/to/ae/core.php';
 
 ### Configuring Composer
 
-Alternatively, you can use [Composer](https://getcomposer.org). Make sure you `composer.json` references this repository AND has æ added as a requirement:
+If you are using [Composer](https://getcomposer.org), make sure your `composer.json` references this repository AND has æ added as a requirement:
 
 ```json
 {
