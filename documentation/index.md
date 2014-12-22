@@ -1,16 +1,20 @@
-<?php
-
-use \ae\Core as ae;
-
-$doc = ae::documentation(__DIR__, '/', 'index.md');
-
-?>
 
 ## Hello world
 
 Let's create the most basic web application. Put this code into *index.php* in the web root directory:
 
-<?= $example = $doc->example('/001_Hello') ?>
+
+```php
+<?php
+
+include 'path/to/core.php';
+
+use \ae\Core as ae;
+
+echo 'Hello ' . ae::request()->segment(0, "world") . '!';
+
+?>
+```
 
 You should also instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
 
@@ -27,11 +31,17 @@ You should also instruct Apache to redirect all unresolved URIs to *index.php*, 
 
 Now, if you open our app – located at, say, *http://localhost/* – in a browser you should see this:
 
-<?= $example->expect('world.txt') ?>
+
+```txt
+Hello world!
+```
 
 If you change the address to *http://localhost/universe*, you should see:
 
-<?= $example->on('/universe')->expect('universe.txt') ?>
+
+```txt
+Hello universe!
+```
 
 Congratulations!
 
