@@ -66,7 +66,7 @@ Alternatively, you can use [Composer](https://getcomposer.org). Make sure you `c
 
 Let's create the most basic web application. Put this code into `index.php` in the web root directory:
 
-<?= $example = $doc->example('/001_Hello') ?>
+<?= $example = $doc->example('/001_Hello_world') ?>
 
 You should also instruct Apache to redirect all unresolved URIs to `index.php`, by adding the following rules to `.htaccess` file:
 
