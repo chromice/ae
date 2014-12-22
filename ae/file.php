@@ -384,12 +384,12 @@ class File
 	{
 		$this->_can('read from file');
 		
-		if (false === fread($this->file, $length))
+		if (false === ($read = fread($this->file, $length)))
 		{
-			throw new FileException('Failed to write to file.');
+			throw new FileException('Failed to read from file.');
 		}
-
-		return $this;
+		
+		return $read;
 	}
 	
 	public function seek($offset, $whence = SEEK_SET)
