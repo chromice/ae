@@ -46,20 +46,16 @@ class Documentation
 	
 	public function __destruct()
 	{
+		$output = $this->buffer->render();
 		$response = Core::response('text/x-markdown');
 		
-		if (!is_null($this->save_as))
+		if (!empty($this->save_as))
 		{
-			$output = $this->buffer->render();
-			
-			// TODO: Save output to disk.
-			
-			echo $output;
+			$file = Core::file($this->base_dir . $this->save_as)
+				->open('w')->write($output)->close();
 		}
-		else
-		{
-			$this->buffer->output();
-		}
+		
+		echo $output;
 		
 		$response->dispatch();
 	}
@@ -377,7 +373,7 @@ class Source
 		// Remove non-comment sequence "///"
 		$source = preg_replace('/^(\s*)\/{3}\s*(.*)$/m', '$1$2', $source);
 	
-		return "\n```php\n" . $source . "\n```\n";
+		return "\n```{$this->type}\n" . $source . "\n```\n";
 	}
 	
 	public function lines($start, $end)
