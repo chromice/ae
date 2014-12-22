@@ -351,7 +351,7 @@ class Source
 			return "\n```{$this->type}\n" . $source . "\n```\n";
 		}
 		
-		// Cut out hidden parts between '///+++' and '///---'
+		// Cut out hidden parts between '///---' and '///+++'
 		if (preg_match_all('/^\s*\/{3}\s*(\-{3}|\+{3})\s*$/m', $source, $found, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0)
 		{
 			$_source = '';
@@ -393,7 +393,7 @@ class Source
 
 class SourceError extends Source
 /*
-	Exists only to stop line slicer from messing up the error message.
+	Stops line slicer from messing up the error message.
 */
 {
 	public function lines($start, $end)
