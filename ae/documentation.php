@@ -173,6 +173,13 @@ class Example
 			return new SourceError($message, 'diff');
 		}
 		
+		$lint = exec('php -l ' . $path);
+		
+		if (strpos($lint, 'No syntax errors detected') === FALSE)
+		{
+			return new SourceError($lint, 'txt');
+		}
+		
 		if (is_null($type))
 		{
 			$type = pathinfo($file_name, PATHINFO_EXTENSION);
