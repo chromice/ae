@@ -358,6 +358,9 @@ class Source
 			return "\n```{$this->type}\n" . $source . "\n```\n";
 		}
 		
+		// Replace __DIR__ with 'path/to'
+		$source = preg_replace('/__DIR__\s*\.\s*([\'"])/', '$1path/to', $source);
+		
 		// Cut out hidden parts between '///---' and '///+++'
 		if (preg_match_all('/^\s*\/{3}\s*(\-{3}|\+{3})\s*$/m', $source, $found, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0)
 		{
