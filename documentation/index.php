@@ -41,11 +41,12 @@ Expectations failed: {stats-unexpected}/{stats-expected}
     - [Configuring Composer](#configuring-composer)
     - [Hello world](#hello-world)
 - [Design principles](#design-principles)
-    - [Exception safety](#exception-safety)
-    - [PHP is the templating engine](#php-is-the-templating-engine)
-        - [Separating business from presentation logic](#separating-business-from-presentation-logic)
-        - [Keeping you template code DRY](#keeping-you-template-code-dry)
     - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
+    - [Exception safety](#exception-safety)
+    - [Everyting is a script](#everyting-is-a-script)
+        - [Break your app into components](#break-your-app-into-components)
+        - [Keep you template code DRY](#keep-you-template-code-dry)
+        - [Separate business from presentation logic](#Separate-business-from-presentation-logic)
 - [Library reference](#library-reference)
 
 * * *
@@ -276,7 +277,7 @@ Which will result in:
 
 **NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
 
-#### Separat business and presentation logic
+#### Separate business and presentation logic
 
 Process input first, execute database queries, pre-calculate values and check/set state at the top of your script AND THAN use those values to generate HTML.
 
