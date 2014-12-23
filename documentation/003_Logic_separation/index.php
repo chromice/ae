@@ -1,17 +1,22 @@
 <?php
 
-// ==================
-// = Business logic =
-// ==================
-
-// Process input
+// ===============
+// = Input logic =
+// ===============
 $filters = array(
     'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
     'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
 );
+$filters = array_map($filters, function ($value) {
+	return max($value, 0);
+});
 
-// Execute business logic
+
+// ==================
+// = Business logic =
+// ==================
 $results = get_results($filters);
+
 
 // ======================
 // = Presentation logic =
