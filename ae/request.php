@@ -361,7 +361,7 @@ class Router
 		} 
 		catch (CoreException $e) 
 		{
-			throw new RequestException('Request could not be routed. Base directory "' . $base . '" does not exist.');
+			throw new RequestException('Request could not be routed: "' . $base . '" does not exist.');
 		}
 		
 		if (is_file($base))

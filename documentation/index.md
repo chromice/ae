@@ -5,8 +5,8 @@
 
 This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that adheres to a few basic principles:
 
-- **Simplicity:** æ abhors complexity. There are no controllers, event emitters and responders, filters, templating engines, etc. There is no config file to tinker with. All libraries come with their configuration options set to reasonable defaults.
-- **Reliability**: All examples in this documentation are tested and their output verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines, etc. There is no config file to tinker with. All libraries come with their configuration options set to reasonable defaults.
+- **Reliability**: All examples in this documentation are tested and their output verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant. 
 - **Performance:** Libraries are loaded when you need them and there is no hidden layer above your code to worry about. Cached responses are served by Apache alone, i.e. without PHP overhead.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
@@ -14,11 +14,17 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 æ will be perfect for you, if your definition of a web application falls along these lines:
 
-> A web app is a bunch of scripts thrown together to concatenate a long string of HTML in response to a string of HTTP of variable length.
+> **Opinion:** A web application is a bunch of scripts thrown together to concatenate a string of HTML in response to a string of HTTP.
 
 In other words, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
 
-You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and/or in a large team, and wishes you a hearty good luck.
+You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck.
+
+* * *
+
+Rediness: 86.96%
+Examples failed: 0/7
+Expectations failed: 3/16
 
 * * *
 
@@ -52,7 +58,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and include `ae/core.php`:
+You can download the latest release manually, drop it into your project and include <kbd>ae/core.php</kbd>:
 
 ```php
 require 'path/to/ae/core.php';
@@ -60,7 +66,7 @@ require 'path/to/ae/core.php';
 
 ### Configuring Composer
 
-If you are using [Composer](https://getcomposer.org), make sure your `composer.json` references this repository AND has æ added as a requirement:
+If you are using [Composer](https://getcomposer.org), make sure your <kbd>composer.json</kbd> references this repository AND has æ added as a requirement:
 
 ```json
 {
@@ -79,7 +85,7 @@ If you are using [Composer](https://getcomposer.org), make sure your `composer.j
 
 ### Hello world
 
-Let's create the most basic web application. Put this code into `index.php` in the web root directory:
+Let's create the most basic web application. Put this code into <kbd>index.php</kbd> in the web root directory:
 
 
 ```php
@@ -94,7 +100,7 @@ echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 ?>
 ```
 
-You should also instruct Apache to redirect all unresolved URIs to `index.php`, by adding the following rules to `.htaccess` file:
+You should also instruct Apache to redirect all unresolved URIs to <kbd>index.php</kbd>, by adding the following rules to <kbd>.htaccess</kbd> file:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -107,14 +113,14 @@ You should also instruct Apache to redirect all unresolved URIs to `index.php`, 
 </IfModule>
 ```
 
-Now, if you open our app – located at, say, `http://localhost/` – in a browser you should see this:
+Now, if you open our app – located at, say, <kbd>http://localhost/</kbd> – in a browser you should see this:
 
 
 ```txt
 Hello world!
 ```
 
-If you change the address to `http://localhost/universe`, you should see:
+If you change the address to <kbd>http://localhost/universe</kbd>, you should see:
 
 
 ```txt
@@ -126,228 +132,15 @@ Hello universe!
 
 æ was designed with the following principles in mind:
 
-- Exceptions are awesome.
-- [MVC](http://en.wikipedia.org/wiki/Model–view–controller) is a bad fit for the web.
 - Imperative and expressive trumps declarative and formulaic.
+- Exceptions are awesome.
+- [MVC](http://en.wikipedia.org/wiki/Model–view–controller) and [template engines](http://en.wikipedia.org/wiki/Comparison_of_web_template_engines) are an overkill.
 
-As a result, æ *does not* do anything *magically*: it only does what it is explicitly told. It fails fast by throwing exceptions on recoverable state errors, and triggering warnings when you are just being silly.
+As a result, æ *does not* do anything *magically*: 
 
-
-### Exception safety
-
-In order to make your code exception safe, you must be aware the object life cycle.
-
-`__construct()` method is called whenever a new object is instantiated. If the object is assigned to a variable, it will persist until either:
-
-1. the variable is `unset()`
-2. the scope where the variable was declared is destroyed, either naturally or *when an exception is thrown*
-3. execution of the program halts
-
-`__destruct()` method is called when there are no more variables pointing to the object.
-
-Many æ libraries take advantage of the object life cycle. For instance, internal `\ae\ValueSwitch` class is using it to switch values temporarily:
-
-
-```php
-<?php
-
-$foo = 'foo';
-echo $foo; // echoes 'foo'
-
-$switch = new \ae\ValueSwitch($foo, 'bar');
-
-echo $foo; // echoes 'bar'
-
-unset($switch);
-
-echo $foo; // echoes 'foo' again
-
-
-```
-
-Which will output:
-
-
-```txt
-foobarfoo
-```
-
-Generally speaking, all resources your object has allocated must be deallocated in the destructor. First of all, you should not rely on user remembering to close file handles or unlock locked files, dispatch requests or flush buffers, or do some other *implied* tasks. Secondly, if you find yourself cleaning up state after catching an exception, you are doing it wrong.
-
-
-### PHP is the templating engine
-
-æ takes advantage of the fact that PHP itself is a powerful templating engine. In the humble opinion of the author all the templating engines written for PHP exist primarily to:
-
-1. Separate *business* and *presentation* logic.
-2. Keep the template code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
-
-And you can solve these problems through best practices alone.
-
-#### Separating business from presentation logic
-
-This one is simple: process input first, execute database queries, pre-calculate values and check/set state at the top of your script AND THAN use those values to generate HTML.
-
-
-```php
-<?php
-
-// ===============
-// = Input logic =
-// ===============
-$filters = array(
-    'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
-    'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
-);
-$filters = array_map($filters, function ($value) {
-	return max($value, 0);
-});
-
-
-// ==================
-// = Business logic =
-// ==================
-$results = get_results($filters);
-
-
-// ======================
-// = Presentation logic =
-// ======================
-?>
-
-<h1>Results</h1>
-
-<?php if (empty($results) || !is_array($results)): ?>
-<p>No results to display</p>
-<?php else: ?>
-<ul>
-    <?php foreach ($results as $result): ?>
-    <li><?= $result ?> </li>
-    <?php endforeach ?>
-</ul>
-<?php endif ?>
-```
-
-In MVC-speak your controller is at the top, and your view is at the bottom. In one file.
-
-You are welcome.
-
-#### Keeping you template code DRY
-
-æ comes with two ways to keep you template code DRY:
-
-1. **Snippet**: for when several scripts are presenting similar looking data. Think: article listings, user profiles, etc.
-2. **Container**: for when several scripts are contained within the same template. Think: standard header + various content + standard footer.
-
-
-##### Snippets
-
-A snippet is a parameterized template, used to present snippets of information in a standardized form.
-
-
-```php
-<?php
-
-use \ae\Core as ae;
-
-$dictionary = array(
-    'Ash' => 'a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.',
-    'Framework' => 'an essential supporting structure of a building, vehicle, or object.',
-    'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
-);
-
-ae::output('path/to/snippet.php', array(
-    'data' => $dictionary
-));
-```
-
-Provided `snippet.php` contains:
-
-
-```php
-<?php
-
-if (empty($data) || !is_array($data))
-{
-    return;
-}
-
-?>
-<dl>
-<?php foreach ($data as $term => $definition): ?>
-    <dt><?= $term ?></dt>
-    <dd><?= $definition ?></dd>
-<?php endforeach ?>
-</dl>
-
-```
-
-The script will render:
-
-
-```html
-<dl>
-    <dt>Ash</dt>
-    <dd>a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.</dd>
-    <dt>Framework</dt>
-    <dd>an essential supporting structure of a building, vehicle, or object.</dd>
-    <dt>PHP</dt>
-    <dd>a server-side scripting language designed for web development but also used as a general-purpose programming language.</dd>
-</dl>
-
-```
-
-
-##### Containers
-
-A container is a parameterized template, used as a wrapper. Here's an example of a container:
-
-
-
-```php
-<!DOCTYPE html>
-<html>
-<head>
-    <title><?= $title ?></title>
-</head>
-<body>
-    <?= $content ?>
-</body>
-</html>
-```
-
-Another script can use it:
-
-
-```php
-<?php 
-
-use \ae\Core as ae;
-
-$container = ae::container('path/to/container.php')
-    ->set('title', 'Container example');
-
-?>
-<h1>Hello World!</h1>
-
-```
-
-Which will result in:
-
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Container example</title>
-</head>
-<body>
-    <h1>Hello World!</h1>
-</body>
-</html>
-```
-
-**NB!** We assigned container object to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
+1. It only does what it is explicitly told. 
+2. It fails fast by throwing exceptions on recoverable state errors, and triggering warnings when you are just being silly.
+3. It does not try to reinvent the wheel, and expects you to know how wheels work.
 
 
 ### Imperative and expressive syntax
@@ -404,9 +197,314 @@ $result = $query->make();
 ```
 
 
+### Exception safety
+
+In order to make your code exception safe, you must be aware the object life cycle.
+
+`__construct()` method is called whenever a new object is instantiated. If the object is assigned to a variable, it will persist until either:
+
+1. the variable is `unset()`
+2. the scope where the variable was declared is destroyed, either naturally or *when an exception is thrown*
+3. execution of the program halts
+
+`__destruct()` method is called when there are no more variables pointing to the object.
+
+Many æ libraries take advantage of the object life cycle. For instance, internal `\ae\ValueSwitch` class is using it to switch values temporarily:
+
+
+```php
+<?php
+
+$foo = 'foo';
+echo $foo; // echoes 'foo'
+
+$switch = new \ae\ValueSwitch($foo, 'bar');
+
+echo $foo; // echoes 'bar'
+
+unset($switch);
+
+echo $foo; // echoes 'foo' again
+
+
+```
+
+Which will output:
+
+
+```txt
+foobarfoo
+```
+
+> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. First of all, you should not rely on user remembering to close file handles or unlock locked files, dispatch requests or flush buffers, or do some other *implied* tasks. Secondly, if you find yourself cleaning up state after catching an exception, you are doing it wrong.
+
+
+### Everyting is a script
+
+> All the world's a stage,   
+> And all the men and women merely players.
+
+Strictly speaking æ is not a framework, because it imposes no rules on how your should structure your code: there are no canonical directory structure or file-naming conventions. As far as the author is concerned, all your code may be happily contained in a single <kbd>index.php</kbd> or be equally happily spread across dozens of directories and hundreds of files.
+
+It would not be unreasonable to assume that it will be one or more PHP scripts that will be responsible for one or more of the following tasks:
+
+- *Handling a request*, i.e. determine what to do based on request URI, GET/POST parameters and form values.
+- *Changing internal state*, e.g. cookies, session variables, records in the database.
+- *Generating a response*, i.e. spitting out a string of HTML code.
+
+The author does not want to be unfairly prescriptive, but here are a few pieces of advice that you may find helpful:
+
+#### Break your app into components
+
+æ lets you either delegate the request to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
+
+For example, you may want to handle user authentication and let:
+
+- <kbd>/account/login</kbd> – Authentication form.
+- <kbd>/account/logout</kbd> – Log user out.
+- <kbd>/account/edit</kbd> – Edit account information.
+- <kbd>/account</kbd> – Display account information.
+
+You may also have a script to display products:
+
+- <kbd>/products[/page/{page-number}]</kbd> – Display (paginated) list of products.
+- <kbd>/products/{product-id}/{product-seo-title}</kbd> – Display a product page.
+
+And finally, you may want to display some pages:
+
+- <kbd>/</kbd> – Display home page.
+- <kbd>/about-us</kbd> – Display about us page.
+- <kbd>/about-us/team</kbd> – List team members.
+
+Now, here's what an <kbd>index.php</kbd> in the web root directory may look like:
+
+
+```php
+<?php
+
+use \ae\Core as ae;
+
+$route = ae::request()->route(array(
+	// 1. Map account to /responders/account.php script
+	'/account' => 'path/to/responders/account.php',
+	
+	// 2. Handle products request here
+	'/products/{numeric}' => function ($product_id) {
+		echo "Display product #{$product_id}.";
+	},
+	'/products/page/{numeric}' => function ($page) {
+		echo "List product page #{$page}.";
+	},
+	'/products' => function ($page) {
+		echo "List product page #1.";
+	},
+	
+	// 3. Map everyting else to /responders/pages directory
+	'/' => 'path/to/responders/pages'
+));
+
+try {
+	$route->follow();
+} catch (\ae\RequestException $e) {
+	echo 'No page found.';
+}
+
+```
+
+
+
+```diff
+Unexpected output
+=================
+-Authentication form.
++Display account information.
+
+```
+
+```diff
+Unexpected output
+=================
+-Log user out.
++Display account information.
+
+```
+
+```diff
+Unexpected output
+=================
+-Edit account information.
++Display account information.
+
+```
+
+
+
+
+#### Keep you template code DRY
+
+æ takes advantage of the fact that PHP itself is a powerful template engine and exposes two classes of objects to help you keep your presentation code DRY:
+
+1. **Snippet**: for when several scripts are presenting similar looking data. Think: article listings, user profiles, etc.
+2. **Container**: for when several scripts are contained within the same template. Think: standard header + various content + standard footer.
+
+##### Snippets
+
+A snippet is a parameterized template, used to present snippets of information in a standardized form.
+
+
+```php
+<?php
+
+use \ae\Core as ae;
+
+$dictionary = array(
+    'Ash' => 'a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.',
+    'Framework' => 'an essential supporting structure of a building, vehicle, or object.',
+    'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
+);
+
+ae::output('path/to/snippet.php', array(
+    'data' => $dictionary
+));
+```
+
+Provided <kbd>snippet.php</kbd> contains:
+
+
+```php
+<?php
+
+if (empty($data) || !is_array($data))
+{
+    return;
+}
+
+?>
+<dl>
+<?php foreach ($data as $term => $definition): ?>
+    <dt><?= $term ?></dt>
+    <dd><?= $definition ?></dd>
+<?php endforeach ?>
+</dl>
+
+```
+
+The script will render:
+
+
+```html
+<dl>
+    <dt>Ash</dt>
+    <dd>a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.</dd>
+    <dt>Framework</dt>
+    <dd>an essential supporting structure of a building, vehicle, or object.</dd>
+    <dt>PHP</dt>
+    <dd>a server-side scripting language designed for web development but also used as a general-purpose programming language.</dd>
+</dl>
+
+```
+
+##### Containers
+
+A container is a parameterized template, used as a wrapper. Here's an example of a container:
+
+
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title><?= $title ?></title>
+</head>
+<body>
+    <?= $content ?>
+</body>
+</html>
+```
+
+Another script can use it:
+
+
+```php
+<?php 
+
+use \ae\Core as ae;
+
+$container = ae::container('path/to/container.php')
+    ->set('title', 'Container example');
+
+?>
+<h1>Hello World!</h1>
+
+```
+
+Which will result in:
+
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Container example</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+</body>
+</html>
+```
+
+**NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
+
+#### Separat business and presentation logic
+
+Process input first, execute database queries, pre-calculate values and check/set state at the top of your script AND THAN use those values to generate HTML.
+
+
+```php
+<?php
+
+// ===============
+// = Input logic =
+// ===============
+$filters = array(
+    'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
+    'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
+);
+$filters = array_map($filters, function ($value) {
+	return max($value, 0);
+});
+
+
+// ==================
+// = Business logic =
+// ==================
+$results = get_results($filters);
+
+
+// ======================
+// = Presentation logic =
+// ======================
+?>
+
+<h1>Results</h1>
+
+<?php if (empty($results) || !is_array($results)): ?>
+<p>No results to display</p>
+<?php else: ?>
+<ul>
+    <?php foreach ($results as $result): ?>
+    <li><?= $result ?> </li>
+    <?php endforeach ?>
+</ul>
+<?php endif ?>
+```
+
+In MVC-speak your controller is at the top, and your view is at the bottom. Just in one file.
+
 
 ## Library reference
 
+To be done.
 
 ### Core
 
@@ -445,4 +543,4 @@ $result = $query->make();
 ### Database
 
 
-<!-- Generated by \ae\Documentation on 23 December 2014 13:01:43 -->
+<!-- Generated by \ae\Documentation on 23 December 2014 20:46:00 -->

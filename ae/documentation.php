@@ -51,6 +51,33 @@ class Documentation
 		$output = $this->buffer->render();
 		$response = Core::response('text/x-markdown');
 		
+		$example_count = 0;
+		$example_failed = 0;
+		$expectation_count = 0;
+		$expectation_failed = 0;
+		
+		foreach ($this->examples as $example)
+		{
+			$example_count++;
+			$example_failed+= $example->failed_example ? 1 : 0;
+			$expectation_count+= $example->expectation_count;
+			$expectation_failed+= $example->expectation_failed;
+		}
+		
+		$output = str_replace(array(
+			'{stats-count}',
+			'{stats-failed}',
+			'{stats-expected}',
+			'{stats-unexpected}',
+			'{stats-percentage}'
+		), array(
+			$example_count,
+			$example_failed,
+			$expectation_count,
+			$expectation_failed,
+			round(100 - ($expectation_failed + $example_failed) / ($expectation_count + $example_count) * 100, 2) . '%'
+		), $output);
+		
 		if (!empty($this->save_as))
 		{
 			$file = Core::file($this->base_dir . $this->save_as)
@@ -149,6 +176,10 @@ class Example
 	protected $base_uri;
 	protected $base_dir;
 	
+	public $failed_example = false;
+	public $expectation_count = 0;
+	public $expectation_failed = 0;
+	
 	public function __construct($path, $base_dir, $base_uri)
 	{
 		$this->path = trim($path, '/');
@@ -170,6 +201,8 @@ class Example
 			$message = 'File not found: ' . $this->path . '/' . $file_name;
 			$message.= "\n" . str_repeat('=', strlen($message));
 			
+			$this->failed_example = true;
+			
 			return new SourceError($message, 'diff');
 		}
 		
@@ -177,6 +210,8 @@ class Example
 		
 		if (strpos($lint, 'No syntax errors detected') === FALSE)
 		{
+			$this->failed_example = true;
+			
 			return new SourceError($lint, 'txt');
 		}
 		
@@ -274,9 +309,70 @@ class Example
 	
 	public function expect($file_name)
 	{
+		$this->expectation_count++;
+		
+		$actual = $this->_actual_output();
+		
 		/*
-			Generate actual output via HTTP request
+			Get the expected file
 		*/
+		$path = $this->base_dir . $this->path . '/' . $file_name;
+		
+		if (!file_exists($path))
+		{
+			$message = 'File not found: ' . $this->path . '/' . $file_name;
+			$message.= "\n" . str_repeat('=', strlen($message));
+			
+			$this->expectation_failed++;
+			
+			return new SourceError($message, 'diff');
+		}
+		
+		$expected = file_get_contents($path);
+		
+		/*
+			Compare the results
+		*/
+		if ($actual !== $expected)
+		{
+			$message = 'Unexpected output: ' . $this->path . '/' . $file_name;
+			$message.= "\n" . str_repeat('=', strlen($message));
+			
+			$this->expectation_failed++;
+			
+			return new SourceError("$message\n" . Documentation::diff_lines($expected, $actual), 'diff');
+		}
+		
+		return new Source($actual, pathinfo($file_name, PATHINFO_EXTENSION));
+	}
+	
+	public function outputs($expected, $type = 'txt')
+	{
+		$this->expectation_count++;
+		
+		$actual = $this->_actual_output();
+		
+		/*
+			Compare the results
+		*/
+		if ($actual !== $expected)
+		{
+			$message = 'Unexpected output';
+			$message.= "\n" . str_repeat('=', strlen($message));
+			
+			$this->expectation_failed++;
+			
+			return new SourceError("$message\n" . Documentation::diff_lines($expected, $actual), 'diff');
+		}
+		
+		return new Source($actual, $type);
+	}
+	
+	protected function _actual_output()
+	/*
+		Generates an HTTP request and returns actual output.
+	*/
+	{
 		$request = $this->_request();
 		$r = curl_init();
 		
@@ -303,33 +399,7 @@ class Example
 		$actual = curl_exec($r);
 		curl_close($r);
 		
-		/*
-			Get the expected file
-		*/
-		$path = $this->base_dir . $this->path . '/' . $file_name;
-		
-		if (!file_exists($path))
-		{
-			$message = 'File not found: ' . $this->path . '/' . $file_name;
-			$message.= "\n" . str_repeat('=', strlen($message));
-			
-			return new SourceError($message, 'diff');
-		}
-		
-		$expected = file_get_contents($path);
-		
-		/*
-			Compare the results
-		*/
-		if ($actual !== $expected)
-		{
-			$message = 'Unexpected output: ' . $this->path . '/' . $file_name;
-			$message.= "\n" . str_repeat('=', strlen($message));
-			
-			return new SourceError("$message\n" . Documentation::diff_lines($expected, $actual), 'diff');
-		}
-		
-		return new Source($actual, pathinfo($file_name, PATHINFO_EXTENSION));
+		return $actual;
 	}
 }
 
@@ -406,6 +476,16 @@ class SourceError extends Source
 	Stops line slicer from messing up the error message.
 */
 {
+	public function __toString()
+	{
+		return '';
+	}
+	
+	public function __destruct()
+	{
+		echo parent::__toString();
+	}
+	
 	public function lines($start, $end)
 	{
 		return $this;
