@@ -66,7 +66,7 @@ Expectations failed: {stats-unexpected}/{stats-expected}
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and include <kbd>ae/core.php</kbd>:
+You can download the latest release manually, drop it into your project and include <samp>ae/core.php</samp>:
 
 ```php
 require 'path/to/ae/core.php';
@@ -74,7 +74,7 @@ require 'path/to/ae/core.php';
 
 ### Configuring Composer
 
-If you are using [Composer](https://getcomposer.org), make sure your <kbd>composer.json</kbd> references this repository AND has æ added as a requirement:
+If you are using [Composer](https://getcomposer.org), make sure your <samp>composer.json</samp> references this repository AND has æ added as a requirement:
 
 ```json
 {
@@ -93,11 +93,11 @@ If you are using [Composer](https://getcomposer.org), make sure your <kbd>compos
 
 ### Hello world
 
-Let's create the most basic web application. Put this code into <kbd>index.php</kbd> in the web root directory:
+Let's create the most basic web application. Put this code into <samp>index.php</samp> in the web root directory:
 
 <?= $example = $doc->example('/001_Hello_world') ?>
 
-You should also instruct Apache to redirect all unresolved URIs to <kbd>index.php</kbd>, by adding the following rules to <kbd>.htaccess</kbd> file:
+You should also instruct Apache to redirect all unresolved URIs to <samp>index.php</samp>, by adding the following rules to <samp>.htaccess</samp> file:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -110,11 +110,11 @@ You should also instruct Apache to redirect all unresolved URIs to <kbd>index.ph
 </IfModule>
 ```
 
-Now, if you open our app – located at, say, <kbd>http://localhost/</kbd> – in a browser you should see this:
+Now, if you open our app – located at, say, <samp>http://localhost/</samp> – in a browser you should see this:
 
 <?= $example->expect('world.txt') ?>
 
-If you change the address to <kbd>http://localhost/universe</kbd>, you should see:
+If you change the address to <samp>http://localhost/universe</samp>, you should see:
 
 <?= $example->on('/universe')->expect('universe.txt') ?>
 
@@ -186,7 +186,7 @@ Which will output:
 > All the world's a stage,   
 > And all the men and women merely players.
 
-Strictly speaking æ is not a framework, because it imposes no rules on how your should structure your code: there are no canonical directory structure or file-naming conventions. As far as the author is concerned, all your code may be happily contained in a single <kbd>index.php</kbd> or be equally happily spread across dozens of directories and hundreds of files.
+Strictly speaking æ is not a framework, because it imposes no rules on how your should structure your code: there are no canonical directory structure or file-naming conventions. As far as the author is concerned, all your code may be happily contained in a single <samp>index.php</samp> or be equally happily spread across dozens of directories and hundreds of files.
 
 It would not be unreasonable to assume that it will be one or more PHP scripts that will be responsible for one or more of the following tasks:
 
@@ -202,23 +202,23 @@ The author does not want to be unfairly prescriptive, but here are a few pieces 
 
 For example, you may want to handle user authentication and let:
 
-- <kbd>/account/login</kbd> – Authentication form.
-- <kbd>/account/logout</kbd> – Log user out.
-- <kbd>/account/edit</kbd> – Edit account information.
-- <kbd>/account</kbd> – Display account information.
+- <samp>/account/login</samp> – Authentication form.
+- <samp>/account/logout</samp> – Log user out.
+- <samp>/account/edit</samp> – Edit account information.
+- <samp>/account</samp> – Display account information.
 
 You may also have a script to display products:
 
-- <kbd>/products[/page/{page-number}]</kbd> – Display (paginated) list of products.
-- <kbd>/products/{product-id}/{product-seo-title}</kbd> – Display a product page.
+- <samp>/products[/page/{page-number}]</samp> – Display (paginated) list of products.
+- <samp>/products/{product-id}/{product-seo-title}</samp> – Display a product page.
 
 And finally, you may want to display some pages:
 
-- <kbd>/</kbd> – Display home page.
-- <kbd>/about-us</kbd> – Display about us page.
-- <kbd>/about-us/team</kbd> – List team members.
+- <samp>/</samp> – Display home page.
+- <samp>/about-us</samp> – Display about us page.
+- <samp>/about-us/team</samp> – List team members.
 
-Now, here's what an <kbd>index.php</kbd> in the web root directory may look like:
+Now, here's what an <samp>index.php</samp> in the web root directory may look like:
 
 <?= $routing = $doc->example('007_Routing'); ?>
 
@@ -251,7 +251,7 @@ A snippet is a parameterized template, used to present snippets of information i
 
 <?= $snippet = $doc->example('/004_Template_snippet'); ?>
 
-Provided <kbd>snippet.php</kbd> contains:
+Provided <samp>snippet.php</samp> contains:
 
 <?= $snippet->source('snippet.php') ?>
 
