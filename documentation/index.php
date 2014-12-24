@@ -41,10 +41,10 @@ You may still find it useful, even if you are thinking of web app architecture i
 - [Design principles](#design-principles)
     - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
     - [Exception safety](#exception-safety)
-    - [Everything is a script](#Everything-is-a-script)
+    - [Everything is a script](#everything-is-a-script)
         - [Separate different kinds of logic](#separate-different-kinds-of-logic)
         - [Break your app into components](#break-your-app-into-components)
-        - [Keep you template code DRY](#keep-you-template-code-dry)
+        - [Keep your template code DRY](#keep-your-template-code-dry)
 - [Library reference](#library-reference)
 
 * * *
@@ -176,7 +176,7 @@ Which will output:
 
 <?= $switch_example->expect('output.txt') ?>
 
-Buffer, container and response libraries all start capturing output on `__construct()` and process it on `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommited queries in `__destruct()`.
+Buffer, container and response libraries all start capturing output in `__construct()` and process it in `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommited queries in `__destruct()`.
 
 > **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning state after catching an exception, you are doing it wrong.
 
@@ -248,7 +248,7 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 <?php $routing->on('/about-us/team')->outputs('List team members.') ?>
 <?php $routing->on('/unknown-page')->outputs('No page found.') ?>
 
-#### Keep you template code DRY
+#### Keep your template code DRY
 
 æ takes advantage of the fact that PHP itself is a powerful template engine and exposes two classes of objects to help you keep your presentation code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
 
