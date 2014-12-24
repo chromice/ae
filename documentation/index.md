@@ -22,7 +22,8 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 * * *
 
-**Tests passed**: 24/27  (88.89%)
+**Unit tests**: 24 out of 27 passed (**88.89%** passed)  
+**Code coverage**: 3 out of 8 files covered (**51.58%** average coverage)
 
 * * *
 
@@ -556,4 +557,4 @@ To be done.
 
 
 
-<!-- Generated on 24 December 2014 17:27:50 -->
+<!-- Generated on 24 December 2014 18:33:28 -->

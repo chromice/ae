@@ -52,7 +52,28 @@ class Documentation
 		$output = $this->buffer->render();
 		$response = Core::response('text/x-markdown');
 		
-		// Gather test stats
+		/*
+			Gather coverage stats
+		*/
+		$covered = count(array_filter($this->covered_stats));
+		$total = count($this->covered_stats);
+		$average = round(100 * array_reduce($this->covered_stats, function ($c, $i) {
+			return $c + $i;
+		}, 0) / $covered, 2);
+		
+		$coverage_summary = "$covered out of $total files covered (**$average%** average coverage)";
+		$coverage_details = array();
+		
+		foreach ($this->covered_stats as $file => $percent)
+		{
+			$coverage_details[] = '- <samp>' . trim($file, './') . '</samp>: **' . round(100 * $percent, 2) . '%** coverage';
+		}
+		
+		$coverage_details = implode("\n", $coverage_details);
+		
+		/*
+			Gather test stats
+		*/
 		$tests_total = 0;
 		$tests_failed = 0;
 		
@@ -62,19 +83,27 @@ class Documentation
 			$tests_failed += $example->tests_failed;
 		}
 		
-		$output = str_replace(array(
-			'{tests:total}',
-			'{tests:passed}',
-			'{tests:failed}',
-			'{tests:passed-percent}',
-			'{tests:failed-percent}',
-		), array(
-			number_format($tests_total),
-			number_format($tests_total - $tests_failed),
-			number_format($tests_failed),
-			round(1 - $tests_failed / $tests_total, 4) * 100 . '%',
-			round($tests_failed / $tests_total, 4) * 100 . '%'
+		$tests_passed = number_format($tests_total - $tests_failed);
+		$tests_passed_percent = round(1 - $tests_failed / $tests_total, 4) * 100 . '%';
+		$tests_total = number_format($tests_total);
+		
+		$tests_summary = "$tests_passed out of {$tests_total} passed (**{$tests_passed_percent}** passed)";
+		
+		/*
+			Replace stat tokens
+		*/
+		$output = str_replace(array_map(function ($i) {
+			return '{' . $i . '}';
+		}, array(
+			'tests:summary',
+			'coverage:summary',
+			'coverage:details',
+		)), array(
+			$tests_summary,
+			$coverage_summary,
+			$coverage_details
 		), $output);
+		
 		
 		if (!empty($this->save_as))
 		{
@@ -112,6 +141,7 @@ class Documentation
 	// =================
 	
 	protected $covered_files = array();
+	protected $covered_stats = array();
 	static protected $code_coverage = array();
 	
 	static public function merge_code_coverage($info)
@@ -169,12 +199,18 @@ class Documentation
 				continue;
 			}
 			
+			$real_path = realpath($real_path);
+			
+			$this->covered_stats[$path] = isset(self::$code_coverage[$real_path])
+				? 1 - array_reduce(self::$code_coverage[$real_path], function ($c, $i) {
+					return $c += $i === -1 ? 1 : 0;
+				}, 0) / count(self::$code_coverage[$real_path])
+				: null;
+			
 			if ($print === false)
 			{
 				continue;
 			}
-			
-			$real_path = realpath($real_path);
 			
 			if (!isset(self::$code_coverage[$real_path]))
 			{

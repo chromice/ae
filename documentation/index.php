@@ -38,7 +38,8 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 * * *
 
-**Tests passed**: {tests:passed}/{tests:total}  ({tests:passed-percent})
+**Unit tests**: {tests:summary}  
+**Code coverage**: {coverage:summary}
 
 * * *
 
