@@ -2,7 +2,16 @@
 
 use \ae\Core as ae;
 
-$doc = ae::documentation(__DIR__, '/', 'index.md');
+$show_coverage = false;
+$doc = ae::documentation(__DIR__, '/', 'index.md')
+	->covers('../ae/core.php', $show_coverage)
+	->covers('../ae/file.php', $show_coverage)
+	->covers('../ae/container.php', $show_coverage)
+	->covers('../ae/request.php', $show_coverage)
+	->covers('../ae/response.php', $show_coverage)
+	->covers('../ae/image.php', $show_coverage)
+	->covers('../ae/form.php', $show_coverage)
+	->covers('../ae/database.php', $show_coverage);
 
 ?>
 

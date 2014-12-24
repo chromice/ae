@@ -16,8 +16,6 @@
 # limitations under the License.
 # 
 
-// TODO: Add stats: specs, tests, run, skipped, failed.
-
 namespace ae;
 
 Core::invoke('\ae\Documentation');
@@ -48,10 +46,13 @@ class Documentation
 	
 	public function __destruct()
 	{
+		// Show code coverage
+		$this->_show_code_coverage();
+		
 		$output = $this->buffer->render();
 		$response = Core::response('text/x-markdown');
 		
-		// Gather that stats
+		// Gather test stats
 		$tests_total = 0;
 		$tests_failed = 0;
 		
@@ -89,6 +90,14 @@ class Documentation
 		$response->dispatch();
 	}
 	
+	static public function analyzer()
+	/*
+		Returns a code coverage analyzer.
+	*/
+	{
+		return new Analyzer();
+	}
+	
 	public function example($path)
 	/*
 		Returns an example object for the given directory.
@@ -96,6 +105,123 @@ class Documentation
 	{
 		return $this->examples[] = new Example($path, $this->base_dir, $this->base_uri);
 	}
+	
+	
+	// =================
+	// = Code coverage =
+	// =================
+	
+	protected $covered_files = array();
+	static protected $code_coverage = array();
+	
+	static public function merge_code_coverage($info)
+	{
+		foreach ($info as $file => $lines)
+		{
+			foreach ($lines as $line => $value)
+			{
+				$pointer =& self::$code_coverage[$file][$line];
+				
+				if (empty($pointer))
+				{
+					$pointer = $value;
+				}
+				elseif ($pointer > 0)
+				{
+					$pointer = $value;
+				}
+			}
+		}
+	}
+	
+	public function covers($path, $show = false)
+	/*
+		Enables code coverage calculation for that file.
+	*/
+	{
+		$this->covered_files[$path] = $show;
+		
+		return $this;
+	}
+	
+	protected function _show_code_coverage()
+	{
+		$files = array_filter($this->covered_files);
+		
+		if (count($files) > 0)
+		{
+			// Show heading
+			echo "\n\n* * *\n\n# Code coverage\n\n";
+		}
+		
+		foreach ($this->covered_files as $path => $print)
+		{
+			$path = ltrim($path);
+			$real_path = $this->base_dir . ltrim($path, '/');
+			
+			if (!file_exists($real_path))
+			{
+				$message = 'File not found: ' . $path;
+				$message.= "\n" . str_repeat('=', strlen($message));
+			
+				echo new SourceError($message, 'diff');
+				
+				continue;
+			}
+			
+			if ($print === false)
+			{
+				continue;
+			}
+			
+			$real_path = realpath($real_path);
+			
+			if (!isset(self::$code_coverage[$real_path]))
+			{
+				$message = 'No code coverage for ' . $path;
+				$message.= "\n" . str_repeat('=', strlen($message));
+			
+				echo new SourceError($message, 'diff');
+				
+				continue;
+			}
+			
+			$source = 'Code coverage for ' . $path;
+			$source.= "\n" . str_repeat('=', strlen($source));
+			
+			$script = preg_split("/\r\n|\n|\r/", file_get_contents($real_path));
+			$coverage = self::$code_coverage[$real_path];
+			
+			foreach ($script as $index => $code)
+			{
+				if (!isset($coverage[$index + 1]))
+				{
+					$code = ' ' . $code;
+				}
+				elseif ($coverage[$index + 1] > 0)
+				{
+					$code = '+' . $code;
+				}
+				elseif ($coverage[$index + 1] === -1)
+				{
+					$code = '-' . $code;
+				}
+				else
+				{
+					$code = ' ' . $code;
+				}
+				
+				$source.= "\n" . $code;
+			}
+			
+			echo new Source($source, 'diff');
+		}
+	}
+	
+	
+	// ==========================
+	// = Calculating difference =
+	// ==========================
 	
 	static public function diff($old, $new)
 	/*
@@ -306,7 +432,7 @@ class Example
 	{
 		$this->tests_total++;
 		
-		$actual = $this->_actual_output();
+		$actual = $this->_execute();
 		
 		/*
 			Get the expected file
@@ -345,7 +471,7 @@ class Example
 	{
 		$this->tests_total++;
 		
-		$actual = $this->_actual_output();
+		$actual = $this->_execute();
 		
 		/*
 			Compare the results
@@ -363,7 +489,7 @@ class Example
 		return new Source($actual, $type);
 	}
 	
-	protected function _actual_output()
+	protected function _execute()
 	/*
 		Generates an HTTP request and returns actual output.
 	*/
@@ -372,6 +498,7 @@ class Example
 		$r = curl_init();
 		
 		curl_setopt($r, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($r, CURLOPT_HEADER, true);
 		curl_setopt($r, CURLOPT_CUSTOMREQUEST, $request['method']);
 		curl_setopt($r, CURLOPT_URL, $this->_request_url($request['uri']));
 		
@@ -391,11 +518,18 @@ class Example
 			// TODO: Pass session id cookie by default.
 		}
 		
-		// Receive actual output
-		$actual = curl_exec($r);
+		// Receive actual output + headers
+		$response = curl_exec($r);
+		list($header, $body) = explode("\r\n\r\n", $response, 2);
 		curl_close($r);
 		
-		return $actual;
+		// Retrieve code coverage information
+		if (preg_match('/^X-Code-Coverage:\s*(.+)$/m', $header, $found) === 1)
+		{
+			Documentation::merge_code_coverage(unserialize(base64_decode($found[1])));
+		}
+		
+		return $body;
 	}
 }
 
@@ -488,5 +622,65 @@ class SourceError extends Source
 	public function lines($start, $end)
 	{
 		return $this;
+	}
+}
+
+class Analyzer
+/*
+	Code coverage analyzer.
+	
+	Starts analyzing code coverage when object is instantiated.
+*/
+{
+	static protected $count = 0;
+	
+	public function __construct()
+	{
+		if (self::$count === 0)
+		{
+			self::_start();
+		}
+		
+		self::$count++;
+	}
+	
+	public function __destruct()
+	{
+		self::$count--;
+		
+		if (self::$count > 0)
+		{
+			return;
+		}
+		
+		$coverage = self::_get();
+		self::_stop();
+		
+		Documentation::merge_code_coverage($coverage);
+		header('X-Code-Coverage: ' . base64_encode(serialize($coverage)));
+	}
+	
+	static protected function _start()
+	{
+		if (function_exists('xdebug_start_code_coverage'))
+		{
+			xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);
+		}
+	}
+	
+	static protected function _stop()
+	{
+		if (function_exists('xdebug_stop_code_coverage'))
+		{
+			xdebug_stop_code_coverage();
+		}
+	}
+	
+	static protected function _get()
+	{
+		if (function_exists('xdebug_get_code_coverage'))
+		{
+			return xdebug_get_code_coverage();
+		}
 	}
 }

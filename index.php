@@ -18,6 +18,12 @@ use \ae\Core as ae;
 $request = ae::request();
 $route = $request->route('/','/documentation');
 
+if ($request->segment(0, false) !== false)
+{
+	ae::import('ae/documentation.php');
+	$a = \ae\Documentation::analyzer();
+}
+
 if ($route->exists())
 {
 	$route->follow();
