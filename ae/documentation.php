@@ -57,9 +57,9 @@ class Documentation
 		*/
 		$covered = count(array_filter($this->covered_stats));
 		$total = count($this->covered_stats);
-		$average = round(100 * array_reduce($this->covered_stats, function ($c, $i) {
+		$average = $covered > 0 ? round(100 * array_reduce($this->covered_stats, function ($c, $i) {
 			return $c + $i;
-		}, 0) / $covered, 2);
+		}, 0) / $covered, 2) : 0;
 		
 		$coverage_summary = "$covered out of $total files covered (**$average%** average coverage)";
 		$coverage_details = array();
@@ -156,9 +156,9 @@ class Documentation
 				{
 					$pointer = $value;
 				}
-				elseif ($pointer > 0)
+				else
 				{
-					$pointer = $value;
+					$pointer = max($value, $pointer);
 				}
 			}
 		}
@@ -693,7 +693,11 @@ class Analyzer
 		self::_stop();
 		
 		Documentation::merge_code_coverage($coverage);
-		header('X-Code-Coverage: ' . base64_encode(serialize($coverage)));
+		
+		if (!headers_sent())
+		{
+			header('X-Code-Coverage: ' . base64_encode(serialize($coverage)));
+		}
 	}
 	
 	static protected function _start()

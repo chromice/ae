@@ -15,14 +15,13 @@ date_default_timezone_set(@date_default_timezone_get());
 include 'ae/core.php';
 use \ae\Core as ae;
 
+// Enable code coverage analyzer
+ae::import('ae/documentation.php');
+$a = \ae\Documentation::analyzer();
+
+// Route request
 $request = ae::request();
 $route = $request->route('/','/documentation');
-
-if ($request->segment(0, false) !== false)
-{
-	ae::import('ae/documentation.php');
-	$a = \ae\Documentation::analyzer();
-}
 
 if ($route->exists())
 {
