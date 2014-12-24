@@ -68,9 +68,9 @@ class Documentation
 			'{tests:passed-percent}',
 			'{tests:failed-percent}',
 		), array(
-			$tests_total,
-			$tests_total - $tests_failed,
-			$tests_failed,
+			number_format($tests_total),
+			number_format($tests_total - $tests_failed),
+			number_format($tests_failed),
 			round(1 - $tests_failed / $tests_total, 4) * 100 . '%',
 			round($tests_failed / $tests_total, 4) * 100 . '%'
 		), $output);
