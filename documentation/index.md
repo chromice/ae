@@ -35,9 +35,9 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
     - [Exception safety](#exception-safety)
     - [Everything is a script](#Everything-is-a-script)
+        - [Separate different kinds of logic](#separate-different-kinds-of-logic)
         - [Break your app into components](#break-your-app-into-components)
         - [Keep you template code DRY](#keep-you-template-code-dry)
-        - [Separate business from presentation logic](#Separate-business-from-presentation-logic)
 - [Library reference](#library-reference)
 
 * * *
@@ -235,7 +235,9 @@ Which will output:
 foobarfoo
 ```
 
-> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. First of all, you should not rely on user remembering to close file handles or unlock locked files, dispatch requests or flush buffers, or do some other *implied* tasks. Secondly, if you find yourself cleaning up state after catching an exception, you are doing it wrong.
+Buffer, container and response libraries all start capturing output on `__construct()` and process it on `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommited queries in `__destruct()`.
+
+> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning state after catching an exception, you are doing it wrong.
 
 
 ### Everything is a script
@@ -247,15 +249,63 @@ Strictly speaking æ is not a framework, because it imposes no rules on how your
 
 It would not be unreasonable to assume that it will be one or more PHP scripts that will be responsible for one or more of the following tasks:
 
-- *Handling a request*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
-- *Changing internal state*, e.g. files, cookies, session variables, database records, etc.
-- *Generating a response*, i.e. spitting out a string giant string conforming to HTTP.
+- *Handling requests*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
+- *Operating on internal state*, e.g. reading/writing files, cookies, session variables, database records, etc.
+- *Generating responses*, i.e. spitting out a string giant string conforming to HTTP.
 
 The author does not want to be unfairly prescriptive, so here are just a few tips you may find helpful:
 
+#### Separate different kinds of logic
+
+Here is the top tip for one-file-to-rule-them-all approach: Process input first; *than* execute database queries, check internal state and pre-calculate values; *and than* use those values to generate a response.
+
+
+```php
+<?php
+
+// ==================
+// = Handle request =
+// ==================
+$filters = array(
+    'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
+    'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
+);
+$filters = array_map($filters, function ($value) {
+	return max($value, 0);
+});
+
+
+// =============================
+// = Operate on internal state =
+// =============================
+$results = get_results($filters);
+
+
+// =====================
+// = Generate response =
+// =====================
+?>
+
+<h1>Results</h1>
+
+<?php if (empty($results) || !is_array($results)): ?>
+<p>No results to display</p>
+<?php else: ?>
+<ul>
+    <?php foreach ($results as $result): ?>
+    <li><?= $result ?> </li>
+    <?php endforeach ?>
+</ul>
+<?php endif ?>
+```
+
+In MVC-speak your controller is at the top, and your view is at the bottom.
+
+
+
 #### Break your app into components
 
-æ lets you either delegate the request to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
+æ lets you either delegate requests to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
 
 For example, you may want to handle user authentication and let:
 
@@ -281,6 +331,8 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 ```php
 <?php
 
+include 'path/to/ae/core.php'
+
 use \ae\Core as ae;
 
 $route = ae::request()->route(array(
@@ -298,8 +350,15 @@ $route = ae::request()->route(array(
 		echo "List product page #1.";
 	},
 	
-	// 3. Map everyting else to /responders/pages directory
+	// 3. Map the rest to /responders/pages directory
 	'/' => 'path/to/responders/pages'
+	// 
+	// responders/pages/
+	//   index.php -> Home page
+	//   about-us/
+	//     index.php -> About us page
+	//     team.php -> Team page.
+	
 ));
 
 try {
@@ -341,7 +400,7 @@ Unexpected output
 
 #### Keep you template code DRY
 
-æ takes advantage of the fact that PHP itself is a powerful template engine and exposes two classes of objects to help you keep your presentation code DRY:
+æ takes advantage of the fact that PHP itself is a powerful template engine and exposes two classes of objects to help you keep your presentation code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
 
 1. **Snippet**: for when several scripts are presenting similar looking data. Think: article listings, user profiles, etc.
 2. **Container**: for when several scripts are contained within the same template. Think: standard header + various content + standard footer.
@@ -388,7 +447,7 @@ if (empty($data) || !is_array($data))
 
 ```
 
-The script will render:
+The script will produce:
 
 
 ```html
@@ -454,52 +513,6 @@ Which will result in:
 
 **NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
 
-#### Separate business and presentation logic
-
-Process input first, execute database queries, pre-calculate values and check/set state at the top of your script AND THAN use those values to generate HTML.
-
-
-```php
-<?php
-
-// ===============
-// = Input logic =
-// ===============
-$filters = array(
-    'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
-    'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
-);
-$filters = array_map($filters, function ($value) {
-	return max($value, 0);
-});
-
-
-// ==================
-// = Business logic =
-// ==================
-$results = get_results($filters);
-
-
-// ======================
-// = Presentation logic =
-// ======================
-?>
-
-<h1>Results</h1>
-
-<?php if (empty($results) || !is_array($results)): ?>
-<p>No results to display</p>
-<?php else: ?>
-<ul>
-    <?php foreach ($results as $result): ?>
-    <li><?= $result ?> </li>
-    <?php endforeach ?>
-</ul>
-<?php endif ?>
-```
-
-In MVC-speak your controller is at the top, and your view is at the bottom. Just in one file.
-
 
 ## Library reference
 
@@ -543,4 +556,4 @@ To be done.
 
 
 
-<!-- Generated on 24 December 2014 11:38:17 -->
+<!-- Generated on 24 December 2014 12:13:45 -->

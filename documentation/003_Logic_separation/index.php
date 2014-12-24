@@ -1,8 +1,8 @@
 <?php
 
-// ===============
-// = Input logic =
-// ===============
+// ==================
+// = Handle request =
+// ==================
 $filters = array(
     'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
     'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
@@ -12,15 +12,15 @@ $filters = array_map($filters, function ($value) {
 });
 
 
-// ==================
-// = Business logic =
-// ==================
+// =============================
+// = Operate on internal state =
+// =============================
 $results = get_results($filters);
 
 
-// ======================
-// = Presentation logic =
-// ======================
+// =====================
+// = Generate response =
+// =====================
 ?>
 
 <h1>Results</h1>

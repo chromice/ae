@@ -1,5 +1,7 @@
 <?php
 
+/// include 'path/to/ae/core.php'
+
 use \ae\Core as ae;
 
 $route = ae::request()->route(array(
@@ -17,8 +19,15 @@ $route = ae::request()->route(array(
 		echo "List product page #1.";
 	},
 	
-	// 3. Map everyting else to /responders/pages directory
+	// 3. Map the rest to /responders/pages directory
 	'/' => __DIR__ . '/responders/pages'
+	// 
+	// responders/pages/
+	//   index.php -> Home page
+	//   about-us/
+	//     index.php -> About us page
+	//     team.php -> Team page.
+	
 ));
 
 try {
