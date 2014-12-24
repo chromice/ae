@@ -29,9 +29,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 * * *
 
-Rediness: {stats-percentage}
-Examples failed: {stats-failed}/{stats-count}
-Expectations failed: {stats-unexpected}/{stats-expected}
+**Tests passed**: {tests:passed}/{tests:total}  ({tests:passed-percent})
 
 * * *
 
@@ -43,7 +41,7 @@ Expectations failed: {stats-unexpected}/{stats-expected}
 - [Design principles](#design-principles)
     - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
     - [Exception safety](#exception-safety)
-    - [Everyting is a script](#everyting-is-a-script)
+    - [Everything is a script](#Everything-is-a-script)
         - [Break your app into components](#break-your-app-into-components)
         - [Keep you template code DRY](#keep-you-template-code-dry)
         - [Separate business from presentation logic](#Separate-business-from-presentation-logic)
@@ -181,7 +179,7 @@ Which will output:
 > **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. First of all, you should not rely on user remembering to close file handles or unlock locked files, dispatch requests or flush buffers, or do some other *implied* tasks. Secondly, if you find yourself cleaning up state after catching an exception, you are doing it wrong.
 
 
-### Everyting is a script
+### Everything is a script
 
 > All the world's a stage,   
 > And all the men and women merely players.
@@ -190,11 +188,11 @@ Strictly speaking æ is not a framework, because it imposes no rules on how your
 
 It would not be unreasonable to assume that it will be one or more PHP scripts that will be responsible for one or more of the following tasks:
 
-- *Handling a request*, i.e. determine what to do based on request URI, GET/POST parameters and form values.
-- *Changing internal state*, e.g. cookies, session variables, records in the database.
-- *Generating a response*, i.e. spitting out a string of HTML code.
+- *Handling a request*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
+- *Changing internal state*, e.g. files, cookies, session variables, database records, etc.
+- *Generating a response*, i.e. spitting out a string giant string conforming to HTTP.
 
-The author does not want to be unfairly prescriptive, but here are a few pieces of advice that you may find helpful:
+The author does not want to be unfairly prescriptive, so here are just a few tips you may find helpful:
 
 #### Break your app into components
 
