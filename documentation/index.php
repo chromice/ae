@@ -2,7 +2,7 @@
 
 $show_coverage = false;
 $doc = ae::documentation(__DIR__, '/', 'index.md')
-	->covers('../ae/core.php', $show_coverage)
+	->covers('../ae/loader.php', $show_coverage)
 	->covers('../ae/file.php', $show_coverage)
 	->covers('../ae/container.php', $show_coverage)
 	->covers('../ae/request.php', $show_coverage)
@@ -74,10 +74,10 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and include <samp>ae/core.php</samp>:
+You can download the latest release manually, drop it into your project and include <samp>ae/loader.php</samp>:
 
 ```php
-require 'path/to/ae/core.php';
+require 'path/to/ae/loader.php';
 ```
 
 ### Configuring Composer

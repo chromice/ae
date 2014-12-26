@@ -60,10 +60,10 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and include <samp>ae/core.php</samp>:
+You can download the latest release manually, drop it into your project and include <samp>ae/loader.php</samp>:
 
 ```php
-require 'path/to/ae/core.php';
+require 'path/to/ae/loader.php';
 ```
 
 ### Configuring Composer
@@ -93,7 +93,7 @@ Let's create the most basic web application. Put this code into <samp>index.php<
 ```php
 <?php
 
-include 'path/to/ae/core.php';
+include 'path/to/ae/loader.php';
 
 echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 
@@ -332,7 +332,7 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 ```php
 <?php
 
-include 'path/to/ae/core.php'
+include 'path/to/ae/loader.php'
 
 $route = ae::request()->route(array(
 	// 1. Map account to /responders/account.php script
@@ -551,4 +551,4 @@ To be done.
 
 
 
-<!-- Generated on 26 December 2014 19:18:46 -->
+<!-- Generated on 26 December 2014 19:24:53 -->

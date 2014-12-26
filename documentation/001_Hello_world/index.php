@@ -1,6 +1,6 @@
 <?php
 
-/// include 'path/to/ae/core.php';
+/// include 'path/to/ae/loader.php';
 /// ---
 
 // This part will be cut out of the example.
