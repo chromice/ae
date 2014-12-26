@@ -503,6 +503,28 @@ class Example
 		return new Source($actual, pathinfo($file_name, PATHINFO_EXTENSION));
 	}
 	
+	public function contains($contains, $type = 'txt')
+	{
+		$this->tests_total++;
+		
+		$actual = $this->_execute();
+		
+		/*
+			Compare the results
+		*/
+		if (strpos($actual, $contains) === false)
+		{
+			$message = 'Expected to find: ' . $contains;
+			$message.= "\n" . str_repeat('=', strlen($message));
+			
+			$this->tests_failed++;
+			
+			return new SourceError("$message\n" . $actual, 'diff');
+		}
+		
+		return new Source($actual, $type);
+	}
+	
 	public function outputs($expected, $type = 'txt')
 	{
 		$this->tests_total++;
@@ -577,6 +599,7 @@ class Source
 	protected $source;
 	protected $type;
 	protected $lines = array();
+	protected $replacements = array();
 	
 	public function __construct($source, $type)
 	{
@@ -586,11 +609,26 @@ class Source
 	
 	public function __toString()
 	{
-		$source = $this->source;
+		$source = preg_split("/\r\n|\n|\r/", $this->source);
 		
-		// TODO: Implement line slicing.
-		// TODO: Normalise new line.
+		// Slice the lines.
+		if (!empty($this->lines))
+		{
+			$_source = array();
+			ksort($this->lines, SORT_NUMERIC);
+		
+			foreach ($this->lines as $from => $to)
+			{
+				array_splice($_source, count($_source), 0, array_slice($source, $from - 1, $to - $from + 1));
+			}
+			
+			$source = $_source;
+		}
+		
+		$source = implode("\n", $source);
+		
 		// TODO: Indent with spaces.
+		// TODO: Reduce extra indentation.
 		
 		if (!in_array('php', explode('+', $this->type)))
 		{
@@ -599,6 +637,9 @@ class Source
 		
 		// Replace __DIR__ with 'path/to'
 		$source = preg_replace('/__DIR__\s*\.\s*([\'"])/', '$1path/to', $source);
+		
+		// Replace other strings in the source
+		$source = str_replace(array_keys($this->replacements), $this->replacements, $source);
 		
 		// Cut out hidden parts between '///---' and '///+++'
 		if (preg_match_all('/^\s*\/{3}\s*(\-{3}|\+{3})\s*$/m', $source, $found, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0)
@@ -632,9 +673,19 @@ class Source
 		return "\n```{$this->type}\n" . $source . "\n```\n";
 	}
 	
-	public function lines($start, $end)
+	public function lines($from, $to)
 	{
-		$this->lines[] = array($start, $end);
+		if (is_int($from) && is_int($to) && $from <= $to)
+		{
+			$this->lines[$from] = $to;
+		}
+		
+		return $this;
+	}
+	
+	public function replace($search, $replace)
+	{
+		$this->replacements[$search] = $replace;
 		
 		return $this;
 	}
@@ -645,14 +696,16 @@ class SourceError extends Source
 	Stops line slicer from messing up the error message.
 */
 {
+	public function __construct($source, $type)
+	{
+		parent::__construct($source, $type);
+		
+		echo parent::__toString();
+	}
+	
 	public function __toString()
 	{
 		return '';
-	}
-	
-	public function __destruct()
-	{
-		echo parent::__toString();
 	}
 	
 	public function lines($start, $end)

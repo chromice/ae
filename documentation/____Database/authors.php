@@ -35,5 +35,5 @@ class Authors extends \ae\DatabaseTable
 				'authors' => static::name()
 			))
 			->make();
-	}	
+	}
 }

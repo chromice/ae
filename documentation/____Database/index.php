@@ -1,22 +1,26 @@
 <?php
 
-// Set default database paramters
 ae::options('ae.database.default')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
 	->set('database', 'ae');
 
-// When socket cannot be detected automatically...
-// ae::options('ae.database.default')->set('socket', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock');
+?>
 
-echo '<h1>Official database example</h1>';
+# Official database example
+
+<?php
 
 // Import entity classes
 ae::import(__DIR__ . '/authors.php');
 ae::import(__DIR__ . '/books.php');
 
-echo '<h2>Making queries</h2>';
+?>
+
+## Making queries
+
+<?php
 
 // Install
 Novels::install();
@@ -35,7 +39,7 @@ ae::database()
 	->make();
 
 $morgan_id = ae::database()->insert_id();
-
+// Open transaction
 $transaction = ae::database()->transaction();
 
 // EXAMPLE: Update
@@ -52,15 +56,15 @@ ae::database()
 	), \ae\Database::value) // escape
 	->make();
 
-// Commit previous insert statement.
+// ...perform a series of queries...
 $transaction->commit();
-
+// ...perform another series of queries...
 // EXAMPLE: Shortcuts
 ae::database()->update('authors', array(
 	'nationality' => 'English'
 ), array('id' => $morgan_id));
-
-// Rollback previous update
+/// $transaction->commit();
+// ...close transaction and roll back uncommitted queries.
 unset($transaction);
 
 $stephenson_id = ae::database()->insert('authors', array(
@@ -73,12 +77,23 @@ $gibson_id = ae::database()->insert('authors', array(
 ));
 
 
-echo '<p>Seems to work pretty well so far&hellip;</p>';
+?>
 
-echo '<h2>Retrieving data</h2>';
+Seems to work pretty well so far...
 
-echo '<h3>Unordered list</h3>';
-echo '<pre>';
+<?php
+
+?>
+
+## Retrieving data
+
+<?php
+
+?>
+
+### Unordered list
+
+<?php
 
 // EXAMPLE: Unordered list
 $count = ae::database()->count('authors');
@@ -91,10 +106,11 @@ while ($author = $authors->fetch())
 	echo "- {$author['name']} ({$author['nationality']})\n";
 }
 
-echo '</pre>';
+?>
 
-echo '<h3>Ordered list</h3>';
-echo '<pre>';
+### Ordered list
+
+<?php
 
 // EXAMPLE: Ordered list
 $authors = ae::database()
@@ -111,13 +127,13 @@ foreach ($authors as $author)
 	echo "- {$author['name']}\n";
 }
 
-echo '</pre>';
+?>
 
+## Active record
 
-echo '<h2>Active record</h2>';
+### Finding record
 
-echo '<h3>Finding record</h3>';
-echo '<pre>';
+<?php
 
 // EXAMPLE: Finding record
 
@@ -131,8 +147,6 @@ $stephenson->load(array('name', 'nationality'));
 echo $stephenson->name; // Neal Stephenson
 echo ' -- ';
 echo $stephenson->nationality; // American
-
-echo '</pre>';
 
 
 // EXAMPLE: Updating a record
@@ -157,9 +171,12 @@ $shaky = Authors::create(array(
 $shaky->save();
 
 
-echo '<h3>Retriving authors</h3>';
-echo '<pre>';
+?>
 
+
+### Retriving authors
+
+<?php
 
 // EXAMPLE: Retriving authors
 
@@ -175,7 +192,6 @@ while ($author = $authors->fetch())
 	echo "- {$author->name}\n";
 }
 
-echo '</pre>';
 
 
 // EXAMPLE: Deleting record
@@ -201,8 +217,11 @@ $morgan->add_novel('Broken Angels');
 $morgan->add_novel('Woken Furies');
 
 
-echo '<h3>Retriving novels</h3>';
-echo '<pre>';
+?>
+
+### Retriving novels
+
+<?php
 
 // EXAMPLE: Retriving all records
 
@@ -219,7 +238,6 @@ while ($novel = $novels->fetch())
 	echo "- {$novel->title} by {$novel->author->name}\n";
 }
 
-echo '</pre>';
 
 // Uninstall
 Novels::uninstall();

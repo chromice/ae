@@ -1,17 +1,47 @@
-<h1>Official database example</h1><h2>Making queries</h2><p>Seems to work pretty well so far&hellip;</p><h2>Retrieving data</h2><h3>Unordered list</h3><pre>There are 3 authors in the database:
+
+# Official database example
+
+
+## Making queries
+
+
+Seems to work pretty well so far...
+
+
+## Retrieving data
+
+
+### Unordered list
+
+There are 3 authors in the database:
 - Richard K. Morgan (British)
 - Neal Stephenson (American)
 - William Ford Gibson (Canadian)
-</pre><h3>Ordered list</h3><pre>There are 3 authors in the result set:
+
+### Ordered list
+
+There are 3 authors in the result set:
 - Neal Stephenson
 - Richard K. Morgan
 - William Ford Gibson
-</pre><h2>Active record</h2><h3>Finding record</h3><pre>Neal Stephenson -- American</pre><h3>Retriving authors</h3><pre>There are 4 authors in the database:
+
+## Active record
+
+### Finding record
+
+Neal Stephenson -- American
+
+### Retriving authors
+
+There are 4 authors in the database:
 - Richard K. Morgan
 - Neal Stephenson
 - William Ford Gibson
 - William Shakespeare
-</pre><h3>Retriving novels</h3><pre>Here are all 9 novels ordered alphabetically:
+
+### Retriving novels
+
+Here are all 9 novels ordered alphabetically:
 - Altered Carbon by Richard K. Morgan
 - Broken Angels by Richard K. Morgan
 - Count Zero by William Ford Gibson
@@ -21,4 +51,3 @@
 - Reamde by Neal Stephenson
 - Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
-</pre>
