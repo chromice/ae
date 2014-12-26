@@ -684,22 +684,6 @@ $transaction->commit();
 unset($transaction);
 ```
 
-```php
-// Open transaction
-$transaction = ae::database()->transaction();
-
-// ...perform a series of queries...
-
-$transaction->commit();
-
-// ...perform another series of queries...
-
-$transaction->commit();
-
-// Close transaction (rolling back any uncommitted queries)
-unset($transaction);
-```
-
 This way, if one of your SQL queries fails, it will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
 
 **NB!** Only one transaction can be open at a time.
@@ -977,4 +961,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 26 December 2014 22:09:07 -->
+<!-- Generated on 26 December 2014 22:15:22 -->

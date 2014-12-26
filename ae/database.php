@@ -1357,6 +1357,7 @@ abstract class DatabaseTable
 		}
 		else
 		{
+			// FIXME: Opening **another** transaction would blow things up!
 			$transaction = $db->transaction();
 			
 			if ($db->count(static::name(), $this->ids()) > 0)
