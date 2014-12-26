@@ -32,7 +32,9 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 > **Opinion:** A web application is a bunch of scripts thrown together to concatenate an HTTP string in response to another HTTP string.
 
-In other words, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
+In other words, æ is designed to be as simple as possible, but not simpler. It will not let you forget that most of the back-end programming you do is a glorified string manipulation, but it will remove the most cumbersome aspects of it. 
+
+In more practical terms, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
 
 You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck.
 

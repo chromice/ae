@@ -14,9 +14,11 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 æ will be perfect for you, if your definition of a web application falls along these lines:
 
-> **Opinion:** A web application is a bunch of scripts thrown together to concatenate a string of HTML in response to a string of HTTP.
+> **Opinion:** A web application is a bunch of scripts thrown together to concatenate an HTTP string in response to another HTTP string.
 
-In other words, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
+In other words, æ is designed to be as simple as possible, but not simpler. It will not let you forget that most of the back-end programming you do is a glorified string manipulation, but it will remove the most cumbersome aspects of it. 
+
+In more practical terms, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
 
 You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck.
 
@@ -557,4 +559,4 @@ To be done.
 
 
 
-<!-- Generated on 24 December 2014 19:01:43 -->
+<!-- Generated on 26 December 2014 18:39:17 -->
