@@ -3,12 +3,14 @@
 $show_coverage = false;
 $doc = ae::documentation(__DIR__, '/', 'index.md')
 	->covers('../ae/loader.php', $show_coverage)
+	->covers('../ae/options.php', $show_coverage)
 	->covers('../ae/file.php', $show_coverage)
 	->covers('../ae/container.php', $show_coverage)
 	->covers('../ae/request.php', $show_coverage)
 	->covers('../ae/response.php', $show_coverage)
 	->covers('../ae/image.php', $show_coverage)
 	->covers('../ae/form.php', $show_coverage)
+	->covers('../ae/session.php', $show_coverage)
 	->covers('../ae/database.php', $show_coverage);
 
 ?>
@@ -152,11 +154,11 @@ As a result, æ *does not* do anything *magically*:
 
 Most methods are chainable, including all setters: 
 
-<?= $syntax->source('options.php') ?>
+<?= $syntax->source('options.php'); $syntax->on('options')->outputs(''); ?>
 
 Some libraries operate on the buffered output, and don't have a corresponding setter at all:
 
-<?= $syntax->source('response.php') ?>
+<?= $syntax->source('response.php'); $syntax->on('response')->outputs('Hello World'); ?>
 
 Most of æ code follows these two patterns: 
 
@@ -337,6 +339,8 @@ To be done.
 ### Form
 
 * * *
+
+### Session
 
 ### Database
 

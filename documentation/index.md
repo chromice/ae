@@ -24,18 +24,20 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 * * *
 
-**Unit tests**: 52 out of 55 passed (**94.55%** passed)  
-**Code coverage**: 4 out of 8 files covered (**81.06%** average coverage)
+**Unit tests**: 54 out of 57 passed (**94.74%** passed)  
+**Code coverage**: 6 out of 10 files covered (**71.75%** average coverage)
 
 | File                | Coverage |
 |---------------------|---------:|
-| ../ae/loader.php    | 64.04%   |
+| ../ae/loader.php    | 65.73%   |
+| ../ae/options.php   | 75%      |
 | ../ae/file.php      | 0%       |
 | ../ae/container.php | 100%     |
 | ../ae/request.php   | 76.6%    |
-| ../ae/response.php  | 0%       |
+| ../ae/response.php  | 29.59%   |
 | ../ae/image.php     | 0%       |
 | ../ae/form.php      | 0%       |
+| ../ae/session.php   | 0%       |
 | ../ae/database.php  | 83.6%    |
 
 * * *
@@ -558,6 +560,8 @@ To be done.
 
 * * *
 
+### Session
+
 ### Database
 
 
@@ -972,4 +976,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 26 December 2014 23:11:10 -->
+<!-- Generated on 26 December 2014 23:27:23 -->
