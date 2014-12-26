@@ -30,7 +30,7 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 æ will be perfect for you, if your definition of a web application falls along these lines:
 
-> **Opinion:** A web application is a bunch of scripts thrown together to concatenate a string of HTML in response to a string of HTTP.
+> **Opinion:** A web application is a bunch of scripts thrown together to concatenate an HTTP string in response to another HTTP string.
 
 In other words, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
 
