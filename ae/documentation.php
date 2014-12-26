@@ -18,7 +18,7 @@
 
 namespace ae;
 
-Core::invoke('\ae\Documentation');
+\ae::invoke('\ae\Documentation');
 
 class Documentation
 /*
@@ -35,7 +35,7 @@ class Documentation
 	
 	public function __construct($base_dir, $base_uri = null, $save_as = null)
 	{
-		$base_uri = is_null($base_uri) ? Core::request()->uri() : $base_uri;
+		$base_uri = is_null($base_uri) ? \ae::request()->uri() : $base_uri;
 		
 		$this->base_dir = rtrim($base_dir, '/') . '/';
 		$this->base_uri = empty($base_uri) ? '/' : '/' . trim($base_uri, '/') . '/';
@@ -50,7 +50,7 @@ class Documentation
 		$this->_show_code_coverage();
 		
 		$output = $this->buffer->render();
-		$response = Core::response('text/x-markdown');
+		$response = \ae::response('text/x-markdown');
 		
 		/*
 			Gather coverage stats
@@ -108,7 +108,7 @@ class Documentation
 		if (!empty($this->save_as))
 		{
 			$ts = date('d F Y H:i:s');
-			$file = Core::file($this->base_dir . $this->save_as)
+			$file = \ae::file($this->base_dir . $this->save_as)
 				->open('w')
 				->write($output . "\n<!-- Generated on $ts -->")
 				->close();

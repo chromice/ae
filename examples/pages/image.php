@@ -1,7 +1,5 @@
 <?php 
 
-use \ae\Core as ae;
-
 $request = ae::request();
 $image = ae::image('examples/image/test.jpg');
 

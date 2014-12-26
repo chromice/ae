@@ -1,7 +1,5 @@
 <?php
 
-use \ae\Core as ae;
-
 $request = ae::request();
 // or
 // $request = ae::request('foo/bar/fubar');

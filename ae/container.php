@@ -18,7 +18,7 @@
 
 namespace ae;
 
-Core::invoke('\ae\Container');
+\ae::invoke('\ae\Container');
 
 class Container
 /*
@@ -39,7 +39,7 @@ class Container
 	Example of content.php:
 	
 		<?php 
-		$container = Core::container('container.php')
+		$container = ae::container('container.php')
 			->set('title', 'Container example');
 		?>
 		<h1>Hello World!</h1>
@@ -72,7 +72,7 @@ class Container
 	{
 		self::$vars['content'] = $this->buffer->render();
 		
-		Core::output($this->path, self::$vars);
+		\ae::output($this->path, self::$vars);
 	}
 	
 	public function set($name, $value)

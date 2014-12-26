@@ -1,5 +1,4 @@
 <?php
-	use \ae\Core as ae;
 	
 	// Test default response headers
 	$response = ae::response('html');

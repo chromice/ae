@@ -18,16 +18,16 @@
 
 namespace ae;
 
-Core::import('ae/request.php');
+\ae::import('ae/request.php');
 
-Core::options('inspector', array(
+\ae::options('inspector', array(
 	'dump_context' => false, // whether to dump global variables and error contexts;
 	'allowed_ips' => '127.0.0.1, ::1', // an array or comma-separated list of IP addresses;
 	'directory_path' => null // path to log directory.
 ));
 
 // Call Log::log() whenever user is "loading" the library.
-Core::invoke(function () {
+\ae::invoke(function () {
 	call_user_func_array(array('\ae\Log', 'log'), func_get_args());
 });
 
@@ -101,7 +101,7 @@ class Log
 	
 	protected static function on_shutdown()
 	{
-		$options = Core::options('inspector');
+		$options = \ae::options('inspector');
 		$dump_context = $options->get('dump_context');
 		
 		if (connection_aborted() || !$dump_context && count(self::$log) === 0)
@@ -115,11 +115,11 @@ class Log
 		{
 			try 
 			{
-				$path = Core::resolve($path);
+				$path = \ae::resolve($path);
 				
 				if (is_dir($path) && is_writable($path)) 
 				{
-					$log = Core::file($path . '/log_' . gmdate('Y_m_d'))
+					$log = \ae::file($path . '/log_' . gmdate('Y_m_d'))
 						->open('a');
 				}
 				else
@@ -127,7 +127,7 @@ class Log
 					trigger_error('Log directory is not writable.', E_USER_ERROR);
 				}
 			} 
-			catch (CoreException $e)
+			catch (Exception $e)
 			{
 				trigger_error('Log directory does not exist.', E_USER_ERROR);
 			}
@@ -215,10 +215,10 @@ class Log
 			// Try displaying the button
 			try {
 				echo '<script charset="utf-8">'
-					. 'var base_path = "' . Core::options('ae.request')->get('base_url') . '";'
-					. file_get_contents(Core::resolve('/utilities/inspector/assets/inject.js'))
+					. 'var base_path = "' . \ae::options('ae.request')->get('base_url') . '";'
+					. file_get_contents(\ae::resolve('/utilities/inspector/assets/inject.js'))
 					. '</script>';
-			} catch (CoreException $e) {}
+			} catch (Exception $e) {}
 		}
 	}
 	
@@ -258,7 +258,7 @@ class Log
 	protected static function _error($class, $error)
 	{
 		$max_argument_length = 80;
-		$dump_context = Core::options('inspector')->get('dump_context');
+		$dump_context = \ae::options('inspector')->get('dump_context');
 			
 		$o = self::_ruler() . "\n";
 		
@@ -402,7 +402,7 @@ class Log
 		set_exception_handler(array('\ae\Log','_handle_exception'));
 		register_shutdown_function(array('\ae\Log','_handle_shutdown'));
 		
-		// We are in total control of error output
+		// FIXME: User must be responsible for turning error reporting off.
 		error_reporting(0);
 	}
 	
@@ -418,7 +418,7 @@ class Log
 		$trace = debug_backtrace();
 		array_shift($trace);
 		
-		if (Core::options('inspector')->get('dump_context'))
+		if (\ae::options('inspector')->get('dump_context'))
 		{
 			$error['context'] = $context;
 		}

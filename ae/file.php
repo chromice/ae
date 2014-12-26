@@ -18,14 +18,14 @@
 
 namespace ae;
 
-Core::invoke('\ae\File');
+\ae::invoke('\ae\File');
 
 class File
 /*
 	A thin wrapper that abstracts common file operations 
 	mostly for the sake of exception safety.
 	
-		$file = Core::file('example.txt')
+		$file = ae::file('example.txt')
 			->open('w')
 			->write('This is a test.')
 			->close();
@@ -1094,4 +1094,4 @@ class File
 	);
 }
 
-class FileException extends CoreException {}
+class FileException extends Exception {}

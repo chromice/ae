@@ -25,7 +25,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 * * *
 
 **Unit tests**: 24 out of 27 passed (**88.89%** passed)  
-**Code coverage**: 3 out of 8 files covered (**79.37%** average coverage)
+**Code coverage**: 3 out of 8 files covered (**79.33%** average coverage)
 
 * * *
 
@@ -94,8 +94,6 @@ Let's create the most basic web application. Put this code into <samp>index.php<
 <?php
 
 include 'path/to/ae/core.php';
-
-use \ae\Core as ae;
 
 echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 
@@ -336,8 +334,6 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 
 include 'path/to/ae/core.php'
 
-use \ae\Core as ae;
-
 $route = ae::request()->route(array(
 	// 1. Map account to /responders/account.php script
 	'/account' => 'path/to/responders/account.php',
@@ -416,8 +412,6 @@ A snippet is a parameterized template, used to present snippets of information i
 ```php
 <?php
 
-use \ae\Core as ae;
-
 $glossary = array(
     'Ash' => 'a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.',
     'Framework' => 'an essential supporting structure of a building, vehicle, or object.',
@@ -489,8 +483,6 @@ Another script can use it:
 ```php
 <?php 
 
-use \ae\Core as ae;
-
 $container = ae::container('path/to/container.php')
     ->set('title', 'Container example');
 
@@ -559,4 +551,4 @@ To be done.
 
 
 
-<!-- Generated on 26 December 2014 18:39:17 -->
+<!-- Generated on 26 December 2014 19:18:46 -->

@@ -18,30 +18,30 @@
 
 namespace ae;
 
-Core::invoke('\ae\Options');
+\ae::invoke('\ae\Options');
 
 class Options
 /*
 	A simple key/value storage class used for configuration:
 		
 		// Set options
-		$lib_options = Core::options('library');
+		$lib_options = ae::options('library');
 		$lib_options->set('bar', 'foo');
 		
 		// Use options
-		$lib_options_copy = Core::options('library');
+		$lib_options_copy = ae::options('library');
 		echo $lib_options_copy->get('bar'); // echoes 'foo'
 	
 	Preferably you should provide an exhaustive list of keys/default values
 	via second argument:
 	
 		// Define all options
-		Core::options('library', array(
+		ae::options('library', array(
 			'bar' => 'foo'
 		));
 		
 		// Use the defined options
-		$options = Core::options('library');
+		$options = ae::options('library');
 		
 		echo $options->get('bar'); // echoes 'foo'
 		$options->set('bar', 'bar');

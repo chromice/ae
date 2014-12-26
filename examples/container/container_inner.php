@@ -1,5 +1,4 @@
 <?php
-	use \ae\Core as ae;
 	$container = ae::container('/examples/container/container_html.php');
 ?>
 <h1><?= $header ?></h1>

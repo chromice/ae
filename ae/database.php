@@ -18,11 +18,11 @@
 
 namespace ae;
 
-Core::options('ae.database', array(
+\ae::options('ae.database', array(
 	'log' => false
 ));
 
-Core::invoke(array('\ae\Database', 'connection'));
+\ae::invoke(array('\ae\Database', 'connection'));
 
 class Database
 /*
@@ -41,11 +41,11 @@ class Database
 	This library must be invoked with the connection name, 
 	otherise 'default' connection is used.
 	
-		Core::options('ae.database.default')
+		ae::options('ae.database.default')
 			->set('host', 'localhost')
 			->set('user', 'root');
 		
-		$db = Core::database('default');
+		$db = ae::database('default');
 		
 		$db->query('SELECT 1')->make();
 	
@@ -75,7 +75,7 @@ class Database
 			return self::$connections[$database];
 		}
 		
-		$params = Core::options('ae.database.' . $database, array(
+		$params = \ae::options('ae.database.' . $database, array(
 			'class' => get_called_class(),
 			'host' => '127.0.0.1',
 			'user' => null,
@@ -559,11 +559,11 @@ class Database
 		
 		$query = $this->_query();
 		
-		if (Core::options('ae.database')->get('log') === true)
+		if (\ae::options('ae.database')->get('log') === true)
 		{
-			Core::register('utilities/inspector');
+			\ae::register('utilities/inspector');
 			
-			$probe = Core::probe('Query #' . ++$query_counter)->mark();
+			$probe = \ae::probe('Query #' . ++$query_counter)->mark();
 		}
 		
 		$return = $this->db->query($query, MYSQLI_STORE_RESULT);
@@ -996,7 +996,7 @@ abstract class DatabaseTable
 		
 		if (!isset(self::$tables[$class]['database']))
 		{
-			self::$tables[$class]['database'] = Core::database('default');
+			self::$tables[$class]['database'] = \ae::database('default');
 		}
 		
 		return self::$tables[$class]['database'];
@@ -1412,4 +1412,4 @@ abstract class DatabaseTable
 	}
 }
 
-class DatabaseException extends CoreException {}
+class DatabaseException extends Exception {}

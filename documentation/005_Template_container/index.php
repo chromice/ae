@@ -1,7 +1,5 @@
 <?php 
 
-use \ae\Core as ae;
-
 $container = ae::container(__DIR__ . '/container.php')
     ->set('title', 'Container example');
 

@@ -18,12 +18,12 @@
 
 namespace ae;
 
-Core::options('ae.request', array(
+\ae::options('ae.request', array(
 	'base_url' => '/',
 	'proxy_ips' => !empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : null
 ));
 
-Core::invoke(array('\ae\Router', 'request'));
+\ae::invoke(array('\ae\Router', 'request'));
 
 class Request
 /*
@@ -31,7 +31,7 @@ class Request
 	
 	Provided the application is accessed with "/some/arbitrary/request.json":
 	
-		$request = Core::request();
+		$request = ae::request();
 		
 		echo $request->segment(0); // some
 		echo $request->segment(1); // arbitrary
@@ -110,7 +110,7 @@ class Request
 	/*
 		Returns a URI, prefixed with base URL.
 		
-			Core::options('ae.request')->set('base_url', 'https://domain.com/')
+			\ae::options('ae.request')->set('base_url', 'https://domain.com/')
 			echo $request::url('blah'); // echo "https://domain.com/blah"
 	*/
 	{
@@ -181,7 +181,7 @@ class Request
 		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 		{
 			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
-			$whitelist = Core::options('ae.request')->get('proxy_ips');
+			$whitelist = \ae::options('ae.request')->get('proxy_ips');
 			
 			if (empty($whitelist))
 			{
@@ -269,7 +269,7 @@ class Request
 	
 	protected static function _base_url()
 	{
-		return rtrim(Core::options('ae.request')->get('base_url'), '/');
+		return rtrim(\ae::options('ae.request')->get('base_url'), '/');
 	}
 }
 
@@ -281,7 +281,7 @@ class Router
 	You can route a request based on its URI to either a closure or
 	a directory:
 	
-		Core::request()->route(array(
+		\ae::request()->route(array(
 			'/special/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
 				echo 'Special request URI: /special/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
 			},
@@ -357,9 +357,9 @@ class Router
 	{
 		try 
 		{
-			$base = Core::resolve($base);
+			$base = \ae::resolve($base);
 		} 
-		catch (CoreException $e) 
+		catch (Exception $e) 
 		{
 			throw new RequestException('Request could not be routed: "' . $base . '" does not exist.');
 		}
@@ -423,11 +423,11 @@ class Router
 		$depth = self::$depth + $this->offset;
 		$ds = new ValueSwitch(self::$depth, $depth);
 		
-		Core::output($this->path);
+		\ae::output($this->path);
 	}
 }
 
-class RequestException extends CoreException {}
+class RequestException extends Exception {}
 
 // Calculate class constants.
 define('__ae_request_cli__', defined('STDIN'));

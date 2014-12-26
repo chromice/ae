@@ -1,7 +1,5 @@
 <?php
 	
-	use \ae\Core as ae;
-	
 	// ae::import('log.php');
 	ae::options('ae.response')
 		->set('compress_output', true);

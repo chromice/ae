@@ -18,9 +18,9 @@
 
 namespace ae;
 
-Core::import('ae/response.php');
+\ae::import('ae/response.php');
 
-Core::invoke('\ae\Image');
+\ae::invoke('\ae\Image');
 
 class Image
 /*
@@ -29,7 +29,7 @@ class Image
 	The following example would crop the top part of the specified image 
 	to a 100x100 square thumbail and save it as "image_thumb.png":
 	
-		Core::image('path/to/image.png')
+		ae::image('path/to/image.png')
 			->align(Image::center, Image::top)
 			->fill(100, 100)
 			->suffix('_thumb')
@@ -42,7 +42,7 @@ class Image
 	
 	public function __construct($path)
 	{
-		$this->path = Core::resolve($path);
+		$this->path = \ae::resolve($path);
 
 		$info = getimagesize($this->path);
 		
@@ -668,4 +668,4 @@ class Image
 	}
 }
 
-class ImageException extends CoreException {}
+class ImageException extends Exception {}

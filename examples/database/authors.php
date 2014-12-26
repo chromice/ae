@@ -1,7 +1,5 @@
 <?php
 
-use \ae\Core as ae;
-
 ae::import('ae/database.php');
 
 class Authors extends \ae\DatabaseTable

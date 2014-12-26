@@ -1,7 +1,5 @@
 <?php
 
-use \ae\Core as ae;
-
 $show_coverage = false;
 $doc = ae::documentation(__DIR__, '/', 'index.md')
 	->covers('../ae/core.php', $show_coverage)

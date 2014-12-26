@@ -16,9 +16,10 @@
 # limitations under the License.
 # 
 
-namespace ae;
+// Declare ae class in the global namespace
+namespace {
 
-final class Core
+final class ae
 /*
 	This is a godly essence that holds everything together.
 	
@@ -37,24 +38,24 @@ final class Core
 	const module = null;
 	const context = false;
 	
-	public static function register($path, $type = Core::module)
+	public static function register($path, $type = self::module)
 	/*
 		Registers a directory as a valid module or context, or launches
 		an application.
 			
 			// Register a new context:
-			Core::register('path/to/directory', Core::context);
+			ae::register('path/to/directory', ae::context);
 
 			// Register a new context and run /index.php, if it exists.
-			Core::register('path/to/module'); // or
-			Core::register('path/to/module', Core::module);
+			ae::register('path/to/module'); // or
+			ae::register('path/to/module', ae::module);
 			
 			// Register context and run /index.php or trigger error.
-			Core::register('path/to/module', Core::application);
+			ae::register('path/to/module', ae::application);
 		
-		See `Core::resolve()` for more information.
+		See `ae::resolve()` for more information.
 		
-		Throws `CoreException`, if path cannot be resolved.
+		Throws `\ae\Exception`, if path cannot be resolved.
 	*/
 	{
 		$path = self::resolve($path, true);
@@ -70,7 +71,7 @@ final class Core
 		}
 		
 		// Application's context must always be at the top
-		if ($type === Core::application)
+		if ($type === ae::application)
 		{
 			array_unshift(self::$contexts, $path);
 		}
@@ -79,11 +80,11 @@ final class Core
 			array_push(self::$contexts, $path);
 		}
 		
-		if ($type !== Core::context && file_exists($path . '/index.php'))
+		if ($type !== ae::context && file_exists($path . '/index.php'))
 		{
-			__ae_include__($path . '/index.php');
+			\ae\_include($path . '/index.php');
 		}
-		elseif ($type === Core::application)
+		elseif ($type === ae::application)
 		{
 			trigger_error('Cannot launch "' . $path . '/index.php". File does not exist.', E_USER_ERROR);
 		}
@@ -102,20 +103,20 @@ final class Core
 		Resolves a relative path to a directory or file. By default
 		the parent of 'ae' directory is used for base:
 		
-			echo Core::resolve('ae/options.php'); // '.../ae/options.php'
+			echo ae::resolve('ae/options.php'); // '.../ae/options.php'
 		
 		You may register a directory to look in it as well:
 		
-			Core::register('some/directory', Core::context);
+			ae::register('some/directory', ae::context);
 			
-			echo Core::resolve('bar.php'); // 'some/directory/bar.php'
+			echo ae::resolve('bar.php'); // 'some/directory/bar.php'
 		
 		æ would fall back to the core directory, if it finds nothing in 
 		registered directories:
 		
-			$request = Core::load('ae/request.php');
+			$request = ae::load('ae/request.php');
 	
-		Throws `CoreException`, if path cannot be resolved.
+		Throws `\ae\Exception`, if path cannot be resolved.
 	*/
 	{
 		if (empty($path))
@@ -160,16 +161,16 @@ final class Core
 			return realpath($__path);
 		}
 		
-		throw new CoreException('Could not resolve path: ' . $path);
+		throw new \ae\Exception('Could not resolve path: ' . $path);
 	}
 	
 	public static function import($path)
 	/*
 		Imports external script. Does not do much else.
 		
-			Core::import('path/to/script.php');
+			ae::import('path/to/script.php');
 		
-		Throws `CoreException`, if path cannot be resolved.
+		Throws `\ae\Exception`, if path cannot be resolved.
 	*/
 	{
 		$path = self::resolve($path);
@@ -184,31 +185,31 @@ final class Core
 			trigger_error('Cannot import "' . $path . '", because it is a directory.', E_USER_ERROR);
 		}
 		
-		$ps = new ValueStack(self::$stack, $path);
+		$ps = new \ae\ValueStack(self::$stack, $path);
 		
 		self::$paths[$path] = array();
 		
-		__ae_include__($path);
+		\ae\_include($path);
 	}
 	
 	public static function invoke($misc)
 	/*
 		Call this method from the loaded or imported file to define 
-		class name or factory that `Core::load()` method should use.
+		class name or factory that `ae::load()` method should use.
 		
 		If valid class name is passed, æ will create a new instance 
 		of it every time the library is loaded:
 		
-			Core::invoke('LibraryClassName');
+			ae::invoke('LibraryClassName');
 		
 		Alternatively you can pass an callable function name, 
 		callback or closure that sill be used as a factory:
 			
 			// Static callback
-			Core::invoke(array('AnotherSingletonClassName', 'factory'));
+			ae::invoke(array('AnotherSingletonClassName', 'factory'));
 			
 			// Closure / singleton pattern
-			Core::invoke(function ($param, $param_2) {
+			ae::invoke(function ($param, $param_2) {
 				static $instance;
 				
 				if (!empty($instance)) 
@@ -235,22 +236,22 @@ final class Core
 	public static function load()
 	/*
 		Loads a script and attempts to invoke an object defined in it, 
-		using `Core::invoke()` method:
+		using `ae::invoke()` method:
 		
-			$o = Core::load('ae/options.php', 'namespace');
+			$o = ae::load('ae/options.php', 'namespace');
 		
-		In this example, `Core::load()` will return an instance of `Options`.
+		In this example, `ae::load()` will return an instance of `Options`.
 		
 		Please consult with the source code of the core libraries for 
 		more real life examples.
 	
-		Throws `CoreException`, if path cannot be resolved.
+		Throws `\ae\Exception`, if path cannot be resolved.
 	*/
 	{
 		$arguments = func_get_args();
 		$path = array_shift($arguments);
 		
-		Core::import($path);
+		self::import($path);
 		
 		$path = self::resolve($path);
 		$data =& self::$paths[$path];
@@ -276,11 +277,11 @@ final class Core
 	/*
 		Resolves all other static method calls as:
 		
-			Core::load('ae/{method}.php', ...arguments...);
+			ae::load('ae/{method}.php', ...arguments...);
 		
 		I.e. the following statement evaluates to TRUE:
 		
-			Core::request() === Core::load('ae/request.php');
+			ae::request() === ae::load('ae/request.php');
 			
 	*/
 	{
@@ -288,13 +289,13 @@ final class Core
 		
 		try
 		{
-			return call_user_func_array(array('\ae\Core', 'load'), $arguments);
+			return call_user_func_array(array('ae', 'load'), $arguments);
 		}
-		catch (CoreException $e) 
+		catch (\ae\Exception $e) 
 		{
 			if (in_array($name, array('log', 'probe')))
 			{
-				return new Stud();
+				return new \ae\Stud();
 			}
 			
 			throw $e;
@@ -312,10 +313,10 @@ final class Core
 		
 		You can pass some variables to the script via the second argument.
 		
-		Throws `CoreException`, if path cannot be resolved.
+		Throws `\ae\Exception`, if path cannot be resolved.
 	*/
 	{
-		$ob = new Buffer();
+		$ob = new \ae\Buffer();
 		
 		self::output($path, $parameters);
 		
@@ -328,13 +329,13 @@ final class Core
 		
 		You can pass some variables to the script via the second argument.
 		
-		Throws `CoreException`, if path cannot be resolved.
+		Throws `\ae\Exception`, if path cannot be resolved.
 	*/
 	{
 		$path = self::resolve($path);
-		$ps = new ValueStack(self::$stack, $path);
+		$ps = new \ae\ValueStack(self::$stack, $path);
 		
-		__ae_include__($path, $parameters);
+		\ae\_include($path, $parameters);
 	}
 
 
@@ -348,26 +349,26 @@ final class Core
 	const value = 3;
 	const identifier = 4;
 	
-	public static function escape($value, $context = Core::text)
+	public static function escape($value, $context = self::text)
 	/*
 		Escape the string to be used in the chosen context:
 		
-		`Core::html` - don't escape;
-		`Core::text` - escape all HTML code, but preserve entities;
-		`Core::name` - safe for tag or attribute names;
-		`Core::value` - safe for attribute values;
-		`Core::identifier` - alphnumerics, dashes and underscores only.
+		`ae::html` - don't escape;
+		`ae::text` - escape all HTML code, but preserve entities;
+		`ae::name` - safe for tag or attribute names;
+		`ae::value` - safe for attribute values;
+		`ae::identifier` - alphnumerics, dashes and underscores only.
 		
 	*/
 	{
 		switch ($context) 
 		{
-			case Core::name:
+			case self::name:
 				return preg_replace('/[^a-zA-Z0-9_:\-]/', '', $value);
-			case Core::identifier:
+			case self::identifier:
 				return preg_replace('/[^a-zA-Z0-9_\-]/', '', $value);
-			case Core::value:
-			case Core::text:
+			case self::value:
+			case self::text:
 				return preg_replace('/&amp;([a-zA-Z\d]+|#\d+|#[xX][a-fA-F\d]+);/', '&$1;', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'));
 		}
 		
@@ -375,14 +376,18 @@ final class Core
 	}
 }
 
-class CoreException extends \Exception {}
+} // end global namespace
 
+namespace ae {
 
 // =================================
 // = Utility classes and functions =
 // =================================
 
-function __ae_include__($__ae_path__, $__ae_secret_array__ = null)
+class Exception extends \Exception {}
+
+
+function _include($__ae_path__, $__ae_secret_array__ = null)
 /*
 	Runs an external script with nearly pristine environment, optionally 
 	passing some parameters to it via the second argument.
@@ -589,3 +594,4 @@ class ValueSwitch
 	}
 }
 
+} // end ae namespace

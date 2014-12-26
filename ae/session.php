@@ -18,13 +18,13 @@
 
 namespace ae;
 
-Core::invoke('\ae\Session');
+\ae::invoke('\ae\Session');
 
 class Session implements \ArrayAccess, \Iterator
 /*
-	Provides a standard safe(r) inteface to $_SESSION variable:
+	Provides a standard safe(r) interface to $_SESSION variable:
 	
-		$storage = Core::session('namespace'); // $_SESSION['namespace'];
+		$storage = ae::session('namespace'); // $_SESSION['namespace'];
 		$storage['foo'] = 'bar'; // $_SESSION['namespace'] = 'bar';
 		echo $storage['foo']; // echos 'bar';
 	

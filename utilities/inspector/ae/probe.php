@@ -18,7 +18,7 @@
 
 namespace ae;
 
-Core::invoke('\ae\Probe');
+\ae::invoke('\ae\Probe');
 
 class Probe
 /*
@@ -69,7 +69,7 @@ class Probe
 				self::_format($ms, 0), 
 				($dm < 0 ? '-' : '+') . self::_format(abs($dm), 0));
 			
-			Core::log($notice);
+			\ae::log($notice);
 		}
 		
 		return $this;

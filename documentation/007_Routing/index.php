@@ -2,8 +2,6 @@
 
 /// include 'path/to/ae/core.php'
 
-use \ae\Core as ae;
-
 $route = ae::request()->route(array(
 	// 1. Map account to /responders/account.php script
 	'/account' => __DIR__ . '/responders/account.php',

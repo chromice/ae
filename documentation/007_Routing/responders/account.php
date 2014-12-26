@@ -1,7 +1,5 @@
 <?php
 
-use \ae\Core as ae;
-
 switch (ae::request()->segment(0, 'show'))
 {
 	case 'login':

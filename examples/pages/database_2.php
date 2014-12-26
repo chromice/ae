@@ -1,7 +1,5 @@
 <?php
 
-use \ae\Core as ae;
-
 // Turn on query logging
 ae::options('ae.database')
 	->set('log', true);

@@ -13,7 +13,6 @@ date_default_timezone_set(@date_default_timezone_get());
 
 // Default code path
 include 'ae/core.php';
-use \ae\Core as ae;
 
 // Enable code coverage analyzer
 ae::import('ae/documentation.php');

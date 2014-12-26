@@ -1,7 +1,5 @@
 <?php
 
-use \ae\Core as ae;
-
 ae::import('ae/database.php');
 ae::import('examples/database/authors.php');
 

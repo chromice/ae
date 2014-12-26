@@ -6,7 +6,6 @@
 // This part will be cut out of the example.
 
 /// +++
-use \ae\Core as ae;
 
 echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 

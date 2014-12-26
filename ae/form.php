@@ -30,16 +30,16 @@ else if (mb_internal_encoding() !== 'UTF-8')
 }
 
 // Import dependancies
-Core::import('ae/request.php');
+\ae::import('ae/request.php');
 
 // Define options
-Core::options('ae.form', array(
+\ae::options('ae.form', array(
 	'novalidate' => false, // whether to prevent HTML5 validation in browsers that support it;
-	'base_dir' => Core::resolve('/') // a file path relative to which all uploaded files are.
+	'base_dir' => \ae::resolve('/') // a file path relative to which all uploaded files are.
 ));
 
 // Invoke form object
-Core::invoke('\ae\Form');
+\ae::invoke('\ae\Form');
 
 // ======================
 // = Various interfaces =
@@ -929,7 +929,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 				throw new FormException('Unknown form method: ' . $method);
 		}
 		
-		$this->nonces = Core::session('form-nonces');
+		$this->nonces = \ae::session('form-nonces');
 		
 		// Stop, if form has not been submitted
 		if (!$this->is_submitted())
@@ -1157,7 +1157,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 	{
 		$attributes = array_merge(array(
 			'action' => Request::url(),
-			'novalidate' => Core::options('ae.form')->get('novalidate')
+			'novalidate' => \ae::options('ae.form')->get('novalidate')
 		), $attributes);
 		
 		$attributes['id'] = $this->id();
@@ -1216,11 +1216,11 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 				'required', 'novalidate', 'formnovalidate', 'autofocus'
 			)) || $value === true)
 			{
-				$output[] = Core::escape($name, Core::name);
+				$output[] = \ae::escape($name, \ae::name);
 			}
 			else
 			{
-				$output[] = Core::escape($name, Core::name) . '="' . Core::escape($value, Core::value) . '"';
+				$output[] = \ae::escape($name, \ae::name) . '="' . \ae::escape($value, \ae::value) . '"';
 			}
 		}
 		
@@ -2030,7 +2030,7 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 		}
 	
 		return '<textarea ' . $this->_attributes($attributes) . '>'
-			. Core::escape($this->value, Core::value)
+			. \ae::escape($this->value, \ae::value)
 			. '</textarea>';
 	}
 	
@@ -2054,12 +2054,12 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 		{
 			if (is_scalar($value))
 			{
-				$output[] = '<option value="' . Core::escape($key, Core::value) . '"' 
+				$output[] = '<option value="' . \ae::escape($key, \ae::value) . '"' 
 					. ($this->_matches($key) ? ' selected' : '') . '>' . $value . '</option>';
 			}
 			elseif (is_array($value))
 			{
-				$output[] = '<optgroup label="' . Core::escape($key, Core::value) . '">' 
+				$output[] = '<optgroup label="' . \ae::escape($key, \ae::value) . '">' 
 					. $this->_options($value, $indent + 1)
 					. '</optgroup>';
 			}
@@ -2087,7 +2087,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 	public function __construct($name, $index, $multiple, $destination, &$form, &$value, &$errors, &$validators = null, &$html = null)
 	{
 		$this->errors =& $errors;
-		$this->destination = Core::resolve($destination, false);
+		$this->destination = \ae::resolve($destination, false);
 		
 		parent::__construct($name, $index, $multiple, $form, $value, $validators, $html);
 	}
@@ -2159,12 +2159,12 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 	{
 		if (!empty($file['path']) && !empty($file['full_name']))
 		{
-			$path = rtrim(Core::options('ae.form')->get('base_dir'), '/') . '/' . ltrim($file['path'], '/');
+			$path = rtrim(\ae::options('ae.form')->get('base_dir'), '/') . '/' . ltrim($file['path'], '/');
 			$full_name = $file['full_name'];
 			
 			unset($file['path'], $file['full_name']);
 			
-			return Core::file($path, $full_name, $file);
+			return \ae::file($path, $full_name, $file);
 		}
 		
 		// Check if all necessary data is there
@@ -2191,7 +2191,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 				return;
 		}
 		
-		$file = Core::file($file['tmp_name'], $file['name']);
+		$file = \ae::file($file['tmp_name'], $file['name']);
 		
 		// Check if the file is indeed uploaded
 		if (!$file->is_uploaded())
@@ -2239,7 +2239,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 			$files = array($this->value);
 		}
 		
-		$base_dir = rtrim(Core::options('ae.form')->get('base_dir'), '/');
+		$base_dir = rtrim(\ae::options('ae.form')->get('base_dir'), '/');
 		$file_offset = 0;
 		$output = '';
 		
@@ -2326,4 +2326,4 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 	}
 }
 
-class FormException extends CoreException {}
+class FormException extends Exception {}
