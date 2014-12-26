@@ -62,11 +62,15 @@ class Documentation
 		}, 0) / $covered, 2) : 0;
 		
 		$coverage_summary = "$covered out of $total files covered (**$average%** average coverage)";
-		$coverage_details = array();
+		$coverage_details = array(
+			'| ' . str_pad('File', 20) . '|' . ' Coverage |',
+			'|' . str_repeat('-', 21) . '|' . str_repeat('-', 9) . ':|'
+		);
 		
 		foreach ($this->covered_stats as $file => $percent)
 		{
-			$coverage_details[] = '- <samp>' . trim($file, './') . '</samp>: **' . round(100 * $percent, 2) . '%** coverage';
+			$coverage_details[] = '| ' . str_pad($file, 20) . '| ' . 
+				str_pad(round(100 * $percent, 2) . '%', 9) . '|';
 		}
 		
 		$coverage_details = implode("\n", $coverage_details);

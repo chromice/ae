@@ -41,6 +41,8 @@ You may still find it useful, even if you are thinking of web app architecture i
 **Unit tests**: {tests:summary}  
 **Code coverage**: {coverage:summary}
 
+{coverage:details}
+
 * * *
 
 - [Getting started](#getting-started)
@@ -188,7 +190,7 @@ Which will output:
 
 Buffer, container and response libraries all start capturing output in `__construct()` and process it in `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommited queries in `__destruct()`.
 
-> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning state after catching an exception, you are doing it wrong.
+> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning up state after catching an exception, you are doing it wrong.
 
 
 ### Everything is a script
@@ -359,7 +361,7 @@ If you want to know what queries are performed and how much memory and time they
 
 <?= $db_test->source()->lines(10, 11); ?>
 
-See [Inspector](#inspector) section for more details.
+<!-- TODO: See [Inspector](#inspector) section for more details. -->
 
 #### Making queries 
 

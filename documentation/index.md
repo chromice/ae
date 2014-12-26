@@ -27,6 +27,17 @@ You may still find it useful, even if you are thinking of web app architecture i
 **Unit tests**: 52 out of 55 passed (**94.55%** passed)  
 **Code coverage**: 4 out of 8 files covered (**81.06%** average coverage)
 
+| File                | Coverage |
+|---------------------|---------:|
+| ../ae/loader.php    | 64.04%   |
+| ../ae/file.php      | 0%       |
+| ../ae/container.php | 100%     |
+| ../ae/request.php   | 76.6%    |
+| ../ae/response.php  | 0%       |
+| ../ae/image.php     | 0%       |
+| ../ae/form.php      | 0%       |
+| ../ae/database.php  | 83.6%    |
+
 * * *
 
 - [Getting started](#getting-started)
@@ -238,7 +249,7 @@ foobarfoo
 
 Buffer, container and response libraries all start capturing output in `__construct()` and process it in `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommited queries in `__destruct()`.
 
-> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning state after catching an exception, you are doing it wrong.
+> **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning up state after catching an exception, you are doing it wrong.
 
 
 ### Everything is a script
@@ -587,7 +598,7 @@ ae::options('ae.database')
 	->set('log', true);
 ```
 
-See [Inspector](#inspector) section for more details.
+<!-- TODO: See [Inspector](#inspector) section for more details. -->
 
 #### Making queries 
 
@@ -961,4 +972,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 26 December 2014 22:15:22 -->
+<!-- Generated on 26 December 2014 23:11:10 -->
