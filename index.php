@@ -1,5 +1,10 @@
 <?php
 
+// Disable stuff
+ini_set('html_errors', 'off');
+xdebug_disable();
+
+
 // PHP's built-in web server
 if (php_sapi_name() === 'cli-server'
 && !empty($_SERVER["REQUEST_URI"])

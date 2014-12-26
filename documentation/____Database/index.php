@@ -1,9 +1,5 @@
 <?php
 
-// Turn on query logging
-ae::options('ae.database')
-	->set('log', true);
-
 // Set default database paramters
 ae::options('ae.database.default')
 	->set('host', 'localhost')
@@ -17,8 +13,8 @@ ae::options('ae.database.default')
 echo '<h1>Official database example</h1>';
 
 // Import entity classes
-ae::import('examples/database/authors.php');
-ae::import('examples/database/books.php');
+ae::import(__DIR__ . '/authors.php');
+ae::import(__DIR__ . '/books.php');
 
 echo '<h2>Making queries</h2>';
 

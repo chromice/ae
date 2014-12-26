@@ -312,8 +312,8 @@ class Documentation
 		{
 			if (is_array($k))
 			{
-				$ret .= (!empty($k['d']) ? '-' . implode(' ', $k['d']) . "\n" : '') .
-					(!empty($k['i']) ? '+' . implode(' ', $k['i']) . "\n" : '');
+				$ret .= (!empty($k['d']) ? '-' . implode("\n-", $k['d']) . "\n" : '') .
+					(!empty($k['i']) ? '+' . implode("\n+", $k['i']) . "\n" : '');
 			}
 			else
 			{
