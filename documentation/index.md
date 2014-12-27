@@ -38,12 +38,16 @@ You may still find it useful, even if you are thinking of web app architecture i
         - [Break your app into components](#break-your-app-into-components)
         - [Keep your template code DRY](#keep-your-template-code-dry)
 - [Library reference](#library-reference)
+    - [Loader](#loader)
+    - [Options](#options)
+    - [Path](#path)
+    - [Database](#database)
 
 * * *
 
 <a name="tests-and-code-coverage"></a>
 
-**Tests**: 54 out of 57 passed (**94.74%** passed)  
+**Tests**: 64 out of 68 passed (**94.12%** passed)  
 **Code coverage**: 6 out of 10 files covered (**71.75%** average coverage)
 
 | File                | Coverage |
@@ -71,7 +75,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 - **PHP**: version 5.4 or higher with *GD extension* for image manipulation, and *Multibyte String extension* for form validation.
 - **MySQL**: version 5.1 or higher with *InnoDB engine*.
-- **Apache**: version 2.0 or higher with *mod_rewrite* for nice URLs, and *mod_deflate* for response compression.
+- **Apache**: version 2.0 or higher with *mod_rewrite* for nice URLs, and (optionally) *mod_deflate* for response compression.
 
 
 ### Manual installation
@@ -319,7 +323,6 @@ $results = get_results($filters);
 In MVC-speak your controller is at the top, and your view is at the bottom.
 
 
-
 #### Break your app into components
 
 æ lets you either delegate requests to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
@@ -524,48 +527,258 @@ Which will result in:
 
 **NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
 
+# Library reference
 
-## Library reference
+## Loader
 
-To be done.
 
-### Core
+```diff
+Unexpected output: 100_Loader_loading/output.txt
+================================================
+-barfoobarbar
++
++Fatal error: Uncaught exception 'ae\Exception' with message 'Could not resolve path: library' in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php:164
++Stack trace:
++#0 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(61): ae::resolve('library', true)
++#1 /Users/chromice/Sites/dev/ae/ae-framework/documentation/100_Loader_loading/index.php(8): ae::register('library', '/Users/chromice...', Array)
++#2 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(403): require('/Users/chromice...')
++#3 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(338): ae\_include('/Users/chromice...', NULL)
++#4 /Users/chromice/Sites/dev/ae/ae-framework/ae/request.php(426): ae::output('/Users/chromice...')
++#5 /Users/chromice/Sites/dev/ae/ae-framework/index.php(32): ae\Router->follow()
++#6 {main}
++  thrown in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php on line 164
++
+
+```
+
+æ loader is the main script responsible for managing libraries and auto-loading classes. Unless you installed æ via [Composer](#configuring-composer), you need to include the loader manually:
+
+
+```php
+require 'path/to/ae/loader.php';
+```
+
+This will import `ae` class into global namespace and a few utility classes into `\ae\` namespace.
+
+### Loading libraries
+
+Out of the box, you can load any core library (e.g. <samp>library</samp>) using global class `ae`:
+
+
+```php
+$lib = ae::library();
+```
+
+This imports <samp>ae/library.php</samp> – if it has not been imported yet – which declares all classes and functions it needs to run, and instructs æ how to invoke this library via `ae::invoke()`:
+
+
+```php
+<?php
+
+ae::invoke('Library');
+
+class Library
+{
+    public function foo()
+    {
+        echo 'foo';
+    }
+    
+    static public function bar()
+    {
+        echo 'bar';
+    }
+}
+```
+
+Once the library is loaded you can call any of its public methods:
+
+
+```php
+echo $lib->foo(); // echo 'foo'
+echo $lib->bar(); // echo 'bar'
+```
+
+### Registering libraries
+
+æ allows you to register your own libraries using `ae::register()` method:
+
+
+```php
+ae::register('library', 'path/to/library.php', array(
+    'Library',
+    'AnotherLibraryClass'
+));
+```
+
+The method takes three arguments:
+
+1. Library name (must be unique)
+2. Absolute path to library script that contains `ae::invoke()` statement.
+3. (Optional) array of [fully qualified class names][php-namespaces].
+
+[php-namespaces]: http://php.net/manual/en/language.namespaces.dynamic.php
+
+Provided you specified all class names, æ will automatically import you library, if you try to use any of those classes:
+
+
+```php
+echo AnotherLibraryClass::bar(); // echo 'bar'
+```
+
+### Importing code
+
+If you just want to import configuration settings or helper functions, you can use `ae::import()` method:
+
+
+```php
+ae::import('path/to/helper.php');
+```
+
+This will import <samp>helper.php</samp>. If it has been imported already, this method will do nothing.
+
+
+## Options
+
+Many libraries are using options library to allow you to change their behavior. For instance, the database library can log all queries, time how long they take and measure how much memory they consume. As it is only useful for debugging, this feature is turned off by default.
+
+The database library defines its options and default values next to the `ae::invoke()` statement at the top of its main script:
+
+```php
+ae::options('ae::database', array(
+	'log' => false
+));
+```
+
+In your code, you can get the current option value:
+
+```php 
+$is_logged = ae::options('ae::database')->get('log');
+```
+
+or change it to another value:
+
+```php
+ae::options('ae::database')->set('log', true);
+```
+
+You can, of course, define your own options:
+
+
+
+```php
+ae::options('my_application', array(
+    'title' => 'My awesome app',
+    'version' => '0.93'
+));
+```
+
+and use those throughout your app:
+
+
+```php
+$o = ae::options('my_application');
+echo $o->get('title') . ' v' . $o->get('version');
+```
+
+Output:
+
+
+```txt
+My awesome app v0.93
+```
+
+
+## Path
+
+æ operates on absolute paths only. In practice you would want to use this library to define all paths relative to some root directory path:
+
+```php
+ae::options('ae::path')->set('root', __DIR__);
+
+echo ae::path('relative/path')->path('to/file.php');
+// echo __DIR__ . '/relative/path/to/file.php';
+```
+
+Both `\ae\Path::__construct()` and `\ae\Path::path()` accept one or more path components. The following is an alternative way to specify the path from the first example:
+
+```php
+echo ae::path('relative/path', 'to/file.php');
+```
+
+You can check, if given path exists, and if it is a directory or a file:
+
+```php
+if ($path->exists()) {
+    $is_directory = $path->is_directory();
+    $is_file = $path->is_file();
+}
+```
+
+Using this library adds an additional layer of security (granted a very thin one), because the resolved path is guaranteed to be contained within the root path:
+
+```php
+// The following line throws \ae\PathException
+ae::path('../some/path'); 
+
+// While the following is perfectly fine
+ae::path('directory', '../some/path');
+```
+
+The library also provides a few shortcut methods. It lets you import a script:
+
+```php
+ae::path('helpers/helper.php')->import();
+```
+
+It also lets you invoke file or directory library for a path:
+
+```php
+$dir = ae::path('path/to/dir')->directory();
+$file = ae::path('path/to/some_file.php')->file();
+```
+
+Using these shortcuts you can create a file or make a directory for a non-existant path:
+
+```php
+$path = ae::path('uploads/');
+
+if (!$path->exists()) {
+    $path->directory()->make(0775);
+}
+```
+
+## File
+
+## Directory
 
 * * *
 
-### Path
+## Buffer
 
-### File
+## View
 
-### Directory
-
-* * *
-
-### Buffer
-
-### View
-
-### Container
+## Layout
 
 * * *
 
-### Request
+## Request
 
-### Response
+## Response
 
-### Cache
-
-* * *
-
-### Image
-
-### Form
+## Cache
 
 * * *
 
-### Session
+## Image
 
-### Database
+## Form
+
+* * *
+
+## Session
+
+## Database
 
 
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
@@ -607,7 +820,7 @@ ae::options('ae.database')
 
 <!-- TODO: See [Inspector](#inspector) section for more details. -->
 
-#### Making queries 
+### Making queries 
 
 
 Let's create the "authors" table:
@@ -687,9 +900,9 @@ $gibson_id = ae::database()->insert('authors', array(
 
 > There is also `\ae\Database::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `\ae\Database::count()` for counting rows; `\ae\Database::find()` for retrieving a particular row; and `\ae\Database::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
 
-#### Transactions
+### Transactions
 
-A sequence of dependant database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
+A sequence of dependent database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
 
 
 ```php
@@ -706,7 +919,7 @@ This way, if one of your SQL queries fails, it will throw an exception and all u
 
 **NB!** Only one transaction can be open at a time.
 
-#### Retrieving data
+### Retrieving data
 
 Now that we have some rows in the table, let's retrieve and display them:
 
@@ -768,7 +981,7 @@ There are 3 authors in the result set:
 - William Ford Gibson
 ```
 
-#### Active record
+### Active record
 
 Database library has `\ae\DatabaseTable` abstract class that your table specific class can extend:
 
@@ -853,7 +1066,7 @@ Now, Shakespeare was a playwright, while the rest of the authors are novelists. 
 $shaky->delete();
 ```
 
-#### Relationships
+### Relationships
 
 Let's make things more interesting by introducing a new class of objects: books. First, we need to create a table to store them:
 
@@ -979,4 +1192,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 27 December 2014 00:23:24 -->
+<!-- Generated on 27 December 2014 18:40:43 -->

@@ -623,8 +623,7 @@ class Source
 		if (!empty($this->lines))
 		{
 			$_source = array();
-			ksort($this->lines, SORT_NUMERIC);
-		
+			
 			foreach ($this->lines as $from => $to)
 			{
 				array_splice($_source, count($_source), 0, array_slice($source, $from - 1, $to - $from + 1));
