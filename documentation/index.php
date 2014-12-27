@@ -40,13 +40,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 * * *
 
-**Unit tests**: {tests:summary}  
-**Code coverage**: {coverage:summary}
-
-{coverage:details}
-
-* * *
-
+- [Tests and code coverage](#tests-and-code-coverage)
 - [Getting started](#getting-started)
     - [Requirements](#requirements)
     - [Manual installation](#manual-installation)
@@ -60,6 +54,15 @@ You may still find it useful, even if you are thinking of web app architecture i
         - [Break your app into components](#break-your-app-into-components)
         - [Keep your template code DRY](#keep-your-template-code-dry)
 - [Library reference](#library-reference)
+
+* * *
+
+<a name="tests-and-code-coverage"></a>
+
+**Tests**: {tests:summary}  
+**Code coverage**: {coverage:summary}
+
+{coverage:details}
 
 * * *
 

@@ -613,7 +613,11 @@ class Source
 	
 	public function __toString()
 	{
-		$source = preg_split("/\r\n|\n|\r/", $this->source);
+		// Indent with spaces.
+		$source = str_replace("\t", '    ', $this->source);
+		
+		// Break into lines.
+		$source = preg_split("/\r\n|\n|\r/", $source);
 		
 		// Slice the lines.
 		if (!empty($this->lines))
@@ -629,11 +633,19 @@ class Source
 			$source = $_source;
 		}
 		
+		// Normalize line breaks.
 		$source = implode("\n", $source);
 		
-		// TODO: Indent with spaces.
-		// TODO: Reduce extra indentation.
+		// Reduce extra indentation.
+		preg_match_all('/^[ ]*/m', $source, $indentation);
 		
+		$min_indentation = array_reduce($indentation[0], function ($m, $i) {
+			return min($m, strlen($i));
+		}, 40);
+		
+		$source = preg_replace('/^[ ]{' . $min_indentation . '}/m', '', $source);
+		
+		// Print non-php source now.
 		if (!in_array('php', explode('+', $this->type)))
 		{
 			return "\n```{$this->type}\n" . $source . "\n```\n";

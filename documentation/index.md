@@ -24,7 +24,26 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 * * *
 
-**Unit tests**: 54 out of 57 passed (**94.74%** passed)  
+- [Tests and code coverage](#tests-and-code-coverage)
+- [Getting started](#getting-started)
+    - [Requirements](#requirements)
+    - [Manual installation](#manual-installation)
+    - [Configuring Composer](#configuring-composer)
+    - [Hello world](#hello-world)
+- [Design principles](#design-principles)
+    - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
+    - [Exception safety](#exception-safety)
+    - [Everything is a script](#everything-is-a-script)
+        - [Separate different kinds of logic](#separate-different-kinds-of-logic)
+        - [Break your app into components](#break-your-app-into-components)
+        - [Keep your template code DRY](#keep-your-template-code-dry)
+- [Library reference](#library-reference)
+
+* * *
+
+<a name="tests-and-code-coverage"></a>
+
+**Tests**: 54 out of 57 passed (**94.74%** passed)  
 **Code coverage**: 6 out of 10 files covered (**71.75%** average coverage)
 
 | File                | Coverage |
@@ -39,22 +58,6 @@ You may still find it useful, even if you are thinking of web app architecture i
 | ../ae/form.php      | 0%       |
 | ../ae/session.php   | 0%       |
 | ../ae/database.php  | 83.6%    |
-
-* * *
-
-- [Getting started](#getting-started)
-    - [Requirements](#requirements)
-    - [Manual installation](#manual-installation)
-    - [Configuring Composer](#configuring-composer)
-    - [Hello world](#hello-world)
-- [Design principles](#design-principles)
-    - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
-    - [Exception safety](#exception-safety)
-    - [Everything is a script](#everything-is-a-script)
-        - [Separate different kinds of logic](#separate-different-kinds-of-logic)
-        - [Break your app into components](#break-your-app-into-components)
-        - [Keep your template code DRY](#keep-your-template-code-dry)
-- [Library reference](#library-reference)
 
 * * *
 
@@ -285,7 +288,7 @@ $filters = array(
     'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
 );
 $filters = array_map($filters, function ($value) {
-	return max($value, 0);
+    return max($value, 0);
 });
 
 
@@ -348,35 +351,35 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 include 'path/to/ae/loader.php'
 
 $route = ae::request()->route(array(
-	// 1. Map account to /responders/account.php script
-	'/account' => 'path/to/responders/account.php',
-	
-	// 2. Handle products request here
-	'/products/{numeric}' => function ($product_id) {
-		echo "Display product #{$product_id}.";
-	},
-	'/products/page/{numeric}' => function ($page) {
-		echo "List product page #{$page}.";
-	},
-	'/products' => function ($page) {
-		echo "List product page #1.";
-	},
-	
-	// 3. Map the rest to /responders/pages directory
-	'/' => 'path/to/responders/pages'
-	// 
-	// responders/pages/
-	//   index.php -> Home page
-	//   about-us/
-	//     index.php -> About us page
-	//     team.php -> Team page.
-	
+    // 1. Map account to /responders/account.php script
+    '/account' => 'path/to/responders/account.php',
+    
+    // 2. Handle products request here
+    '/products/{numeric}' => function ($product_id) {
+        echo "Display product #{$product_id}.";
+    },
+    '/products/page/{numeric}' => function ($page) {
+        echo "List product page #{$page}.";
+    },
+    '/products' => function ($page) {
+        echo "List product page #1.";
+    },
+    
+    // 3. Map the rest to /responders/pages directory
+    '/' => 'path/to/responders/pages'
+    // 
+    // responders/pages/
+    //   index.php -> Home page
+    //   about-us/
+    //     index.php -> About us page
+    //     team.php -> Team page.
+    
 ));
 
 try {
-	$route->follow();
+    $route->follow();
 } catch (\ae\RequestException $e) {
-	echo 'No page found.';
+    echo 'No page found.';
 }
 
 ```
@@ -573,10 +576,10 @@ Before you can make queries to the database, you have to specify the connection 
 ```php
 // Configure the "default" database connection
 ae::options('ae.database.default')
-	->set('host', 'localhost')
-	->set('user', 'root')
-	->set('password', 'root')
-	->set('database', 'ae');
+    ->set('host', 'localhost')
+    ->set('user', 'root')
+    ->set('password', 'root')
+    ->set('database', 'ae');
 ```
 
 Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
@@ -584,11 +587,11 @@ Provided the connection parameters are correct and the database ("ae" in this ex
 
 ```php
 try {
-	$db = ae::database(); // same as ae::database("default");
-	
-	$db->query("SELECT 1")->make();
+    $db = ae::database(); // same as ae::database("default");
+    
+    $db->query("SELECT 1")->make();
 } catch (\ae\DatabaseException $e) {
-	echo 'Something went wrong: ' . $e->getMessage();
+    echo 'Something went wrong: ' . $e->getMessage();
 }
 ```
 
@@ -599,7 +602,7 @@ If you want to know what queries are performed and how much memory and time they
 
 ```php
 ae::options('ae.database')
-	->set('log', true);
+    ->set('log', true);
 ```
 
 <!-- TODO: See [Inspector](#inspector) section for more details. -->
@@ -611,16 +614,16 @@ Let's create the "authors" table:
 
 
 ```php
-		ae::database()->query("CREATE TABLE IF NOT EXISTS {table} (
-				`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-				`name` varchar(255) NOT NULL,
-				`nationality` varchar(255) NOT NULL,
-				PRIMARY KEY (`id`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-			->aliases(array(
-				'table' => 'authors'
-			))
-			->make();
+ae::database()->query("CREATE TABLE IF NOT EXISTS {table} (
+        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+        `name` varchar(255) NOT NULL,
+        `nationality` varchar(255) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+    ->aliases(array(
+        'table' => 'authors'
+    ))
+    ->make();
 ```
 
 Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `\ae\Database::aliases()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
@@ -632,15 +635,15 @@ Let's fill this table with some data:
 
 ```php
 ae::database()
-	->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->data(array(
-		'name' => 'Richar K. Morgan', // (sic)
-		'nationality' => 'British'
-	))
-	->make();
+    ->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
+    ->aliases(array(
+        'table' => 'authors'
+    ))
+    ->data(array(
+        'name' => 'Richar K. Morgan', // (sic)
+        'nationality' => 'British'
+    ))
+    ->make();
 
 $morgan_id = ae::database()->insert_id();
 ```
@@ -650,17 +653,17 @@ In this example we are using `{data:names}` and `{data:values}` placeholders and
 
 ```php
 ae::database()
-	->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->data(array(
-		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), \ae\Database::statement) // don' escape
-	->variables(array(
-		'author_id' => $morgan_id
-	), \ae\Database::value) // escape
-	->make();
+    ->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
+    ->aliases(array(
+        'table' => 'authors'
+    ))
+    ->data(array(
+        'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
+    ), \ae\Database::statement) // don' escape
+    ->variables(array(
+        'author_id' => $morgan_id
+    ), \ae\Database::value) // escape
+    ->make();
 ```
 
 In this example we are using `{data:set}` placeholder and specifying its value via `\ae\Database::data()` method, while `\ae\Database::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
@@ -670,15 +673,15 @@ Of course, these are just examples, there is actually a less verbose way to inse
 
 ```php
 ae::database()->update('authors', array(
-	'nationality' => 'English'
+    'nationality' => 'English'
 ), array('id' => $morgan_id));
 $stephenson_id = ae::database()->insert('authors', array(
-	'name' => 'Neal Stephenson',
-	'nationality' => 'American'
+    'name' => 'Neal Stephenson',
+    'nationality' => 'American'
 )); 
 $gibson_id = ae::database()->insert('authors', array(
-	'name' => 'William Ford Gibson',
-	'nationality' => 'Canadian'
+    'name' => 'William Ford Gibson',
+    'nationality' => 'Canadian'
 ));
 ```
 
@@ -716,7 +719,7 @@ echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
-	echo "- {$author['name']} ({$author['nationality']})\n";
+    echo "- {$author['name']} ({$author['nationality']})\n";
 }
 ```
 
@@ -735,17 +738,17 @@ Now, let's change the query so that authors are ordered alphabetically:
 
 ```php
 $authors = ae::database()
-	->select('authors')
-	->order_by('`name` ASC')
-	->result() // return an instance of DatabaseResult
-	->all(); // return an array of rows
+    ->select('authors')
+    ->order_by('`name` ASC')
+    ->result() // return an instance of DatabaseResult
+    ->all(); // return an array of rows
 $count = count($authors);
 
 echo "There are $count authors in the result set:\n";
 
 foreach ($authors as $author)
 {
-	echo "- {$author['name']}\n";
+    echo "- {$author['name']}\n";
 }
 ```
 
@@ -807,8 +810,8 @@ Let's create a new record and save it to the database:
 
 ```php
 $shaky = Authors::create(array(
-	'name' => 'William Shakespeare',
-	'nationality' => 'English'
+    'name' => 'William Shakespeare',
+    'nationality' => 'English'
 ));
 
 // Create a new record in the database
@@ -820,15 +823,15 @@ In order to retrieve several records from the database, you would make a regular
 
 ```php
 $authors = ae::database()
-	->query('SELECT * FROM `authors`')
-	->many('Authors');
+    ->query('SELECT * FROM `authors`')
+    ->many('Authors');
 $count = $authors->count();
 
 echo "There are $count authors in the database:\n";
 
 while ($author = $authors->fetch())
 {
-	echo "- {$author->name}\n";
+    echo "- {$author->name}\n";
 }
 ```
 
@@ -856,16 +859,16 @@ Let's make things more interesting by introducing a new class of objects: books.
 
 
 ```php
-		ae::database()->query("CREATE TABLE IF NOT EXISTS {table} (
-				`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-				`author_id` int(10) unsigned NOT NULL,
-				`title` varchar(255) NOT NULL,
-				PRIMARY KEY (`id`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-			->aliases(array(
-				'table' => 'books'
-			))
-			->make();
+ae::database()->query("CREATE TABLE IF NOT EXISTS {table} (
+        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+        `author_id` int(10) unsigned NOT NULL,
+        `title` varchar(255) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+    ->aliases(array(
+        'table' => 'books'
+    ))
+    ->make();
 ```
 
 We also need a class to represent this table. To keep things interesting, we will name it `Novels`. Obviously `\ae\DatabaseTable` won't be able to guess the name of the table, so we will specify it manually by overriding the `\ae\DatabaseTable::name()` method:
@@ -874,10 +877,10 @@ We also need a class to represent this table. To keep things interesting, we wil
 ```php
 class Novels extends \ae\DatabaseTable
 {
-	public static function name()
-	{
-		return 'books'; // that is the real name of the table
-	}
+    public static function name()
+    {
+        return 'books'; // that is the real name of the table
+    }
 }
 ```
 
@@ -889,15 +892,15 @@ We could start spawning new books using `Novels::create()` method, like we did w
 ```php
 class Authors extends \ae\DatabaseTable
 {
-	public function add_novel($title)
-	{
-		$ids = $this->ids();
-		
-		return Novels::create(array(
-				'author_id' => $ids['id'],
-				'title' => $title
-			))->save();
-	}
+    public function add_novel($title)
+    {
+        $ids = $this->ids();
+        
+        return Novels::create(array(
+                'author_id' => $ids['id'],
+                'title' => $title
+            ))->save();
+    }
 }
 ```
 
@@ -927,19 +930,19 @@ So far so good. Let's add a method to `Novels` class that will return all book r
 ```php
 class Novels extends \ae\DatabaseTable
 {
-	public static function name()
-	{
-		return 'books'; // that is the real name of the table
-	}
-	
-	public static function all()
-	{
-		return static::database()
-			->select(self::name())
-			->joining('Authors', 'author')
-			->order_by('{table}.`title`')
-			->many('Novels');
-	}
+    public static function name()
+    {
+        return 'books'; // that is the real name of the table
+    }
+    
+    public static function all()
+    {
+        return static::database()
+            ->select(self::name())
+            ->joining('Authors', 'author')
+            ->order_by('{table}.`title`')
+            ->many('Novels');
+    }
 }
 ```
 
@@ -956,7 +959,7 @@ echo "Here are all $count novels ordered alphabetically:\n";
 
 while ($novel = $novels->fetch())
 {
-	echo "- {$novel->title} by {$novel->author->name}\n";
+    echo "- {$novel->title} by {$novel->author->name}\n";
 }
 ```
 
@@ -976,4 +979,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 26 December 2014 23:27:23 -->
+<!-- Generated on 27 December 2014 00:23:24 -->
