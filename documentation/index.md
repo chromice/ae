@@ -41,6 +41,8 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Loader](#loader)
     - [Options](#options)
     - [Path](#path)
+    - [File](#file)
+    - [Directory](#directory)
     - [Database](#database)
 
 * * *
@@ -256,7 +258,7 @@ Which will output:
 foobarfoo
 ```
 
-Buffer, container and response libraries all start capturing output in `__construct()` and process it in `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommited queries in `__destruct()`.
+Buffer, container and response libraries all start capturing output in `__construct()` and process it in `__destruct()`. File library is using  `__destruct()` to unlock previously locked files and close their handles. Database library exposes a transaction object that rolls back any uncommitted queries in `__destruct()`.
 
 > **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning up state after catching an exception, you are doing it wrong.
 
@@ -744,7 +746,7 @@ Using these shortcuts you can create a file or make a directory for a non-existe
 $path = ae::path('uploads/');
 
 if (!$path->exists()) {
-    $path->directory()->make(0775);
+    $path->directory()->create(0775);
 }
 ```
 
@@ -777,6 +779,7 @@ The library exposes basic information about the file:
 $file = ae::file(__DIR__ . '/file.txt');
 
 echo $file->size(); // echo 12
+echo $file->mode(); // echo 0666
 echo $file->name(); // echo 'file.txt'
 echo $file->extension(); // echo 'txt'
 echo $file->mime(); // echo 'text/plain'
@@ -789,10 +792,11 @@ $file = ae::file(__DIR__ . '/file.txt');
 
 if ($file->exists())
 {
-    $file->rename('new-file.txt');
+    $mode = $file->mode();
+    $file->name('new-file.txt')->extension('doc');
     $copy = $file->copy('./file-copy.txt');
     $file->delete();
-    $copy->move('./file.txt');
+    $copy->move('./file.txt')->mode($mode);
 }
 ```
 
@@ -821,15 +825,48 @@ foreach ($file as $meta_name => $meta_value)
 
 Meta data is never saved to the file system, and should only be used by different parts of your application to exchange information associated with the file.
 
+```php
+$path = $file->path();
+$dir = $file->parent(); // returns parent directory
+```
+
 
 ## Directory
 
+```php
+$dir = ae::directory(__DIR__);
+
+$filter = '*.txt';
+
+$dir->entries($filter); // return Path array of matching entries (files and directories)
+$dir->directories($filter); // return Directory array of matching subdirectories
+$dir->files($filter); // return File array of matching files
+$dir->parent();
+$dir->path();
+
+if (!$dir->exists())
+{
+    $dir->create(); // recursively creates this and any missing parents
+}
+else
+{
+    $dir->delete(); // recursively deletes this directory and all its content
+}
+
+// If directory does not exist, open() will create it as well.
+$file = ae::path($dir, 'file-name.ext')->open('a');
+
+$name = $dir->name();
+$dir->name($name); // rename directory
+
+$dir['meta'] = 'value';
+```
 
 * * *
 
 ## Buffer
 
-## View
+## Snippet
 
 ## Layout
 
@@ -1265,4 +1302,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 28 December 2014 10:56:25 -->
+<!-- Generated on 28 December 2014 14:04:32 -->
