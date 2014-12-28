@@ -690,6 +690,8 @@ class Source
 	
 	public function lines($from, $to)
 	{
+		// TODO: Should accept a marker name in the source file.
+		
 		if (is_int($from) && is_int($to) && $from <= $to)
 		{
 			$this->lines[$from] = $to;

@@ -268,7 +268,7 @@ Buffer, container and response libraries all start capturing output in `__constr
 
 Strictly speaking æ is not a framework, because it imposes no rules on how your should structure your code: there are no canonical directory structure or file-naming conventions. As far as the author is concerned, all your code may be happily contained in a single <samp>index.php</samp> or be equally happily spread across dozens of directories and hundreds of files.
 
-It would not be unreasonable to assume that it will be one or more PHP scripts that will be responsible for one or more of the following tasks:
+It would not be unreasonable to assume that your app will be made of one or more PHP scripts responsible for at least one of the following tasks:
 
 - *Handling requests*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
 - *Operating on internal state*, e.g. reading/writing files, cookies, session variables, database records, etc.
@@ -738,7 +738,7 @@ $dir = ae::path('path/to/dir')->directory();
 $file = ae::path('path/to/some_file.php')->file();
 ```
 
-Using these shortcuts you can create a file or make a directory for a non-existant path:
+Using these shortcuts you can create a file or make a directory for a non-existent path:
 
 ```php
 $path = ae::path('uploads/');
@@ -748,9 +748,82 @@ if (!$path->exists()) {
 }
 ```
 
+
 ## File
 
+File library is a very wrapper around standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
+
+```php
+$file = ae::file(__DIR__ . '/file.txt');
+    ->open('w+')
+    ->lock()
+    ->truncate()
+    ->write('Hello World');
+    
+$file->seek(0);
+
+if ($file->tell() === 0)
+{
+    echo $file->read();
+}
+
+// Unlock file and close its handle
+unset($file);
+``` 
+
+The library exposes basic information about the file:
+
+```php
+$file = ae::file(__DIR__ . '/file.txt');
+
+echo $file->size(); // echo 12
+echo $file->name(); // echo 'file.txt'
+echo $file->extension(); // echo 'txt'
+echo $file->mime(); // echo 'text/plain'
+```
+
+Existing files can be renamed, copied, moved or deleted:
+
+```php
+$file = ae::file(__DIR__ . '/file.txt');
+
+if ($file->exists())
+{
+    $file->rename('new-file.txt');
+    $copy = $file->copy('./file-copy.txt');
+    $file->delete();
+    $copy->move('./file.txt');
+}
+```
+
+The library can handle uploaded files as well:
+
+```php
+$file = ae::file($_FILES['file']['tmp_name']);
+
+if ($file->is_uploaded())
+{
+    $file->move('/destination/' . $_FILES['file']['name']);
+}
+```
+
+You can assign arbitrary meta data to a file, e.g. database keys, related files, alternative names, etc.:
+
+```php
+$file['real_name'] = 'My text file (1).txt';
+$file['resource_id'] = 123;
+
+foreach ($file as $meta_name => $meta_value)
+{
+    echo "{$meta_name}: $meta_value\n";
+}
+```
+
+Meta data is never saved to the file system, and should only be used by different parts of your application to exchange information associated with the file.
+
+
 ## Directory
+
 
 * * *
 
@@ -783,7 +856,7 @@ if (!$path->exists()) {
 
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
 
-Before you can make queries to the database, you have to specify the connection parameters using the options library:
+Before you can make queries to the database, you have to specify the connection parameters using Options library:
 
 
 ```php
@@ -898,7 +971,7 @@ $gibson_id = ae::database()->insert('authors', array(
 ));
 ```
 
-> There is also `\ae\Database::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `\ae\Database::count()` for counting rows; `\ae\Database::find()` for retrieving a particular row; and `\ae\Database::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
+> There is also `\ae\Database::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `\ae\Database::count()` for counting rows; `\ae\Database::find()` for retrieving a particular row; and `\ae\Database::delete()` for deleting rows from a table. Please consult the library source code to learn more about them.
 
 ### Transactions
 
@@ -967,7 +1040,7 @@ foreach ($authors as $author)
 
 Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `\ae\Database::order_by()` method. 
 
-> Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source code of the database library to learn more about them.
+> Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the library source code to learn more about them.
 
 Note that we are also using `\ae\DatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. Please note that `\ae\DatabaseResult::fetch()` method is the most memory efficient way of retrieving results.
 
@@ -1192,4 +1265,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 27 December 2014 18:40:43 -->
+<!-- Generated on 28 December 2014 10:56:25 -->
