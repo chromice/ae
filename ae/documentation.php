@@ -683,15 +683,33 @@ class Source
 		}
 		
 		// Remove non-comment sequence "///"
-		$source = preg_replace('/^(\s*)\/{3}\s*(.*)$/m', '$1$2', $source);
+		$source = preg_replace('/^(\s*)\/{3}\s*([^\<\>]*)$/m', '$1$2', $source);
 	
 		return "\n```{$this->type}\n" . $source . "\n```\n";
 	}
 	
+	public function section($name)
+	{
+		$name = preg_quote($name);
+		$name = preg_replace('/\s+/', '\\s+', $name);
+		
+		if (count($found = preg_split('/^\/{3}\s*>{3}\s*' . $name . '\s*$/im', $this->source, 2)) < 2)
+		{
+			$found = array('', '');
+		}
+		
+		$found = $found[1];
+		
+		if ($found = preg_split('/^\/{3}\s*<{3}.*$/im', $found, 2))
+		{
+			$found = $found[0];
+		}
+		
+		return new Source(trim($found, "\r\n "), $this->type);
+	}
+	
 	public function lines($from, $to)
 	{
-		// TODO: Should accept a marker name in the source file.
-		
 		if (is_int($from) && is_int($to) && $from <= $to)
 		{
 			$this->lines[$from] = $to;

@@ -2,9 +2,6 @@
 
 namespace ns;
 
-ae::define('library', '\ns\Library');
-ae::define('foo', '\ns\Foo');
-
 class Library
 {
 	public function foo()

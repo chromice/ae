@@ -328,7 +328,7 @@ This will import `ae` class into global namespace and a few utility classes into
 
 æ allows you to register your own libraries using `ae::register()` method:
 
-<?= $loading->source()->lines(5, 11); ?>
+<?= $loading->source()->section('Registering'); ?>
 
 The method takes three arguments:
 
@@ -340,27 +340,27 @@ The method takes three arguments:
 
 Provided you specified all class names, æ will automatically import you library, if you try to use any of those classes:
 
-<?= $loading->source()->lines(13, 13); ?>
+<?= $loading->source()->section('Class loading'); ?>
 
 ### Loading libraries
 
 Out of the box, you can load any core library (e.g. <samp>library</samp>) using global class `ae`:
 
-<?= $loading->source()->lines(17, 19) ?>
+<?= $loading->source()->section('Loading') ?>
 
 This imports <samp>ae/library.php</samp> – if it has not been imported yet – which declares all classes and functions it needs to run, and instructs æ how to invoke this library via `ae::invoke()`:
 
-<?= $loading->source('library.php')->lines(3, 27); ?>
+<?= $loading->source('library.php')->lines(3, 19); ?>
 
 Once the library is loaded you can call any of its public methods:
 
-<?= $loading->source()->lines(21, 22); ?>
+<?= $loading->source()->section('Using library'); ?>
 
 ### Importing code
 
 If you just want to import configuration settings or helper functions, you can use `ae::import()` method:
 
-<?= $loading->source()->lines(26, 26); ?>
+<?= $loading->source()->section('Importing'); ?>
 
 This will import <samp>helper.php</samp>. If it has been imported already, this method will do nothing.
 

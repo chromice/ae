@@ -43,7 +43,7 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [File system: `ae::path()`, `ae::file()`, `ae::directory()`](#file-system)
     - [Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()`](#presentation)
     - ...
-    - [Database: `ae::query()`, `ae::transaction()`, `ae::table()`](#database)
+    - [Database: `ae::query()`, `ae::transaction()`, `ae::record()`](#database)
 
 * * *
 
@@ -560,10 +560,7 @@ This will import `ae` class into global namespace and a few utility classes into
 
 ```php
 ae::register('path/to/library.php', array(
-    'library',
-    'foo'
-), array(
-    '\ns\Library',
+    'library' => '\ns\Library',
     '\ns\AnotherLibraryClass'
 ));
 ```
@@ -580,7 +577,7 @@ Provided you specified all class names, æ will automatically import you library
 
 
 ```php
-echo AnotherLibraryClass::bar(); // echo 'bar'
+echo \ns\AnotherLibraryClass::bar(); // echo 'bar'
 ```
 
 ### Loading libraries
@@ -600,9 +597,6 @@ This imports <samp>ae/library.php</samp> – if it has not been imported yet –
 ```php
 namespace ns;
 
-ae::define('library', '\ns\Library');
-ae::define('foo', '\ns\Foo');
-
 class Library
 {
     public function foo()
@@ -618,11 +612,6 @@ class Library
 
 class Foo
 {
-    static function foo()
-    {
-        echo 'foo';
-    }
-}
 ```
 
 Once the library is loaded you can call any of its public methods:
@@ -899,7 +888,7 @@ $dir['meta'] = 'value';
 
 ## Session
 
-## Database: `ae::query()`, `ae::transaction()`, `ae::table()` {#database}
+## Database: `ae::query()`, `ae::transaction()`, `ae::record()` {#database}
 
 
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
@@ -1313,4 +1302,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 29 December 2014 12:27:26 -->
+<!-- Generated on 29 December 2014 18:59:20 -->
