@@ -350,7 +350,7 @@ Out of the box, you can load any core library (e.g. <samp>library</samp>) using 
 
 This imports <samp>ae/library.php</samp> – if it has not been imported yet – which declares all classes and functions it needs to run, and instructs æ how to invoke this library via `ae::invoke()`:
 
-<?= $loading->source('library.php')->lines(3, 19); ?>
+<?= $loading->source('library.php')->lines(3, 16); ?>
 
 Once the library is loaded you can call any of its public methods:
 

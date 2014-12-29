@@ -609,9 +609,6 @@ class Library
         echo 'bar';
     }
 }
-
-class Foo
-{
 ```
 
 Once the library is loaded you can call any of its public methods:
@@ -1302,4 +1299,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 29 December 2014 18:59:20 -->
+<!-- Generated on 29 December 2014 19:31:43 -->
