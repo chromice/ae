@@ -2,18 +2,27 @@
 
 /// require 'path/to/ae/loader.php';
 
-ae::register('library', __DIR__ . '/library.php', array(
-	'Library',
-	'AnotherLibraryClass'
+ae::register(__DIR__ . '/library.php', array(
+	'library',
+	'foo'
+), array(
+	'\ns\Library',
+	'\ns\AnotherLibraryClass'
 ));
 
 echo AnotherLibraryClass::bar(); // echo 'bar'
 
-$lib = ae::library();
+$params = null;
+
+$lib = ae::load('library', $params);
+// or 
+$lib = ae::library($params);
 
 echo $lib->foo(); // echo 'foo'
 echo $lib->bar(); // echo 'bar'
 
+echo ae::foo()->foo(); // echo foo
+
 ae::import(__DIR__ . '/helper.php');
 
-echo foo(); // echo 'foo'
+echo bar(); // echo 'bar'

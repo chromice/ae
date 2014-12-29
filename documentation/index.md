@@ -38,12 +38,12 @@ You may still find it useful, even if you are thinking of web app architecture i
         - [Break your app into components](#break-your-app-into-components)
         - [Keep your template code DRY](#keep-your-template-code-dry)
 - [Library reference](#library-reference)
-    - [Loader](#loader)
-    - [Options](#options)
-    - [Path](#path)
-    - [File](#file)
-    - [Directory](#directory)
-    - [Database](#database)
+    - [Loader: `ae::register()`, `ae:import()`, `ae::load()`](#loader)
+    - [Options: `ae::options()`](#options)
+    - [File system: `ae::path()`, `ae::file()`, `ae::directory()`](#file-system)
+    - [Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()`](#presentation)
+    - ...
+    - [Database: `ae::query()`, `ae::transaction()`, `ae::table()`](#database)
 
 * * *
 
@@ -531,24 +531,15 @@ Which will result in:
 
 # Library reference
 
-## Loader
+## Loader: `ae::register()`, `ae:import()`, `ae::load()` {#loader}
 
 
 ```diff
 Unexpected output: 100_Loader_loading/output.txt
 ================================================
--barfoobarbar
+-barfoobarfoobar
 +
-+Fatal error: Uncaught exception 'ae\Exception' with message 'Could not resolve path: library' in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php:164
-+Stack trace:
-+#0 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(61): ae::resolve('library', true)
-+#1 /Users/chromice/Sites/dev/ae/ae-framework/documentation/100_Loader_loading/index.php(8): ae::register('library', '/Users/chromice...', Array)
-+#2 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(403): require('/Users/chromice...')
-+#3 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(338): ae\_include('/Users/chromice...', NULL)
-+#4 /Users/chromice/Sites/dev/ae/ae-framework/ae/request.php(426): ae::output('/Users/chromice...')
-+#5 /Users/chromice/Sites/dev/ae/ae-framework/index.php(32): ae\Router->follow()
-+#6 {main}
-+  thrown in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php on line 164
++Fatal error: Cannot register "/Users/chromice/Sites/dev/ae/ae-framework/documentation/100_Loader_loading/library.php", because it is not a directory. in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php on line 70
 +
 
 ```
@@ -562,22 +553,55 @@ require 'path/to/ae/loader.php';
 
 This will import `ae` class into global namespace and a few utility classes into `\ae\` namespace.
 
+### Registering libraries
+
+æ allows you to register your own libraries using `ae::register()` method:
+
+
+```php
+ae::register('path/to/library.php', array(
+    'library',
+    'foo'
+), array(
+    '\ns\Library',
+    '\ns\AnotherLibraryClass'
+));
+```
+
+The method takes three arguments:
+
+1. Absolute path to library script that contains `ae::invoke()` statement(s).
+1. Library name(s) (must be unique)
+3. (Optional) array of [fully qualified class names][php-namespaces].
+
+[php-namespaces]: http://php.net/manual/en/language.namespaces.dynamic.php
+
+Provided you specified all class names, æ will automatically import you library, if you try to use any of those classes:
+
+
+```php
+echo AnotherLibraryClass::bar(); // echo 'bar'
+```
+
 ### Loading libraries
 
 Out of the box, you can load any core library (e.g. <samp>library</samp>) using global class `ae`:
 
 
 ```php
-$lib = ae::library();
+$lib = ae::load('library', $params);
+// or 
+$lib = ae::library($params);
 ```
 
 This imports <samp>ae/library.php</samp> – if it has not been imported yet – which declares all classes and functions it needs to run, and instructs æ how to invoke this library via `ae::invoke()`:
 
 
 ```php
-<?php
+namespace ns;
 
-ae::invoke('Library');
+ae::define('library', '\ns\Library');
+ae::define('foo', '\ns\Foo');
 
 class Library
 {
@@ -591,6 +615,14 @@ class Library
         echo 'bar';
     }
 }
+
+class Foo
+{
+    static function foo()
+    {
+        echo 'foo';
+    }
+}
 ```
 
 Once the library is loaded you can call any of its public methods:
@@ -599,33 +631,6 @@ Once the library is loaded you can call any of its public methods:
 ```php
 echo $lib->foo(); // echo 'foo'
 echo $lib->bar(); // echo 'bar'
-```
-
-### Registering libraries
-
-æ allows you to register your own libraries using `ae::register()` method:
-
-
-```php
-ae::register('library', 'path/to/library.php', array(
-    'Library',
-    'AnotherLibraryClass'
-));
-```
-
-The method takes three arguments:
-
-1. Library name (must be unique)
-2. Absolute path to library script that contains `ae::invoke()` statement.
-3. (Optional) array of [fully qualified class names][php-namespaces].
-
-[php-namespaces]: http://php.net/manual/en/language.namespaces.dynamic.php
-
-Provided you specified all class names, æ will automatically import you library, if you try to use any of those classes:
-
-
-```php
-echo AnotherLibraryClass::bar(); // echo 'bar'
 ```
 
 ### Importing code
@@ -640,7 +645,7 @@ ae::import('path/to/helper.php');
 This will import <samp>helper.php</samp>. If it has been imported already, this method will do nothing.
 
 
-## Options
+## Options: `ae::options()` {#options}
 
 Many libraries are using options library to allow you to change their behavior. For instance, the database library can log all queries, time how long they take and measure how much memory they consume. As it is only useful for debugging, this feature is turned off by default.
 
@@ -691,7 +696,9 @@ My awesome app v0.93
 ```
 
 
-## Path
+## File system: `ae::path()`, `ae::file()`, `ae::directory()` {#file-system}
+
+### Path
 
 æ operates on absolute paths only. In practice you would want to use this library to define all paths relative to some root directory path:
 
@@ -751,7 +758,7 @@ if (!$path->exists()) {
 ```
 
 
-## File
+### File
 
 File library is a very wrapper around standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
@@ -831,7 +838,7 @@ $dir = $file->parent(); // returns parent directory
 ```
 
 
-## Directory
+### Directory
 
 ```php
 $dir = ae::directory(__DIR__);
@@ -859,16 +866,20 @@ $file = ae::path($dir, 'file-name.ext')->open('a');
 $name = $dir->name();
 $dir->name($name); // rename directory
 
+$mode = $dir->mode();
+$dir->mode($mode); // change mode, e.g. 0777
+
 $dir['meta'] = 'value';
 ```
 
-* * *
 
-## Buffer
+## Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()` {#presentation}
 
-## Snippet
+### Buffer
 
-## Layout
+### Snippet
+
+### Layout
 
 * * *
 
@@ -888,7 +899,7 @@ $dir['meta'] = 'value';
 
 ## Session
 
-## Database
+## Database: `ae::query()`, `ae::transaction()`, `ae::table()` {#database}
 
 
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
@@ -1302,4 +1313,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 28 December 2014 14:04:32 -->
+<!-- Generated on 29 December 2014 12:27:26 -->

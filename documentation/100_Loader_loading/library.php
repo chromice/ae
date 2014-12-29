@@ -1,6 +1,9 @@
 <?php
 
-ae::invoke('Library');
+namespace ns;
+
+ae::define('library', '\ns\Library');
+ae::define('foo', '\ns\Foo');
 
 class Library
 {
@@ -11,7 +14,15 @@ class Library
 	
 	static public function bar()
 	{
-		AnotherLibraryClass::bar();
+		echo 'bar';
+	}
+}
+
+class Foo
+{
+	static function foo()
+	{
+		echo 'foo';
 	}
 }
 

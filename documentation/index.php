@@ -54,12 +54,12 @@ You may still find it useful, even if you are thinking of web app architecture i
         - [Break your app into components](#break-your-app-into-components)
         - [Keep your template code DRY](#keep-your-template-code-dry)
 - [Library reference](#library-reference)
-    - [Loader](#loader)
-    - [Options](#options)
-    - [Path](#path)
-    - [File](#file)
-    - [Directory](#directory)
-    - [Database](#database)
+    - [Loader: `ae::register()`, `ae:import()`, `ae::load()`](#loader)
+    - [Options: `ae::options()`](#options)
+    - [File system: `ae::path()`, `ae::file()`, `ae::directory()`](#file-system)
+    - [Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()`](#presentation)
+    - ...
+    - [Database: `ae::query()`, `ae::transaction()`, `ae::table()`](#database)
 
 * * *
 
@@ -311,7 +311,7 @@ Which will result in:
 
 # Library reference
 
-## Loader
+## Loader: `ae::register()`, `ae:import()`, `ae::load()` {#loader}
 
 <?php 
 	$loading = $doc->example('/100_Loader_loading'); 
@@ -324,48 +324,48 @@ Which will result in:
 
 This will import `ae` class into global namespace and a few utility classes into `\ae\` namespace.
 
-### Loading libraries
-
-Out of the box, you can load any core library (e.g. <samp>library</samp>) using global class `ae`:
-
-<?= $loading->source()->lines(12, 12) ?>
-
-This imports <samp>ae/library.php</samp> – if it has not been imported yet – which declares all classes and functions it needs to run, and instructs æ how to invoke this library via `ae::invoke()`:
-
-<?= $loading->source('library.php')->lines(1, 13)->lines(22, 22)->lines(15, 16); ?>
-
-Once the library is loaded you can call any of its public methods:
-
-<?= $loading->source()->lines(14, 15); ?>
-
 ### Registering libraries
 
 æ allows you to register your own libraries using `ae::register()` method:
 
-<?= $loading->source()->lines(5, 8); ?>
+<?= $loading->source()->lines(5, 11); ?>
 
 The method takes three arguments:
 
-1. Library name (must be unique)
-2. Absolute path to library script that contains `ae::invoke()` statement.
+1. Absolute path to library script that contains `ae::invoke()` statement(s).
+1. Library name(s) (must be unique)
 3. (Optional) array of [fully qualified class names][php-namespaces].
 
 [php-namespaces]: http://php.net/manual/en/language.namespaces.dynamic.php
 
 Provided you specified all class names, æ will automatically import you library, if you try to use any of those classes:
 
-<?= $loading->source()->lines(10, 10); ?>
+<?= $loading->source()->lines(13, 13); ?>
+
+### Loading libraries
+
+Out of the box, you can load any core library (e.g. <samp>library</samp>) using global class `ae`:
+
+<?= $loading->source()->lines(17, 19) ?>
+
+This imports <samp>ae/library.php</samp> – if it has not been imported yet – which declares all classes and functions it needs to run, and instructs æ how to invoke this library via `ae::invoke()`:
+
+<?= $loading->source('library.php')->lines(3, 27); ?>
+
+Once the library is loaded you can call any of its public methods:
+
+<?= $loading->source()->lines(21, 22); ?>
 
 ### Importing code
 
 If you just want to import configuration settings or helper functions, you can use `ae::import()` method:
 
-<?= $loading->source()->lines(17, 17); ?>
+<?= $loading->source()->lines(26, 26); ?>
 
 This will import <samp>helper.php</samp>. If it has been imported already, this method will do nothing.
 
 
-## Options
+## Options: `ae::options()` {#options}
 
 Many libraries are using options library to allow you to change their behavior. For instance, the database library can log all queries, time how long they take and measure how much memory they consume. As it is only useful for debugging, this feature is turned off by default.
 
@@ -404,7 +404,9 @@ Output:
 <?= $options->expect('output.txt'); ?>
 
 
-## Path
+## File system: `ae::path()`, `ae::file()`, `ae::directory()` {#file-system}
+
+### Path
 
 æ operates on absolute paths only. In practice you would want to use this library to define all paths relative to some root directory path:
 
@@ -464,7 +466,7 @@ if (!$path->exists()) {
 ```
 
 
-## File
+### File
 
 File library is a very wrapper around standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
@@ -544,7 +546,7 @@ $dir = $file->parent(); // returns parent directory
 ```
 
 
-## Directory
+### Directory
 
 ```php
 $dir = ae::directory(__DIR__);
@@ -572,16 +574,20 @@ $file = ae::path($dir, 'file-name.ext')->open('a');
 $name = $dir->name();
 $dir->name($name); // rename directory
 
+$mode = $dir->mode();
+$dir->mode($mode); // change mode, e.g. 0777
+
 $dir['meta'] = 'value';
 ```
 
-* * *
 
-## Buffer
+## Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()` {#presentation}
 
-## Snippet
+### Buffer
 
-## Layout
+### Snippet
+
+### Layout
 
 * * *
 
@@ -601,7 +607,7 @@ $dir['meta'] = 'value';
 
 ## Session
 
-## Database
+## Database: `ae::query()`, `ae::transaction()`, `ae::table()` {#database}
 
 <?php
 	$db_test = $doc->example('/____Database_test');
