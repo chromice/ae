@@ -59,7 +59,7 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [File system: `ae::path()`, `ae::file()`, `ae::directory()`](#file-system)
     - [Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()`](#presentation)
     - ...
-    - [Database: `ae::query()`, `ae::transaction()`, `ae::table()`](#database)
+    - [Database: `ae::query()`, `ae::transaction()`, `ae::record()`](#database)
 
 * * *
 
@@ -607,7 +607,7 @@ $dir['meta'] = 'value';
 
 ## Session
 
-## Database: `ae::query()`, `ae::transaction()`, `ae::table()` {#database}
+## Database: `ae::query()`, `ae::transaction()`, `ae::record()` {#database}
 
 <?php
 	$db_test = $doc->example('/____Database_test');
