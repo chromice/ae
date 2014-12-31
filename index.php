@@ -17,7 +17,7 @@ if (php_sapi_name() === 'cli-server'
 date_default_timezone_set(@date_default_timezone_get());
 
 // Default code path
-include 'ae/loader.php';
+require 'ae/loader.php';
 
 // Enable code coverage analyzer
 ae::import('ae/documentation.php');

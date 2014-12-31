@@ -1,6 +1,6 @@
 <?php
 
-/// include 'path/to/ae/loader.php'
+/// require 'path/to/ae/loader.php'
 
 $route = ae::request()->route(array(
 	// 1. Map account to /responders/account.php script

@@ -87,7 +87,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and include <samp>ae/loader.php</samp>:
+You can download the latest release manually, drop it into your project and require <samp>ae/loader.php</samp>:
 
 ```php
 require 'path/to/ae/loader.php';
@@ -318,7 +318,7 @@ Which will result in:
 	$loading->expect('output.txt'); 
 ?>
 
-æ loader is the main script responsible for managing libraries and auto-loading classes. Unless you installed æ via [Composer](#configuring-composer), you need to include the loader manually:
+æ loader is the main script responsible for managing libraries and auto-loading classes. Unless you installed æ via [Composer](#configuring-composer), you need to require the loader manually:
 
 <?= $loading->source()->lines(3, 3) ?>
 
@@ -330,11 +330,10 @@ This will import `ae` class into global namespace and a few utility classes into
 
 <?= $loading->source()->section('Registering'); ?>
 
-The method takes three arguments:
+The method takes two arguments:
 
-1. Absolute path to library script that contains `ae::invoke()` statement(s).
-1. Library name(s) (must be unique)
-3. (Optional) array of [fully qualified class names][php-namespaces].
+1. Absolute path to file.
+2. An array of invocation callbacks for (optionally) each library name.
 
 [php-namespaces]: http://php.net/manual/en/language.namespaces.dynamic.php
 
@@ -432,14 +431,14 @@ if ($path->exists()) {
 }
 ```
 
-Using this library adds an additional layer of security (granted a very thin one), because the resolved path is guaranteed to be contained within the root path:
+This library adds an additional layer of security (granted a very thin one), because the resolved path is guaranteed to be contained within the root path:
 
 ```php
 // The following line throws \ae\PathException
-ae::path('../some/path'); 
+echo ae::path('../some/path'); 
 
-// While the following is perfectly fine
-ae::path('directory', '../some/path');
+// While the following echoes '/root/some/path'
+echo ae::path('/root/directory', '../some/path');
 ```
 
 The library also provides a few shortcut methods. It lets you import a script:
@@ -606,6 +605,9 @@ $dir['meta'] = 'value';
 * * *
 
 ## Session
+
+
+
 
 ## Database: `ae::query()`, `ae::transaction()`, `ae::record()` {#database}
 

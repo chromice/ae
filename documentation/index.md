@@ -82,7 +82,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and include <samp>ae/loader.php</samp>:
+You can download the latest release manually, drop it into your project and require <samp>ae/loader.php</samp>:
 
 ```php
 require 'path/to/ae/loader.php';
@@ -115,7 +115,7 @@ Let's create the most basic web application. Put this code into <samp>index.php<
 ```php
 <?php
 
-include 'path/to/ae/loader.php';
+require 'path/to/ae/loader.php';
 
 echo 'Hello ' . ae::request()->segment(0, "world") . '!';
 
@@ -353,7 +353,7 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 ```php
 <?php
 
-include 'path/to/ae/loader.php'
+require 'path/to/ae/loader.php'
 
 $route = ae::request()->route(array(
     // 1. Map account to /responders/account.php script
@@ -544,7 +544,7 @@ Unexpected output: 100_Loader_loading/output.txt
 
 ```
 
-æ loader is the main script responsible for managing libraries and auto-loading classes. Unless you installed æ via [Composer](#configuring-composer), you need to include the loader manually:
+æ loader is the main script responsible for managing libraries and auto-loading classes. Unless you installed æ via [Composer](#configuring-composer), you need to require the loader manually:
 
 
 ```php
@@ -565,11 +565,10 @@ ae::register('path/to/library.php', array(
 ));
 ```
 
-The method takes three arguments:
+The method takes two arguments:
 
-1. Absolute path to library script that contains `ae::invoke()` statement(s).
-1. Library name(s) (must be unique)
-3. (Optional) array of [fully qualified class names][php-namespaces].
+1. Absolute path to file.
+2. An array of invocation callbacks for (optionally) each library name.
 
 [php-namespaces]: http://php.net/manual/en/language.namespaces.dynamic.php
 
@@ -710,14 +709,14 @@ if ($path->exists()) {
 }
 ```
 
-Using this library adds an additional layer of security (granted a very thin one), because the resolved path is guaranteed to be contained within the root path:
+This library adds an additional layer of security (granted a very thin one), because the resolved path is guaranteed to be contained within the root path:
 
 ```php
 // The following line throws \ae\PathException
-ae::path('../some/path'); 
+echo ae::path('../some/path'); 
 
-// While the following is perfectly fine
-ae::path('directory', '../some/path');
+// While the following echoes '/root/some/path'
+echo ae::path('/root/directory', '../some/path');
 ```
 
 The library also provides a few shortcut methods. It lets you import a script:
@@ -884,6 +883,9 @@ $dir['meta'] = 'value';
 * * *
 
 ## Session
+
+
+
 
 ## Database: `ae::query()`, `ae::transaction()`, `ae::record()` {#database}
 
@@ -1299,4 +1301,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 29 December 2014 19:31:43 -->
+<!-- Generated on 31 December 2014 23:50:13 -->
