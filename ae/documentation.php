@@ -20,6 +20,8 @@ namespace ae;
 
 \ae::invoke('\ae\Documentation');
 
+define('PHP_LINT_EXAMPLES', (bool) `php --version`);
+
 class Documentation
 /*
 	A response wrapper that serves captured content as text/x-markdown
@@ -367,13 +369,16 @@ class Example
 			return new SourceError($message, 'diff');
 		}
 		
-		$lint = exec('php -l ' . $path);
-		
-		if (strpos($lint, 'No syntax errors detected') === FALSE)
+		if (PHP_LINT_EXAMPLES)
 		{
-			$this->tests_failed++;
+			$lint = exec('php -l ' . escapeshellarg($path));
 			
-			return new SourceError($lint, 'txt');
+			if (strpos($lint, 'No syntax errors detected') === FALSE)
+			{
+				$this->tests_failed++;
+				
+				return new SourceError($lint, 'txt');
+			}
 		}
 		
 		if (is_null($type))
