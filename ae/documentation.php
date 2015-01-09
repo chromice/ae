@@ -72,7 +72,7 @@ class Documentation
 		foreach ($this->covered_stats as $file => $percent)
 		{
 			$coverage_details[] = '| ' . str_pad($file, 20) . '| ' . 
-				str_pad(round(100 * $percent, 2) . '%', 9) . '|';
+				str_pad(number_format(100 * $percent, 2) . '%', 8, ' ', STR_PAD_LEFT) . ' |';
 		}
 		
 		$coverage_details = implode("\n", $coverage_details);

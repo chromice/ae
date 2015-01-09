@@ -54,16 +54,16 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 | File                | Coverage |
 |---------------------|---------:|
-| ../ae/loader.php    | 65.73%   |
-| ../ae/options.php   | 75%      |
-| ../ae/file.php      | 0%       |
-| ../ae/container.php | 100%     |
-| ../ae/request.php   | 76.6%    |
-| ../ae/response.php  | 29.59%   |
-| ../ae/image.php     | 0%       |
-| ../ae/form.php      | 0%       |
-| ../ae/session.php   | 0%       |
-| ../ae/database.php  | 83.6%    |
+| ../ae/loader.php    |   65.73% |
+| ../ae/options.php   |   75.00% |
+| ../ae/file.php      |    0.00% |
+| ../ae/container.php |  100.00% |
+| ../ae/request.php   |   76.60% |
+| ../ae/response.php  |   29.59% |
+| ../ae/image.php     |    0.00% |
+| ../ae/form.php      |    0.00% |
+| ../ae/session.php   |    0.00% |
+| ../ae/database.php  |   83.60% |
 
 * * *
 
@@ -1301,4 +1301,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 31 December 2014 23:50:13 -->
+<!-- Generated on 09 January 2015 15:06:51 -->
