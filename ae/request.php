@@ -18,7 +18,7 @@
 
 namespace ae;
 
-\ae::options('ae.request', array(
+\ae::options('ae::request', array(
 	'base_url' => '/',
 	'proxy_ips' => !empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : null
 ));
@@ -110,7 +110,7 @@ class Request
 	/*
 		Returns a URI, prefixed with base URL.
 		
-			\ae::options('ae.request')->set('base_url', 'https://domain.com/')
+			\ae::options('ae::request')->set('base_url', 'https://domain.com/')
 			echo $request::url('blah'); // echo "https://domain.com/blah"
 	*/
 	{
@@ -181,7 +181,7 @@ class Request
 		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 		{
 			$clientlist = preg_split('/,\s+?/', trim($_SERVER['HTTP_X_FORWARDED_FOR']));
-			$whitelist = \ae::options('ae.request')->get('proxy_ips');
+			$whitelist = \ae::options('ae::request')->get('proxy_ips');
 			
 			if (empty($whitelist))
 			{
@@ -269,7 +269,7 @@ class Request
 	
 	protected static function _base_url()
 	{
-		return rtrim(\ae::options('ae.request')->get('base_url'), '/');
+		return rtrim(\ae::options('ae::request')->get('base_url'), '/');
 	}
 }
 

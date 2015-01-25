@@ -1,18 +1,17 @@
 <?php
 
 // Turn on query logging
-ae::options('ae.database')
+ae::options('ae::database')
 	->set('log', true);
 
 // Set default database paramters
-ae::options('ae.database.default')
+ae::options('ae::database(default)')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
 	->set('database', 'ae');
 
 // When socket cannot be detected automatically...
-// ae::options('ae.database.default')->set('socket', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock');
 
 // New context
 $example = new ae('examples.database');

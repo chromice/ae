@@ -1,13 +1,13 @@
 <?php
 
 // Configure the "default" database connection
-ae::options('ae.database.default')
+ae::options('ae::database(default)')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
 	->set('database', 'ae');
 
-ae::options('ae.database')
+ae::options('ae::database')
 	->set('log', true);
 
 try {

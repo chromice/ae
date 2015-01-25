@@ -33,7 +33,7 @@ else if (mb_internal_encoding() !== 'UTF-8')
 \ae::import('ae/request.php');
 
 // Define options
-\ae::options('ae.form', array(
+\ae::options('ae::form', array(
 	'novalidate' => false, // whether to prevent HTML5 validation in browsers that support it;
 	'base_dir' => \ae::resolve('/') // a file path relative to which all uploaded files are.
 ));
@@ -1156,7 +1156,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 	{
 		$attributes = array_merge(array(
 			'action' => Request::url(),
-			'novalidate' => \ae::options('ae.form')->get('novalidate')
+			'novalidate' => \ae::options('ae::form')->get('novalidate')
 		), $attributes);
 		
 		$attributes['id'] = $this->id();
@@ -2158,7 +2158,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 	{
 		if (!empty($file['path']) && !empty($file['full_name']))
 		{
-			$path = rtrim(\ae::options('ae.form')->get('base_dir'), '/') . '/' . ltrim($file['path'], '/');
+			$path = rtrim(\ae::options('ae::form')->get('base_dir'), '/') . '/' . ltrim($file['path'], '/');
 			$full_name = $file['full_name'];
 			
 			unset($file['path'], $file['full_name']);
@@ -2238,7 +2238,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 			$files = array($this->value);
 		}
 		
-		$base_dir = rtrim(\ae::options('ae.form')->get('base_dir'), '/');
+		$base_dir = rtrim(\ae::options('ae::form')->get('base_dir'), '/');
 		$file_offset = 0;
 		$output = '';
 		

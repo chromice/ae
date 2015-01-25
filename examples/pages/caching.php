@@ -1,10 +1,9 @@
 <?php
 	
 	// ae::import('log.php');
-	ae::options('ae.response')
-		->set('compress_output', true);
-	ae::options('ae.response.cache')
-		->set('directory_path', '/cache');
+	ae::options('ae::response')
+		->set('compress_output', true)
+		->set('cache_directory_path', '/cache');
 	
 	// Work for a few seconds...
 	$j = 0; while($j < 10000000) ++$j;

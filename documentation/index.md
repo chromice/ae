@@ -50,7 +50,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 <a name="tests-and-code-coverage"></a>
 
 **Tests**: 64 out of 68 passed (**94.12%** passed)  
-**Code coverage**: 6 out of 10 files covered (**71.75%** average coverage)
+**Code coverage**: 6 out of 10 files covered (**71.68%** average coverage)
 
 | File                | Coverage |
 |---------------------|---------:|
@@ -59,11 +59,11 @@ You may still find it useful, even if you are thinking of web app architecture i
 | ../ae/file.php      |    0.00% |
 | ../ae/container.php |  100.00% |
 | ../ae/request.php   |   76.60% |
-| ../ae/response.php  |   29.59% |
+| ../ae/response.php  |   29.32% |
 | ../ae/image.php     |    0.00% |
 | ../ae/form.php      |    0.00% |
 | ../ae/session.php   |    0.00% |
-| ../ae/database.php  |   83.60% |
+| ../ae/database.php  |   83.41% |
 
 * * *
 
@@ -920,7 +920,7 @@ Before you can make queries to the database, you have to specify the connection 
 
 ```php
 // Configure the "default" database connection
-ae::options('ae.database.default')
+ae::options('ae::database(default)')
     ->set('host', 'localhost')
     ->set('user', 'root')
     ->set('password', 'root')
@@ -946,7 +946,7 @@ If you want to know what queries are performed and how much memory and time they
 
 
 ```php
-ae::options('ae.database')
+ae::options('ae::database')
     ->set('log', true);
 ```
 
@@ -1324,4 +1324,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 25 January 2015 10:44:48 -->
+<!-- Generated on 25 January 2015 14:18:35 -->

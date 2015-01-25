@@ -18,7 +18,7 @@
 
 namespace ae;
 
-\ae::options('ae.database', array(
+\ae::options('ae::database', array(
 	'log' => false
 ));
 
@@ -28,7 +28,7 @@ class Database
 /*
 	A MySQL database abstraction layer.
 	
-	Use `ae.database.[connection name]` options to configure connection:
+	Use `ae::database([connection name])` options to configure connection:
 	
 		`class`     - connection class: '\ae\Database' by default;
 		`host`      - connection host;
@@ -41,7 +41,7 @@ class Database
 	This library must be invoked with the connection name, 
 	otherise 'default' connection is used.
 	
-		ae::options('ae.database.default')
+		ae::options('ae::database(default)')
 			->set('host', 'localhost')
 			->set('user', 'root');
 		
@@ -75,7 +75,7 @@ class Database
 			return self::$connections[$database];
 		}
 		
-		$params = \ae::options('ae.database.' . $database, array(
+		$params = \ae::options('ae::database(' . $database . ')', array(
 			'class' => get_called_class(),
 			'host' => '127.0.0.1',
 			'user' => null,
@@ -101,7 +101,7 @@ class Database
 	
 	protected $db;
 	
-	public function __construct($host, $user, $password, $database, $port, $socket)
+	protected function __construct($host, $user, $password, $database, $port, $socket)
 	{
 		if (!is_null($port))
 		{
@@ -235,7 +235,7 @@ class Database
 		return $this;
 	}
 	
-	public function group_by($clause)
+	public function group_by()
 	/*
 		Sets the {sql:group_by} placeholder.
 		
@@ -245,6 +245,8 @@ class Database
 			group_by('id');
 	*/
 	{
+		$clause = implode(', ', func_get_args());
+		
 		if (empty($this->sql_group_by))
 		{
 			$this->sql_group_by = 'GROUP BY ' . $clause;
@@ -278,7 +280,7 @@ class Database
 		return $this;
 	}
 	
-	public function order_by($clause)
+	public function order_by()
 	/*
 		Sets the {sql:order_by} placeholder.
 		
@@ -288,6 +290,8 @@ class Database
 			order_by('`time` DESC');
 	*/
 	{
+		$clause = implode(', ', func_get_args());
+		
 		if (empty($this->sql_order_by))
 		{
 			$this->sql_order_by = 'ORDER BY ' . $clause;
@@ -336,7 +340,7 @@ class Database
 			
 			foreach ($where as $_key => $_value)
 			{
-				$_where[] = $this->backtick($_key) . ' = ' . $this->escape($_value);
+				$_where[] = $_key . ' = ' . $this->escape($_value);
 			}
 			
 			$where = implode(' AND ', $_where);
@@ -382,7 +386,7 @@ class Database
 		
 		if (!empty($this->aliases))
 		{
-			$placeholders = array_map(array($this, 'backtick'), $this->aliases);
+			$placeholders = $this->aliases;
 		}
 		
 		if (!empty($this->variables))
@@ -398,7 +402,7 @@ class Database
 			
 			foreach ($this->values as $key => $value)
 			{
-				$keys[] = $key = $this->backtick($key);
+				$keys[] = $key;
 				$values[] = $value;
 				$keys_values[] = $key . ' = ' . $value;
 			}
@@ -426,14 +430,6 @@ class Database
 		$this->sql_limit = null;
 		
 		return $query;
-	}
-	
-	public function backtick($name)
-	/*
-		Protects an alias, table or column name with backticks.
-	*/
-	{
-		return '`' . str_replace('`', '``', $name) . '`';
 	}
 	
 	public function escape($value)
@@ -559,7 +555,7 @@ class Database
 		
 		$query = $this->_query();
 		
-		if (\ae::options('ae.database')->get('log') === true)
+		if (\ae::options('ae::database')->get('log') === true)
 		{
 			\ae::register('utilities/inspector');
 			
@@ -637,8 +633,8 @@ class Database
 		See `DatabaseResult::using()`.
 	*/
 	{
-		$table = $this->backtick($class::name());
-		$foreign_key = $this->backtick($singular . '_id');
+		$table = $class::name();
+		$foreign_key = $singular . '_id';
 		
 		if (is_null($related))
 		{
@@ -646,7 +642,7 @@ class Database
 		}
 		else
 		{
-			$related = $this->backtick($related::name());
+			$related = $related::name();
 		}
 		
 		return $this
@@ -725,7 +721,6 @@ class Database
 		}
 		elseif (is_array($columns))
 		{
-			$columns = array_map(array($this, 'backtick'), $columns);
 			$columns = implode(', ', $columns);
 		}
 		
@@ -760,7 +755,7 @@ class Database
 		
 		foreach ($where as $key => $value)
 		{
-			$insert_keys[] = $this->backtick($key);
+			$insert_keys[] = $key;
 			$insert_values[] = $this->escape($value);
 		}
 		

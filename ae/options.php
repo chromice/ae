@@ -57,7 +57,7 @@ class Options
 	
 	public function __construct($namespace, $defaults = array())
 	{
-		$this->namespace = $namespace;
+		$this->namespace = preg_replace('/\s+/', '', $namespace);
 		
 		// Quit, if there are no default values to validate
 		if (empty($defaults) || !is_array($defaults))

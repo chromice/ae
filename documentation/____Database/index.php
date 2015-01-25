@@ -1,6 +1,6 @@
 <?php
 
-ae::options('ae.database.default')
+ae::options('ae::database(default)')
 	->set('host', 'localhost')
 	->set('user', 'root')
 	->set('password', 'root')
