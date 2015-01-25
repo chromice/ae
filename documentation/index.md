@@ -37,13 +37,15 @@ You may still find it useful, even if you are thinking of web app architecture i
         - [Separate different kinds of logic](#separate-different-kinds-of-logic)
         - [Break your app into components](#break-your-app-into-components)
         - [Keep your template code DRY](#keep-your-template-code-dry)
-- [Library reference](#library-reference)
-    - [Loader: `ae::register()`, `ae:import()`, `ae::load()`](#loader)
-    - [Options: `ae::options()`](#options)
-    - [File system: `ae::path()`, `ae::file()`, `ae::directory()`](#file-system)
-    - [Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()`](#presentation)
-    - ...
-    - [Database: `ae::query()`, `ae::transaction()`, `ae::record()`](#database)
+- [Library reference](#reference)
+    - [Core](#loader): [`ae::register()`](#register), [`ae::load()`](#load), [`ae:import()`](#import), [`ae::options()`](#options)
+    - [File system](#file-system): [`ae::path()`](#path), [`ae::file()`](#file), [`ae::directory()`](#directory)
+    - [Presentation](#presentation): [`ae::buffer()`](#buffer), [`ae::snippet()`](#snippet), [`ae::layout()`](#layout)
+    - [HTTP](#http): [`ae::request()`](#request), [`ae::response()`](#response)
+    - [Image: `ae::image()`](#image)
+    - [Form: `ae::form()`](#form)
+    - [Session: `ae::session()`](#session)
+    - [Database: `ae::database()`](#database)
 
 * * *
 
@@ -529,9 +531,12 @@ Which will result in:
 
 **NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
 
-# Library reference
+* * *
 
-## Loader: `ae::register()`, `ae:import()`, `ae::load()` <a name="loader"></a>
+# Library reference <a name="reference"></a>
+
+
+## Core
 
 
 ```diff
@@ -553,7 +558,8 @@ require 'path/to/ae/loader.php';
 
 This will import `ae` class into global namespace and a few utility classes into `\ae\` namespace.
 
-### Registering libraries
+
+### `ae::register()` <a name="register"></a>
 
 æ allows you to register your own libraries using `ae::register()` method:
 
@@ -579,7 +585,8 @@ Provided you specified all class names, æ will automatically import you library
 echo \ns\AnotherLibraryClass::bar(); // echo 'bar'
 ```
 
-### Loading libraries
+
+### `ae::load()` <a name="load"></a>
 
 Out of the box, you can load any core library (e.g. <samp>library</samp>) using global class `ae`:
 
@@ -618,7 +625,8 @@ echo $lib->foo(); // echo 'foo'
 echo $lib->bar(); // echo 'bar'
 ```
 
-### Importing code
+
+### `ae:import()` <a name="import"></a>
 
 If you just want to import configuration settings or helper functions, you can use `ae::import()` method:
 
@@ -630,7 +638,7 @@ ae::import('path/to/helper.php');
 This will import <samp>helper.php</samp>. If it has been imported already, this method will do nothing.
 
 
-## Options: `ae::options()` <a name="options"></a>
+### `ae::options()` <a name="options"></a>
 
 Many libraries are using options library to allow you to change their behavior. For instance, the database library can log all queries, time how long they take and measure how much memory they consume. As it is only useful for debugging, this feature is turned off by default.
 
@@ -681,9 +689,9 @@ My awesome app v0.93
 ```
 
 
-## File system: `ae::path()`, `ae::file()`, `ae::directory()` <a name="file-system"></a>
+## File system <a name="file-system"></a>
 
-### Path
+### `ae::path()` <a name="path"></a>
 
 æ operates on absolute paths only. In practice you would want to use this library to define all paths relative to some root directory path:
 
@@ -743,7 +751,7 @@ if (!$path->exists()) {
 ```
 
 
-### File
+### `ae::file()` <a name="file"></a>
 
 File library is a very wrapper around standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
@@ -823,7 +831,7 @@ $dir = $file->parent(); // returns parent directory
 ```
 
 
-### Directory
+### `ae::directory()` <a name="directory"></a>
 
 ```php
 $dir = ae::directory(__DIR__);
@@ -858,17 +866,24 @@ $dir['meta'] = 'value';
 ```
 
 
-## Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()` <a name="presentation"></a>
+## Presentation <a name="presentation"></a>
 
-### Buffer
+### `ae::buffer()` <a name="buffer"></a>
 
-### Snippet
+...
 
-### Layout
+### `ae::snippet()` <a name="snippet"></a>
 
-* * *
+...
 
-## Request
+### `ae::layout()` <a name="layout"></a>
+
+...
+
+
+## HTTP
+
+### `ae:request()` <a name="request"></a>
 
 ```php
 $scheme = ae::request()->scheme();
@@ -893,24 +908,477 @@ ae::request()->route(array(
 
 ```
 
-## Response
+Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `\ae\Request::cli`, `\ae\Request::ajax` and `\ae\Request::method` constants:
 
-## Cache
+```php
+ae::import('ae/request.php');
 
-* * *
+if (\ae\Request::is_cli)
+{
+    echo "Hello World!";
+}
+else if (\ae\Request::is_ajax)
+{
+    echo "{message:'Hello world'}";
+}
+else
+{
+    echo "<h1>Hello World!</h1>";
+    
+    if (\ae\Request::method === 'GET')
+    {
+        echo "<p>Nothing to get.</p>";
+    }
+    else if (\ae\Request::method === 'POST')
+    {
+        echo "<p>Nothing to post.</p>";
+    }
+}
+```
 
-## Image
+You can access URI segments using `\ae\Request::segment()`  method:
 
-## Form
+```php
+// GET /some/arbitrary/request HTTP/1.1
+$request = ae::request();
 
-* * *
+echo $request->segment(0); // some
+echo $request->segment(1); // arbitrary
 
-## Session
+echo $request->type(); // html
+echo $request->segment(99, 'default value'); // default value
+```
+
+All requests have a type ("html" by default), which is defined by the *file extension* part of the URI.
+
+```php
+// GET /some/arbitrary/request.json HTTP/1.1
+$request = ae::request();
+
+echo $request->type(); // json
+```
+
+In order to get the IP address of the client, you should use `\ae\Request::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
+
+```php
+ae::options('ae.request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+
+$client_ip = ae::request()->ip_address();
+```
 
 
+#### Routing
+
+Requests can be re-routed to a specific directory:
+
+```php
+// GET /article/123 HTTP/1.1
+$request = ae::request();
+
+$route = $request->route('/', 'handlers/');
+
+if (!$route->exists())
+{
+    header('HTTP/1.1 404 Not Found');
+    echo "Page does not exist.";
+    exit;
+}
+
+$route->follow();
+```
+
+Now, if you have a matching request handler in the */handlers* directory (article.php in this case), æ will run it:
+
+```php
+// article.php
+$request = ae::request();
+
+if (!$request->is_routed())
+{
+    die('Direct request is not allowed!');
+}
+
+// NB! The /article/ part is pushed out because of routing.
+$id = $request->segment(0);
+
+echo "Article ID is $id. ";
+echo "You can access it at " . \ae\Request::uri();
+```
+
+You can route different types of requests to different directories:
+
+```php
+$route = ae::request()->route(array(
+    '/admin' => 'cms/', // all requests starting with /admin 
+    '/' => 'webroot/' // other requests
+)->follow();
+```
+
+You can always provide an anonymous function instead of a directory and pass URI segments as arguments like this:
+
+```php
+ae::request()->route(array(
+    '/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
+        echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
+    },
+    '/' => function($uri) {
+        echo 'Default handler. Request URI: /' . $uri;
+    }
+))->follow();
+```
 
 
-## Database: `ae::query()`, `ae::transaction()`, `ae::record()` <a name="database"></a>
+### `ae::response()` <a name="response"></a>
+
+Response library allows you to create a response of a specific mime-type, set its headers and (optionally) cache and compress it.
+
+Here is an example of a simple application that creates gzip'ed response with a custom header that is cached for 5 minutes:
+
+```php
+<?php 
+// GET /hello-world HTTP/1.1
+include 'ae/core.php';
+
+ae::options('ae.response')
+    ->set('compress_output', true); // turn on the g-zip compression
+
+$response = ae::response('html')
+    ->header('X-Header-Example', 'Some value');
+?>
+<h1>Hello world</h1>
+<?php 
+$response
+    ->cache(5, '/hello-world.html') // cache for five minutes as /hello-world.html
+    ->dispatch(); // dispatch the request
+?>
+```
+
+You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html". When response object is created, it starts capturing all output. You have to call `\ae\Response::dispatch()` method to send the response along with any HTTP headers set via `\ae\Response::header()` method.
+
+
+#### Caching
+
+If you want the response to be cached client-side for a number of minutes, use `\ae\Response::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
+
+Response library supports server-side caching as well. The responses are saved to */cache* directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
+
+Here are the rules that *.htaccess* file in the web root directory must contain:
+
+```apache
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteBase /
+
+    # Append ".html", if there is no extension...
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !\.\w+$
+    RewriteRule ^(.*?)$ /$1.html [L]
+
+    # ...and redirect to cache directory ("/cache")
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+</IfModule>
+```
+
+And here's what *.htaccess* file in */cache* directory must be like:
+
+```apache
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+
+    # If no matching file found, redirect back to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*) /index.php?/$1 [L,QSA]
+</IfModule>
+```
+
+Apache would first look for a cached response, and only if it finds no valid response, will it route the request to */index.php*. No PHP code is actually involved in serving cached responses.
+
+In order to save a response use `\ae\Response::cache()` method, passing the number of minutes it should be cached for via first argument and full request URI (including the file extension) via second argument:
+
+```php
+$response->cache(5, '/hello-world.html');
+```
+
+You can delete any cached response using `\ae\ResponseCache::delete()` method by passing full or partial URL to it:
+
+```php
+ae::import('ae/response.php');
+
+\ae\ResponseCache::delete('/hello-world.html');
+```
+
+You should also remove all stale cache entries via `\ae\ResponseCache::collect_garbage()`:
+
+```php
+ae::import('ae/response.php');
+
+\ae\ResponseCache::collect_garbage();
+```
+
+The garbage collection can be a very resource-intensive operation, so its usage should be restricted to an infrequent cron job.
+
+
+## Image: `ae::image()` <a name="image"></a>
+
+Image library is a very light wrapper around standard GD library functions:
+
+```php
+$image = ae::image('examples/image/test.jpg');
+
+// Get meta data
+$width = $image->width();
+$height = $image->height();
+$type = $image->type(); // png, jpeg or gif
+$mimetype = $image->mimetype();
+
+// Blow one pixel up.
+$image
+    ->crop(1,1)
+    ->scale($width, null) // scale proportionately.
+    ->save('tiny_bit.png');
+
+// save() resets state to default, i.e. no crop, scale, prefix, suffix, etc.
+
+// Crop to cover
+$image
+    ->align(\ae\Image::center, \ae\Image::middle) // same as align(0.5, 0.5)
+    ->fill(100, 100)
+    ->prefix('cropped_')
+    ->save(); // save as 'cropped_test.jpg'
+
+// Resize to fit (and preserve the result for next operation)
+$small = $image
+    ->fit(320, 320)
+    ->suffix('_small')
+    ->save();  // save as 'test_small.jpg'
+
+// Apply colorize filter
+// using http://uk3.php.net/manual/en/function.imagefilter.php
+$small
+    ->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
+    ->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+```
+
+### Caching
+
+Images can be cached just like responses:
+
+```php
+$image = ae::image('examples/image/test.jpg');
+
+$image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
+    ->cache(\ae\ResponseCache::year, '/images/foo.png') // cache image for a year
+```
+
+
+## Form: `ae::form()` <a name="form"></a>
+
+Form library allows you to generate form controls, validate submitted values and display error messages.
+
+Each form must have a unique ID. This way the library knows which form has been submitted, even if there are multiple forms on the page.
+
+In general any form script would consist of three parts: form and field declaration, validation and HTML output.
+
+Let's declare a simple form with three fields (text input, checkbox and select drop-down) and basic validation rules:
+
+```php
+$form = ae::form('form-id');
+
+$input = $form->single('text_input')
+    ->required('This field is required.')
+    ->min_length('It should be at least 3 characters long.', 3)
+    ->max_length('Please keep it shorter than 100 characters.', 100);
+
+$checkbox = $form->single('checkbox_input')
+    ->required('You must check this checkbox!');
+
+$options = array(
+    'foo' => 'Foo',
+    'bar' => 'Bar'
+);
+
+$select = $this->single('select_input')
+    ->valid_value('Wrong value selected.', $options);
+```
+
+Now, this declaration is enough to validate the form, has it been submitted:
+
+```php
+if ($form->is_submitted())
+{
+    $is_valid = $form->validate();
+    
+    if ($is_valid)
+    {
+        $values = $form->values();
+        
+        var_dump($values);
+    }
+}
+```
+
+If the form has not been submitted, you may want to populate it with default values:
+
+```php
+if (!$form->is_submitted())
+{
+    $form->value(array(
+        'text' => 'Foo'
+    ));
+}
+```
+
+The HTML code of the form's content can be anything you like, but you must use `\ae\Form::open()` and `\ae\Form::close()` methods instead of `<form>` and `</form>` tags:
+
+```php
+<?= $form->open() ?>
+<div class="field">
+    <label for="<?= $input->id() ?>">Enter some text:</label>
+    <?= $input->input('text') ?>
+    <?= $input->error() ?>
+</div>
+<div class="field">
+    <label><?= $checkbox->input('checkbox') ?> Check me out!</label>
+    <?= $checkbox->error() ?>
+</div>
+<div class="field">
+    <label for="<?= $select->id() ?>">Select something (totally optional):</label>
+    <?= $select->select(array('' => 'Nothing selected') + $options) ?>
+    <?= $select->error() ?>
+</div>
+<div class="field">
+    <button type="submit">Submit</button>
+</div>
+<?=  $form->close() ?>
+```
+
+Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in the browsers that support it, you should set the `novalidate` attribute of the form:
+
+```php
+<?= $form->open(array('novalidate' => true)); ?>
+```
+
+### Field types
+
+Form library does not distinguish between various input types of HTML when the form is validated, as it operates only with values. However, if a field accepts multiple values (e.g. `<select multiple>`, `<input type="email" multiple>` or several `<input type="checkbox">`) you must declare the field appropriately for validation to work.
+
+In cases where the amount of values is arbitrary you must declare the field as `multiple`:
+
+```php
+$cb = $form->multiple('checked')->required('Check at least one box');
+```
+
+You would then output this field like this:
+
+```php
+<label><?= $cb->input('checkbox', 'foo') ?> Foo</label><br>
+<label><?= $cb->input('checkbox', 'bar') ?> Bar</label>
+<?= $cb->error('<br><em class="error">','</em>') ?>
+```
+
+If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and (optionally) maximum length:
+
+```php
+$tags = $form->sequence('tags', 1, 5);
+
+$tag_input = $tags->single('tag_input')
+    ->min_length('Should be at least 2 character long', 2);
+
+```
+
+The sequence will contain the minimum number of fields required, but you can let user control the length via "Add" and "Remove" buttons.
+
+```php
+<?php foreach ($tags as $index => $tag): ?>
+<div class="field">
+    <label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
+    <?= $tag['tag_input']->input('input') ?> <?= $files->remove_button($index) ?>
+    <?= $tag['tag_input']->error('<br><em class="error">', '</em>') ?>
+</div>
+<?php endforeach ?>
+<?= $files->add_button() ?>
+```
+
+You can combine several sequences in one loop to create repeatable field groups.
+
+### Validation
+
+Form library comes with a few validation methods. Each method accepts validation error message as the first argument.
+
+Any field can be made required:
+
+```php
+$field->required('This field is required.');
+```
+
+If the value of the field is a decimal/integer number or time/date/month/week, you can validate its format and minimum and maximum value:
+
+```php
+$number->valid_pattern('Should contain a number.', \ae\TextValidator::integer)
+    ->min_value('Must be equal to 2 or greater.', 2)
+    ->max_value('Must be equal to 4 or less.', 4);
+$date->valid_pattern('Should contain a date: YYYY-MM-DD.', \ae\TextValidator::date)
+    ->min_value('Cannot be in the past.', date('Y-m-d'));
+```
+
+If value is a string you may validate its format and maximum and minimum length:
+
+```php
+$field->valid_pattern('This should be a valid email.', \ae\TextValidator::email)
+    ->min_length('Cannot be shorter than 5 characters.', 5)
+    ->max_length('Cannot be longer than 100 characters.', 100);
+```
+
+The library comes with a few format validators:
+
+- `\ae\TextValidator::integer` — an integer number, e.g. -1, 0, 1, 2, 999;
+- `\ae\TextValidator::decimal` — a decimal number, e.g. 0.01, -.02, 25.00, 30;
+- `\ae\TextValidator::numeric` — a string consisting of numeric characters, e.g. 123, 000;
+- `\ae\TextValidator::alpha` — a string consisting of alphabetic characters, e.g. abc, cdef;
+- `\ae\TextValidator::alphanumeric` — a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
+- `\ae\TextValidator::color` — a hex value of a color, e.g. #fff000, #434343;
+- `\ae\TextValidator::time` — a valid time, e.g. 14:00:00, 23:59:59.99;
+- `\ae\TextValidator::date` — a valid date, e.g. 2009-10-15;
+- `\ae\TextValidator::datetime` — a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
+- `\ae\TextValidator::month` — a valid month, e.g. 2009-10;
+- `\ae\TextValidator::week` — a valid week, e.g. 2009-W42;
+- `\ae\TextValidator::email` — a valid email address;
+- `\ae\TextValidator::url` — a valid URL string;
+- `\ae\TextValidator::postcode_uk` — a valid UK postal code.
+
+You may define any other pattern manually:
+
+```php
+$field->valid_pattern('At least 5 alphabetic characters.', '[a-zA-Z]{5,}');
+```
+
+You can also use an anonymous function as a validator:
+
+```php
+$field->valid_value('Devils are not allowed.', function ($value) {
+    return $value != 666;
+});
+```
+
+If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted correct data:
+
+```php
+$field->valid_value('Wrong option selected.', array(
+    'foo', 'bar' //, '...'
+));
+```
+
+Ordinary users would never see this error, but it prevents would-be hackers from tempering with the data.
+
+
+## Session: `ae::session()` <a name="session"></a>
+
+...
+
+
+## Database: `ae::database()` <a name="database"></a>
 
 
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
@@ -1324,4 +1792,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 25 January 2015 14:18:35 -->
+<!-- Generated on 25 January 2015 15:13:49 -->

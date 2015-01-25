@@ -559,6 +559,7 @@ $image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
     ->cache(\ae\ResponseCache::year, '/images/foo.png') // cache image for a year
 ```
 
+
 ## Form
 
 Form library allows you to generate form controls, validate submitted values and display error messages.
