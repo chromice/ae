@@ -224,10 +224,7 @@ class File
 			throw new FileException('Failed to copy file.');
 		}
 		
-		// FIXME: Must return a new instance for the copy.
-		$this->path = $path;
-		
-		return $this;
+		return new File($path, null, $this->meta);
 	}
 	
 	public function delete()
