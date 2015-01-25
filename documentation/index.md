@@ -5,9 +5,9 @@
 
 This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that adheres to a few basic principles:
 
-- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines, etc. There is no config file to tinker with. All libraries come with their configuration options set to reasonable defaults.
-- **Reliability**: All examples in this documentation are tested and their output verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant. 
-- **Performance:** Libraries are loaded when you need them and there is no hidden layer above your code to worry about. Cached responses are served by Apache alone, i.e. without PHP overhead.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines, etc. There are no config files to tinker with either. All libraries have with their (few) configuration options set to reasonable defaults.
+- **Reliability**: All examples in this documentation are tested and their output is verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant. 
+- **Performance:** All libraries have been designed with best performance practices in mind. Responses can be cached statically and served through Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
 There is nothing particularly groundbreaking or fancy about this toolkit. If you are just looking for a simple PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com). 
@@ -531,7 +531,7 @@ Which will result in:
 
 # Library reference
 
-## Loader: `ae::register()`, `ae:import()`, `ae::load()` {#loader}
+## Loader: `ae::register()`, `ae:import()`, `ae::load()` <a name="loader"></a>
 
 
 ```diff
@@ -630,7 +630,7 @@ ae::import('path/to/helper.php');
 This will import <samp>helper.php</samp>. If it has been imported already, this method will do nothing.
 
 
-## Options: `ae::options()` {#options}
+## Options: `ae::options()` <a name="options"></a>
 
 Many libraries are using options library to allow you to change their behavior. For instance, the database library can log all queries, time how long they take and measure how much memory they consume. As it is only useful for debugging, this feature is turned off by default.
 
@@ -681,7 +681,7 @@ My awesome app v0.93
 ```
 
 
-## File system: `ae::path()`, `ae::file()`, `ae::directory()` {#file-system}
+## File system: `ae::path()`, `ae::file()`, `ae::directory()` <a name="file-system"></a>
 
 ### Path
 
@@ -858,7 +858,7 @@ $dir['meta'] = 'value';
 ```
 
 
-## Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()` {#presentation}
+## Presentation: `ae::buffer()`, `ae::snippet()`, `ae::layout()` <a name="presentation"></a>
 
 ### Buffer
 
@@ -869,6 +869,29 @@ $dir['meta'] = 'value';
 * * *
 
 ## Request
+
+```php
+$scheme = ae::request()->scheme();
+$host = ae::request()->host();
+$port = ae::request()->port();
+$path = ae::request()->path([offset, ['default']]); // where offset is num; if no offset is specified returns path + '.' + type
+$query = ae::request()->query(['name'[, 'default']]); // if no name specified returns all
+$data = ae::request()->data(['name'[, 'default']]); // if no name specified returns all
+
+ae::request()->type(); // 'html' by default 
+ae::request()->ip_address();
+ae::request()->redirect();
+
+ae::request()->url(array(
+	'scheme' => 'https',
+	'path' => '/'
+));
+
+ae::request()->route(array(
+	// ...
+));
+
+```
 
 ## Response
 
@@ -887,7 +910,7 @@ $dir['meta'] = 'value';
 
 
 
-## Database: `ae::query()`, `ae::transaction()`, `ae::record()` {#database}
+## Database: `ae::query()`, `ae::transaction()`, `ae::record()` <a name="database"></a>
 
 
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
@@ -1301,4 +1324,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 09 January 2015 15:06:51 -->
+<!-- Generated on 25 January 2015 10:44:48 -->

@@ -605,7 +605,6 @@ trait FormTextFieldValidator
 		$message = str_replace('{max-length}', $length, $message);
 		$this->html['maxlength'] = $length;
 		$this->validators[TextValidator::order_max_length] = function ($value) use ($message, $length) {
-			// FIXME: Does not work for UTF-8 strings.
 			return mb_strlen($value) > $length ? str_replace('{length}', mb_strlen($value), $message) : null;
 		};
 		
