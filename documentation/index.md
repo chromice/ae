@@ -34,9 +34,6 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Imperative and expressive syntax](#imperative-and-expressive-syntax)
     - [Exception safety](#exception-safety)
     - [Everything is a script](#everything-is-a-script)
-        - [Separate different kinds of logic](#separate-different-kinds-of-logic)
-        - [Break your app into components](#break-your-app-into-components)
-        - [Keep your template code DRY](#keep-your-template-code-dry)
 - [Library reference](#reference)
     - [Core](#loader): [`ae::register()`](#register), [`ae::load()`](#load), [`ae:import()`](#import), [`ae::options()`](#options)
     - [File system](#file-system): [`ae::path()`](#path), [`ae::file()`](#file), [`ae::directory()`](#directory)
@@ -265,7 +262,7 @@ Buffer, container and response libraries all start capturing output in `__constr
 > **Opinion:** Generally speaking, all resources your object has allocated must be deallocated in the destructor. And if you find yourself cleaning up state after catching an exception, you are doing it wrong.
 
 
-### Everything is a script
+### Everything is a script <a name="everything-is-a-script"></a>
 
 > All the world's a stage,   
 > And all the men and women merely players.
@@ -276,11 +273,11 @@ It would not be unreasonable to assume that your app will be made of one or more
 
 - *Handling requests*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
 - *Operating on internal state*, e.g. reading/writing files, cookies, session variables, database records, etc.
-- *Generating responses*, i.e. spitting out a string giant string conforming to HTTP.
+- *Generating responses*, i.e. spitting out a long string conforming to HTTP, HTML and other standards.
 
 The author does not want to be unfairly prescriptive, so here are just a few tips you may find helpful:
 
-#### Separate different kinds of logic
+#### Separate different kinds of logic 
 
 Here is the top tip for one-file-to-rule-them-all approach: Process input first; *than* execute database queries, check internal state and pre-calculate values; *and than* use those values to generate a response.
 
@@ -327,7 +324,7 @@ $results = get_results($filters);
 In MVC-speak your controller is at the top, and your view is at the bottom.
 
 
-#### Break your app into components
+#### Break your app into components 
 
 æ lets you either delegate requests to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
 
@@ -420,121 +417,16 @@ Unexpected output
 
 
 
-#### Keep your template code DRY
+#### Keep your template code DRY 
 
-æ takes advantage of the fact that PHP itself is a powerful template engine and exposes two classes of objects to help you keep your presentation code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
+æ takes advantage of the fact that PHP itself is a powerful template engine and has two libraries to help you keep your presentation code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
 
-1. **Snippet**: for when several scripts are presenting similar looking data. Think: article listings, user profiles, etc.
-2. **Container**: for when several scripts are contained within the same template. Think: standard header + various content + standard footer.
-
-##### Snippets
-
-A snippet is a parameterized template, used to present snippets of information in a standardized form.
-
-
-```php
-<?php
-
-$glossary = array(
-    'Ash' => 'a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.',
-    'Framework' => 'an essential supporting structure of a building, vehicle, or object.',
-    'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
-);
-
-ae::output('path/to/snippet.php', array(
-    'data' => $glossary
-));
-```
-
-Provided <samp>snippet.php</samp> contains:
-
-
-```php
-<?php
-
-if (empty($data) || !is_array($data))
-{
-    return;
-}
-
-?>
-<dl>
-<?php foreach ($data as $term => $definition): ?>
-    <dt><?= $term ?></dt>
-    <dd><?= $definition ?></dd>
-<?php endforeach ?>
-</dl>
-
-```
-
-The script will produce:
-
-
-```html
-<dl>
-    <dt>Ash</dt>
-    <dd>a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.</dd>
-    <dt>Framework</dt>
-    <dd>an essential supporting structure of a building, vehicle, or object.</dd>
-    <dt>PHP</dt>
-    <dd>a server-side scripting language designed for web development but also used as a general-purpose programming language.</dd>
-</dl>
-
-```
-
-##### Containers
-
-A container is a parameterized template, used as a wrapper. Here's an example of a container:
-
-
-
-```php
-<!DOCTYPE html>
-<html>
-<head>
-    <title><?= $title ?></title>
-</head>
-<body>
-    <?= $content ?>
-</body>
-</html>
-```
-
-Another script can use it:
-
-
-```php
-<?php 
-
-$container = ae::container('path/to/container.php')
-    ->set('title', 'Container example');
-
-?>
-<h1>Hello World!</h1>
-
-```
-
-Which will result in:
-
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Container example</title>
-</head>
-<body>
-    <h1>Hello World!</h1>
-</body>
-</html>
-```
-
-**NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
+- [Snippet](#snippet) that can be reused by various components to present similar data. Think: article listings, user profiles, etc.
+- [Layout](#layout): that can be reused to wrap similar context around various components. Think: standard header + various content + standard sidebar + standard footer.
 
 * * *
 
 # Library reference <a name="reference"></a>
-
 
 ## Core
 
@@ -720,7 +612,7 @@ if ($path->exists()) {
 This library adds an additional layer of security (granted a very thin one), because the resolved path is guaranteed to be contained within the root path:
 
 ```php
-// The following line throws \ae\PathException
+// The following line throws \ae\PathException (which extends \ae\FileSystemException)
 echo ae::path('../some/path'); 
 
 // While the following echoes '/root/some/path'
@@ -753,7 +645,7 @@ if (!$path->exists()) {
 
 ### `ae::file()` <a name="file"></a>
 
-File library is a very wrapper around standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
+File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
 ```php
 $file = ae::file(__DIR__ . '/file.txt');
@@ -870,15 +762,141 @@ $dir['meta'] = 'value';
 
 ### `ae::buffer()` <a name="buffer"></a>
 
-...
+`\ae\Buffer` is a core class used for capturing output.
+
+You must create a buffer and assign it to a variable, in order to start capturing output:
+
+```php
+$buffer = ae::buffer();
+```
+
+All output is captured until you  either call `\ae\Buffer::end()` or `\ae\Buffer::content()` method that returns its content as a string. If you do not use these methods, buffer's content will be flushed when the instance is destroyed, unless you called `\ae\Buffer::autoclear()`:
+
+```php
+$silent_buffer = ae::buffer()->autoclear();
+```
+
+Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
+
+```html
+<?php $template = ae::buffer() ?>
+<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
+<?php $template->end() ?>
+```
+
+```php
+echo str_replace(array(
+    '{url}', '{name}', '{visits}'
+), array(
+    '#', 'blah', '3'
+), $template);
+```
+
 
 ### `ae::snippet()` <a name="snippet"></a>
 
-...
+A snippet is a parameterized template, used to present snippets of information in a standardized form.
+
+
+```php
+<?php
+
+$glossary = array(
+    'Ash' => 'a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.',
+    'Framework' => 'an essential supporting structure of a building, vehicle, or object.',
+    'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
+);
+
+ae::output('path/to/snippet.php', array(
+    'data' => $glossary
+));
+```
+
+Provided <samp>snippet.php</samp> contains:
+
+
+```php
+<?php
+
+if (empty($data) || !is_array($data))
+{
+    return;
+}
+
+?>
+<dl>
+<?php foreach ($data as $term => $definition): ?>
+    <dt><?= $term ?></dt>
+    <dd><?= $definition ?></dd>
+<?php endforeach ?>
+</dl>
+
+```
+
+The script will produce:
+
+
+```html
+<dl>
+    <dt>Ash</dt>
+    <dd>a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.</dd>
+    <dt>Framework</dt>
+    <dd>an essential supporting structure of a building, vehicle, or object.</dd>
+    <dt>PHP</dt>
+    <dd>a server-side scripting language designed for web development but also used as a general-purpose programming language.</dd>
+</dl>
+
+```
+
 
 ### `ae::layout()` <a name="layout"></a>
 
-...
+A container is a parameterized template, used as a wrapper. Here's an example of a container:
+
+
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title><?= $title ?></title>
+</head>
+<body>
+    <?= $content ?>
+</body>
+</html>
+```
+
+Another script can use it:
+
+
+```php
+<?php 
+
+$container = ae::container('path/to/container.php')
+    ->set('title', 'Container example');
+
+?>
+<h1>Hello World!</h1>
+
+```
+
+Which will result in:
+
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Container example</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+</body>
+</html>
+```
+
+**NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
 
 
 ## HTTP
@@ -886,10 +904,14 @@ $dir['meta'] = 'value';
 ### `ae:request()` <a name="request"></a>
 
 ```php
-$scheme = ae::request()->scheme();
+// HTTP
+$ajax = $ae::request()->is_ajax();
+$method = ae::request()->method(); // 'GET', 'POST', 'PUT', etc.
+ae::request()->is_method('POST');
+$scheme = ae::request()->scheme(); // 'http' OR 'https'
 $host = ae::request()->host();
 $port = ae::request()->port();
-$path = ae::request()->path([offset, ['default']]); // where offset is num; if no offset is specified returns path + '.' + type
+$path = ae::request()->path([offset[, length = 1[, 'default']]]); // where offset is pos/neg num; if no offset is specified returns path + '.' + type
 $query = ae::request()->query(['name'[, 'default']]); // if no name specified returns all
 $data = ae::request()->data(['name'[, 'default']]); // if no name specified returns all
 
@@ -897,27 +919,31 @@ ae::request()->type(); // 'html' by default
 ae::request()->ip_address();
 ae::request()->redirect();
 
+// redirect to /login 
 ae::request()->url(array(
 	'scheme' => 'https',
-	'path' => '/'
-));
+	'path' => '/login'
+))->redirect();
 
 ae::request()->route(array(
 	// ...
 ));
 
+
+// Shell
+$shell = ae::request()->is_cli();
+$argument = ae::request()->argument(['name' || offset[, 'default']]); // if no name OR offset is specified, returns all arguments
+
 ```
 
-Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `\ae\Request::cli`, `\ae\Request::ajax` and `\ae\Request::method` constants:
+Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `\ae\Request::is_cli()`, `\ae\Request::is_ajax()` and `\ae\Request::method()` methods:
 
 ```php
-ae::import('ae/request.php');
-
-if (\ae\Request::is_cli)
+if (ae::request()->is_cli())
 {
     echo "Hello World!";
 }
-else if (\ae\Request::is_ajax)
+else if (ae::request()->is_ajax())
 {
     echo "{message:'Hello world'}";
 }
@@ -925,28 +951,30 @@ else
 {
     echo "<h1>Hello World!</h1>";
     
-    if (\ae\Request::method === 'GET')
+    if (ae::request()->method() === 'GET')
     {
         echo "<p>Nothing to get.</p>";
     }
-    else if (\ae\Request::method === 'POST')
+    else if (ae::request()->is_method('POST'))
     {
         echo "<p>Nothing to post.</p>";
     }
 }
 ```
 
-You can access URI segments using `\ae\Request::segment()`  method:
+You can access request path segments using `\ae\Request::path()`  method:
 
 ```php
 // GET /some/arbitrary/request HTTP/1.1
 $request = ae::request();
 
-echo $request->segment(0); // some
-echo $request->segment(1); // arbitrary
+echo $request->path(0); // some
+echo $request->path(1); // arbitrary
+echo $request->path(0, 2); // some/arbitrary/request
+echo $request->path(-1); // request
 
 echo $request->type(); // html
-echo $request->segment(99, 'default value'); // default value
+echo $request->path(99, 'default value'); // default value
 ```
 
 All requests have a type ("html" by default), which is defined by the *file extension* part of the URI.
@@ -955,6 +983,7 @@ All requests have a type ("html" by default), which is defined by the *file exte
 // GET /some/arbitrary/request.json HTTP/1.1
 $request = ae::request();
 
+echo $request->path(); // some/arbitrary/request.json
 echo $request->type(); // json
 ```
 
@@ -993,16 +1022,10 @@ Now, if you have a matching request handler in the */handlers* directory (articl
 // article.php
 $request = ae::request();
 
-if (!$request->is_routed())
-{
-    die('Direct request is not allowed!');
-}
-
-// NB! The /article/ part is pushed out because of routing.
-$id = $request->segment(0);
+$id = $request->path(1);
 
 echo "Article ID is $id. ";
-echo "You can access it at " . \ae\Request::uri();
+echo "You can access it at " . $request->uri();
 ```
 
 You can route different types of requests to different directories:
@@ -1014,7 +1037,7 @@ $route = ae::request()->route(array(
 )->follow();
 ```
 
-You can always provide an anonymous function instead of a directory and pass URI segments as arguments like this:
+You can always provide an anonymous function instead of a directory and pass path segments as arguments like this:
 
 ```php
 ae::request()->route(array(
@@ -1792,4 +1815,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 25 January 2015 15:13:49 -->
+<!-- Generated on 08 February 2015 16:38:26 -->
