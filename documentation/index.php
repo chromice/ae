@@ -442,7 +442,7 @@ if (!$path->exists()) {
 File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
 ```php
-$file = ae::file(__DIR__ . '/file.txt');
+$file = ae::file(__DIR__ . '/file.txt')
     ->open('w+')
     ->lock()
     ->truncate()
@@ -474,7 +474,8 @@ echo $file->mime(); // echo 'text/plain'
 Existing files can be renamed, copied, moved or deleted:
 
 ```php
-$file = ae::file(__DIR__ . '/file.txt');
+$file = ae::file(__DIR__ . '/file.txt')
+    ->create(0775);
 
 if ($file->exists())
 {
