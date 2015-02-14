@@ -51,14 +51,14 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Exception safety](#exception-safety)
     - [Everything is a script](#everything-is-a-script)
 - [Library reference](#reference)
-    - [Core](#loader): [`ae::register()`](#register), [`ae::load()`](#load), [`ae:import()`](#import), [`ae::options()`](#options)
+    - [Core](#core): [`ae::register()`](#register), [`ae::load()`](#load), [`ae:import()`](#import), [`ae::options()`](#options)
     - [File system](#file-system): [`ae::path()`](#path), [`ae::file()`](#file), [`ae::directory()`](#directory)
-    - [Presentation](#presentation): [`ae::buffer()`](#buffer), [`ae::snippet()`](#snippet), [`ae::layout()`](#layout)
+    - [Output](#output): [`ae::buffer()`](#buffer), [`ae::snippet()`](#snippet), [`ae::container()`](#container)
     - [HTTP](#http): [`ae::request()`](#request), [`ae::response()`](#response)
-    - [Image: `ae::image()`](#image)
-    - [Form: `ae::form()`](#form)
-    - [Session: `ae::session()`](#session)
-    - [Database: `ae::database()`](#database)
+    - [Image](#image): [`ae::image()`](#image)
+    - [Form](#form): [`ae::form()`](#form)
+    - [Session](#session): [`ae::session()`](#session)
+    - [Database](#database): [`ae::database()`](#database)
 
 * * *
 
@@ -273,14 +273,14 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 
 æ takes advantage of the fact that PHP itself is a powerful template engine and has two libraries to help you keep your presentation code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
 
-- [Snippet](#snippet) that can be reused by various components to present similar data. Think: article listings, user profiles, etc.
-- [Layout](#layout): that can be reused to wrap similar context around various components. Think: standard header + various content + standard sidebar + standard footer.
+- [Snippet](#snippet) that is a reusable parameterized template, e.g. list header + list item 1 + list item 2 + list item 3, etc.
+- [Container](#container) that is a reusable parameterized wrapper, e.g. header + ... + sidebar + footer.
 
 * * *
 
 # Library reference <a name="reference"></a>
 
-## Core
+## Core <a name="core"></a>
 
 <?php 
 	$loading = $doc->example('/100_Loader_loading'); 
@@ -552,7 +552,7 @@ $dir['meta'] = 'value';
 ```
 
 
-## Presentation <a name="presentation"></a>
+## Output <a name="output"></a>
 
 ### `ae::buffer()` <a name="buffer"></a>
 
@@ -602,7 +602,7 @@ The script will produce:
 <?= $snippet->expect('output.html') ?>
 
 
-### `ae::layout()` <a name="layout"></a>
+### `ae::container()` <a name="container"></a>
 
 A container is a parameterized template, used as a wrapper. Here's an example of a container:
 
@@ -1134,17 +1134,17 @@ Database library simplifies building MySQL queries and exposes a simple abstract
 
 Before you can make queries to the database, you have to specify the connection parameters using Options library:
 
-<?= $db_test->source()->lines(3, 8); ?>
+<?= $db_test->source()->section('Configure'); ?>
 
 Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
 
-<?= $db_test->source()->lines(13, 19); ?>
+<?= $db_test->source()->section('Make a query'); ?>
 
 As you can see, whenever something goes wrong on the database side, the library throws `\ae\DatabaseException`, which you can catch and handle gracefully.
 
 If you want to know what queries are performed and how much memory and time they take, you can turn query logging on:
 
-<?= $db_test->source()->lines(10, 11); ?>
+<?= $db_test->source()->section('Query logging'); ?>
 
 <!-- TODO: See [Inspector](#inspector) section for more details. -->
 

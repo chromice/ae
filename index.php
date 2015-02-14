@@ -8,7 +8,7 @@ xdebug_disable();
 // PHP's built-in web server
 if (php_sapi_name() === 'cli-server'
 && !empty($_SERVER["REQUEST_URI"])
-&& is_file(dirname(__FILE__) . $_SERVER["REQUEST_URI"])) 
+&& is_file(dirname(__FILE__) . $_SERVER["REQUEST_URI"]))
 {
 	return false;
 }
@@ -20,12 +20,12 @@ date_default_timezone_set(@date_default_timezone_get());
 require 'ae/loader.php';
 
 // Enable code coverage analyzer
-ae::import('ae/documentation.php');
+ae::import(__DIR__ . '/ae/documentation.php');
 $a = \ae\Documentation::analyzer();
 
 // Route request
 $request = ae::request();
-$route = $request->route('/','/documentation');
+$route = $request->route('/', '/documentation');
 
 if ($route->exists())
 {
