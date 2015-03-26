@@ -279,7 +279,7 @@ The author does not want to be unfairly prescriptive, so here are just a few tip
 
 #### Separate different kinds of logic 
 
-Here is the top tip for one-file-to-rule-them-all approach: Process input first; *than* execute database queries, check internal state and pre-calculate values; *and than* use those values to generate a response.
+Here is the top tip for one-file-to-rule-them-all approach: Process input first; *then* execute database queries, check internal state and pre-calculate values; *and then* use those values to generate a response.
 
 
 ```php
