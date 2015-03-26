@@ -583,7 +583,7 @@ $options = array(
 	'bar' => 'Bar'
 );
 
-$select = $this->single('select')
+$select = $form->single('select')
 	->valid_value('Wrong value selected.', $options);
 ```
 
