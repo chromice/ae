@@ -469,6 +469,8 @@ trait aeFormFieldValidator
 		$is_multiple = $this->multiple;
 		$not_empty = array($this, '_not_empty');
 		
+		// FIXME: Use callback function to set "required" correctly
+		$this->html['required'] = is_null($callback);
 		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple, $not_empty) {
 			$is_required = is_callable($callback) ? $callback($index) : true;
 			
