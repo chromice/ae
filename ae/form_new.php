@@ -469,8 +469,7 @@ trait aeFormFieldValidator
 		$is_multiple = $this->multiple;
 		$not_empty = array($this, '_not_empty');
 		
-		// FIXME: Use callback function to set "required" correctly
-		$this->html['required'] = is_null($callback);
+		$this->html['required'] = is_callable($callback) ? $callback : true;
 		$this->validators[aeValidator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple, $not_empty) {
 			$is_required = is_callable($callback) ? $callback($index) : true;
 			
@@ -1928,12 +1927,18 @@ abstract class aeFormField implements aeValidator, aeFieldValueContainer
 	
 	protected function _attributes($attributes)
 	{
-		if (!isset($attributes['name']) 
-		|| $attributes['name'] !== false)
+		if (!isset($attributes['name']) || $attributes['name'] !== false)
 		{
 			$attributes['name'] = $this->name();
 		}
-	
+		
+		if (isset($attributes['required']))
+		{
+			$attributes['required'] = is_callable($attributes['required']) 
+				? $attributes['required']($this->index)
+				: !empty($this->html['required']);
+		}
+		
 		if (!isset($attributes['id']))
 		{
 			$attributes['id'] = $this->id();
@@ -1978,6 +1983,11 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 			}
 		
 			$attributes['checked'] = $this->_matches(!is_null($value) ? $value : 'on') ? 'checked' : '';
+			
+			if ($this->multiple === false || $type === 'radio')
+			{
+				$attributes['required'] = $this->_required($attributes);
+			}
 		}
 		else 
 		{
@@ -2003,10 +2013,8 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 	
 	public function textarea($attributes = array())
 	{
-		$attributes['required'] = isset($attributes['required']) 
-			? !empty($attributes['required'])
-			: !empty($this->html['required']);
-	
+		$attributes['required'] = $this->_required($attributes);
+		
 		if (!empty($this->html['maxlength']))
 		{
 			$attributes['maxlength'] = $this->html['maxlength'];
@@ -2024,9 +2032,7 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 	
 	public function select($options, $attributes = array())
 	{
-		$attributes['required'] = isset($attributes['required']) 
-			? !empty($attributes['required'])
-			: !empty($this->html['required']);
+		$attributes['required'] = $this->_required($attributes);
 		$attributes['multiple'] = $this->multiple;
 		
 		return '<select ' . $this->_attributes($attributes) . '>' 
@@ -2061,6 +2067,13 @@ class aeFormTextField extends aeFormField implements aeTextValidator, aeFieldErr
 		$value = (string) $value;
 		
 		return $this->multiple ? in_array($value, $this->value) : $this->value === $value;
+	}
+	
+	protected function _required($attributes)
+	{
+		return isset($attributes['required']) 
+			? !empty($attributes['required'])
+			: !empty($this->html['required']);
 	}
 }
 
