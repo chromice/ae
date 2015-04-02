@@ -9,8 +9,8 @@ if (!isset($general['foo']))
 	
 	$general['foo'] = 0;
 	
-	$named['foo'] = 'test';
-	$named['bar'] = 'test2';
+	$named['foo'] = 'NOT foo';
+	$named['bar'] = 'bar';
 }
 else
 {
@@ -26,4 +26,16 @@ else
 	}
 }
 
+// Close sessions.
+unset($named, $general);
+
+// Open another session and close it.
+$another = ae::session('foo');
+$another['foo'] = 'NOT REALLY foo';
+unset($another);
+
+// Open one more session and close it.
+$another = ae::session('foo');
+$another['foo'] = 'foo';
+unset($another);
 
