@@ -32,7 +32,7 @@ class aeSession implements ArrayAccess, Iterator
 	
 	public function __construct($namespace = null)
 	{
-		if (session_id() === '')
+		if (session_status() !== PHP_SESSION_ACTIVE)
 		{
 			session_start();
 		}
