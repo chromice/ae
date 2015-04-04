@@ -648,7 +648,7 @@ if (!$path->exists()) {
 File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
 ```php
-$file = ae::file(__DIR__ . '/file.txt');
+$file = ae::file(__DIR__ . '/file.txt')
     ->open('w+')
     ->lock()
     ->truncate()
@@ -680,7 +680,8 @@ echo $file->mime(); // echo 'text/plain'
 Existing files can be renamed, copied, moved or deleted:
 
 ```php
-$file = ae::file(__DIR__ . '/file.txt');
+$file = ae::file(__DIR__ . '/file.txt')
+    ->create(0775);
 
 if ($file->exists())
 {
@@ -1815,4 +1816,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 14 February 2015 19:07:31 -->
+<!-- Generated on 02 March 2015 19:34:17 -->
