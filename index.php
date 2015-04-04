@@ -25,7 +25,7 @@ $a = \ae\Documentation::analyzer();
 
 // Route request
 $request = ae::request();
-$route = $request->route('/', '/documentation');
+$route = $request->route('/', '/examples/pages');
 
 if ($route->exists())
 {

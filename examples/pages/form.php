@@ -80,7 +80,7 @@ $descriptions = $files->single('description')
 	->min_length('The description must be longer than {min-length} characters. {length} given.', 10)
 	->max_length('The description must not be longer than {max-length} characters. {length} given.', 5000);
 
-$appears_on = $files->multiple('appears_on')
+$appears_on = $files->single('appears_on')
 	->required('Please choose a service.')
 	->valid_value('You are not using one of these services.', $services->value());
 
@@ -177,10 +177,15 @@ else
 		<?= $images[$index]->error() ?>
 	</div>
 	<div class="field">
+	<?php if ($index === 0): ?>
 		<span class="label">Appears on</span>
 		<?php foreach ($service_options as $value => $label): ?>
-		<?= $file['appears_on']->input('checkbox', $value) ?>&nbsp;<label for="<?= $file['appears_on']->id($value) ?>"><?= $label ?></label>
+		<?= $file['appears_on']->input('radio', $value) ?>&nbsp;<label for="<?= $file['appears_on']->id($value) ?>"><?= $label ?></label>
 		<?php endforeach ?>
+	<?php else: ?>
+		<label for="<?= $file['appears_on']->id() ?>">Appears on</label>
+		<?= $file['appears_on']->select(array('' => 'Select something') + $service_options); ?>
+	<?php endif ?>
 		<?= $file['appears_on']->error() ?>
 	</div>
 </fieldset>

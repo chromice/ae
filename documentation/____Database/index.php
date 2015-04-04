@@ -167,7 +167,7 @@ $shaky = Authors::create(array(
 	'nationality' => 'English'
 ));
 
-// Create a new record in the database
+// Save the new record to the database
 $shaky->save();
 
 
