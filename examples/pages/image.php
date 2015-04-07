@@ -3,7 +3,7 @@
 $request = ae::request();
 $image = ae::image('examples/image/test.jpg');
 
-if (!in_array($request->type(), array('jpeg','jpg','png','gif')))
+if (!in_array($request->type(), ['jpeg','jpg','png','gif']))
 {
 	ae::response()->error(404);
 }

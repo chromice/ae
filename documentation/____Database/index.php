@@ -29,13 +29,13 @@ Authors::install();
 // EXAMPLE: Insert
 ae::database()
 	->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-	->aliases(array(
+	->aliases([
 		'table' => 'authors'
-	))
-	->data(array(
+	])
+	->data([
 		'name' => 'Richar K. Morgan', // (sic)
 		'nationality' => 'British'
-	))
+	])
 	->make();
 
 $morgan_id = ae::database()->insert_id();
@@ -45,36 +45,36 @@ $transaction = ae::database()->transaction();
 // EXAMPLE: Update
 ae::database()
 	->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
-	->aliases(array(
+	->aliases([
 		'table' => 'authors'
-	))
-	->data(array(
+	])
+	->data([
 		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), \ae\Database::statement) // don' escape
-	->variables(array(
+	], \ae\Database::statement) // don' escape
+	->variables([
 		'author_id' => $morgan_id
-	), \ae\Database::value) // escape
+	], \ae\Database::value) // escape
 	->make();
 
 // ...perform a series of queries...
 $transaction->commit();
 // ...perform another series of queries...
 // EXAMPLE: Shortcuts
-ae::database()->update('authors', array(
+ae::database()->update('authors', [
 	'nationality' => 'English'
-), array('id' => $morgan_id));
+], ['id' => $morgan_id]);
 /// $transaction->commit();
 // ...close transaction and roll back uncommitted queries.
 unset($transaction);
 
-$stephenson_id = ae::database()->insert('authors', array(
+$stephenson_id = ae::database()->insert('authors', [
 	'name' => 'Neal Stephenson',
 	'nationality' => 'American'
-)); 
-$gibson_id = ae::database()->insert('authors', array(
+]); 
+$gibson_id = ae::database()->insert('authors', [
 	'name' => 'William Ford Gibson',
 	'nationality' => 'Canadian'
-));
+]);
 
 
 ?>
@@ -142,7 +142,7 @@ foreach ($authors as $author)
 $stephenson = Authors::find($stephenson_id);
 
 // Load the data
-$stephenson->load(array('name', 'nationality'));
+$stephenson->load(['name', 'nationality']);
 
 echo $stephenson->name; // Neal Stephenson
 echo ' -- ';
@@ -162,10 +162,10 @@ $gibson->save();
 
 // EXAMPLE: Creating a record
 
-$shaky = Authors::create(array(
+$shaky = Authors::create([
 	'name' => 'William Shakespeare',
 	'nationality' => 'English'
-));
+]);
 
 // Save the new record to the database
 $shaky->save();

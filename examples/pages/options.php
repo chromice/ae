@@ -5,11 +5,11 @@ $options = ae::options('foo.bar')
 	->set('bar','foo')
 	->set('foo','bar');
 
-$options2 = ae::options('foo.bar', array(
+$options2 = ae::options('foo.bar', [
 	'bar' => 'nothing',
 	'foo' => 'nada',
 	'zar' => null
-));
+]);
 
 echo $options2->get('bar');
 echo $options2->get('foo');

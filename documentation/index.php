@@ -343,9 +343,9 @@ Many libraries are using options library to allow you to change their behavior. 
 The database library defines its options and default values next to the `ae::invoke()` statement at the top of its main script:
 
 ```php
-ae::options('ae::database', array(
+ae::options('ae::database', [
 	'log' => false
-));
+]);
 ```
 
 In your code, you can get the current option value:
@@ -407,10 +407,10 @@ This library adds an additional layer of security (granted a very thin one), bec
 
 ```php
 // The following line throws \ae\PathException (which extends \ae\FileSystemException)
-echo ae::path('../some/path'); 
+echo $path->path('../some/path'); 
 
 // While the following echoes '/root/some/path'
-echo ae::path('/root/directory', '../some/path');
+echo $path->relative_path('../some/path');
 ```
 
 The library also provides a few shortcut methods. It lets you import a script:
@@ -510,7 +510,7 @@ foreach ($file as $meta_name => $meta_value)
 }
 ```
 
-Meta data is never saved to the file system, and should only be used by different parts of your application to exchange information associated with the file.
+Meta data is transient and is never saved to disk.
 
 ```php
 $path = $file->path();
@@ -525,9 +525,9 @@ $dir = ae::directory(__DIR__);
 
 $filter = '*.txt';
 
-$dir->entries($filter); // return Path array of matching entries (files and directories)
-$dir->directories($filter); // return Directory array of matching subdirectories
-$dir->files($filter); // return File array of matching files
+$dir->entries($filter); // return an array of matching entries (File and Directory objects)
+$dir->directories($filter); // return an array of matching subdirectories (Directory objects)
+$dir->files($filter); // return an array of matching files (File objects)
 $dir->parent();
 $dir->path();
 
@@ -580,11 +580,11 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 ```
 
 ```php
-echo str_replace(array(
+echo str_replace([
     '{url}', '{name}', '{visits}'
-), array(
+], [
     '#', 'blah', '3'
-), $template);
+], $template);
 ```
 
 
@@ -643,14 +643,14 @@ ae::request()->ip_address();
 ae::request()->redirect();
 
 // redirect to /login 
-ae::request()->url(array(
+ae::request()->url()->modify([
 	'scheme' => 'https',
 	'path' => '/login'
-))->redirect();
+])->redirect();
 
-ae::request()->route(array(
+ae::request()->route([
 	// ...
-));
+])->follow();
 
 
 // Shell
@@ -754,23 +754,23 @@ echo "You can access it at " . $request->uri();
 You can route different types of requests to different directories:
 
 ```php
-$route = ae::request()->route(array(
+$route = ae::request()->route([
     '/admin' => 'cms/', // all requests starting with /admin 
     '/' => 'webroot/' // other requests
-)->follow();
+])->follow();
 ```
 
 You can always provide an anonymous function instead of a directory and pass path segments as arguments like this:
 
 ```php
-ae::request()->route(array(
+ae::request()->route([
     '/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
         echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
     },
     '/' => function($uri) {
         echo 'Default handler. Request URI: /' . $uri;
     }
-))->follow();
+])->follow();
 ```
 
 
@@ -940,10 +940,10 @@ $input = $form->single('text_input')
 $checkbox = $form->single('checkbox_input')
     ->required('You must check this checkbox!');
 
-$options = array(
+$options =[
     'foo' => 'Foo',
     'bar' => 'Bar'
-);
+]);
 
 $select = $this->single('select_input')
     ->valid_value('Wrong value selected.', $options);
@@ -970,9 +970,9 @@ If the form has not been submitted, you may want to populate it with default val
 ```php
 if (!$form->is_submitted())
 {
-    $form->value(array(
+    $form->value[
         'text' => 'Foo'
-    ));
+    ]));
 }
 ```
 
@@ -991,7 +991,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 </div>
 <div class="field">
     <label for="<?= '<' . '?=' ?> $select->id() ?>">Select something (totally optional):</label>
-    <?= '<' . '?=' ?> $select->select(array('' => 'Nothing selected') + $options) ?>
+    <?= '<' . '?=' ?> $select->select['' => 'Nothing selected']) + $options) ?>
     <?= '<' . '?=' ?> $select->error() ?>
 </div>
 <div class="field">
@@ -1003,7 +1003,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in the browsers that support it, you should set the `novalidate` attribute of the form:
 
 ```php
-<?= '<' . '?=' ?> $form->open(array('novalidate' => true)); ?>
+<?= '<' . '?=' ?> $form->open['novalidate' => true])); ?>
 ```
 
 ### Field types
@@ -1111,9 +1111,9 @@ $field->valid_value('Devils are not allowed.', function ($value) {
 If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted correct data:
 
 ```php
-$field->valid_value('Wrong option selected.', array(
+$field->valid_value('Wrong option selected.',[
     'foo', 'bar' //, '...'
-));
+]);
 ```
 
 Ordinary users would never see this error, but it prevents would-be hackers from tempering with the data.

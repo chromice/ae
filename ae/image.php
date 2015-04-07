@@ -296,7 +296,7 @@ class Image
 			$height = $width * $this->source_height / $this->source_width;
 		}
 		
-		return array(round($width), round($height));
+		return [round($width), round($height)];
 	}
 	
 	protected function _load()
@@ -448,7 +448,7 @@ class Image
 	// = Output =
 	// ==========
 	
-	protected $headers = array();
+	protected $headers = [];
 	protected $quality = 75;
 	protected $suffix;
 	protected $prefix;
@@ -550,9 +550,9 @@ class Image
 			
 			$cache
 				->duration($minutes)
-				->headers(array_merge($this->headers, array(
+				->headers(array_merge($this->headers, [
 					'Content-Type' => $mime
-				)))
+				]))
 				->content(ob_get_clean())
 				->save($uri);
 		}
@@ -664,7 +664,7 @@ class Image
 				. '.' . $parts['extension'];
 		}
 		
-		return array($path, $type);
+		return [$path, $type];
 	}
 }
 

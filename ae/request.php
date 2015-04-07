@@ -18,12 +18,12 @@
 
 namespace ae;
 
-\ae::options('ae::request', array(
+\ae::options('ae::request', [
 	'base_url' => '/',
-	'proxy_ips' => !empty($_SERVER['SERVER_ADDR']) ? array($_SERVER['SERVER_ADDR']) : null
-));
+	'proxy_ips' => !empty($_SERVER['SERVER_ADDR']) ? [$_SERVER['SERVER_ADDR']] : null
+]);
 
-\ae::invoke(array('\ae\Router', 'request'));
+\ae::invoke(['\ae\Router', 'request']);
 
 class Request
 /*
@@ -48,7 +48,7 @@ class Request
 	const method = __ae_request_method__;
 	
 	protected $depth = 0;
-	protected $segments = array();
+	protected $segments = [];
 	
 	public function __construct($depth, $segments)
 	{
@@ -93,7 +93,7 @@ class Request
 		
 		if (!is_array($rules))
 		{
-			$rules = array($rules => $target);
+			$rules = [$rules => $target];
 		}
 		
 		return new Router($uri, $rules);
@@ -212,7 +212,7 @@ class Request
 		// FIXME: The following URI parsing code is like 5 years old. At least.
 		$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : @getenv('SCRIPT_NAME');
 		
-		foreach (array('PATH_INFO','REQUEST_URI','ORIG_PATH_INFO') as $var)
+		foreach (['PATH_INFO','REQUEST_URI','ORIG_PATH_INFO'] as $var)
 		{
 			$uri = isset($_SERVER[$var]) ? $_SERVER[$var] : @getenv($var);
 		
@@ -257,7 +257,7 @@ class Request
 		{
 			self::$_uri = '';
 			self::$_type = $type;
-			self::$_segments = array();
+			self::$_segments = [];
 		}
 		else
 		{
@@ -281,17 +281,17 @@ class Router
 	You can route a request based on its URI to either a closure or
 	a directory:
 	
-		\ae::request()->route(array(
+		\ae::request()->route([
 			'/special/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
 				echo 'Special request URI: /special/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
 			},
 			'/' => 'webroot/'
-		))->follow();
+		])->follow();
 	
 */
 {
 	protected static $depth = 0;
-	protected static $segments = array();
+	protected static $segments = [];
 	
 	public static function request($segments = null)
 	/*
@@ -321,7 +321,7 @@ class Router
 	protected $path;
 	
 	protected $callback;
-	protected $arguments = array();
+	protected $arguments = [];
 	
 	public function __construct($uri, $rules)
 	{
@@ -329,11 +329,11 @@ class Router
 		
 		foreach ($rules as $rule => $route) 
 		{
-			$rule = strtr(preg_quote(trim($rule, '/'), '/'), array(
+			$rule = strtr(preg_quote(trim($rule, '/'), '/'), [
 				'\{alpha\}' => '([a-zA-Z]+)',
 				'\{numeric\}' => '([0-9]+)',
 				'\{any\}' => '([^\/]+)'
-			));
+			]);
 			
 			if (preg_match('/^' . $rule . '\\/?(.*)$/', $uri, $matches) === 1)
 			{
@@ -374,7 +374,7 @@ class Router
 		
 		$uri = trim($uri, '/');
 		$segments = explode('/', $uri);
-		$extensions = array('.' . Request::type() . '.php', '.php');
+		$extensions = ['.' . Request::type() . '.php', '.php'];
 		
 		for ($l = count($segments); $l > 0; $l--)
 		{

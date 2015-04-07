@@ -14,17 +14,17 @@
 			break;
 
 		case 'exception':
-			ae::output('examples/log/throw_exception.php', array(
+			ae::output('examples/log/throw_exception.php', [
 				'foo' => 'bar',
 				'bar' => 'foo'
-			));
+			]);
 			break;
 		
 		case 'critical':
-			ae::output('examples/log/shutdown_error.php', array(
+			ae::output('examples/log/shutdown_error.php', [
 				'foo' => 'bar',
 				'bar' => 'foo'
-			));
+			]);
 			break;
 		
 		default:

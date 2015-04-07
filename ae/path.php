@@ -18,9 +18,9 @@
 
 namespace ae;
 
-\ae::options('ae::path', array(
+\ae::options('ae::path', [
 	'root' => dirname(__DIR__)
-));
+]);
 
 \ae::invoke('\ae\Path');
 

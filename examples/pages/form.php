@@ -31,26 +31,26 @@ $email = $user->single('email')
 	->required('Please enter your email address.')
 	->valid_pattern('This email address does not seem to be valid.', \ae\TextValidator::email);
 
-$form->initial(array(
-	'user' => array(
+$form->initial([
+	'user' => [
 		'first_name' => 'Tester',
 		'last_name' => 'Numero Uno',
 		'terms' => 'on',
-	),
-	'files' => array(
-		'title' => array(
+	],
+	'files' => [
+		'title' => [
 			'This is a gallery title', 'This is another title'
-		),
-	),
-));
+		],
+	],
+]);
 
-$service_options = array(
+$service_options = [
 	'blog' => 'Blog',
 	'cms' => 'CMS',
 	'shop (test)' => 'Shop',
-);
+];
 $services = $user->multiple('services')
-	->initial(array('shop'))
+	->initial(['shop'])
 	->required('Please choose one or two services.')
 	->min_count('Please choose at least one service.', 1)
 	->max_count('Please choose no more than two services.', 2)
@@ -184,7 +184,7 @@ else
 		<?php endforeach ?>
 	<?php else: ?>
 		<label for="<?= $file['appears_on']->id() ?>">Appears on</label>
-		<?= $file['appears_on']->select(array('' => 'Select something') + $service_options); ?>
+		<?= $file['appears_on']->select(['' => 'Select something'] + $service_options); ?>
 	<?php endif ?>
 		<?= $file['appears_on']->error() ?>
 	</div>

@@ -33,10 +33,10 @@ else if (mb_internal_encoding() !== 'UTF-8')
 \ae::import('ae/request.php');
 
 // Define options
-\ae::options('ae::form', array(
+\ae::options('ae::form', [
 	'novalidate' => false, // whether to prevent HTML5 validation in browsers that support it;
 	'base_dir' => \ae::resolve('/') // a file path relative to which all uploaded files are.
-));
+]);
 
 // Invoke form object
 \ae::invoke('\ae\Form');
@@ -209,7 +209,7 @@ trait FormGroupValueContainer
 		{
 			if (!is_array($to))
 			{
-				$to = array();
+				$to = [];
 			}
 			
 			foreach ($from as $key => $value)
@@ -221,7 +221,7 @@ trait FormGroupValueContainer
 	
 	public function values()
 	{
-		$values = array();
+		$values = [];
 		
 		foreach ($this->fields as $name => $field)
 		{
@@ -273,7 +273,7 @@ trait FormFieldValueContainer
 		{
 			$this->value = is_array($this->value) ? array_map(function ($value) {
 				return is_scalar($value) ? trim($value) : '';
-			}, $this->value) : array();
+			}, $this->value) : [];
 		}
 		else
 		{
@@ -314,7 +314,7 @@ trait FormFieldValueContainer
 		}
 		
 		// Validate required, min_count and max_count constraints first.
-		foreach (array(Validator::order_required, Validator::order_min_count, Validator::order_max_count) as $validator)
+		foreach ([Validator::order_required, Validator::order_min_count, Validator::order_max_count] as $validator)
 		{
 			if (isset($validators[$validator])
 			&& $error = $validators[$validator]($this->value, $this->index))
@@ -330,7 +330,7 @@ trait FormFieldValueContainer
 		// Prepare for validation of other constraints
 		$is_valid = true;
 		$is_text = is_a($this, '\ae\TextValidator');
-		$not_empty = array($this, '_not_empty');
+		$not_empty = [$this, '_not_empty'];
 		$validate = function ($value, $index) use (&$is_valid, $is_text, $not_empty, $show_error, $validators) {
 			if (!call_user_func($not_empty, $value))
 			{
@@ -402,7 +402,7 @@ trait FormGroupErrorContainer
 			return $this->errors;
 		}
 		
-		$errors = array();
+		$errors = [];
 		
 		$flatten = function ($error) use (&$flatten, &$errors) {
 			if (!is_array($error))
@@ -480,7 +480,7 @@ trait FormFieldValidator
 	public function required($message, $callback = null)
 	{
 		$is_multiple = $this->multiple;
-		$not_empty = array($this, '_not_empty');
+		$not_empty = [$this, '_not_empty'];
 		
 		$this->html['required'] = is_callable($callback) ? $callback : true;
 		$this->validators[Validator::order_required] = function ($value, $index = null) use ($message, $callback, $is_multiple, $not_empty) {
@@ -565,13 +565,13 @@ trait FormTextFieldValidator
 	
 	public function valid_pattern($message, $pattern)
 	{
-		if (in_array($pattern, array(
+		if (in_array($pattern, [
 			TextValidator::month,
 			TextValidator::week,
 			TextValidator::date,
 			TextValidator::datetime,
 			TextValidator::time
-		)))
+		]))
 		{
 			$time = true;
 			$this->time_format = '/(?:' . $pattern . ')$/';
@@ -725,10 +725,10 @@ trait FormFileFieldValidator
 		$this->validators[FileValidator::order_min_size] = function ($file) use ($size, $message) {
 			if ($file->size() < $size)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{size}' => Form::format_size($file->size())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -744,10 +744,10 @@ trait FormFileFieldValidator
 		$this->validators[FileValidator::order_max_size] = function ($file) use ($size, $message) {
 			if ($file->size() > $size)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{size}' => Form::format_size($file->size())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -763,10 +763,10 @@ trait FormFileFieldValidator
 		$this->validators[FileValidator::order_min_width] = function ($file) use ($width, $message) {
 			if ($file->width() < $width)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{width}' => Form::format_dimension($file->width())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -782,10 +782,10 @@ trait FormFileFieldValidator
 		$this->validators[FileValidator::order_max_width] = function ($file) use ($width, $message) {
 			if ($file->width() > $width)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{width}' => Form::format_dimension($file->width())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -801,10 +801,10 @@ trait FormFileFieldValidator
 		$this->validators[FileValidator::order_min_height] = function ($file) use ($height, $message) {
 			if ($file->height() < $height)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{height}' => Form::format_dimension($file->height())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -820,10 +820,10 @@ trait FormFileFieldValidator
 		$this->validators[FileValidator::order_max_height] = function ($file) use ($height, $message) {
 			if ($file->height() > $height)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{height}' => Form::format_dimension($file->height())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -834,22 +834,22 @@ trait FormFileFieldValidator
 	
 	public function min_dimensions($message, $width, $height)
 	{
-		$message = str_replace(array(
+		$message = str_replace([
 			'{min-width}',
 			'{min-height}'
-		), array(
+		], [
 			Form::format_dimension($width),
 			Form::format_dimension($height)
-		), $message);
+		], $message);
 		
 		$this->validators[FileValidator::order_min_dimensions] = function ($file) use ($width, $height, $message) {
 			if ($file->width() < $width || $file->height() < $height)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{width}' => Form::format_dimension($file->width()),
 					'{height}' => Form::format_dimension($file->height())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -860,22 +860,22 @@ trait FormFileFieldValidator
 	
 	public function max_dimensions($message, $width, $height)
 	{
-		$message = str_replace(array(
+		$message = str_replace([
 			'{max-width}',
 			'{max-height}'
-		), array(
+		], [
 			Form::format_dimension($width),
 			Form::format_dimension($height)
-		), $message);
+		], $message);
 		
 		$this->validators[FileValidator::order_max_dimensions] = function ($file) use ($width, $height, $message) {
 			if ($file->width() > $width || $file->height() > $height)
 			{
-				$replace = array(
+				$replace = [
 					'{file}' => $file->full_name(false),
 					'{width}' => Form::format_dimension($file->width()),
 					'{height}' => Form::format_dimension($file->height())
-				);
+				];
 				
 				return str_replace(array_keys($replace), array_values($replace), $message);
 			}
@@ -900,9 +900,9 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 	protected $method;
 	protected $source;
 	protected $nonces;
-	protected $fields = array();
-	protected $values = array();
-	protected $errors = array();
+	protected $fields = [];
+	protected $values = [];
+	protected $errors = [];
 	protected $has_files = false;
 	protected $has_command = false;
 	
@@ -949,14 +949,14 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 		}
 		
 		// Rearrange $_FILES array first
-		$files = array();
-		$properties = array('name', 'type', 'tmp_name', 'error', 'size');
+		$files = [];
+		$properties = ['name', 'type', 'tmp_name', 'error', 'size'];
 		$rearrange = function (&$array, $property, $key, $value) use (&$rearrange) {
 			if (!is_array($value))
 			{
 				if (!is_array($array))
 				{
-					$array[$key] = array($property => $value);
+					$array[$key] = [$property => $value];
 				}
 				else
 				{
@@ -1028,7 +1028,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 					}
 					else
 					{
-						$to = array($index => $value);
+						$to = [$index => $value];
 					}
 				}
 			}
@@ -1153,12 +1153,12 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 		return $this->id . '-form';
 	}
 	
-	public function open($attributes = array())
+	public function open($attributes = [])
 	{
-		$attributes = array_merge(array(
+		$attributes = array_merge([
 			'action' => Request::url(),
 			'novalidate' => \ae::options('ae::form')->get('novalidate')
-		), $attributes);
+		], $attributes);
 		
 		$attributes['id'] = $this->id();
 		$attributes['method'] = $this->method;
@@ -1202,7 +1202,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 	
 	public static function attributes($attributes)
 	{
-		$output = array();
+		$output = [];
 		
 		foreach ($attributes as $name => $value)
 		{
@@ -1211,10 +1211,10 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 				continue;
 			}
 			
-			if ($value !== false && in_array($name, array(
+			if ($value !== false && in_array($name, [
 				'readonly', 'multiple', 'checked', 'disabled', 'selected',
 				'required', 'novalidate', 'formnovalidate', 'autofocus'
-			)) || $value === true)
+			]) || $value === true)
 			{
 				$output[] = \ae::escape($name, \ae::name);
 			}
@@ -1229,7 +1229,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 	
 	public static function format_size($bytes)
 	{
-		$units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+		$units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 		
 		$factor = floor((strlen(round($bytes)) - 1) / 3);
 		$value = sprintf("%.2f", $bytes / pow(1024, $factor));
@@ -1256,7 +1256,7 @@ class FormGroup implements \ArrayAccess, FieldFactory, GroupErrorContainer, Grou
 	
 	protected $name;
 	protected $form;
-	protected $fields = array();
+	protected $fields = [];
 	protected $values;
 	protected $errors;
 	
@@ -1307,11 +1307,11 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 	
 	protected $name;
 	protected $form;
-	protected $fields = array();
+	protected $fields = [];
 	protected $values;
 	protected $errors;
 	
-	protected $constructors = array();
+	protected $constructors = [];
 	
 	protected $min;
 	protected $max;
@@ -1330,7 +1330,7 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 		
 		if (!is_array($this->values))
 		{
-			$this->values = array();
+			$this->values = [];
 		}
 		
 		if (isset($this->values['__ae_length__']))
@@ -1460,7 +1460,7 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 		$indexes = array_unique(call_user_func_array('array_merge', $vectors), SORT_NUMERIC);
 		
 		$index = 0;
-		$this->values = array();
+		$this->values = [];
 		
 		foreach ($indexes as $_index)
 		{
@@ -1526,11 +1526,11 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 	// = HTML output =
 	// ===============
 	
-	public function add_button($offset = -1, $label = 'Add another', $attributes = array())
+	public function add_button($offset = -1, $label = 'Add another', $attributes = [])
 	{
 		if (!is_array($attributes))
 		{
-			$attributes = array();
+			$attributes = [];
 		}
 		
 		$attributes['type'] = 'submit';
@@ -1540,16 +1540,16 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 		$button = '<button ' . Form::attributes($attributes) . '>'
 			. $label . '</button>';
 		
-		$counter = '<input ' . Form::attributes(array(
+		$counter = '<input ' . Form::attributes([
 			'type' => 'hidden',
 			'name' => $this->name . '[__ae_length__]',
 			'value' => $this->length
-		)) . '>';
+		]) . '>';
 		
 		return $counter . (!is_null($this->max) && $this->length >= $this->max ? '' : $button);
 	}
 	
-	public function move_button($from, $to, $label = null, $attributes = array())
+	public function move_button($from, $to, $label = null, $attributes = [])
 	{
 		if (is_null($label))
 		{
@@ -1563,7 +1563,7 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 		
 		if (!is_array($attributes))
 		{
-			$attributes = array();
+			$attributes = [];
 		}
 		
 		$attributes['type'] = 'submit';
@@ -1573,11 +1573,11 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 		return '<button ' . Form::attributes($attributes) . '>' . $label . '</button>';
 	}
 	
-	public function remove_button($offset, $label = 'Remove', $attributes = array())
+	public function remove_button($offset, $label = 'Remove', $attributes = [])
 	{
 		if (!is_array($attributes))
 		{
-			$attributes = array();
+			$attributes = [];
 		}
 		
 		$attributes['type'] = 'submit';
@@ -1663,7 +1663,7 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 	
 	public function offsetGet($offset)
 	{
-		$result = array();
+		$result = [];
 		
 		foreach ($this->fields as $name => $sequence)
 		{
@@ -1700,7 +1700,7 @@ class FormSequence implements \ArrayAccess, \Iterator, \Countable, FieldFactory,
 	
 	public function current()
 	{
-		$result = array();
+		$result = [];
 		
 		foreach ($this->fields as $name => &$sequence)
 		{
@@ -1751,15 +1751,15 @@ abstract class FormFieldSequence implements \ArrayAccess, \Iterator, \Countable,
 	protected $name;
 	protected $multiple;
 	protected $form;
-	protected $fields = array();
+	protected $fields = [];
 	protected $values;
 	protected $errors;
 	
 	protected $length;
 	
 	protected $constructor;
-	protected $validators = array();
-	protected $html = array();
+	protected $validators = [];
+	protected $html = [];
 	
 	public function __construct($name, $multiple, &$form, &$values, &$errors, &$length)
 	{
@@ -1774,7 +1774,7 @@ abstract class FormFieldSequence implements \ArrayAccess, \Iterator, \Countable,
 		
 		if (!is_array($this->values))
 		{
-			$this->values = array();
+			$this->values = [];
 		}
 		
 		for ($index = 0; $index < $this->length; $index++)
@@ -1893,8 +1893,8 @@ abstract class FormField implements Validator, FieldValueContainer
 	protected $value;
 	
 	protected $time_format;
-	protected $validators = array();
-	protected $html = array();
+	protected $validators = [];
+	protected $html = [];
 	
 	public function __construct($name, $index, $multiple, &$form, &$value, &$validators = null, &$html = null)
 	{
@@ -1980,7 +1980,7 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 	// = HTML output =
 	// ===============
 	
-	public function input($type, $value = null, $attributes = array())
+	public function input($type, $value = null, $attributes = [])
 	{
 		if (is_array($value))
 		{
@@ -1988,7 +1988,7 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 			$value = null;
 		}
 	
-		if (in_array($type, array('checkbox', 'radio')))
+		if (in_array($type, ['checkbox', 'radio']))
 		{
 			if (empty($attributes['id']))
 			{
@@ -2007,12 +2007,12 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 			$attributes = array_merge($this->html, $attributes);
 		}
 		
-		if (!in_array($type, array('text', 'search', 'url', 'tel', 'email', 'password')))
+		if (!in_array($type, ['text', 'search', 'url', 'tel', 'email', 'password']))
 		{
 			unset($attributes['pattern']);
 		}
 	
-		if (!in_array($type, array('number', 'range', 'date', 'datetime', 'datetime-local', 'month', 'time', 'week')))
+		if (!in_array($type, ['number', 'range', 'date', 'datetime', 'datetime-local', 'month', 'time', 'week']))
 		{
 			unset($attributes['min']);
 			unset($attributes['max']);
@@ -2024,7 +2024,7 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 		return '<input ' . $this->_attributes($attributes) . '>';
 	}
 	
-	public function textarea($attributes = array())
+	public function textarea($attributes = [])
 	{
 		$attributes['required'] = $this->_required($attributes);
 		
@@ -2043,7 +2043,7 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 			. '</textarea>';
 	}
 	
-	public function select($options, $attributes = array())
+	public function select($options, $attributes = [])
 	{
 		$attributes['required'] = $this->_required($attributes);
 		$attributes['multiple'] = $this->multiple;
@@ -2055,7 +2055,7 @@ class FormTextField extends FormField implements TextValidator, FieldErrorContai
 	
 	protected function _options($options, $indent = 0)
 	{
-		$output = array();
+		$output = [];
 		
 		foreach ($options as $key => $value) 
 		{
@@ -2132,7 +2132,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 		{
 			if (!is_array($this->value))
 			{
-				$this->value = array();
+				$this->value = [];
 				
 				return;
 			}
@@ -2141,7 +2141,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 			{
 				if (!is_integer($index))
 				{
-					$this->value = array();
+					$this->value = [];
 					
 					return;
 				}
@@ -2242,7 +2242,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 			. ($this->multiple ? '[' . $offset . ']' : '');
 	}
 	
-	public function input($attributes = array())
+	public function input($attributes = [])
 	{
 		if ($this->multiple)
 		{
@@ -2250,7 +2250,7 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 		}
 		else
 		{
-			$files = array($this->value);
+			$files = [$this->value];
 		}
 		
 		$base_dir = rtrim(\ae::options('ae::form')->get('base_dir'), '/');
@@ -2274,34 +2274,34 @@ class FormFileField extends FormField implements FileValidator, FieldErrorContai
 			}
 			
 			$output.= '<span class="file">' . $full_name;
-			$output.= '<input ' . Form::attributes(array(
+			$output.= '<input ' . Form::attributes([
 				'type'  => 'hidden',
 				'name'  => $this->name($file_offset) . '[full_name]',
 				'value' => $full_name
-			)) . '>';
-			$output.= '<input ' . Form::attributes(array(
+			]) . '>';
+			$output.= '<input ' . Form::attributes([
 				'type'  => 'hidden',
 				'name'  => $this->name($file_offset) . '[path]',
 				'value' => str_replace($base_dir, '', $file->path())
-			)) . '>';
+			]) . '>';
 			
 			foreach ($meta as $key => $value)
 			{
 				if (is_scalar($key) && is_scalar($value))
 				{
-					$output.= '<input ' . Form::attributes(array(
+					$output.= '<input ' . Form::attributes([
 						'type'  => 'hidden',
 						'name'  => $this->name($file_offset) . '[' . $key . ']',
 						'value' => $value
-					)) . '>';
+					]) . '>';
 				}
 			}
 			
-			$output.= ' <button ' . Form::attributes(array(
+			$output.= ' <button ' . Form::attributes([
 				'type' => 'submit',
 				'name' => $this->name($file_offset) . '[__ae_remove__]',
 				'value' => '1'
-			)) . '>Remove</button>';
+			]) . '>Remove</button>';
 			
 			$output.= '</span>';
 			

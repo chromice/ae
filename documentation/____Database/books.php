@@ -18,18 +18,18 @@ class Novels extends \ae\DatabaseTable
 				`title` varchar(255) NOT NULL,
 				PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-			->aliases(array(
+			->aliases([
 				'books' => static::name()
-			))
+			])
 			->make();
 	}
 
 	public static function uninstall()
 	{
 		static::database()->query("DROP TABLE IF EXISTS {books}")
-			->aliases(array(
+			->aliases([
 				'books' => static::name()
-			))
+			])
 			->make();
 	}
 	
@@ -38,9 +38,9 @@ class Novels extends \ae\DatabaseTable
 		return static::database()
 			->select(self::name())
 			->joining('Authors', 'author')
-			->where('{table}.`id` = {book_id}', array(
+			->where('{table}.`id` = {book_id}', [
 				'book_id' => $id
-			))
+			])
 			->one('Novels');
 	}
 	

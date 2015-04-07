@@ -36,9 +36,9 @@ class Options
 	via second argument:
 	
 		// Define all options
-		ae::options('library', array(
+		ae::options('library', [
 			'bar' => 'foo'
-		));
+		]);
 		
 		// Use the defined options
 		$options = ae::options('library');
@@ -55,7 +55,7 @@ class Options
 	protected static $defaults;
 	protected $namespace;
 	
-	public function __construct($namespace, $defaults = array())
+	public function __construct($namespace, $defaults = [])
 	{
 		$this->namespace = preg_replace('/\s+/', '', $namespace);
 		

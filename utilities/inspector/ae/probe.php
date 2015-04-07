@@ -77,7 +77,7 @@ class Probe
 	
 	private static function _format($bytes, $precision = 2)
 	{ 
-		$units = array('b', 'kb', 'mb', 'gb', 'tb'); 
+		$units = ['b', 'kb', 'mb', 'gb', 'tb']; 
 	
 		$bytes = max($bytes, 0); 
 		$pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 

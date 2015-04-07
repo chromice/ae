@@ -37,12 +37,12 @@ echo "\n";
 // Route request
 // $route = $request->route('/', 'examples/request/views');
 // or
-$route = $request->route(array(
+$route = $request->route([
 	'/view/{any}/{alpha}/{numeric}' => function ($s1, $s2, $number, $trailing) {
 		echo 'Routing function called with arguments: ' . $s1 . ', ' . $s2 . ', ' . $number . ', ' . $trailing . '<br>';
 	},
 	'/' => 'examples/request/views'
-));
+]);
 
 if ($route->exists())
 {
