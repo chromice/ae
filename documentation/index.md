@@ -49,7 +49,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 <a name="tests-and-code-coverage"></a>
 
 **Tests**: 64 out of 68 passed (**94.12%** passed)  
-**Code coverage**: 6 out of 10 files covered (**71.68%** average coverage)
+**Code coverage**: 6 out of 10 files covered (**71.5%** average coverage)
 
 | File                | Coverage |
 |---------------------|---------:|
@@ -57,7 +57,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 | ../ae/options.php   |   75.00% |
 | ../ae/file.php      |    0.00% |
 | ../ae/container.php |  100.00% |
-| ../ae/request.php   |   76.60% |
+| ../ae/request.php   |   75.53% |
 | ../ae/response.php  |   29.32% |
 | ../ae/image.php     |    0.00% |
 | ../ae/form.php      |    0.00% |
@@ -279,7 +279,7 @@ The author does not want to be unfairly prescriptive, so here are just a few tip
 
 #### Separate different kinds of logic 
 
-Here is the top tip for one-file-to-rule-them-all approach: Process input first; *then* execute database queries, check internal state and pre-calculate values; *and then* use those values to generate a response.
+Here is the top tip for one-file-to-rule-them-all approach: Process input first; *than* execute database queries, check internal state and pre-calculate values; *and than* use those values to generate a response.
 
 
 ```php
@@ -288,10 +288,10 @@ Here is the top tip for one-file-to-rule-them-all approach: Process input first;
 // ==================
 // = Handle request =
 // ==================
-$filters = array(
+$filters = [
     'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
     'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
-);
+];
 $filters = array_map($filters, function ($value) {
     return max($value, 0);
 });
@@ -354,7 +354,7 @@ Now, here's what an <samp>index.php</samp> in the web root directory may look li
 
 require 'path/to/ae/loader.php'
 
-$route = ae::request()->route(array(
+$route = ae::request()->route([
     // 1. Map account to /responders/account.php script
     '/account' => 'path/to/responders/account.php',
     
@@ -378,7 +378,7 @@ $route = ae::request()->route(array(
     //     index.php -> About us page
     //     team.php -> Team page.
     
-));
+]);
 
 try {
     $route->follow();
@@ -457,10 +457,10 @@ This will import `ae` class into global namespace and a few utility classes into
 
 
 ```php
-ae::register('path/to/library.php', array(
+ae::register('path/to/library.php', [
     'library' => '\ns\Library',
     '\ns\AnotherLibraryClass'
-));
+]);
 ```
 
 The method takes two arguments:
@@ -537,9 +537,9 @@ Many libraries are using options library to allow you to change their behavior. 
 The database library defines its options and default values next to the `ae::invoke()` statement at the top of its main script:
 
 ```php
-ae::options('ae::database', array(
+ae::options('ae::database', [
 	'log' => false
-));
+]);
 ```
 
 In your code, you can get the current option value:
@@ -559,10 +559,10 @@ You can, of course, define your own options:
 
 
 ```php
-ae::options('my_application', array(
+ae::options('my_application', [
     'title' => 'My awesome app',
     'version' => '0.93'
-));
+]);
 ```
 
 and use those throughout your app:
@@ -613,10 +613,10 @@ This library adds an additional layer of security (granted a very thin one), bec
 
 ```php
 // The following line throws \ae\PathException (which extends \ae\FileSystemException)
-echo ae::path('../some/path'); 
+echo $path->path('../some/path'); 
 
 // While the following echoes '/root/some/path'
-echo ae::path('/root/directory', '../some/path');
+echo $path->relative_path('../some/path');
 ```
 
 The library also provides a few shortcut methods. It lets you import a script:
@@ -648,7 +648,7 @@ if (!$path->exists()) {
 File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
 ```php
-$file = ae::file(__DIR__ . '/file.txt');
+$file = ae::file(__DIR__ . '/file.txt')
     ->open('w+')
     ->lock()
     ->truncate()
@@ -680,7 +680,8 @@ echo $file->mime(); // echo 'text/plain'
 Existing files can be renamed, copied, moved or deleted:
 
 ```php
-$file = ae::file(__DIR__ . '/file.txt');
+$file = ae::file(__DIR__ . '/file.txt')
+    ->create(0775);
 
 if ($file->exists())
 {
@@ -715,7 +716,7 @@ foreach ($file as $meta_name => $meta_value)
 }
 ```
 
-Meta data is never saved to the file system, and should only be used by different parts of your application to exchange information associated with the file.
+Meta data is transient and is never saved to disk.
 
 ```php
 $path = $file->path();
@@ -730,9 +731,9 @@ $dir = ae::directory(__DIR__);
 
 $filter = '*.txt';
 
-$dir->entries($filter); // return Path array of matching entries (files and directories)
-$dir->directories($filter); // return Directory array of matching subdirectories
-$dir->files($filter); // return File array of matching files
+$dir->entries($filter); // return an array of matching entries (File and Directory objects)
+$dir->directories($filter); // return an array of matching subdirectories (Directory objects)
+$dir->files($filter); // return an array of matching files (File objects)
 $dir->parent();
 $dir->path();
 
@@ -785,11 +786,11 @@ Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 ```
 
 ```php
-echo str_replace(array(
+echo str_replace([
     '{url}', '{name}', '{visits}'
-), array(
+], [
     '#', 'blah', '3'
-), $template);
+], $template);
 ```
 
 
@@ -801,15 +802,15 @@ A snippet is a parameterized template, used to present snippets of information i
 ```php
 <?php
 
-$glossary = array(
+$glossary = [
     'Ash' => 'a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.',
     'Framework' => 'an essential supporting structure of a building, vehicle, or object.',
     'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
-);
+];
 
-ae::output('path/to/snippet.php', array(
+ae::output('path/to/snippet.php', [
     'data' => $glossary
-));
+]);
 ```
 
 Provided <samp>snippet.php</samp> contains:
@@ -920,14 +921,14 @@ ae::request()->ip_address();
 ae::request()->redirect();
 
 // redirect to /login 
-ae::request()->url(array(
+ae::request()->url()->modify([
 	'scheme' => 'https',
 	'path' => '/login'
-))->redirect();
+])->redirect();
 
-ae::request()->route(array(
+ae::request()->route([
 	// ...
-));
+])->follow();
 
 
 // Shell
@@ -1031,23 +1032,23 @@ echo "You can access it at " . $request->uri();
 You can route different types of requests to different directories:
 
 ```php
-$route = ae::request()->route(array(
+$route = ae::request()->route([
     '/admin' => 'cms/', // all requests starting with /admin 
     '/' => 'webroot/' // other requests
-)->follow();
+])->follow();
 ```
 
 You can always provide an anonymous function instead of a directory and pass path segments as arguments like this:
 
 ```php
-ae::request()->route(array(
+ae::request()->route([
     '/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
         echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
     },
     '/' => function($uri) {
         echo 'Default handler. Request URI: /' . $uri;
     }
-))->follow();
+])->follow();
 ```
 
 
@@ -1217,10 +1218,10 @@ $input = $form->single('text_input')
 $checkbox = $form->single('checkbox_input')
     ->required('You must check this checkbox!');
 
-$options = array(
+$options =[
     'foo' => 'Foo',
     'bar' => 'Bar'
-);
+]);
 
 $select = $this->single('select_input')
     ->valid_value('Wrong value selected.', $options);
@@ -1247,9 +1248,9 @@ If the form has not been submitted, you may want to populate it with default val
 ```php
 if (!$form->is_submitted())
 {
-    $form->value(array(
+    $form->value[
         'text' => 'Foo'
-    ));
+    ]));
 }
 ```
 
@@ -1268,7 +1269,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 </div>
 <div class="field">
     <label for="<?= $select->id() ?>">Select something (totally optional):</label>
-    <?= $select->select(array('' => 'Nothing selected') + $options) ?>
+    <?= $select->select['' => 'Nothing selected']) + $options) ?>
     <?= $select->error() ?>
 </div>
 <div class="field">
@@ -1280,7 +1281,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in the browsers that support it, you should set the `novalidate` attribute of the form:
 
 ```php
-<?= $form->open(array('novalidate' => true)); ?>
+<?= $form->open['novalidate' => true])); ?>
 ```
 
 ### Field types
@@ -1388,9 +1389,9 @@ $field->valid_value('Devils are not allowed.', function ($value) {
 If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted correct data:
 
 ```php
-$field->valid_value('Wrong option selected.', array(
+$field->valid_value('Wrong option selected.',[
     'foo', 'bar' //, '...'
-));
+]);
 ```
 
 Ordinary users would never see this error, but it prevents would-be hackers from tempering with the data.
@@ -1456,9 +1457,9 @@ ae::database()->query("CREATE TABLE IF NOT EXISTS {table} (
         `nationality` varchar(255) NOT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-    ->aliases(array(
+    ->aliases([
         'table' => 'authors'
-    ))
+    ])
     ->make();
 ```
 
@@ -1472,13 +1473,13 @@ Let's fill this table with some data:
 ```php
 ae::database()
     ->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-    ->aliases(array(
+    ->aliases([
         'table' => 'authors'
-    ))
-    ->data(array(
+    ])
+    ->data([
         'name' => 'Richar K. Morgan', // (sic)
         'nationality' => 'British'
-    ))
+    ])
     ->make();
 
 $morgan_id = ae::database()->insert_id();
@@ -1490,15 +1491,15 @@ In this example we are using `{data:names}` and `{data:values}` placeholders and
 ```php
 ae::database()
     ->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
-    ->aliases(array(
+    ->aliases([
         'table' => 'authors'
-    ))
-    ->data(array(
+    ])
+    ->data([
         'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-    ), \ae\Database::statement) // don' escape
-    ->variables(array(
+    ], \ae\Database::statement) // don' escape
+    ->variables([
         'author_id' => $morgan_id
-    ), \ae\Database::value) // escape
+    ], \ae\Database::value) // escape
     ->make();
 ```
 
@@ -1508,17 +1509,17 @@ Of course, these are just examples, there is actually a less verbose way to inse
 
 
 ```php
-ae::database()->update('authors', array(
+ae::database()->update('authors', [
     'nationality' => 'English'
-), array('id' => $morgan_id));
-$stephenson_id = ae::database()->insert('authors', array(
+], ['id' => $morgan_id]);
+$stephenson_id = ae::database()->insert('authors', [
     'name' => 'Neal Stephenson',
     'nationality' => 'American'
-)); 
-$gibson_id = ae::database()->insert('authors', array(
+]); 
+$gibson_id = ae::database()->insert('authors', [
     'name' => 'William Ford Gibson',
     'nationality' => 'Canadian'
-));
+]);
 ```
 
 > There is also `\ae\Database::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `\ae\Database::count()` for counting rows; `\ae\Database::find()` for retrieving a particular row; and `\ae\Database::delete()` for deleting rows from a table. Please consult the library source code to learn more about them.
@@ -1622,7 +1623,7 @@ This one line of code is enough to start performing basic CRUD operations for th
 $stephenson = Authors::find($stephenson_id);
 
 // Load the data
-$stephenson->load(array('name', 'nationality'));
+$stephenson->load(['name', 'nationality']);
 
 echo $stephenson->name; // Neal Stephenson
 echo ' -- ';
@@ -1645,12 +1646,12 @@ Let's create a new record and save it to the database:
 
 
 ```php
-$shaky = Authors::create(array(
+$shaky = Authors::create([
     'name' => 'William Shakespeare',
     'nationality' => 'English'
-));
+]);
 
-// Create a new record in the database
+// Save the new record to the database
 $shaky->save();
 ```
 
@@ -1701,9 +1702,9 @@ ae::database()->query("CREATE TABLE IF NOT EXISTS {table} (
         `title` varchar(255) NOT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-    ->aliases(array(
+    ->aliases([
         'table' => 'books'
-    ))
+    ])
     ->make();
 ```
 
@@ -1732,10 +1733,10 @@ class Authors extends \ae\DatabaseTable
     {
         $ids = $this->ids();
         
-        return Novels::create(array(
+        return Novels::create([
                 'author_id' => $ids['id'],
                 'title' => $title
-            ))->save();
+            ])->save();
     }
 }
 ```
@@ -1815,4 +1816,4 @@ Here are all 9 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
-<!-- Generated on 14 February 2015 19:07:31 -->
+<!-- Generated on 08 April 2015 14:20:26 -->

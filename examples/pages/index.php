@@ -13,6 +13,7 @@
 <h2>Examples:</h2>
 <p><?= ae::escape('This framework is <em>&ldquo;awesome&rdquo;</em>!') ?></p>
 <ul>
+	<li><a href="/docs">Documentation</a></li>
 <?php 
 	foreach ([
 		'Caching' => 'caching/test',
@@ -37,7 +38,7 @@
 	<li><a href="{uri}">{name}</a></li>
 <?php
 		$b->output([
-			'uri' => '/' . trim($uri,'/'),
+			'uri' => 'pages/' . trim($uri,'/'),
 			'name' => $name
 		]);
 	endforeach;
