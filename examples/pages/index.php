@@ -13,8 +13,9 @@
 <h2>Examples:</h2>
 <p><?= ae::escape('This framework is <em>&ldquo;awesome&rdquo;</em>!') ?></p>
 <ul>
+	<li><a href="/docs">Documentation</a></li>
 <?php 
-	foreach (array(
+	foreach ([
 		'Caching' => 'caching/test',
 		'Caching (html)' => 'caching/test.html',
 		'Caching (json)' => 'caching/test.json',
@@ -32,14 +33,14 @@
 		'Probes' => 'probe',
 		'Request' => 'request/view/some/uri',
 		'Session' => 'session'
-	) as $name => $uri): $b = new \ae\Buffer(); 
+	] as $name => $uri): $b = new \ae\Buffer(); 
 ?>
 	<li><a href="{uri}">{name}</a></li>
 <?php
-		$b->output(array(
-			'uri' => '/' . trim($uri,'/'),
+		$b->output([
+			'uri' => 'pages/' . trim($uri,'/'),
 			'name' => $name
-		));
+		]);
 	endforeach;
 ?>
 </ul>

@@ -20,15 +20,15 @@ namespace ae;
 
 \ae::import('ae/request.php');
 
-\ae::options('inspector', array(
+\ae::options('inspector', [
 	'dump_context' => false, // whether to dump global variables and error contexts;
 	'allowed_ips' => '127.0.0.1, ::1', // an array or comma-separated list of IP addresses;
 	'directory_path' => null // path to log directory.
-));
+]);
 
 // Call Log::log() whenever user is "loading" the library.
 \ae::invoke(function () {
-	call_user_func_array(array('\ae\Log', 'log'), func_get_args());
+	call_user_func_array(['\ae\Log', 'log'], func_get_args());
 });
 
 // Setup all error handling hooks
@@ -40,7 +40,7 @@ class Log
 	or X-ae-log header, or appends them to a log file.
 */
 {
-	protected static $log = array();
+	protected static $log = [];
 	protected static $has_problems = false;
 	
 	public static function log()
@@ -51,13 +51,13 @@ class Log
 		
 		foreach ($messages as $message)
 		{
-			self::$log[] = array(
+			self::$log[] = [
 				'part' => ++$i,
 				'length' => $length,
 				'class' => is_string($message) ? 'message' : 'dump',
 				'type' => gettype($message),
 				'object' => $message
-			);
+			];
 		}
 	}
 
@@ -93,10 +93,10 @@ class Log
 		
 		unset($error['type']);
 		
-		self::$log[] = array(
+		self::$log[] = [
 			'class' => $class,
 			'object' => $error
-		);
+		];
 	}
 	
 	protected static function on_shutdown()
@@ -164,7 +164,7 @@ class Log
 					
 					if ($message['class'] === 'message')
 					{
-						$o.= "\n" . str_repeat(' ', 4) . str_replace(array("\n","\r"), ' ', $message['object']) . "\n";
+						$o.= "\n" . str_repeat(' ', 4) . str_replace(["\n","\r"], ' ', $message['object']) . "\n";
 					}
 					else
 					{
@@ -263,7 +263,7 @@ class Log
 		$o = self::_ruler() . "\n";
 		
 		$o.= ucfirst($class) . ': ' 
-			. str_replace(array("\n","\r"), ' ', $error['message']) . "\n";
+			. str_replace(["\n","\r"], ' ', $error['message']) . "\n";
 		
 		if (isset($error['code']))
 		{
@@ -309,8 +309,8 @@ class Log
 				
 				$o.= $trace['function'];
 				
-				$args = array();
-				$dumps = array();
+				$args = [];
+				$dumps = [];
 				$object_offset = 1;
 				$array_offset = 1;
 				
@@ -398,9 +398,9 @@ class Log
 	public static function _setup()
 	{
 		// Set up all handlers
-		set_error_handler(array('\ae\Log','_handle_error'), E_ALL | E_STRICT);
-		set_exception_handler(array('\ae\Log','_handle_exception'));
-		register_shutdown_function(array('\ae\Log','_handle_shutdown'));
+		set_error_handler(['\ae\Log','_handle_error'], E_ALL | E_STRICT);
+		set_exception_handler(['\ae\Log','_handle_exception']);
+		register_shutdown_function(['\ae\Log','_handle_shutdown']);
 		
 		// FIXME: User must be responsible for turning error reporting off.
 		error_reporting(0);

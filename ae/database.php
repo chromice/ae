@@ -18,11 +18,11 @@
 
 namespace ae;
 
-\ae::options('ae::database', array(
+\ae::options('ae::database', [
 	'log' => false
-));
+]);
 
-\ae::invoke(array('\ae\Database', 'connection'));
+\ae::invoke(['\ae\Database', 'connection']);
 
 class Database
 /*
@@ -61,7 +61,7 @@ class Database
 	// = Connection =
 	// ==============
 	
-	protected static $connections = array();
+	protected static $connections = [];
 	
 	public static function connection($database = null)
 	{
@@ -75,7 +75,7 @@ class Database
 			return self::$connections[$database];
 		}
 		
-		$params = \ae::options('ae::database(' . $database . ')', array(
+		$params = \ae::options('ae::database(' . $database . ')', [
 			'class' => get_called_class(),
 			'host' => '127.0.0.1',
 			'user' => null,
@@ -83,7 +83,7 @@ class Database
 			'database' => null,
 			'port' => null,
 			'socket' => null
-		));
+		]);
 		
 		$class = $params->get('class');
 		
@@ -156,9 +156,9 @@ class Database
 	protected $sql_order_by;
 	protected $sql_limit;
 	
-	protected $aliases = array();
-	protected $variables = array();
-	protected $values = array();
+	protected $aliases = [];
+	protected $variables = [];
+	protected $values = [];
 	
 	public function query($query)
 	/*
@@ -212,10 +212,10 @@ class Database
 			where('id', 2);
 			
 			// `a` = 1 AND `b` = 2
-			where(array(
+			where([
 				'a' => 1,
 				'b' => 2
-			));
+			]);
 			
 			// `table`.`created_on` > NOW()
 			where('{table}.`created_on` > NOW()');
@@ -331,12 +331,12 @@ class Database
 	{
 		if (is_scalar($value) && is_scalar($where))
 		{
-			$where = array($where => $value);
+			$where = [$where => $value];
 		}
 		
 		if (is_array($where))
 		{
-			$_where = array();
+			$_where = [];
 			
 			foreach ($where as $_key => $_value)
 			{
@@ -349,7 +349,7 @@ class Database
 		if (is_array($value))
 		{
 			$tokens = preg_replace('/.+/', '{$0}', array_keys($value));
-			$values = array_map(array($this, 'escape'), array_values($value));
+			$values = array_map([$this, 'escape'], array_values($value));
 			$where = str_replace($tokens, $values, $where);
 		}
 		
@@ -366,23 +366,23 @@ class Database
 			return trigger_error('Cannot execute an empty SQL query!', E_USER_ERROR);
 		}
 		
-		$query = str_replace(array(
+		$query = str_replace([
 			'{sql:join}',
 			'{sql:where}',
 			'{sql:group_by}',
 			'{sql:having}',
 			'{sql:order_by}',
 			'{sql:limit}'
-		), array(
+		], [
 			$this->sql_join,
 			$this->sql_where,
 			$this->sql_group_by,
 			$this->sql_having,
 			$this->sql_order_by,
 			$this->sql_limit
-		), $this->query);
+		], $this->query);
 		
-		$placeholders = array();
+		$placeholders = [];
 		
 		if (!empty($this->aliases))
 		{
@@ -396,9 +396,9 @@ class Database
 		
 		if (!empty($this->values))
 		{
-			$keys = array();
-			$values = array();
-			$keys_values = array();
+			$keys = [];
+			$values = [];
+			$keys_values = [];
 			
 			foreach ($this->values as $key => $value)
 			{
@@ -418,9 +418,9 @@ class Database
 		
 		$this->query = null;
 		$this->parts = null;
-		$this->aliases = array();
-		$this->variables = array();
-		$this->values = array();
+		$this->aliases = [];
+		$this->variables = [];
+		$this->values = [];
 		
 		$this->sql_join = null;
 		$this->sql_where = null;
@@ -479,7 +479,7 @@ class Database
 	{
 		if ($type !== Database::statement)
 		{
-			$variables = array_map(array($this, 'escape'), $variables);
+			$variables = array_map([$this, 'escape'], $variables);
 		}
 		
 		$this->variables = array_merge($this->variables, $variables);
@@ -501,7 +501,7 @@ class Database
 	{
 		if ($type !== Database::statement)
 		{
-			$values = array_map(array($this, 'escape'), $values);
+			$values = array_map([$this, 'escape'], $values);
 		}
 
 		$this->values = array_merge($this->values, $values);
@@ -584,7 +584,7 @@ class Database
 	// = Class binding =
 	// =================
 	
-	protected $using = array();
+	protected $using = [];
 	
 	public function one($class, $result = '\ae\DatabaseResult')
 	/*
@@ -610,7 +610,7 @@ class Database
 	{
 		$return = $this->_result($result, $class, $this->using);
 		
-		$this->using = array();
+		$this->using = [];
 		
 		return $return;
 	}
@@ -661,12 +661,12 @@ class Database
 	*/
 	{
 		$result = $this->query("SHOW COLUMNS FROM {table}")
-			->aliases(array(
+			->aliases([
 				'table' => $table
-			))
+			])
 			->result();
 		
-		$columns = array();
+		$columns = [];
 		
 		while ($column = $result->fetch())
 		{
@@ -725,9 +725,9 @@ class Database
 		}
 		
 		return $this->query("SELECT $columns FROM {table} {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}")
-			->aliases(array(
+			->aliases([
 				'table' => $table
-			));
+			]);
 	}
 	
 	public function insert($table, $values)
@@ -736,9 +736,9 @@ class Database
 	*/
 	{
 		return $this->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-			->aliases(array(
+			->aliases([
 				'table' => $table
-			))
+			])
 			->data($values)
 			->make() > 0 ? $this->insert_id() : null;
 	}
@@ -750,8 +750,8 @@ class Database
 		NB! Unlike other methods, `$where` argument must be an associative array.
 	*/
 	{
-		$insert_keys = array();
-		$insert_values = array();
+		$insert_keys = [];
+		$insert_values = [];
 		
 		foreach ($where as $key => $value)
 		{
@@ -765,9 +765,9 @@ class Database
 		return $this->query("INSERT INTO {table} ({data:names}, $insert_keys) 
 				VALUES ({data:values}, $insert_values) 
 				ON DUPLICATE KEY UPDATE {data:set}")
-			->aliases(array(
+			->aliases([
 				'table' => $table
-			))
+			])
 			->data($values)
 			->make();
 	}
@@ -778,9 +778,9 @@ class Database
 	*/
 	{
 		return $this->query("UPDATE {table} SET {data:set} {sql:where}")
-			->aliases(array(
+			->aliases([
 				'table' => $table
-			))
+			])
 			->data($values)
 			->where($where, $where_value)
 			->make();
@@ -792,9 +792,9 @@ class Database
 	*/
 	{
 		return $this->query("DELETE FROM {table} {sql:where}")
-			->aliases(array(
+			->aliases([
 				'table' => $table
-			))
+			])
 			->where($where, $where_value)
 			->make();
 	}
@@ -846,15 +846,15 @@ class DatabaseResult
 		}
 		
 		$this->class = $class;
-		$this->columns = array();
-		$this->related = array();
+		$this->columns = [];
+		$this->related = [];
 		
 		if (is_array($related)) foreach ($related as $_class => $_alias)
 		{
-			$this->related[$_class::name()] = array(
+			$this->related[$_class::name()] = [
 				'class' => $_class,
 				'alias' => empty($_alias) ? $_class::name() : $_alias
-			);
+			];
 		}
 		
 		foreach ($this->result->fetch_fields() as $offset => $field)
@@ -934,7 +934,7 @@ class DatabaseResult
 		Returns an array of all rows.
 	*/
 	{
-		$all = array();
+		$all = [];
 		
 		if ($this->count() > 0)
 		{
@@ -961,7 +961,7 @@ abstract class DatabaseTable
 	
 	Now you can easily perform CRUD actions on "my_table" table:
 	
-		$row = MyTable::create(array('column' => 'value'))->save();
+		$row = MyTable::create(['column' => 'value'])->save();
 		
 		$row_ids = $row->ids();
 		
@@ -977,7 +977,7 @@ abstract class DatabaseTable
 	// = Entity configuration =
 	// ========================
 	
-	private static $tables = array();
+	private static $tables = [];
 
 	protected static function database()
 	/*
@@ -1051,8 +1051,8 @@ abstract class DatabaseTable
 	{
 		$class = get_called_class();
 		
-		self::$tables[$class]['accessor'] = array();
-		self::$tables[$class]['columns'] = array();
+		self::$tables[$class]['accessor'] = [];
+		self::$tables[$class]['columns'] = [];
 		
 		$db = static::database();
 		$columns = $db->columns(static::name());
@@ -1094,11 +1094,11 @@ abstract class DatabaseTable
 	// = Entity creation =
 	// ===================
 	
-	private $ids = array();
-	private $data = array();
-	private $values = array();
-	private $transient = array();
-	private $related = array();
+	private $ids = [];
+	private $data = [];
+	private $values = [];
+	private $transient = [];
+	private $related = [];
 	
 	public function __construct($values = null, $_raw_data = false)
 	/*
@@ -1270,9 +1270,9 @@ abstract class DatabaseTable
 		
 		if (is_scalar($ids) && count($accessor) === 1)
 		{
-			$ids = array(
+			$ids = [
 				array_pop($accessor) => $ids
-			);
+			];
 		}
 		elseif (count($accessor) !== count($ids))
 		{
@@ -1375,7 +1375,7 @@ abstract class DatabaseTable
 		}
 		
 		$this->data = array_merge($this->data, $this->values);
-		$this->values = array();
+		$this->values = [];
 
 		return $this;
 	}
@@ -1387,12 +1387,12 @@ abstract class DatabaseTable
 	{
 		if ($accessor === true)
 		{
-			$this->ids = array();
+			$this->ids = [];
 		}
 		
-		$this->values = array();
-		$this->transient = array();
-		$this->related = array();
+		$this->values = [];
+		$this->transient = [];
+		$this->related = [];
 		
 		return $this;
 	}

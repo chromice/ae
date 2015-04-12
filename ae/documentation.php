@@ -33,7 +33,7 @@ class Documentation
 	protected $save_as;
 	
 	protected $buffer;
-	protected $examples = array();
+	protected $examples = [];
 	
 	public function __construct($base_dir, $base_uri = null, $save_as = null)
 	{
@@ -64,10 +64,10 @@ class Documentation
 		}, 0) / $covered, 2) : 0;
 		
 		$coverage_summary = "$covered out of $total files covered (**$average%** average coverage)";
-		$coverage_details = array(
+		$coverage_details = [
 			'| ' . str_pad('File', 20) . '|' . ' Coverage |',
 			'|' . str_repeat('-', 21) . '|' . str_repeat('-', 9) . ':|'
-		);
+		];
 		
 		foreach ($this->covered_stats as $file => $percent)
 		{
@@ -100,15 +100,15 @@ class Documentation
 		*/
 		$output = str_replace(array_map(function ($i) {
 			return '{' . $i . '}';
-		}, array(
+		}, [
 			'tests:summary',
 			'coverage:summary',
 			'coverage:details',
-		)), array(
+		]), [
 			$tests_summary,
 			$coverage_summary,
 			$coverage_details
-		), $output);
+		], $output);
 		
 		
 		if (!empty($this->save_as))
@@ -146,9 +146,9 @@ class Documentation
 	// = Code coverage =
 	// =================
 	
-	protected $covered_files = array();
-	protected $covered_stats = array();
-	static protected $code_coverage = array();
+	protected $covered_files = [];
+	protected $covered_stats = [];
+	static protected $code_coverage = [];
 	
 	static public function merge_code_coverage($info)
 	{
@@ -273,7 +273,7 @@ class Documentation
 		[2]: https://github.com/paulgb/simplediff/blob/master/LICENSE
 	*/
 	{
-		$matrix = array();
+		$matrix = [];
 		$maxlen = 0;
 		
 		foreach ($old as $oindex => $ovalue)
@@ -296,7 +296,7 @@ class Documentation
 		
 		if ($maxlen == 0)
 		{
-			return array(array('d' => $old, 'i' => $new));
+			return [['d' => $old, 'i' => $new]];
 		}
 		
 		return array_merge(
@@ -399,14 +399,14 @@ class Example
 	/*
 		Defines the request for the following expecated response.
 		
-			on('GET', array('foo' => 'bar'));
-			on('POST', array('foo' => 'bar'));
-			on(array(
+			on('GET', ['foo' => 'bar']);
+			on('POST', ['foo' => 'bar']);
+			on([
 				'method' => 'GET',
 				'headers' => array(),
-				'cookies' => array(),
-				'data' => array('foo' => 'bar');
-			));
+				'cookies' => [],
+				'data' => ['foo' => 'bar'];
+			]);
 	*/
 	{
 		
@@ -439,13 +439,13 @@ class Example
 	
 	protected function _default_request()
 	{
-		return array(
+		return [
 			'method' => 'GET',
 			'uri' => '/',
-			'headers' => array(),
-			'cookies' => array(),
-			'data' => array()
-		);
+			'headers' => [],
+			'cookies' => [],
+			'data' => []
+		];
 	}
 	
 	protected function _request()
@@ -607,8 +607,8 @@ class Source
 {
 	protected $source;
 	protected $type;
-	protected $lines = array();
-	protected $replacements = array();
+	protected $lines = [];
+	protected $replacements = [];
 	
 	public function __construct($source, $type)
 	{
@@ -627,7 +627,7 @@ class Source
 		// Slice the lines.
 		if (!empty($this->lines))
 		{
-			$_source = array();
+			$_source = [];
 			
 			foreach ($this->lines as $from => $to)
 			{
@@ -700,7 +700,7 @@ class Source
 		
 		if (count($found = preg_split('/^\/{3}\s*>{3}\s*' . $name . '\s*$/im', $this->source, 2)) < 2)
 		{
-			$found = array('', '');
+			$found = ['', ''];
 		}
 		
 		$found = $found[1];

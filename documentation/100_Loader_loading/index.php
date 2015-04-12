@@ -3,10 +3,10 @@
 /// require 'path/to/ae/loader.php';
 
 /// >>> Registering
-ae::register(__DIR__ . '/library.php', array(
+ae::register(__DIR__ . '/library.php', [
 	'library' => '\ns\Library',
 	'\ns\AnotherLibraryClass'
-));
+]);
 /// <<< end
 
 /// >>> Class loading

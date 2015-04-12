@@ -8,10 +8,10 @@ class Authors extends \ae\DatabaseTable
 	{
 		$ids = $this->ids();
 		
-		return Novels::create(array(
+		return Novels::create([
 				'author_id' => $ids['id'],
 				'title' => $title
-			))->save();
+			])->save();
 	}
 	
 	public static function install()
@@ -22,18 +22,18 @@ class Authors extends \ae\DatabaseTable
 				`nationality` varchar(255) NOT NULL,
 				PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-			->aliases(array(
+			->aliases([
 				'authors' => static::name()
-			))
+			])
 			->make();
 	}
 
 	public static function uninstall()
 	{
 		static::database()->query("DROP TABLE IF EXISTS {authors}")
-			->aliases(array(
+			->aliases([
 				'authors' => static::name()
-			))
+			])
 			->make();
 	}
 }

@@ -25,20 +25,20 @@ Novels::install();
 Authors::install();
 
 // Create new entities and save them to database
-$author = Authors::create(array(
+$author = Authors::create([
 	'name' => 'Jerome David Salinger',
 	'nationality' => 'American',
 	'non_existant' => 'Property'
-))->save();
+])->save();
 
 $author->nationality = 'United States of America';
 $author->save();
 
-$book = Novels::create(array(
+$book = Novels::create([
 	'author_id' => $author->id,
 	'title' => 'The Catcher in the Dryer',
 	'content' => '...',
-))->save();
+])->save();
 
 // Retrieve all books
 $books = Novels::many(5);

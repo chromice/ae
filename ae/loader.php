@@ -94,9 +94,9 @@ final class ae
 	// = Code management =
 	// ===================
 	
-	private static $contexts = array();
-	private static $paths = array();
-	private static $stack = array();
+	private static $contexts = [];
+	private static $paths = [];
+	private static $stack = [];
 	
 	public static function resolve($path, $search = true)
 	/*
@@ -187,7 +187,7 @@ final class ae
 		
 		$ps = new \ae\ValueStack(self::$stack, $path);
 		
-		self::$paths[$path] = array();
+		self::$paths[$path] = [];
 		
 		\ae\_include($path);
 	}
@@ -206,7 +206,7 @@ final class ae
 		callback or closure that sill be used as a factory:
 			
 			// Static callback
-			ae::invoke(array('AnotherSingletonClassName', 'factory'));
+			ae::invoke(['AnotherSingletonClassName', 'factory']);
 			
 			// Closure / singleton pattern
 			ae::invoke(function ($param, $param_2) {
@@ -289,11 +289,11 @@ final class ae
 		
 		try
 		{
-			return call_user_func_array(array('ae', 'load'), $arguments);
+			return call_user_func_array(['ae', 'load'], $arguments);
 		}
 		catch (\ae\Exception $e) 
 		{
-			if (in_array($name, array('log', 'probe')))
+			if (in_array($name, ['log', 'probe']))
 			{
 				return new \ae\Stud();
 			}
@@ -462,7 +462,7 @@ class Trap
 			
 			echo '<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>';
 			
-			$output = $content->render(array(
+			$output = $content->render([
 				'url' => $article->url,
 				'name' => (
 					strlen($article->name) > 20 
@@ -470,7 +470,7 @@ class Trap
 					: $article->name
 				),
 				'visits' => number_format($article->visits)
-			));
+			]);
 	*/
 	{
 		if (is_null($this->content))
@@ -536,15 +536,15 @@ class ValueStack
 /*
 	Provides an exception-safe way to push/pop values to/from stack.
 
-		$stack = array('foo');
+		$stack = ['foo'];
 		
 		$item = new ValueStack($stack, 'bar');
 		
-		var_dump($stack); // array('foo','bar');
+		var_dump($stack); // ['foo','bar'];
 		
 		unset($item);
 		
-		var_dump($stack); // array('foo');
+		var_dump($stack); // ['foo'];
 */
 {
 	protected $stack;

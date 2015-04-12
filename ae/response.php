@@ -18,12 +18,12 @@
 
 namespace ae;
 
-\ae::options('ae::response', array(
+\ae::options('ae::response', [
 	'compress_output' => false, // whether to gzip dispatched output;
 	'charset' => 'utf-8', // character set;
 	'error_path' => null, // path to a script that is used by `Response::error()`.
 	'cache_directory_path' => '/cache' // must be writable
-));
+]);
 
 
 \ae::invoke('\ae\Response');
@@ -47,11 +47,11 @@ class Response
 	protected $headers;
 	protected $buffer;
 	
-	protected static $buffers = array();
+	protected static $buffers = [];
 	
 	public function __construct($type = null)
 	{
-		$this->headers = array();
+		$this->headers = [];
 		$this->buffer = new Buffer();
 		
 		array_unshift(self::$buffers, $this->buffer);
@@ -120,7 +120,7 @@ class Response
 		}
 	}
 
-	protected static $http_errors = array(
+	protected static $http_errors = [
 		// Client errors
 		400 => 'Bad Request',
 		401 => 'Unauthorized',
@@ -148,7 +148,7 @@ class Response
 		503 => 'Service Unavailable',
 		504 => 'Gateway Timeout',
 		505 => 'HTTP Version Not Supported'
-	);
+	];
 	
 	public function error($code, $path = null)
 	/*
@@ -180,10 +180,10 @@ class Response
 		
 		if (!empty($path)) 
 		{
-			\ae::output($path, array(
+			\ae::output($path, [
 				'code' => $code, 
-				'status' => self::$http_errors[$code])
-			);
+				'status' => self::$http_errors[$code]
+			]);
 		}
 		
 		exit;
@@ -204,7 +204,7 @@ class Response
 		}
 		else
 		{
-			$this->headers[$name] = array($value);
+			$this->headers[$name] = [$value];
 		}
 		
 		return $this;
@@ -340,10 +340,10 @@ class ResponseCache
 		$cache = new ResponseCache();
 		
 		$cache
-			->headers(array(
+			->headers([
 				'Content-Type' => 'text/html',
 				'X-Header-Example' => 'Some value'
-			))
+			])
 			->content('<h1>Hello world</h1>')
 			->duration(5)
 			->save('/hello-world.html');
@@ -356,7 +356,7 @@ class ResponseCache
 	const year = 525600;
 	
 	protected $ttl = 0;
-	protected $headers = array();
+	protected $headers = [];
 	protected $content = '';
 	
 	public function duration($minutes)
@@ -546,7 +546,7 @@ class ResponseCache
 		}
 		else foreach (scandir($path) as $dir)
 		{
-			if (in_array($dir, array('.', '..')))
+			if (in_array($dir, ['.', '..']))
 			{
 				continue;
 			}
@@ -592,7 +592,7 @@ class ResponseCache
 	{
 		foreach (scandir($path) as $file)
 		{
-			if (in_array($file, array('.', '..')))
+			if (in_array($file, ['.', '..']))
 			{
 				continue;
 			}

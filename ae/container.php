@@ -59,7 +59,7 @@ class Container
 	protected $path;
 	protected $buffer;
 	protected $context;
-	protected static $vars = array();
+	protected static $vars = [];
 	
 	public function __construct($path)
 	{

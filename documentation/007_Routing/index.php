@@ -2,7 +2,7 @@
 
 /// require 'path/to/ae/loader.php'
 
-$route = ae::request()->route(array(
+$route = ae::request()->route([
 	// 1. Map account to /responders/account.php script
 	'/account' => __DIR__ . '/responders/account.php',
 	
@@ -26,7 +26,7 @@ $route = ae::request()->route(array(
 	//     index.php -> About us page
 	//     team.php -> Team page.
 	
-));
+]);
 
 try {
 	$route->follow();

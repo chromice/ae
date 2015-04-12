@@ -3,10 +3,10 @@
 // ==================
 // = Handle request =
 // ==================
-$filters = array(
-    'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
-    'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
-);
+$filters = [
+	'offset' => !empty($_GET['offset']) ? (int) $_GET['offset'] : 0,
+	'total' => !empty($_GET['total']) ? (int) $_GET['total'] : 100
+];
 $filters = array_map($filters, function ($value) {
 	return max($value, 0);
 });

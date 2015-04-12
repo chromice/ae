@@ -25,9 +25,30 @@ $a = \ae\Documentation::analyzer();
 
 // Route request
 $request = ae::request();
-$route = $request->route('/', '/examples/pages');
 
-if ($route->exists())
+// 
+switch ($request->segment(0, null))
 {
-	$route->follow();
+	case null:
+		ae::output('/examples/pages/index.php');
+		break;
+	
+	case 'docs':
+		if ($request->segment(1, null) === null)
+		{
+			ae::output('/documentation/index.php');
+			break;
+		}
+	
+	default:
+		$route = $request->route([
+			'/pages' => '/examples/pages',
+			'/' => '/documentation',
+		]);
+		
+		if ($route->exists())
+		{
+			$route->follow();
+		}
+		break;
 }

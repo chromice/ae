@@ -11,9 +11,9 @@
 ?>
 	<li>{number}</li>
 <?php
-		$b->output(array(
+		$b->output([
 			'number' => $i
-		)); 
+		]); 
 	endfor
 ?>
 </ul>
