@@ -1815,5 +1815,3 @@ Here are all 9 novels ordered alphabetically:
 - Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
 ```
-
-<!-- Generated on 08 April 2015 14:20:26 -->

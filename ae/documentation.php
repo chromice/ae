@@ -116,7 +116,7 @@ class Documentation
 			$ts = date('d F Y H:i:s');
 			$file = \ae::file($this->base_dir . $this->save_as)
 				->open('w')
-				->write($output . "\n<!-- Generated on $ts -->")
+				->write($output)
 				->close();
 		}
 		
