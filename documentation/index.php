@@ -19,11 +19,11 @@ $doc = ae::documentation(__DIR__, '/', 'index.md')
 
 æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, and database operations.
 
-This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that adheres to a few basic principles:
+This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
-- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines, etc. There are no config files to tinker with either. All libraries have with their (few) configuration options set to reasonable defaults.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
 - **Reliability**: All examples in this documentation are tested and their output is verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant. 
-- **Performance:** All libraries have been designed with best performance practices in mind. Responses can be cached statically and served through Apache alone.
+- **Performance:** All libraries have been designed with performance and effiency in mind. Responses can be cached statically and served through Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
 There is nothing particularly groundbreaking or fancy about this toolkit. If you are just looking for a simple PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com). 
@@ -32,7 +32,7 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 > **Opinion:** A web application is a bunch of scripts thrown together to concatenate an HTTP string in response to another HTTP string.
 
-In other words, æ is designed to be as simple as possible, but not simpler. It will not let you forget that most of the back-end programming you do is a glorified string manipulation, but it will remove the most cumbersome aspects of it. 
+In other words, æ will not let you forget that most of the back-end programming is a glorified string manipulation, but it will alleviate the most cumbersome aspects of it. 
 
 In more practical terms, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
 
@@ -94,7 +94,7 @@ require 'path/to/ae/loader.php';
 
 ### Configuring Composer
 
-If you are using [Composer](https://getcomposer.org), make sure your <samp>composer.json</samp> references this repository AND has æ added as a requirement:
+If you are using [Composer](https://getcomposer.org), make sure your <samp>composer.json</samp> references this repository and has æ added as a requirement:
 
 ```json
 {
@@ -160,7 +160,7 @@ As a result, æ *does not* do anything *magically*:
 
 <?php $syntax = $doc->example('006_Syntax') ?>
 
-Most methods are chainable, including all setters: 
+Most mutator methods are chainable, including all setters: 
 
 <?= $syntax->source('options.php'); $syntax->on('options')->outputs(''); ?>
 
@@ -180,7 +180,7 @@ There are exceptions, of course, like the query builder:
 
 ### Exception safety
 
-In order to make your code exception safe, you must be aware the object life cycle.
+In order to make your code exception safe, you must be aware of the object life cycle.
 
 `__construct()` method is called whenever a new object is instantiated. If the object is assigned to a variable, it will persist until either:
 
@@ -212,8 +212,8 @@ Strictly speaking æ is not a framework, because it imposes no rules on how your
 
 It would not be unreasonable to assume that your app will be made of one or more PHP scripts responsible for at least one of the following tasks:
 
-- *Handling requests*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
-- *Operating on internal state*, e.g. reading/writing files, cookies, session variables, database records, etc.
+- *Handling requests*, i.e. deciding what to do based on request URI, GET/POST parameters, form values, etc.
+- *Operating on internal state*, e.g. reading from/writing to files, cookies, sessions, database records, etc.
 - *Generating responses*, i.e. spitting out a long string conforming to HTTP, HTML and other standards.
 
 The author does not want to be unfairly prescriptive, so here are just a few tips you may find helpful:
@@ -229,7 +229,7 @@ In MVC-speak your controller is at the top, and your view is at the bottom.
 
 #### Break your app into components 
 
-æ lets you either delegate requests to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
+æ lets you either delegate requests to a directory or a file, or a callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
 
 For example, you may want to handle user authentication and let:
 

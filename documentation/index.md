@@ -3,7 +3,7 @@
 
 æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, and database operations.
 
-This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that adheres to a few basic principles:
+This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that adheres to the following basic principles:
 
 - **Simplicity:** There are no controllers, event emitters and responders, filters, template engines, etc. There are no config files to tinker with either. All libraries have with their (few) configuration options set to reasonable defaults.
 - **Reliability**: All examples in this documentation are tested and their output is verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant. 

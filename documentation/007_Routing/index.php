@@ -13,7 +13,7 @@ $route = ae::request()->route([
 	'/products/page/{numeric}' => function ($page) {
 		echo "List product page #{$page}.";
 	},
-	'/products' => function ($page) {
+	'/products' => function () {
 		echo "List product page #1.";
 	},
 	
