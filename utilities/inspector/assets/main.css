@@ -215,7 +215,6 @@ table .absolute, table .relative {
 	Dumps
 */
 a.dump {
-	display: inline-block;
 	color: inherit;
 }
 pre.dump {
