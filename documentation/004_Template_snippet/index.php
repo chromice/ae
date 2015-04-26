@@ -6,6 +6,6 @@ $glossary = [
     'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
 ];
 
-ae::output(__DIR__ . '/snippet.php', [
+echo ae::snippet(__DIR__ . '/snippet.php', [
     'data' => $glossary
 ]);

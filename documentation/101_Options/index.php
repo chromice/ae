@@ -6,4 +6,4 @@ ae::options('my_application', [
 ]);
 
 $o = ae::options('my_application');
-echo $o->get('title') . ' v' . $o->get('version');
+echo $o['title'] . ' v' . $o['version'];

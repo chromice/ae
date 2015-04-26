@@ -156,19 +156,9 @@ As a result, æ *does not* do anything *magically*:
 
 ### Imperative and expressive syntax
 
-æ is biased towards imperative style of programming.
+æ is biased towards imperative style of programming. Most of æ code follows these two patterns:
 
-<?php $syntax = $doc->example('006_Syntax') ?>
-
-Most mutator methods are chainable, including all setters: 
-
-<?= $syntax->source('options.php'); $syntax->on('options')->outputs(''); ?>
-
-Some libraries operate on the buffered output, and don't have a corresponding setter at all:
-
-<?= $syntax->source('response.php'); $syntax->on('response')->outputs('Hello World'); ?>
-
-Most of æ code follows these two patterns: 
+<?php $syntax = $doc->example('006_Syntax') ?> 
 
 1. Transformation: `ae::noun()->verb()->...->verb()` 
 2. Invocation: `$noun = ae::noun()->...->noun()`.
@@ -176,6 +166,14 @@ Most of æ code follows these two patterns:
 There are exceptions, of course, like the query builder:
 
 <?= $syntax->source('database.php') ?>
+
+All setters and getters follow array access pattern: 
+
+<?= $syntax->source('options.php'); $syntax->on('options')->outputs(''); ?>
+
+Some libraries operate on the buffered output, and don't have a corresponding setter (or getter) at all:
+
+<?= $syntax->source('response.php'); $syntax->on('response')->outputs('Hello World'); ?>
 
 
 ### Exception safety
@@ -229,7 +227,7 @@ In MVC-speak your controller is at the top, and your view is at the bottom.
 
 #### Break your app into components 
 
-æ lets you either delegate requests to a directory or a file, or a callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
+æ lets you either delegate requests to a directory, a file, or a callback function. Typically the first (few) segment(s) should determine the script that handles the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
 
 For example, you may want to handle user authentication and let:
 
@@ -343,7 +341,7 @@ Many libraries are using options library to allow you to change their behavior. 
 The database library defines its options and default values next to the `ae::invoke()` statement at the top of its main script:
 
 ```php
-ae::options('ae::database', [
+$db_options = ae::options('ae::database', [
 	'log' => false
 ]);
 ```
@@ -351,13 +349,13 @@ ae::options('ae::database', [
 In your code, you can get the current option value:
 
 ```php 
-$is_logged = ae::options('ae::database')->get('log');
+$is_logged = $db_options['log'];
 ```
 
 or change it to another value:
 
 ```php
-ae::options('ae::database')->set('log', true);
+$db_options['log'] = true;
 ```
 
 You can, of course, define your own options:
@@ -382,7 +380,8 @@ Output:
 æ operates on absolute paths only. In practice you would want to use this library to define all paths relative to some root directory path:
 
 ```php
-ae::options('ae::path')->set('root', __DIR__);
+$path = ae::options('ae::path');
+$path['root'] = __DIR__;
 
 echo ae::path('relative/path')->path('to/file.php');
 // echo __DIR__ . '/relative/path/to/file.php';
@@ -439,7 +438,7 @@ if (!$path->exists()) {
 
 ### `ae::file()` <a name="file"></a>
 
-File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
+File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
 ```php
 $file = ae::file(__DIR__ . '/file.txt')
@@ -713,7 +712,8 @@ echo $request->type(); // json
 In order to get the IP address of the client, you should use `\ae\Request::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
 
 ```php
-ae::options('ae.request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+$request_options = ae::options('ae::request');
+$request_options['proxy_ips'] = ['83.14.1.1', '83.14.1.2'];
 
 $client_ip = ae::request()->ip_address();
 ```

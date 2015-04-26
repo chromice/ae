@@ -1,5 +1,6 @@
 <?php
 
-ae::options('app')
-    ->set('name', 'Application')
-    ->set('description', 'Blah-blah-blah...');
+$app = ae::options('app');
+
+$app['name'] = 'Application';
+$app['description'] = 'Blah-blah-blah...';

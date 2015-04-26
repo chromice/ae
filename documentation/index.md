@@ -3,11 +3,11 @@
 
 æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, and database operations.
 
-This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that adheres to the following basic principles:
+This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
-- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines, etc. There are no config files to tinker with either. All libraries have with their (few) configuration options set to reasonable defaults.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
 - **Reliability**: All examples in this documentation are tested and their output is verified. [Documentation](index.php) is the spec, [examples](../documentation) are unit tests. The syntax is designed to be expressive and error-resistant. 
-- **Performance:** All libraries have been designed with best performance practices in mind. Responses can be cached statically and served through Apache alone.
+- **Performance:** All libraries have been designed with performance and effiency in mind. Responses can be cached statically and served through Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
 There is nothing particularly groundbreaking or fancy about this toolkit. If you are just looking for a simple PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com). 
@@ -16,7 +16,7 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 > **Opinion:** A web application is a bunch of scripts thrown together to concatenate an HTTP string in response to another HTTP string.
 
-In other words, æ is designed to be as simple as possible, but not simpler. It will not let you forget that most of the back-end programming you do is a glorified string manipulation, but it will remove the most cumbersome aspects of it. 
+In other words, æ will not let you forget that most of the back-end programming is a glorified string manipulation, but it will alleviate the most cumbersome aspects of it. 
 
 In more practical terms, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
 
@@ -48,17 +48,17 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 <a name="tests-and-code-coverage"></a>
 
-**Tests**: 64 out of 68 passed (**94.12%** passed)  
-**Code coverage**: 6 out of 10 files covered (**71.5%** average coverage)
+**Tests**: 59 out of 68 passed (**86.76%** passed)  
+**Code coverage**: 4 out of 10 files covered (**72.53%** average coverage)
 
 | File                | Coverage |
 |---------------------|---------:|
-| ../ae/loader.php    |   65.73% |
+| ../ae/loader.php    |   56.18% |
 | ../ae/options.php   |   75.00% |
 | ../ae/file.php      |    0.00% |
-| ../ae/container.php |  100.00% |
+| ../ae/container.php |    0.00% |
 | ../ae/request.php   |   75.53% |
-| ../ae/response.php  |   29.32% |
+| ../ae/response.php  |    0.00% |
 | ../ae/image.php     |    0.00% |
 | ../ae/form.php      |    0.00% |
 | ../ae/session.php   |    0.00% |
@@ -89,7 +89,7 @@ require 'path/to/ae/loader.php';
 
 ### Configuring Composer
 
-If you are using [Composer](https://getcomposer.org), make sure your <samp>composer.json</samp> references this repository AND has æ added as a requirement:
+If you are using [Composer](https://getcomposer.org), make sure your <samp>composer.json</samp> references this repository and has æ added as a requirement:
 
 ```json
 {
@@ -166,38 +166,9 @@ As a result, æ *does not* do anything *magically*:
 
 ### Imperative and expressive syntax
 
-æ is biased towards imperative style of programming.
+æ is biased towards imperative style of programming. Most of æ code follows these two patterns:
 
-
-Most methods are chainable, including all setters: 
-
-
-```php
-<?php
-
-ae::options('app')
-    ->set('name', 'Application')
-    ->set('description', 'Blah-blah-blah...');
-
-```
-
-Some libraries operate on the buffered output, and don't have a corresponding setter at all:
-
-
-```php
-<?php
-
-$response = ae::response('text');
-
-echo "Hello World";
-
-$response
-    ->cache(\ae\ResponseCache::year)
-    ->dispatch();
-
-```
-
-Most of æ code follows these two patterns: 
+ 
 
 1. Transformation: `ae::noun()->verb()->...->verb()` 
 2. Invocation: `$noun = ae::noun()->...->noun()`.
@@ -217,10 +188,58 @@ $result = $query->make();
 
 ```
 
+All setters and getters follow array access pattern: 
+
+
+```php
+<?php
+
+$app = ae::options('app');
+
+$app['name'] = 'Application';
+$app['description'] = 'Blah-blah-blah...';
+
+```
+
+```diff
+Unexpected output
+=================
+ 
++Fatal error: Cannot use object of type ae\Options as array in /Users/chromice/Sites/dev/ae/ae-framework/documentation/006_Syntax/options.php on line 5
++
+
+```
+
+Some libraries operate on the buffered output, and don't have a corresponding setter (or getter) at all:
+
+
+```php
+<?php
+
+$response = ae::response('text');
+
+echo "Hello World";
+
+$response
+    ->end()
+    ->cache(\ae\ResponseCache::year)
+    ->dispatch();
+
+```
+
+```diff
+Unexpected output
+=================
+ Hello World
++Fatal error: Call to undefined method ae\Response::end() in /Users/chromice/Sites/dev/ae/ae-framework/documentation/006_Syntax/response.php on line 8
++
+
+```
+
 
 ### Exception safety
 
-In order to make your code exception safe, you must be aware the object life cycle.
+In order to make your code exception safe, you must be aware of the object life cycle.
 
 `__construct()` method is called whenever a new object is instantiated. If the object is assigned to a variable, it will persist until either:
 
@@ -271,8 +290,8 @@ Strictly speaking æ is not a framework, because it imposes no rules on how your
 
 It would not be unreasonable to assume that your app will be made of one or more PHP scripts responsible for at least one of the following tasks:
 
-- *Handling requests*, i.e. determine what to do based on request URI, GET/POST parameters, form values, etc.
-- *Operating on internal state*, e.g. reading/writing files, cookies, session variables, database records, etc.
+- *Handling requests*, i.e. deciding what to do based on request URI, GET/POST parameters, form values, etc.
+- *Operating on internal state*, e.g. reading from/writing to files, cookies, sessions, database records, etc.
 - *Generating responses*, i.e. spitting out a long string conforming to HTTP, HTML and other standards.
 
 The author does not want to be unfairly prescriptive, so here are just a few tips you may find helpful:
@@ -326,7 +345,7 @@ In MVC-speak your controller is at the top, and your view is at the bottom.
 
 #### Break your app into components 
 
-æ lets you either delegate requests to a directory or a file, or process it in anonymous callback function. Typically the first (few) segment(s) should determine the script that should handle the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
+æ lets you either delegate requests to a directory, a file, or a callback function. Typically the first (few) segment(s) should determine the script that handles the request, while the remainder of the segments further qualify what kind of request it is and specify its parameters.
 
 For example, you may want to handle user authentication and let:
 
@@ -365,7 +384,7 @@ $route = ae::request()->route([
     '/products/page/{numeric}' => function ($page) {
         echo "List product page #{$page}.";
     },
-    '/products' => function ($page) {
+    '/products' => function () {
         echo "List product page #1.";
     },
     
@@ -537,7 +556,7 @@ Many libraries are using options library to allow you to change their behavior. 
 The database library defines its options and default values next to the `ae::invoke()` statement at the top of its main script:
 
 ```php
-ae::options('ae::database', [
+$db_options = ae::options('ae::database', [
 	'log' => false
 ]);
 ```
@@ -545,13 +564,13 @@ ae::options('ae::database', [
 In your code, you can get the current option value:
 
 ```php 
-$is_logged = ae::options('ae::database')->get('log');
+$is_logged = $db_options['log'];
 ```
 
 or change it to another value:
 
 ```php
-ae::options('ae::database')->set('log', true);
+$db_options['log'] = true;
 ```
 
 You can, of course, define your own options:
@@ -570,14 +589,20 @@ and use those throughout your app:
 
 ```php
 $o = ae::options('my_application');
-echo $o->get('title') . ' v' . $o->get('version');
+echo $o['title'] . ' v' . $o['version'];
 ```
 
 Output:
 
 
-```txt
-My awesome app v0.93
+```diff
+Unexpected output: 101_Options/output.txt
+=========================================
+-My awesome app v0.93
++
++Fatal error: Cannot use object of type ae\Options as array in /Users/chromice/Sites/dev/ae/ae-framework/documentation/101_Options/index.php on line 9
++
+
 ```
 
 
@@ -588,7 +613,8 @@ My awesome app v0.93
 æ operates on absolute paths only. In practice you would want to use this library to define all paths relative to some root directory path:
 
 ```php
-ae::options('ae::path')->set('root', __DIR__);
+$path = ae::options('ae::path');
+$path['root'] = __DIR__;
 
 echo ae::path('relative/path')->path('to/file.php');
 // echo __DIR__ . '/relative/path/to/file.php';
@@ -645,7 +671,7 @@ if (!$path->exists()) {
 
 ### `ae::file()` <a name="file"></a>
 
-File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite`, `copy`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
+File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\FileException` on error.
 
 ```php
 $file = ae::file(__DIR__ . '/file.txt')
@@ -808,7 +834,7 @@ $glossary = [
     'PHP' => 'a server-side scripting language designed for web development but also used as a general-purpose programming language.'
 ];
 
-ae::output('path/to/snippet.php', [
+echo ae::snippet('path/to/snippet.php', [
     'data' => $glossary
 ]);
 ```
@@ -837,15 +863,30 @@ if (empty($data) || !is_array($data))
 The script will produce:
 
 
-```html
-<dl>
-    <dt>Ash</dt>
-    <dd>a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.</dd>
-    <dt>Framework</dt>
-    <dd>an essential supporting structure of a building, vehicle, or object.</dd>
-    <dt>PHP</dt>
-    <dd>a server-side scripting language designed for web development but also used as a general-purpose programming language.</dd>
-</dl>
+```diff
+Unexpected output: 004_Template_snippet/output.html
+===================================================
+-<dl>
+-    <dt>Ash</dt>
+-    <dd>a tree with compound leaves, winged fruits, and hard pale timber, widely distributed throughout north temperate regions.</dd>
+-    <dt>Framework</dt>
+-    <dd>an essential supporting structure of a building, vehicle, or object.</dd>
+-    <dt>PHP</dt>
+-    <dd>a server-side scripting language designed for web development but also used as a general-purpose programming language.</dd>
+-</dl>
+ 
++Fatal error: Uncaught exception 'ae\Exception' with message 'Could not resolve path: ae/snippet.php' in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php:164
++Stack trace:
++#0 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(176): ae::resolve('ae/snippet.php')
++#1 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(254): ae::import('ae/snippet.php')
++#2 [internal function]: ae::load('ae/snippet.php', '/Users/chromice...', Array)
++#3 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(292): call_user_func_array(Array, Array)
++#4 /Users/chromice/Sites/dev/ae/ae-framework/documentation/004_Template_snippet/index.php(11): ae::__callStatic('snippet', Array)
++#5 /Users/chromice/Sites/dev/ae/ae-framework/documentation/004_Template_snippet/index.php(11): ae::snippet('/Users/chromice...', Array)
++#6 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(403): require('/Users/chromice...')
++#7 /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php(338): ae\_include('/Users/chromice...', NULL)
++#8 /Users/chromice/Sites/ in /Users/chromice/Sites/dev/ae/ae-framework/ae/loader.php on line 164
++
 
 ```
 
@@ -861,6 +902,9 @@ A container is a parameterized template, used as a wrapper. Here's an example of
 <html>
 <head>
     <title><?= $title ?></title>
+<?php if (!empty($alert)): ?>
+    <script>alert(document.querySelector('<?= $alert ?>').textContent);</script>
+<?php endif ?>
 </head>
 <body>
     <?= $content ?>
@@ -874,27 +918,42 @@ Another script can use it:
 ```php
 <?php 
 
-$container = ae::container('path/to/container.php')
-    ->set('title', 'Container example');
+$container = ae::container('path/to/container.php', [
+    'title' => 'Container example'
+]);
+
+$container['alert'] = 'h1';
 
 ?>
 <h1>Hello World!</h1>
+<?php
+
+// Optional
+$container->end();
+
+?>
 
 ```
 
 Which will result in:
 
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Container example</title>
-</head>
-<body>
-    <h1>Hello World!</h1>
-</body>
-</html>
+```diff
+Unexpected output: 005_Template_container/output.html
+=====================================================
+-<!DOCTYPE html>
+-<html>
+-<head>
+-    <title>Container example</title>
+-</head>
+-<body>
+-    <h1>Hello World!</h1>
+-</body>
+-</html>
++
++Fatal error: Cannot use object of type ae\Container as array in /Users/chromice/Sites/dev/ae/ae-framework/documentation/005_Template_container/index.php on line 7
++
+
 ```
 
 **NB!** The container object is assigned to `$container` variable. The object will persists while the script is being executed, allowing container to capture the content. The container script is always executed *after* the contained script.
@@ -991,7 +1050,8 @@ echo $request->type(); // json
 In order to get the IP address of the client, you should use `\ae\Request::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
 
 ```php
-ae::options('ae.request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+$request_options = ae::options('ae::request');
+$request_options['proxy_ips'] = ['83.14.1.1', '83.14.1.2'];
 
 $client_ip = ae::request()->ip_address();
 ```
