@@ -40,6 +40,12 @@ switch ($request->segment(0, null))
 			break;
 		}
 	
+	case 'pages':
+		if ($request->segment(1, null) === null)
+		{
+			$request->redirect('/');
+		}
+	
 	default:
 		$route = $request->route([
 			'/pages' => '/examples/pages',

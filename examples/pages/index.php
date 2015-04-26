@@ -38,7 +38,7 @@
 	<li><a href="{uri}">{name}</a></li>
 <?php
 		$b->output([
-			'uri' => 'pages/' . trim($uri,'/'),
+			'uri' => '/pages/' . trim($uri,'/'),
 			'name' => $name
 		]);
 	endforeach;
