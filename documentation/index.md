@@ -48,7 +48,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 <a name="tests-and-code-coverage"></a>
 
-**Tests**: 59 out of 68 passed (**86.76%** passed)  
+**Tests**: 58 out of 68 passed (**85.29%** passed)  
 **Code coverage**: 4 out of 10 files covered (**72.53%** average coverage)
 
 | File                | Coverage |
@@ -1123,8 +1123,8 @@ Here is an example of a simple application that creates gzip'ed response with a 
 // GET /hello-world HTTP/1.1
 include 'ae/core.php';
 
-ae::options('ae.response')
-    ->set('compress_output', true); // turn on the g-zip compression
+$response_options = ae::options('ae::response');
+$response_options['compress_output'] = true; // turn on the g-zip compression
 
 $response = ae::response('html')
     ->header('X-Header-Example', 'Some value');
@@ -1465,6 +1465,14 @@ Ordinary users would never see this error, but it prevents would-be hackers from
 ## Database: `ae::database()` <a name="database"></a>
 
 
+```diff
+Expected to find: Query #2: SELECT 1
+====================================
+
+Fatal error: Cannot use object of type ae\Options as array in /Users/chromice/Sites/dev/ae/ae-framework/documentation/____Database_test/index.php on line 7
+
+```
+
 Database library simplifies building MySQL queries and exposes a simple abstraction for tables and transactions.
 
 Before you can make queries to the database, you have to specify the connection parameters using Options library:
@@ -1472,11 +1480,12 @@ Before you can make queries to the database, you have to specify the connection 
 
 ```php
 // Configure the "default" database connection
-ae::options('ae::database(default)')
-    ->set('host', 'localhost')
-    ->set('user', 'root')
-    ->set('password', 'root')
-    ->set('database', 'ae');
+$connection = ae::options('ae::database(default)');
+
+$connection['host'] = 'localhost';
+$connection['user'] = 'root';
+$connection['password'] = 'root';
+$connection['database'] = 'ae';
 ```
 
 Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
@@ -1498,8 +1507,9 @@ If you want to know what queries are performed and how much memory and time they
 
 
 ```php
-ae::options('ae::database')
-    ->set('log', true);
+$db_options = ae::options('ae::database');
+
+$db_options['log'] = true;
 ```
 
 <!-- TODO: See [Inspector](#inspector) section for more details. -->

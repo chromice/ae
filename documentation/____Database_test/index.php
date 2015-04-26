@@ -2,16 +2,18 @@
 
 /// >>> Configure
 // Configure the "default" database connection
-ae::options('ae::database(default)')
-	->set('host', 'localhost')
-	->set('user', 'root')
-	->set('password', 'root')
-	->set('database', 'ae');
+$connection = ae::options('ae::database(default)');
+
+$connection['host'] = 'localhost';
+$connection['user'] = 'root';
+$connection['password'] = 'root';
+$connection['database'] = 'ae';
 /// <<<
 
 /// >>> Query logging
-ae::options('ae::database')
-	->set('log', true);
+$db_options = ae::options('ae::database');
+
+$db_options['log'] = true;
 /// <<<
 
 /// >>> Make a query
