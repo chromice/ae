@@ -226,7 +226,8 @@ pre.dump {
 	font-size: 0.75em;
 	line-height: 2;
 	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
-	white-space: pre-wrap;
+	white-space: pre;
+	word-wrap: break-word;
 }
 ol.backtrace pre.dump {
 	padding-left: 30px;
