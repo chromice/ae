@@ -368,21 +368,8 @@ class Log
 		$prefix_0 = str_repeat(' ', $level * 4);
 		$prefix_1 = str_repeat(' ', ($level + 1) * 4);
 		
-		if ($object === false)
-		{
-			$object = 'FALSE';
-		}
-		elseif ($object === true)
-		{
-			$object = 'TRUE';
-		}
-		elseif ($object === null)
-		{
-			$object = 'NULL';
-		}
-		
 		$o = is_null($name) ? "\n" : "\n" . $prefix_0 . '--- Dump: ' . $name . "\n\n";
-		$o.= $prefix_1 . str_replace("\n", "\n" . $prefix_1, print_r($object, true));
+		$o.= $prefix_1 . str_replace("\n", "\n" . $prefix_1, var_export($object, true));
 		$o.= (is_scalar($object) ? "\n" : '') . (is_null($name) ? '' : "\n" . $prefix_0 . "--- End of dump\n");
 		
 		return $o;

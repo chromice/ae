@@ -32,8 +32,9 @@ var ae_log_severity = function(level) {
 		'source': source,
 		'log': log
 	});
-
-	document.getElementById("ae-inspector-button").style.left = "40px";
+	
+	document.getElementById("ae-inspector-button").style.left = "auto";
+	document.getElementById("ae-inspector-button").style.right = "40px";
 };
 
 // Intercept all AJAX calls.

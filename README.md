@@ -32,7 +32,6 @@ It requires PHP version 5.4 or higher, and a recent version of MySQL and Apache 
 - [Inspector](#inspector)
     - [Log](#log)
     - [Probe](#probe)
-- [Acknowledgments](#acknowledgments)
 
 
 ## Getting started
@@ -1221,13 +1220,3 @@ If you run this script, the probe will log the following messages:
 
 **NB!** Each logged message itself consumes a few hundred bytes of memory.
 
-
-## Acknowledgments
-
-This project is born out of love and respect for PHP, a language of insanity, learning which helped me build beautiful things. This work stands on the shoulders of giants:
-
-- Respect to Rick Ellis for CodeIgniter and for shifting the perception of how big the framework should be and what it should do, towards smaller and more focused respectively.
-
-- Hat tip to MODx community. Your template syntax and architecture is even uglier than PHP's, but out of your love for the platform many great ideas were born. A few of those — expressed in slightly better PHP — found new home here; some inspired me to come up with better ones.
-
-- A sly smirk at Wordpress, which I've learned to love to hate as a developer, but respect as a user.
