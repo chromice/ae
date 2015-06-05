@@ -393,7 +393,7 @@ Both `\ae\Path::__construct()` and `\ae\Path::path()` accept one or more path co
 echo ae::path('relative/path', 'to/file.php');
 ```
 
-You can check, if given path exists, and if it is a directory or a file:
+You can check, if an object at given path exists, and whether it is a directory or a file:
 
 ```php
 if ($path->exists()) {
@@ -628,12 +628,12 @@ Which will result in:
 ```php
 // HTTP
 $ajax = $ae::request()->is_ajax();
-$method = ae::request()->method(); // 'GET', 'POST', 'PUT', etc.
-ae::request()->is_method('POST');
+$method = ae::request()->method(); // Request::GET, Request::POST, Request::PUT, etc.
+ae::request()->is_method(Request::POST);
 $scheme = ae::request()->scheme(); // 'http' OR 'https'
 $host = ae::request()->host();
 $port = ae::request()->port();
-$path = ae::request()->path([offset[, length = 1[, 'default']]]); // where offset is pos/neg num; if no offset is specified returns path + '.' + type
+$path = ae::request()->path([offset[, length[, 'default']]]); // where offset is pos/neg num; if no offset is specified returns path + '.' + type
 $query = ae::request()->query(['name'[, 'default']]); // if no name specified returns all
 $data = ae::request()->data(['name'[, 'default']]); // if no name specified returns all
 
@@ -642,7 +642,7 @@ ae::request()->ip_address();
 ae::request()->redirect();
 
 // redirect to /login 
-ae::request()->url()->modify([
+ae::request()->url([
 	'scheme' => 'https',
 	'path' => '/login'
 ])->redirect();
@@ -650,12 +650,6 @@ ae::request()->url()->modify([
 ae::request()->route([
 	// ...
 ])->follow();
-
-
-// Shell
-$shell = ae::request()->is_cli();
-$argument = ae::request()->argument(['name' || offset[, 'default']]); // if no name OR offset is specified, returns all arguments
-
 ```
 
 Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `\ae\Request::is_cli()`, `\ae\Request::is_ajax()` and `\ae\Request::method()` methods:
@@ -673,11 +667,11 @@ else
 {
     echo "<h1>Hello World!</h1>";
     
-    if (ae::request()->method() === 'GET')
+    if (ae::request()->method() === Request::GET)
     {
         echo "<p>Nothing to get.</p>";
     }
-    else if (ae::request()->is_method('POST'))
+    else if (ae::request()->is_method(Request::POST))
     {
         echo "<p>Nothing to post.</p>";
     }
@@ -690,13 +684,13 @@ You can access request path segments using `\ae\Request::path()`  method:
 // GET /some/arbitrary/request HTTP/1.1
 $request = ae::request();
 
-echo $request->path(0); // some
-echo $request->path(1); // arbitrary
-echo $request->path(0, 2); // some/arbitrary/request
+echo $request->path(0, 1); // some
+echo $request->path(1, 1); // arbitrary
+echo $request->path(0, 2); // some/arbitrary
 echo $request->path(-1); // request
 
 echo $request->type(); // html
-echo $request->path(99, 'default value'); // default value
+echo $request->path(99, 1, 'default-value'); // default-value
 ```
 
 All requests have a type ("html" by default), which is defined by the *file extension* part of the URI.
@@ -745,7 +739,7 @@ Now, if you have a matching request handler in the */handlers* directory (articl
 // article.php
 $request = ae::request();
 
-$id = $request->path(1);
+$id = $request->path(1, 1);
 
 echo "Article ID is $id. ";
 echo "You can access it at " . $request->uri();
