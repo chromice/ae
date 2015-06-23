@@ -474,7 +474,7 @@ Existing files can be renamed, copied, moved or deleted:
 
 ```php
 $file = ae::file(__DIR__ . '/file.txt')
-    ->create(0775);
+    ->create(0775); // touch + chmod
 
 if ($file->exists())
 {
@@ -532,7 +532,7 @@ $dir->path();
 
 if (!$dir->exists())
 {
-    $dir->create(); // recursively creates this and any missing parents
+    $dir->create(0755); // recursively creates this and any missing parents
 }
 else
 {
@@ -540,7 +540,7 @@ else
 }
 
 // If directory does not exist, open() will create it as well.
-$file = ae::path($dir, 'file-name.ext')->open('a');
+$file = $dir->file('file-name.ext')->open('a');
 
 $name = $dir->name();
 $dir->name($name); // rename directory
