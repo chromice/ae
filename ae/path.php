@@ -26,12 +26,21 @@ namespace ae;
 
 class Path
 {
+	protected $root;
+	protected $path;
+	
 	public function __construct()
 	{
-		# code...
+		$this->root = rtrim(\ae::options('ae::path')->get('root'), '/') . '/';
+		$this->path = 
 	}
 	
 	public function __toString()
+	{
+		return $this->path;
+	}
+	
+	protected function _path($paths, $relative = false)
 	{
 		# code...
 	}
@@ -41,27 +50,32 @@ class Path
 		# code...
 	}
 	
+	public function relative_path()
+	{
+		# code...
+	}
+	
 	public function exists()
 	{
-		return true;
+		return file_exists($this->path);
 	}
 	
 	public function is_directory()
 	{
-		# code...
+		return is_file($this->path);
 	}
 	
 	public function is_file()
 	{
-		# code...
+		return is_file($this->path);
 	}
 	
-	public function directory()
+	public function directory($path = null)
 	{
 		# code...
 	}
 	
-	public function file()
+	public function file($path = null)
 	{
 		# code...
 	}
