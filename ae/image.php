@@ -30,7 +30,7 @@ class Image
 	to a 100x100 square thumbail and save it as "image_thumb.png":
 	
 		ae::image('path/to/image.png')
-			->align(Image::center, Image::top)
+			->align(\ae\Image::center, \ae\Image::top)
 			->fill(100, 100)
 			->suffix('_thumb')
 			->save(); 
