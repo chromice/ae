@@ -640,9 +640,6 @@ This library adds an additional layer of security (granted a very thin one), bec
 ```php
 // The following line throws \ae\PathException (which extends \ae\FileSystemException)
 echo $path->path('../some/path'); 
-
-// While the following echoes '/root/some/path'
-echo $path->relative_path('../some/path');
 ```
 
 The library also provides a few shortcut methods. It lets you import a script:

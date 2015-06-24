@@ -26,13 +26,11 @@ namespace ae;
 
 class Path
 {
-	protected $root;
 	protected $path;
 	
 	public function __construct()
 	{
-		$this->root = rtrim(\ae::options('ae::path')->get('root'), '/') . '/';
-		$this->path = 
+		$this->path = self::_path(func_get_args(), false);
 	}
 	
 	public function __toString()
@@ -40,19 +38,13 @@ class Path
 		return $this->path;
 	}
 	
-	protected function _path($paths, $relative = false)
-	{
-		# code...
-	}
+	// ------------------
+	// - Public methods -
+	// ------------------
 	
 	public function path()
 	{
-		# code...
-	}
-	
-	public function relative_path()
-	{
-		# code...
+		return new Path($this->path, self::_path(func_get_args()));
 	}
 	
 	public function exists()
@@ -62,7 +54,7 @@ class Path
 	
 	public function is_directory()
 	{
-		return is_file($this->path);
+		return is_dir($this->path);
 	}
 	
 	public function is_file()
@@ -70,13 +62,29 @@ class Path
 		return is_file($this->path);
 	}
 	
-	public function directory($path = null)
+	public function directory()
 	{
 		# code...
 	}
 	
-	public function file($path = null)
+	public function file($name = null)
+	{
+		ae::file();
+	}
+	
+	// -------------------
+	// - Private methods -
+	// -------------------
+	
+	protected static function _root()
+	{
+		return rtrim(\ae::options('ae::path')->get('root'), '/') . '/';
+	}
+	
+	protected static function _path($paths, $relative = true)
 	{
 		# code...
 	}
 }
+
+class PathException extends Exception {}
