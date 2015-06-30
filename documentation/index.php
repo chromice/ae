@@ -656,7 +656,7 @@ if (ae::request()->is_cli())
 {
     echo "Hello World!";
 }
-else if (ae::request()->is_ajax())
+elseif (ae::request()->is_ajax())
 {
     echo "{message:'Hello world'}";
 }
@@ -668,7 +668,7 @@ else
     {
         echo "<p>Nothing to get.</p>";
     }
-    else if (ae::request()->is_method(Request::POST))
+    elseif (ae::request()->is_method(Request::POST))
     {
         echo "<p>Nothing to post.</p>";
     }

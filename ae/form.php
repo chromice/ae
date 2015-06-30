@@ -24,7 +24,7 @@ if (!extension_loaded('mbstring'))
 	trigger_error('Multibyte string extension is not loaded!', E_USER_ERROR);
 }
 // FIXME: Set encoding to UTF-8 here may screw something else up elsewhere.
-else if (mb_internal_encoding() !== 'UTF-8')
+elseif (mb_internal_encoding() !== 'UTF-8')
 {
 	mb_internal_encoding('UTF-8');
 }
@@ -113,7 +113,7 @@ interface TextValidator extends Validator
 	
 	// Complex patterns
 	const email = '[a-zA-Z0-9!#$%&\'*+\/=?^_`{|}~\-]+(?:\.[a-zA-Z0-9!#$%&\'*+\/=?^_`{|}~\-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?';
-	const url = '(https?|ftp):\/\/(-\.)?([^\s\/?\.#-]+\.?)+(\/[^\s]*)?';
+	const url = '(https?|ftp):\/\/[^\s\/$.?#].[^\s]*';
 	const postcode_uk = '(([a-pr-uw-zA-PR-UW-Z]{1}[a-ik-yA-IK-Y]?)([0-9]?[a-hjks-uwA-HJKS-UW]?[abehmnprvwxyABEHMNPRVWXY]?|[0-9]?[0-9]?))\s*([0-9]{1}[abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2})';
 	
 	// Validator order
@@ -1022,7 +1022,7 @@ class Form implements \ArrayAccess, FieldFactory, GroupFactory, GroupErrorContai
 					{
 						$to[$index] = $value;
 					}
-					else if (!empty($to) && is_array($to))
+					elseif (!empty($to) && is_array($to))
 					{
 						$to[] = $value;
 					}
