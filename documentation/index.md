@@ -803,17 +803,13 @@ $silent_buffer = ae::buffer()->autoclear();
 Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 ```html
-<?php $template = ae::buffer() ?>
+<?php $template = ae::buffer([
+	'url' => '#',
+	'name' => 'blah',
+	'visits' => 3
+]); ?>
 <p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
-<?php $template->end() ?>
-```
-
-```php
-echo str_replace([
-    '{url}', '{name}', '{visits}'
-], [
-    '#', 'blah', '3'
-], $template);
+<?= $template; ?>
 ```
 
 
@@ -994,7 +990,7 @@ if (ae::request()->is_cli())
 {
     echo "Hello World!";
 }
-else if (ae::request()->is_ajax())
+elseif (ae::request()->is_ajax())
 {
     echo "{message:'Hello world'}";
 }
@@ -1006,7 +1002,7 @@ else
     {
         echo "<p>Nothing to get.</p>";
     }
-    else if (ae::request()->is_method(Request::POST))
+    elseif (ae::request()->is_method(Request::POST))
     {
         echo "<p>Nothing to post.</p>";
     }

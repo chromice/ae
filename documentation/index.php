@@ -570,17 +570,13 @@ $silent_buffer = ae::buffer()->autoclear();
 Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
 
 ```html
-<?= '<' . '?php' ?> $template = ae::buffer() ?>
+<?= '<' . '?php' ?> $template = ae::buffer([
+	'url' => '#',
+	'name' => 'blah',
+	'visits' => 3
+]); ?>
 <p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
-<?= '<' . '?php' ?> $template->end() ?>
-```
-
-```php
-echo str_replace([
-    '{url}', '{name}', '{visits}'
-], [
-    '#', 'blah', '3'
-], $template);
+<?= '<' . '?=' ?> $template; ?>
 ```
 
 
