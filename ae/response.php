@@ -114,10 +114,17 @@ class Response
 	
 	public function __destruct()
 	{
-		if (($i = array_search($this->buffer, self::$buffers, true)) !== false)
+		if (($i = array_search($this->buffer, self::$buffers, true)) === false)
 		{
-			unset(self::$buffers[$i]);
+			return;
 		}
+		
+		if (count(self::$buffers) === 1)
+		{
+			$this->dispatch();
+		}
+		
+		unset(self::$buffers[$i]);
 	}
 
 	protected static $http_errors = [
