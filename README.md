@@ -1380,3 +1380,44 @@ $probe->mark('cleaned the garbage');
 ```
 
 ![](./utilities/inspector/inspector_probe.png)
+
+
+## Utilities
+
+
+
+```php
+$file = fopen('some/file', 'r');
+
+$deferrer = \ae\deferrer(function () use ($file) {
+    fclose($file);
+});
+```
+
+
+
+```php
+$a = 'foo';
+
+$switcher = \ae\switcher($a, 'bar');
+
+echo $a; // 'bar';
+
+unset($switcher);
+
+echo $a; // 'foo'
+```
+
+
+
+```php
+$pile = array('foo','fee');
+
+$stacker = \ae\stacker($pile, 'bar', 'pub');
+
+var_dump($pile); // array('foo','fee','bar','pub');
+
+unset($stacker);
+
+var_dump($pile); // array('foo','fee');
+```
