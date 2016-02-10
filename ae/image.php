@@ -396,13 +396,13 @@ class Image
 	/*
 		Shifts the value of each component.
 		
-		Values must be bewteen -1.0 and +1.0.
+		Values must be bewteen 0.0 and +1.0.
 	*/
 	{
-		$red = round(min(1, max(-1, (float) $red)) * 255);
-		$green = round(min(1, max(-1, (float) $green)) * 255);
-		$blue = round(min(1, max(-1, (float) $blue)) * 255);
-		$alpha = round(min(1, max(-1, (float) $alpha)) * 255);
+		$red = round(min(1, max(0, (float) $red)) * 255);
+		$green = round(min(1, max(0, (float) $green)) * 255);
+		$blue = round(min(1, max(0, (float) $blue)) * 255);
+		$alpha = round(min(1, max(0, (float) $alpha)) * 255);
 		
 		// var_dump($red, $green, $blue, $alpha);
 		
