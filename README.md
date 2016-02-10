@@ -1,253 +1,423 @@
-# æ
+# æ – minimalist PHP toolkit
 
-æ |aʃ| is a low-level web framework written in PHP with a simple goal in mind: *Make a framework that does as little as possible,  but not less*. The actual code base is minuscule and only what you are actively using is loaded and being kept in memory.
+æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, database operations, easy debugging and profiling.
 
-It requires PHP version 5.4 or higher, and a recent version of MySQL and Apache with mod_rewrite.
+This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
-**Please note**: This documentation covers only the basics. I would advise you to read the source code, because this is the best way to familiarise yourself with the API. And in case you miss the software licence at the bottom, *I bare absolutely no responsibility for any bugs I haven't yet squashed*.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
+- **Reliability**: All examples in this documentation are tested and their output is verified. [Documentation](./index.php) is the spec, [examples](./examples/) are unit tests. The syntax is designed to be expressive and error-resistant. 
+- **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
+- **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
-- [Getting started](#getting-started)
-- [Core](#core)
-	- [Importing code](#importing-code)
-	- [Running code](#running-code)
-	- [Loading libraries](#loading-libraries)
-- [Buffer](#buffer)
-- [Container](#container)
-- [Options](#options)
-- [Request](#request)
-	- [Request routing](#request-routing)
-- [Response](#response)
-	- [Response caching](#response-caching)
-- [Image](#image)
-	- [Image caching](#image-caching)
-- [Form](#form)
-	- [Field types](#field-types)
-	- [Validation](#validation)
-- [Database](#database)
-	- [Making queries](#making-queries)
-	- [Transactions](#transactions)
-	- [Retrieving data](#retrieving-data)
-	- [Active record](#active-record)
-	- [Relationships](#relationships)
-- [Inspector](#inspector)
-	- [Log](#log)
-	- [Probe](#probe)
+There is nothing particularly groundbreaking or fancy about this toolkit. If you just need a lean PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com). 
+
+æ will be perfect for you, if your definition of a web application falls along these lines:
+
+> A web application is a bunch of scripts thrown together to concatenate a string of text (HTTP response) in response to another string of text (HTTP request).
+
+In other words, æ will not let you forget that most of the back-end programming is a glorified string manipulation, but it will alleviate the most cumbersome aspects of it. 
+
+In more practical terms, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
+
+You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck. ;-)
+
+
+* * *
 
 
 ## Getting started
 
-Here is a very a simple æ application:
+### Requirements
+
+<!--
+    TODO: Make sure all requirement are correct, i.e.  check older versions of Apache and MySQL
+-->
+
+- **PHP**: version 5.4 or higher with *GD extension* for image manipulation, and *Multibyte String extension* for form validation.
+- **MySQL**: version 5.1 or higher with *InnoDB engine*.
+- **Apache**: version 2.0 or higher with *mod_rewrite* for nice URLs, and (optionally) *mod_deflate* for response compression.
+
+
+### Manual installation
+
+You can download the latest release manually, drop it into your project and `require` <samp>ae/loader.php</samp>:
 
 ```php
-<?php
-	include 'ae/core.php';
-	
-	echo 'Hello ' . ae::request()->segment(0, "world") . '!';
-?>
+require 'path/to/ae/loader.php';
 ```
 
-You should put this code into *index.php* in the root web directory. */ae* directory containing the core and all libraries should be placed there as well. For the request library to work properly you need to instruct Apache to redirect all unresolved URIs to *index.php*, by adding the following rules to *.htaccess* file:
+### Configuring Composer
+
+If you are using [Composer](https://getcomposer.org), make sure your <samp>composer.json</samp> references this repository and has æ added as a requirement:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/chromice/ae"
+        }
+    ],
+    "require": {
+        "chromice/ae": "dev-develop"
+    }
+}
+```
+
+### Hello world
+
+Let's create the most basic of web applications. Put this code into <samp>index.php</samp> in the web root directory:
+
+```php
+require 'path/to/ae/loader.php';
+
+$path = \ae\request\path();
+
+echo 'Hello ' . ( isset($path[0]) ? $path[0] : 'world' ) . '!';
+```
+
+Now let's also instruct Apache to redirect all unresolved URIs to <samp>index.php</samp>, by adding the following rules to <samp>.htaccess</samp> file:
 
 ```apache
 <IfModule mod_rewrite.c>
-	RewriteEngine on
-	RewriteBase /
+    RewriteEngine on
+    RewriteBase /
 
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule ^(.*) index.php?/$1 [L,QSA]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*) index.php?/$1 [L,QSA]
 </IfModule>
 ```
 
-Let's assume the address of this app is *http://localhost/*. If you enter that into the address bar of your web browser, you should see this:
+Now, if you open our app (located at, say, <samp>http://localhost/</samp>) in a browser you should see this:
 
-```markdown
+```txt
 Hello world!
 ```
 
-If you change the address to *http://localhost/universe*, you should see:
+If you change the address to <samp>http://localhost/universe</samp>, you should see:
 
-```markdown
+```txt
 Hello universe!
 ```
 
-Congratulations! You may tinker with the examples (see */examples* directory) or read the rest of this document to get a basic understanding of æ capabilities.
+
+## Request
+
+Request library is a lightweight abstraction of HTTP requests.
 
 
-## Core
+### Header
 
-In order to start using æ in your application, you must include *core.php* located in the */ae* directory:
+You can distinguish between different kinds of requests using `\ae\request\method()` function:
 
 ```php
-include 'ae/core.php';
+if (\ae\request\method() === \ae\request\GET)
+{
+    echo "<p>This is a GET request.</p>";
+}
+else if (\ae\request\method() === \ae\request\POST)
+{
+    echo "<p>This is a POST request.</p>";
+}
 ```
 
-This will import the `ae` class. Its sole purpose is to manage code: import classes, run scripts and capture their output, and load libraries and utilities. All these methods accept both absolute and relative file paths.
-
-
-### Importing code
-
-You can use `ae::import()` method to include any PHP script:
+You can access URI path segments using `\ae\request\path()`  method:
 
 ```php
-ae::import('path/to/library.php'); 
+// GET /some/arbitrary/script.php HTTP/1.1
+
+$path = \ae\request\path();
+
+echo $path[0]; // some
+echo $path[1]; // arbitrary
+echo $path[2]; // script.php
+
+echo $path; // some/arbitrary/script.php
 ```
 
-æ will resolve the path and include the script, if it has not been included yet.
-
-
-### Running code
-
-`ae::render()` returns output of any script as a string:
+All requests have a type (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
 
 ```php
-$output = ae::render('your/page.php', array(
-	'title' => 'Example!',
-	'body' => '<h1>Hello world!</h1>'
-));
+// GET /some/arbitrary/request.json HTTP/1.1
+
+echo \ae\request\type(); // json
 ```
 
-Provided the content of */your/page.php* is:
+While some purist may (somewhat rightfully) disagree with the author's choice of relying on file extensions to distinguish between different file types
+
+To get the client IP address, you should use `\ae\request\address()` function. If your app is running behind a reverse-proxy and/or load balancer, you must specify their IP addresses first:
 
 ```php
-<title><?= $title ?></title><body><?= $body ?></body>
+\ae\request\configure('proxies', ['83.14.1.1', '83.14.1.2']);
+
+$client_ip = \ae\request\address();
+```
+
+
+### Body
+
+You can use `\ae\request\query()` and `\ae\request\data()` functions to access `$_GET` and `$_POST` arrays:
+
+```php
+$get = \ae\request\query(); // returns $_GET
+$post = \ae\request\data(); // returns $_POST
+
+$action = \ae\request\query('action', 'search'); // returns $_GET['action'] or 'search'
+$term = \ae\request\data('term'); // returns $_POST['term'] or NULL
+```
+
+You can access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>), using `\ae\request\files()` function.
+
+```php
+$files = \ae\request\files(); // returns an associative array of uploaded files (see \ae\file() for more)
+```
+
+If you need to access raw request body, use `\ae\request\body()` function:
+
+```php
+$post = \ae\request\body(); // same as file_get_contents("php://input")
+```
+
+
+### Mapping
+
+You should always strive to break down your application into independent components. The best way to handle a request is to map it to a specific function or template that encapsulates part of your application's functionality.
+
+Requests are mapped using rules, which are key-value pairs of path pattern, and either an object that conforms to `\ae\response\Dispatchable` interface or a function that returns such an object.
+
+Here's an example of a request being mapped to a page template:
+
+```php
+// GET /about-us HTTP/1.1
+
+\ae\request\map([
+    // ...
+    '/about-us' => \ae\template('/path/to/about-us-page.php'),
+    '/our-work' => \ae\template('/path/to/our-work-page.php'),
+    // ...
+]);
+```
+
+Alternatively, we could write a more generic rule that handles all root level pages by using a placeholder and mapping it to a function:
+
+```php
+// GET /about-us HTTP/1.1
+
+\ae\request\map([
+    // ...
+    '/{any}' => function ($slug) {
+        return \ae\template('/path/to/' . $slug . '-page.php'); // returns '/path/to/about-us-page.php' template, it it exists
+    },
+    // ...
+]);
+```
+
+As you can see, we used `{any}` placeholder to catch the page slug and pass its value to our handler function as first argument.
+
+> `{any}` placeholder can match (and capture) a substring within only one path segment, i.e. it can match any character other than <smap>/</smap> (forward slash).
+
+`\ae\template()` will throw an `\ae\path\Exception`, if the template file does not exist, which in turn will result in `\ae\response\error(404)` being dispatched.
+
+> If a request handler throws `\ae\path\Exception`, `\ae\response\error(404)` will be dispatched. If it throws any other exception, `\ae\response\error(500)` will be dispatched instead.
+
+Now, let's assume we want users to be able to download files from a specific directory:
+
+```php
+// GET /download/directory/document.pdf HTTP/1.1
+
+\ae\request\map([
+    // ...
+    '/download' => function ($file_path) {
+        return \ae\file('/path/to/downloadable/files/' . $file_path) // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
+            ->download(true);
+    },
+    // ...
+]);
+```
+
+<!--
+
+    TODO: How do I pass a file though, e.g. show document.pdf, instead of downloading it?
+
+    \ae\file()->download(false);
+    \ae\file()->download(true);
+    \ae\file()->download('custom_name.ext');
+-->
+
+First of all, we will take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is past as *the last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply display the content of the file.
+
+Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that can take any image, resize it to predefined dimensions, and cache the result for 10 years:
+
+```php
+// GET /resized/square/avatars/photo.jpg HTTP/1.1
+
+\ae\request\map([
+    // ...
+    '/resized/{alpha}' => function ($format, $path) {
+        switch ($format)
+        {
+            case 'square':
+                $width = 256;
+                $height = 256;
+                break;
+            
+            case 'thumbnail':
+                $width = 400;
+                $height = 600;
+                break;
+            
+            default:
+                return \ae\request\error(404);
+        }
+        
+        return \ae\image('image/directory/'. $path)
+            ->fill($width, $height)
+            ->cache(10 * \ae\cache\year, \ae\cache\server_side);
+    },
+    // ...
+]);
+```
+
+Similarly to the file download example, the file path is passed as *the last argument* to our handler. In addition to that, we catch the image format as *the first argument*. The object returned by `\ae\image()` conforms to `\ae\response\Cachable` interface (in addition to `\ae\response\Dispatchable`), which lets us call `cache()` method.
+
+Please note that if the format is wrong, we show 404 error.
+
+<!--
+    TODO: How do I make image downloadable?
+-->
+
+
+And finally, our last rule will display home page *or* show 404 error for all unmatched requests by returning `null`:
+
+```php
+// GET /about-us HTTP/1.1
+
+\ae\request\map([
+    // ...
+    '/' => function ($path) {
+        return empty($path) ? \ae\template('/path/to/home-page.php') : null;
+    }
+]);
+```
+
+> All rules are processed in sequence. You should always put rules with higher specificity at the top. <samp>'/'</samp> is the least specific rule and will match *any* request.
+
+
+## Response
+
+Response library is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
+
+> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from calling `dispatch()` method yourself though, and rely on request library instead.
+
+Here is an example of a simple application that creates a response, sets one custom header, caches it for 5 minutes, and dispatches it. The response is also automatically compressed using Apache's `mod_deflate`:
+
+```php
+<?php 
+// GET /hello-world HTTP/1.1
+
+\ae\response\configure('compress', true);
+
+$response = \ae\response()
+    ->header('X-Header-Example', 'Some value');
+
+?>
+<h1>Hello world</h1>
+<?php 
+
+$response
+    ->cache(2 * \ae\cache\minute, \ae\cache\server_side)
+    ->dispatch('/hello-world.html');
+
+?>
+```
+
+When response object is created, it starts buffering all output. Once the `dispatch()` method is called, the buffering stops, HTTP headers are set, and content is output.
+
+> You must explicitly specify the response path when calling `dispatch()` method. To create a response for the current request use `\ae\request\path()` function.
+
+By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp>. 
+
+
+### Buffering
+
+You can create a buffer and assign it to a variable to start capturing output. All output is captured until the instance is destroyed or buffered content is used:
+
+```php
+$buffer = \ae\buffer();
+
+echo "I'm buffered!";
+
+$content = (string) $buffer;
+
+echo "I'm NOT buffered!";
+
+unset($buffer);
+
+echo "I'm not buffered, either! Duh...";
+```
+
+Buffers can be used as micro templates, e.g. when mixing HTML and PHP code:
+
+```html
+<?php $buffer = \ae\buffer([
+    'url'    => $article->url,
+    'name'   => (strlen($article->name) > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
+    'visits' => number_format($article->visits)
+]) ?>
+<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
+<?php echo $buffer ?>
+```
+
+### Templating
+
+Use `\ae\template()` to capture output of a parameterized script:
+
+```php
+$output = (string) \ae\template('your/page.php', [
+    'title' => 'Example!',
+    'body' => '<h1>Hello world!</h1>'
+]);
+```
+
+Provided the content of <samp>your/page.php</samp> is:
+
+```php
+<title><?= $title ?></title>
+<body><?= $body ?></body>
 ```
 
 The `$output` variable would contain:
 
 ```html
-<title>Example!</title><body><h1>Hello world!</h1></body>
-```
-
-In order to echo the output of a script, you can use `ae::output()` method:
-
-```php
-ae::output('your/page.php', array(
-	'title' => 'Example!',
-	'body' => '<h1>Hello world!</h1>'
-));
+<title>Example!</title>
+<body><h1>Hello world!</h1></body>
 ```
 
 
-### Loading libraries
+### Layout
 
-In order to load a library you must use `ae::load()` method:
+Layout library allows you to wrap output of a script with output of another script. The layout script is executed *last* , thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
-```php
-$options = ae::load('ae/options.php');
-```
-
-Which is the same as:
-
-```php
-ae::import('ae/options.php');
-$options = new aeOptions();
-```
-
-You can configure the library by passing more arguments to `ae::load()`. æ will pass them to class constructor or object factory by value:
-
-```php
-$lib_options = ae::load('ae/options.php', 'my_library_namespace');
-```
-
-That would be identical to:
-
-```php
-ae::import('ae/options.php');
-$lib_options = new aeOptions('my_library_namespace');
-```
-
-All libraries located in *ae/* directory (either root or utility directory), can be loaded using a shorthand syntax, e.g.:
-
-```php
-$lib_options = ae::options('my_library_namespace');
-```
-
-In this case the library name is determined by the name of the method.
-
-æ does not "automagically" guess what class to use, when you are using `ae::load()` method. Instead, you must use `ae::invoke()` method at the beginning of the loaded file to tell æ how you want to invoke a new instance.
-
-In order to create a new instance of `LibraryClassName`, every time the library is loaded, you should pass the class name as the first argument:
-
-```php
-ae::invoke('LibraryClassName');
-
-class LibraryClassName
-{
-	function __construct($argument_1, $argument_2, /*...*/)
-	{
-		// ...
-	}
-}
-```
-
-You can also use the factory pattern and delegate the creation of the instance by passing a function name, callback or closure:
-
-```php
-ae::invoke('a_factory_function');
-
-function a_factory_function($argument_1, $argument_2, /*...*/)
-{
-	// ...
-}
-```
-
-Please consult with the source code of the core libraries for real life examples.
-
-
-## Buffer
-
-`aeBuffer` is a core class used for capturing output.
-
-You must create a buffer and assign it to a variable, in order to start capturing output:
-
-```php
-$buffer = new aeBuffer();
-```
-
-All output is captured until you  either call `aeBuffer::output()` method to echo its content or `aeBuffer::render()` method to return its content as a string. If you do not use these methods, buffer's content will be flushed when the instance is destroyed. You can prevent autoflushing by using `aeBlackhole` class instead:
-
-```php
-$auto_cleaned_buffer = new aeBlackhole();
-```
-
-Buffers can also be used as templates, e.g. when mixing HTML and PHP code:
-
-```html
-<?php $buffer = new aeBuffer() ?>
-<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
-<?php $buffer->output(array(
-	'url' => $article->url,
-	'name' => (strlen($article->name) > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
-	'visits' => number_format($article->visits)
-)) ?>
-```
-
-
-## Container
-
-Container library allows you to wrap output of a script with the output of another script. The container script is executed *after* the contained script, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
-
-Here's an example of HTML container, e.g. *container_html.php*:
+Here's an example of HTML body container <samp>layout_html.php</samp>:
 
 ```html
 <html>
 <head>
-	<title><?= $title ?></title>
+    <title><?= $title ?></title>
 </head>
 <body>
-	<?= $content ?>
+    <?= $__content__ ?>
 </body>
 </html>
 ```
 
-Another script (e.g. *hellow_world.php*) can use it like this:
+Another script <samp>hello_world.php</samp> can use it like this:
 
 ```php
-<?php 
-$container = ae::container('path/to/container_html.php')
-	->set('title', 'Container example');
-?>
+<?php $layout = \ae\layout('path/to/layout_html.php', [
+    'title' => 'Container example'
+]); ?>
 <h1>Hello World!</h1>
 ```
 
@@ -256,305 +426,319 @@ When rendered, it will produce this:
 ```html
 <html>
 <head>
-	<title>Container example</title>
+    <title>Container example</title>
 </head>
 <body>
-	<h1>Hello World!</h1>
+    <h1>Hello World!</h1>
 </body>
 </html>
 ```
 
+### Caching
 
-## Options
+If you want your response to be cached client-side for a number of minutes, you should use `cache()` method of the response object. It will set <samp>Cache-Control</samp>, <samp>Last-Modified</samp>, and <samp>Expires</samp> headers for you. If the response is public (i.e. you passed `\ae\cache\server_side` to `cache()` method as the second argument), it will save the response server-side as well.
 
-Options library is used by many core libraries and allows you to change their behaviour. Options for each library are contained in a separate name space. In order to set or get option value, you must load options library for that namespace:
+> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Cacheable` interface, which allows you to cache them.
 
-```php
-$options = ae::options('namespace');
-```
-
-For example, if your app is sitting behind a proxy or load balancer, you must specify their IP addresses using `aeOptions::set()` method for the request library be able to return the correct IP address of the client:
+You can save any response manually using `\ae\cache\save()` function:
 
 ```php
-$options = ae::options('ae.request');
-
-$options->set('proxy_ips', '83.14.1.1, 83.14.1.2');
+\ae\cache\save('/hello-world.html', $response, 2 * \ae\cache\hour);
 ```
 
-Request library will use `aeRequest::get()` method to retrieve the value of that option:
+You can delete any cached response using `\ae\cache\delete()` function by passing full or partial URL to it:
 
 ```php
-$options = ae::options('ae.request');
-
-$proxies = $options->get('proxy_ips');
+\ae\cache\delete('/hello-world.html');
 ```
 
-
-## Request
-
-Request library allows you to handle both HTTP and command line requests. You can distinguish between different kinds of requests via `aeRequest::cli`, `aeRequest::ajax` and `aeRequest::method` constants:
+You should also remove all *stale* cache entries via `\ae\cache\clean()`:
 
 ```php
-ae::import('ae/request.php');
-
-if (aeRequest::is_cli)
-{
-	echo "Hello World!";
-}
-else if (aeRequest::is_ajax)
-{
-	echo "{message:'Hello world'}";
-}
-else
-{
-	echo "<h1>Hello World!</h1>";
-	
-	if (aeRequest::method === 'GET')
-	{
-		echo "<p>Nothing to get.</p>";
-	}
-	else if (aeRequest::method === 'POST')
-	{
-		echo "<p>Nothing to post.</p>";
-	}
-}
+\ae\cache\clean();
 ```
 
-You can access URI segments using `aeRequest::segment()`  method:
+> The garbage collection is a resource-intensive operation, so its usage should be restricted to a cron job.
+
+To completely erase all cached data use `\ae\cache\purge()` function:
 
 ```php
-// GET /some/arbitrary/request HTTP/1.1
-$request = ae::request();
-
-echo $request->segment(0); // some
-echo $request->segment(1); // arbitrary
-
-echo $request->type(); // html
-echo $request->segment(99, 'default value'); // default value
+\ae\cache\purge();
 ```
 
-All requests have a type ("html" by default), which is defined by the *file extension* part of the URI.
+The responses are saved to <samp>cache</samp> directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
 
-```php
-// GET /some/arbitrary/request.json HTTP/1.1
-$request = ae::request();
-
-echo $request->type(); // json
-```
-
-In order to get the IP address of the client, you should use `aeRequest::ip_address()` method. If your app is running behind a reverse-proxy or load balancer, you need to specify their IP addresses via request options:
-
-```php
-ae::options('ae.request')->set('proxy_ips', '83.14.1.1, 83.14.1.2');
-
-$client_ip = ae::request()->ip_address();
-```
-
-
-### Request routing
-
-Requests can be re-routed to a specific directory:
-
-```php
-// GET /article/123 HTTP/1.1
-$request = ae::request();
-
-$route = $request->route('/', 'handlers/');
-
-if (!$route->exists())
-{
-	header('HTTP/1.1 404 Not Found');
-	echo "Page does not exist.";
-	exit;
-}
-
-$route->follow();
-```
-
-Now, if you have a matching request handler in the */handlers* directory (article.php in this case), æ will run it:
-
-```php
-// article.php
-$request = ae::request();
-
-if (!$request->is_routed())
-{
-	die('Direct request is not allowed!');
-}
-
-// NB! The /article/ part is pushed out because of routing.
-$id = $request->segment(0);
-
-echo "Article ID is $id. ";
-echo "You can access it at " . aeRequest::uri();
-```
-
-You can route different types of requests to different directories:
-
-```php
-$route = ae::request()->route(array(
-	'/admin' => 'cms/', // all requests starting with /admin 
-	'/' => 'webroot/' // other requests
-)->follow();
-```
-
-You can always provide an anonymous function instead of a directory and pass URI segments as arguments like this:
-
-```php
-ae::request()->route(array(
-	'/example/{any}/{alpha}/{numeric}' => function ($any, $alpha, $numeric, $etc) {
-		echo 'First handler. Request URI: /example/' . $any . '/' . $alpha . '/' . $numeric . '/' . $etc;
-	},
-	'/' => function($uri) {
-		echo 'Default handler. Request URI: /' . $uri;
-	}
-))->follow();
-```
-
-
-## Response
-
-Response library allows you to create a response of a specific mime-type, set its headers and (optionally) cache and compress it.
-
-Here is an example of a simple application that creates gzip'ed response with a custom header that is cached for 5 minutes:
-
-```php
-<?php 
-// GET /hello-world HTTP/1.1
-include 'ae/core.php';
-
-ae::options('ae.response')
-	->set('compress_output', true); // turn on the g-zip compression
-
-$response = ae::response('html')
-	->header('X-Header-Example', 'Some value');
-?>
-<h1>Hello world</h1>
-<?php 
-$response
-	->cache(5, '/hello-world.html') // cache for five minutes as /hello-world.html
-	->dispatch(); // dispatch the request
-?>
-```
-
-You can specify the type when you create a new response object. It should be either a valid mime-type or a shorthand like "html", "css", "javascript", "json", etc. By default all responses are "text/html". When response object is created, it starts capturing all output. You have to call `aeResponse::dispatch()` method to send the response along with any HTTP headers set via `aeResponse::header()` method.
-
-
-### Response caching
-
-If you want the response to be cached client-side for a number of minutes, use `aeResponse::cache()` method. It will set "Cache-Control", "Last-Modified" and "Expires" headers for you.
-
-Response library supports server-side caching as well. The responses are saved to */cache* directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
-
-Here are the rules that *.htaccess* file in the web root directory must contain:
+Put the following rules into <samp>.htaccess</samp> file in the web root directory:
 
 ```apache
 <IfModule mod_rewrite.c>
-	RewriteEngine on
-	RewriteBase /
+    RewriteEngine on
+    RewriteBase /
 
-	# Append ".html", if there is no extension...
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteCond %{REQUEST_URI} !\.\w+$
-	RewriteRule ^(.*?)$ /$1.html [L]
+    # Append ".html", if there is no extension...
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !\.\w+$
+    RewriteRule ^(.*?)$ /$1.html [L]
 
-	# ...and redirect to cache directory ("/cache")
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+    # ...and redirect to cache directory ("/cache")
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
 </IfModule>
 ```
 
-And here's what *.htaccess* file in */cache* directory must be like:
+And here are the rules that <samp>cache/.htaccess</samp> must contain:
 
 ```apache
 <IfModule mod_rewrite.c>
-	RewriteEngine on
+    RewriteEngine on
 
-	# If no matching file found, redirect back to index.php
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*) /index.php?/$1 [L,QSA]
+    # If no matching file found, redirect back to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*) /index.php?/$1 [L,QSA]
 </IfModule>
 ```
 
-Apache would first look for a cached response, and only if it finds no valid response, will it route the request to */index.php*. No PHP code is actually involved in serving cached responses.
+Apache would first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>. This way, there is no need for PHP code to be loaded and run, when serving cached responses.
 
-In order to save a response use `aeResponse::cache()` method, passing the number of minutes it should be cached for via first argument and full request URI (including the file extension) via second argument:
+## Filesystem
+
+### Path
+
+Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as their argument. Internally, they all rely on path library to locate the actual file.
+
+By default, all paths are resolved relative to the location of your main script. Buy you are encouraged to explicitly specify the root directory:
 
 ```php
-$response->cache(5, '/hello-world.html');
+\ae\path\configure('root', '/some/absolute/path');
+
+$absolute_path = \ae\path('relative/path/to/file.ext');
 ```
 
-You can delete any cached response using `aeResponseCache::delete()` method by passing full or partial URL to it:
+A part of your application may need to resolve path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
 
 ```php
-ae::import('ae/response.php');
+$dir = \ae\path('some/dir');
 
-aeResponseCache::delete('/hello-world.html');
+$file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
 ```
 
-You should also remove all stale cache entries via `aeResponseCache::collect_garbage()`:
+> `\ae\path()` function and `path()` method always returns an object, but you must explicitly cast it to string, when you need one, e.g. `$path_string = (string) $path_object;`
+
+If specified path (or subpath) does not exist, `\ae\path\Exception` is thrown:
 
 ```php
-ae::import('ae/response.php');
-
-aeResponseCache::collect_garbage();
+try
+{
+    $location = \ae\path('non/existant/file.ext');
+}
+catch (\ae\path\Exception $e)
+{
+    echo $e->getMessage();
+}
 ```
 
-The garbage collection can be a very resource-intensive operation, so its usage should be restricted to an infrequent cron job.
+> `\ae\file()` function does not immediately throw an exception for non-existent paths, so you can create a new file.
 
 
-## Image
+### File
 
-Image library is a very light wrapper around standard GD library functions:
+File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
 
 ```php
-$image = ae::image('examples/image/test.jpg');
+$file = \ae\file('/path/to/file.ext')
+    ->open('w+')
+    ->lock()
+    ->truncate()
+    ->write('Hello World');
+    
+$file->seek(0);
 
-// Get meta data
-$width = $image->width();
-$height = $image->height();
-$type = $image->type(); // png, jpeg or gif
-$mimetype = $image->mimetype();
+if ($file->tell() === 0)
+{
+    echo $file->read();
+}
 
-// Blow one pixel up.
+// Unlock file and close its handle
+unset($file);
+``` 
+
+The library exposes basic information about the file:
+
+```php
+$file = \ae\file('/path/to/file.txt');
+
+echo $file->size(); // 12
+echo $file->mode(); // 0666
+echo $file->name(); // file.txt
+echo $file->type(); // txt
+echo $file->mime(); // text/plain
+
+$path = $file->path(); // $path = \ae\path('path/to/file.txt')
+```
+
+Existing files can be renamed, copied, moved or deleted:
+
+```php
+$file = \ae\file('/path/to/file.txt')
+    ->create(0775); // touch + chmod
+
+if ($file->exists())
+{
+    $mode = $file->mode();
+    $file->name('new-file.txt')->type('doc');
+    $copy = $file->copy('./file-copy.txt');
+    $file->delete();
+    $copy->move('./file.txt')->mode($mode);
+}
+```
+
+
+#### Handling uploaded files
+
+The library can handle uploaded files as well:
+
+```php
+$file = \ae\file($_FILES['file']['tmp_name']);
+
+if ($file->is_uploaded())
+{
+    $file->move('/destination/' . $_FILES['file']['name']);
+}
+```
+
+#### Passing metadata
+
+You can assign arbitrary metadata to a file, e.g. database keys, related files, alternative names, etc.:
+
+```php
+$file['real_name'] = 'My text file (1).txt';
+$file['resource_id'] = 123;
+
+foreach ($file as $meta_name => $meta_value)
+{
+    echo "{$meta_name}: $meta_value\n";
+}
+```
+
+Metadata is transient and is never saved to disk.
+
+
+### Image
+
+Image library is a wrapper around standard GD library functions.
+
+You can retrieve basic information about the image:
+
+```php
+$image = \ae\image('example/image_320x240.jpg');
+
+echo $image->width();  // 320
+echo $image->height(); // 240
+echo $image->type();   // jpeg
+echo $image->mime();   // image/jpeg
+```
+
+#### Resizing and cropping
+
+You can transform the image by changing its dimensions in 4 different ways:
+
+- `scale($w, $h)` scales the image in one or both dimensions; use `null` for either dimension to scale proportionally
+- `crop($w, $h)` crops the image to specified dimensions, even if it is smaller than target dimensions
+- `fit($w, $h)` scales the image, so it fits into a box defined by target dimensions
+- `fill($w, $h)` scales and crops the image, so it completely covers a box defined by target dimensions.
+
+You will rarely need to use the first two methods, as the the latter two cover most of use cases:
+
+```php
+$photo = \ae\image('path/to/photo.jpg');
+
+$big = $photo
+    ->fit(1600, 1600)
+    ->suffix('_big')
+    ->save();
+
+$small = $big
+    ->fit(640, 640)
+    ->suffix('_small')
+    ->save();
+
+$thumbnail = $small
+    ->fill(320, 320)
+    ->suffix('_thumbnail')
+    ->save();
+```
+
+You can specify the point of origin using `align()` method before you apply `crop()` and `fill()` transformations to an image:
+
+```php
+$thumbnail = $small
+    ->align(\ae\image\left, \ae\image\top)
+    ->fill(320, 320)
+    ->suffix('_thumbnail')
+    ->save();
+```
+
+This way you can crop a specific region of the image. The `align()` method requires two arguments:
+
+1. Horizontal alignment:
+    - a number from <samp>0</samp> (left) to <samp>1</samp> (right); <samp>0.5</samp> being the center
+    - a constant: `\ae\image\left`, `\ae\image\center`, or `\ae\image\right`
+2. Vertical alignment:
+    - a number from <samp>0</samp> (top) to <samp>1</samp> (bottom); <samp>0.5</samp> being the middle
+    - a constant: `\ae\image\top`, `\ae\image\middle`, or `\ae\image\bottom`
+
+
+#### Applying filters
+
+You can also apply one or more filters:
+
+```php
+$thumbnail
+    ->blur()
+    ->colorize(0.75, 0, 0)
+    ->save();
+```
+
+Here are all the filters exposed by the library:
+
+- `blur()` blurs the image using the Gaussian method
+- `brightness($value)` changes the brightness of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>
+- `contast($value)` changes the contrast of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>
+- `colorize($red, $green, $blue)` changes the contrast of the image; accepts numbers from <samp>0.0</samp> to <samp>1.0</samp>
+- `grayscale()` converts the image into grayscale
+- `negate()` reverses all colors of the image
+- `pixelate($size)` applies pixelation effect to the image
+- `smooth($value)` makes the image smoother
+
+#### Converting and saving
+
+By default when you use `save()` method the image type and name is preserved.
+
+If you want to preserve association with the original image, you can append or prepend a string to its name using `siffix()` and `prefix()` methods respectively: 
+
+```php
+\ae\image('some/photo.jpg')
+    ->prefix('unknown_')
+    ->suffix('graphic_image')
+    ->save(); // some/unknown_photographic_image.jpg
+```
+
+If you want to change the name *or* image type completely, you should provide file name to `save()` method:
+
+```php
+$image = \ae\image('some/image.png')
+
 $image
-	->crop(1,1)
-	->scale($width, null) // scale proportionately.
-	->save('tiny_bit.png');
+    ->quality(75)
+    ->progressive(true)
+    ->save('image.jpg'); // some/image.jpg
 
-// save() resets state to default, i.e. no crop, scale, prefix, suffix, etc.
-
-// Crop to cover
 $image
-	->align(aeImage::center, aeImage::middle) // same as align(0.5, 0.5)
-	->fill(100, 100)
-	->prefix('cropped_')
-	->save(); // save as 'cropped_test.jpg'
-
-// Resize to fit (and preserve the result for next operation)
-$small = $image
-	->fit(320, 320)
-	->suffix('_small')
-	->save();  // save as 'test_small.jpg'
-
-// Apply colorize filter
-// using http://uk3.php.net/manual/en/function.imagefilter.php
-$small
-	->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->dispatch(); // clean all output, set the correct headers, return the image content and... die!
+    ->interlaced(true)
+    ->save('image.gif') // some/image.gif
 ```
 
-### Image caching
-
-Images can be cached just like responses:
-
-```php
-$image = ae::image('examples/image/test.jpg');
-
-$image->apply(IMG_FILTER_COLORIZE, 55, 0, 0)
-	->cache(aeResponseCache::year, '/images/foo.png') // cache image for a year
-```
 
 ## Form
 
@@ -567,23 +751,23 @@ In general any form script would consist of three parts: form and field declarat
 Let's declare a simple form with three fields (text input, checkbox and select drop-down) and basic validation rules:
 
 ```php
-$form = ae::form('form-id');
+$form = \ae\form('form-id');
 
-$input = $form->single('text')
-	->required('This field is required.')
-	->min_length('It should be at least 3 characters long.', 3)
-	->max_length('Please keep it shorter than 100 characters.', 100);
+$input = $form->single('text_input')
+    ->required('This field is required.')
+    ->min_length('It should be at least 3 characters long.', 3)
+    ->max_length('Please keep it shorter than 100 characters.', 100);
 
-$checkbox = $form->single('checkbox')
-	->required('You must check this checkbox!');
+$checkbox = $form->single('checkbox_input')
+    ->required('You must check this checkbox!');
 
-$options = array(
-	'foo' => 'Foo',
-	'bar' => 'Bar'
-);
+$options = [
+    'foo' => 'Foo',
+    'bar' => 'Bar'
+];
 
-$select = $form->single('select')
-	->valid_value('Wrong value selected.', $options);
+$select = $form->single('select_input')
+    ->valid_value('Wrong value selected.', $options);
 ```
 
 Now, this declaration is enough to validate the form, has it been submitted:
@@ -591,14 +775,14 @@ Now, this declaration is enough to validate the form, has it been submitted:
 ```php
 if ($form->is_submitted())
 {
-	$is_valid = $form->validate();
-	
-	if ($is_valid)
-	{
-		$values = $form->values();
-		
-		var_dump($values);
-	}
+    $is_valid = $form->validate();
+    
+    if ($is_valid)
+    {
+        $values = $form->values();
+        
+        var_dump($values);
+    }
 }
 ```
 
@@ -607,32 +791,32 @@ If the form has not been submitted, you may want to populate it with default val
 ```php
 if (!$form->is_submitted())
 {
-	$form->value(array(
-		'text' => 'Foo'
-	));
+    $form->value([
+        'text' => 'Foo'
+    ]);
 }
 ```
 
-The HTML code of the form's content can be anything you like, but you must use `aeForm::open()` and `aeForm::close()` methods instead of `<form>` and `</form>` tags:
+The HTML code of the form's content can be anything you like, but you must use `\ae\Form::open()` and `\ae\Form::close()` methods instead of `<form>` and `</form>` tags:
 
-```php
+```html
 <?= $form->open() ?>
 <div class="field">
-	<label for="<?= $input->id() ?>">Enter some text:</label>
-	<?= $input->input('text') ?>
-	<?= $input->error() ?>
+    <label for="<?= $input->id() ?>">Enter some text:</label>
+    <?= $input->input('text') ?>
+    <?= $input->error() ?>
 </div>
 <div class="field">
-	<label><?= $checkbox->input('checkbox') ?> Check me out!</label>
-	<?= $checkbox->error() ?>
+    <label><?= $checkbox->input('checkbox') ?> Check me out!</label>
+    <?= $checkbox->error() ?>
 </div>
 <div class="field">
-	<label for="<?= $select->id() ?>">Select something (totally optional):</label>
-	<?= $select->select(array('' => 'Nothing selected') + $options) ?>
-	<?= $select->error() ?>
+    <label for="<?= $select->id() ?>">Select something (totally optional):</label>
+    <?= $select->select(['' => 'Nothing selected'] + $options) ?>
+    <?= $select->error() ?>
 </div>
 <div class="field">
-	<button type="submit">Submit</button>
+    <button type="submit">Submit</button>
 </div>
 <?= $form->close() ?>
 ```
@@ -640,7 +824,7 @@ The HTML code of the form's content can be anything you like, but you must use `
 Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in the browsers that support it, you should set the `novalidate` attribute of the form:
 
 ```php
-<?= $form->open(array('novalidate' => true)); ?>
+<?= $form->open(['novalidate' => true]); ?>
 ```
 
 ### Field types
@@ -655,7 +839,7 @@ $cb = $form->multiple('checked')->required('Check at least one box');
 
 You would then output this field like this:
 
-```php
+```html
 <label><?= $cb->input('checkbox', 'foo') ?> Foo</label><br>
 <label><?= $cb->input('checkbox', 'bar') ?> Bar</label>
 <?= $cb->error('<br><em class="error">','</em>') ?>
@@ -664,39 +848,24 @@ You would then output this field like this:
 If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and (optionally) maximum length:
 
 ```php
-$tags = $form->sequence('tags', 1, 5)
-	->min_length('Should be at least 2 character long', 2);
+$tags = $form->sequence('tags', 1, 5);
+
+$tag_input = $tags->single('tag_input')
+    ->min_length('Should be at least 2 character long', 2);
+
 ```
 
 The sequence will contain the minimum number of fields required, but you can let user control the length via "Add" and "Remove" buttons.
 
-```php
-if ($form->value('add') === 'tag')
-{
-	$tags[] = ''; // Empty by default
-}
-else if ($index = $form->value('remove')) // NB! intentionally does not work for 0.
-{
-	unset($tags[$index]);
-}
-```
-
-And here is what the HTML of this field will look like:
-
-```php
-<?php $count = 0; foreach ($tags as $index => $tag): $count++; ?>
+```html
+<?php foreach ($tags as $index => $tag): ?>
 <div class="field">
-	<label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
-	<?= $tag->input('input') ?>
-<?php if ($count > 0): ?>
-	<button type="submit" name="remove" value="<?= $tag->index() ?>">Remove</button>
-<?php endif ?>
-	<?= $tag->error() ?>
+    <label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
+    <?= $tag['tag_input']->input('input') ?> <?= $files->remove_button($index) ?>
+    <?= $tag['tag_input']->error('<br><em class="error">', '</em>') ?>
 </div>
 <?php endforeach ?>
-<?php if ($tag->count() < 5): ?>
-<p><button type="submit" name="add" value="tag">Add another</button> tag.</p>
-<?php endif ?>
+<?= $files->add_button() ?>
 ```
 
 You can combine several sequences in one loop to create repeatable field groups.
@@ -714,37 +883,37 @@ $field->required('This field is required.');
 If the value of the field is a decimal/integer number or time/date/month/week, you can validate its format and minimum and maximum value:
 
 ```php
-$number->valid_pattern('Should contain a number.', aeValidator::integer)
-	->min_value('Must be equal to 2 or greater.', 2)
-	->max_value('Must be equal to 4 or less.', 4);
-$date->valid_pattern('Should contain a date: YYYY-MM-DD.', aeValidator::date)
-	->min_value('Cannot be in the past.', date('Y-m-d'));
+$number->valid_pattern('Should contain a number.', \ae\valid\integer)
+    ->min_value('Must be equal to 2 or greater.', 2)
+    ->max_value('Must be equal to 4 or less.', 4);
+$date->valid_pattern('Should contain a date: YYYY-MM-DD.', \ae\valid\date)
+    ->min_value('Cannot be in the past.', date('Y-m-d'));
 ```
 
 If value is a string you may validate its format and maximum and minimum length:
 
 ```php
-$field->valid_pattern('This should be a valid email.', aeValidator::email)
-	->min_length('Cannot be shorter than 5 characters.', 5)
-	->max_length('Cannot be longer than 100 characters.', 100);
+$field->valid_pattern('This should be a valid email.', \ae\valid\email)
+    ->min_length('Cannot be shorter than 5 characters.', 5)
+    ->max_length('Cannot be longer than 100 characters.', 100);
 ```
 
-The library comes with a few format validators:
+The library defines a few common formats:
 
-- `aeValidator::integer` — an integer number, e.g. -1, 0, 1, 2, 999;
-- `aeValidator::decimal` — a decimal number, e.g. 0.01, -.02, 25.00, 30;
-- `aeValidator::numeric` — a string consisting of numeric characters, e.g. 123, 000;
-- `aeValidator::alpha` — a string consisting of alphabetic characters, e.g. abc, cdef;
-- `aeValidator::alphanumeric` — a string consisting of both alphabetic and numeric characters, e.g. a0b0c0, 0000, abcde;
-- `aeValidator::color` — a hex value of a color, e.g. #fff000, #434343;
-- `aeValidator::time` — a valid time, e.g. 14:00:00, 23:59:59.99;
-- `aeValidator::date` — a valid date, e.g. 2009-10-15;
-- `aeValidator::datetime` — a valid date and time, e.g. 2009-10-15T14:00:00-9:00;
-- `aeValidator::month` — a valid month, e.g. 2009-10;
-- `aeValidator::week` — a valid week, e.g. 2009-W42;
-- `aeValidator::email` — a valid email address;
-- `aeValidator::url` — a valid URL string;
-- `aeValidator::postcode_uk` — a valid UK postal code.
+- `\ae\valid\integer` — an integer number: <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>
+- `\ae\valid\decimal` — a decimal number: <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>
+- `\ae\valid\numeric` — a string consisting of numeric characters: <samp>123</samp>, <samp>000</samp>
+- `\ae\valid\alpha` — a string consisting of alphabetic characters: <samp>abc</samp>, <samp>cdef</samp>
+- `\ae\valid\alphanumeric` — a string consisting of both alphabetic and numeric characters: <samp>a0b0c0</samp>, <samp>0000</samp>, <samp>abcde</samp>
+- `\ae\valid\color` — a hex value of a color: <samp>#fff000</samp>, <samp>#434343</samp>
+- `\ae\valid\time` — a valid time: <samp>14:00:00</samp>, <samp>23:59:59.99</samp>
+- `\ae\valid\date` — a valid date: <samp>2009-10-15</samp>
+- `\ae\valid\datetime` — a valid date and time: <samp>2009-10-15T14:00:00-9:00</samp>
+- `\ae\valid\month` — a valid month: <samp>2009-10</samp>
+- `\ae\valid\week` — a valid week: <samp>2009-W42</samp>
+- `\ae\valid\email` — a valid email address
+- `\ae\valid\url` — a valid URL
+- `\ae\valid\uk_postcode` — a valid UK postal code
 
 You may define any other pattern manually:
 
@@ -756,16 +925,16 @@ You can also use an anonymous function as a validator:
 
 ```php
 $field->valid_value('Devils are not allowed.', function ($value) {
-	return $value != 666;
+    return $value != 666;
 });
 ```
 
 If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted correct data:
 
 ```php
-$field->valid_value('Wrong option selected.', array(
-	'foo', 'bar' //, '...'
-));
+$field->valid_value('Wrong option selected.', [
+    'foo', 'bar' //, '...'
+]);
 ```
 
 Legitimate users would never see this error, but it prevents would-be hackers from tempering with the data.
@@ -773,125 +942,123 @@ Legitimate users would never see this error, but it prevents would-be hackers fr
 
 ## Database
 
-Database library allows you make MySQL queries and exposes a simple active record style abstraction for tables.
+Database library lets you make queries to MySQL database, and exposes a simple abstraction for tables and transactions.
 
-Before you can make queries to the database, you have to specify the connection parameters using the options library:
+You must to provide connection parameters first:
 
 ```php
-// Configure the "default" database connection
-ae::options('ae.database.default')
-	->set('host', 'localhost')
-	->set('user', 'root')
-	->set('password', 'root')
-	->set('database', 'ae');
+\ae\db\configure([
+    'host'     => 'localhost'
+    'user'     => 'root'
+    'password' => 'root'
+    'database' => 'ae_db'
+]);
 ```
 
-Provided the connection parameters are correct and the database ("ae" in this example) exists, you can create a connection and make a query:
+Provided the connection parameters are correct and the database (<samp>ae_db</samp> in this example) exists, you can create a connection and make a query:
 
 ```php
 try {
-	$db = ae::database(); // same as ae::database("default");
-	
-	$db->query("SELECT 1")->make();
-} catch (aeDatabaseException $e) {
-	echo 'Something went wrong: ' . $e->getMessage();
+    \ae\db\query("SELECT 1")->make();
+} catch (\ae\db\Exception $e) {
+    echo 'Something went wrong: ' . $e->getMessage();
 }
 ```
 
-As you can see, whenever something goes wrong on the database side, the library throws `aeDatabaseException`, which you can catch and handle gracefully.
+As you can see, whenever something goes wrong, `\ae\db\Exception` exception is thrown. 
 
-If you want to know what queries are performed and how much memory and time they take, you can turn query logging on:
+If you want to know what queries were made and how much memory and time they take, you can turn query logging on:
 
 ```php
-ae::options('ae.database')
-	->set('log', true);
+\ae\inspector\show('queries', true);
 ```
 
-See [Inspector](#inspector) section for more details.
+> You must show inspector before you start making queries! See [Inspector](#inspector) section for more details.
+
 
 ### Making queries 
 
-Let's create the "authors" table:
+Let's first create <samp>authors</samp> table:
 
 ```php
-ae::database()
-	->query("CREATE TABLE IF NOT EXISTS {table} (
-		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`name` varchar(255) NOT NULL,
-		`nationality` varchar(255) NOT NULL,
-		PRIMARY KEY (`id`)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->make();
+\ae\db\query("CREATE TABLE IF NOT EXISTS {table} (
+        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+        `name` varchar(255) NOT NULL,
+        `nationality` varchar(255) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+    ->aliases([
+        'table' => 'authors'
+    ])
+    ->make();
 ```
 
-Instead of specifying the table name in the query itself we are using `{table}` placeholder and specify its value via `aeDatabase::aliases()` method. The library will wrap the name with backticks ("`") and replace the placeholder for us.
+Instead of specifying the table name inline, we used `{table}` placeholder and provided its value via `aliases()` method. The library will wrap the name with backticks (<samp>`</samp>) and replace the placeholder for us.
 
 While not particularly useful in this example, placeholders are generally a good way to keep you query code readable.
 
 Let's fill this table with some data:
 
 ```php
-ae::database()
-	->query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->data(array(
-		'name' => 'Richar K. Morgan', // (sic)
-		'nationality' => 'British'
-	))
-	->make();
+\ae\db\query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
+    ->aliases([
+        'table' => 'authors'
+    ])
+    ->data([
+        'name' => 'Richar K. Morgan', // (sic)
+        'nationality' => 'British'
+    ])
+    ->make();
 
-$morgan_id = ae::database()->insert_id();
+$morgan_id = \ae\db\insert_id();
 ```
 
-In this example we are using `{data:names}` and `{data:values}` placeholders and specify column names and corresponding values via `aeDatabase::data()` method. Now, I intentionally made a typo in the authors name, so let's fix it:
+In this example we used `{data:names}` and `{data:values}` placeholders and specified column names and corresponding values via `data()` method.
+
+Now, there's a typo in the authors name, so let's fix it:
 
 ```php
-ae::database()
-	->query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
-	->aliases(array(
-		'table' => 'authors'
-	))
-	->data(array(
-		'name' => 'REPLACE(`name`, "Richar ", "Richard ")'
-	), aeDatabase::statement) // don't escape
-	->variables(array(
-		'author_id' => $morgan_id
-	), aeDatabase::value) // escape
-	->make();
+\ae\db\query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
+    ->aliases(['table' => 'authors'])
+    ->data(['name' => 'REPLACE(`name`, "Richar ", "Richard ")'], \ae\db\expressions)
+    ->data(['nationality' => 'English'], \ae\db\values)
+    ->variables(['author_id' => $morgan_id], \ae\db\values)
+    ->make();
 ```
 
-In this example we are using `{data:set}` placeholder and specifying its value via `aeDatabase::data()` method, while `aeDatabase::variables()` method will escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
+Here we used `{data:set}` placeholder and specified its value via `data()` method: one call with a database expression, and the other with a plain value. We also used `variables()` method to escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
 
-Of course, these are just examples, there is actually a less verbose way to insert and update rows:
+> Both `data()` and `variables()` methods escape values passed through them by default, i.e. `\ae\db\values` is the default value of the second argument.
+
+Of course, these are just examples, there is actually a less verbose way to insert and update database rows:
 
 ```php
-ae::database()->update('authors', array(
-	'nationality' => 'English'
-), array('id' => $morgan_id));
-$stephenson_id = ae::database()->insert('authors', array(
-	'name' => 'Neal Stephenson',
-	'nationality' => 'American'
-)); 
-$gibson_id = ae::database()->insert('authors', array(
-	'name' => 'William Ford Gibson',
-	'nationality' => 'Canadian'
-));
+// Update existing record
+\ae\db\update('authors', [
+    'nationality' => 'English'
+], ['id' => $morgan_id]);
+
+// Insert two more records
+$stephenson_id = \ae\db\insert('authors', [
+    'name' => 'Neal Stephenson',
+    'nationality' => 'American'
+]);
+$gibson_id = \ae\db\insert('authors', [
+    'name' => 'William Ford Gibson',
+    'nationality' => 'Canadian'
+]);
 ```
 
-> There is also `aeDatabase::insert_or_update()` method, which you can use to update a row or insert a new one, if it does not exist; `aeDatabase::count()` for counting rows; `aeDatabase::find()` for retrieving a particular row; and `aeDatabase::delete()` for deleting rows from a table. Please consult the source code of the database library to learn more about them.
+> There is also `insert_or_update()` function, which you can use to update a row or insert a new one, if it does not exist; `count()` for counting rows; `find()` for retrieving a particular row; and `delete()` for deleting rows from a table. Please consult the source code of the database library to learn more.
+
 
 ### Transactions
 
-A sequence of dependant database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
+A sequence of interdependent database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
 
 ```php
 // Open transaction
-$transaction = ae::database()->transaction();
+$transaction = \ae\db\transaction();
 
 // ...perform a series of queries...
 
@@ -909,136 +1076,89 @@ This way, if one of your SQL queries fails, it will throw an exception and all u
 
 **NB!** Only one transaction can exist at a time.
 
+
 ### Retrieving data
 
 Now that we have some rows in the table, let's retrieve and display them:
 
 ```php
-$count = ae::database()->count('authors');
-$authors = ae::database()->select('authors')->result();
+$authors = \ae\db\select('authors');
+$count = count($authors);
 
 echo "There are $count authors in the database:\n";
 
-while ($author = $authors->fetch())
+foreach ($authors as $author)
 {
-	echo "- {$author['name']}\n";
+    echo "- {$author->name} ({$author->nationality})\n";
 }
 ```
 
 This will produce:
 
-```markdown
+```txt
 There are 3 authors in the database:
-- Richard K. Morgan
-- Neal Stephenson
-- William Ford Gibson
+- Richard K. Morgan (British)
+- Neal Stephenson (American)
+- William Ford Gibson (Canadian)
 ```
 
 Now, let's change the query so that authors are ordered alphabetically:
 
 ```php
-$authors = ae::database()
-	->select('authors') // equivalent to ->query('SELECT * FROM `authors` {sql:join} {sql:where} {sql:group_by} {sql:having} {sql:order_by} {sql:limit}')
-	->order_by('`name` ASC')
-	->result() // return an instance of aeDatabaseResult
-	->all(); // return an array of rows
+$authors = \ae\db\query('SELECT * FROM `authors` {sql:order_by}')
+    ->order_by(['name' => 'ASC']);
 $count = count($authors);
 
 echo "There are $count authors in the result set:\n";
 
 foreach ($authors as $author)
 {
-	echo "- {$author['name']}\n";
+    echo "- {$author->name}\n";
 }
 ```
 
-Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `aeDatabase::order_by()` method. 
+Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `order_by()` method. 
 
-> Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They allow you to write complex parameterized queries without concatenating all bits of the query yourself. Please consult the source code of the database library to learn more about them.
-
-Note that we are also using `aeDatabaseResult::all()` method to return an array of results, instead of fetching them one by one in a `while` loop. Please note that `aeDatabaseResult::fetch()` method is the most memory efficient way of retrieving results.
+> Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They let you to write complex parameterized queries without concatenating all bits of the query string yourself. Please consult the library source code to learn more.
+> 
+> You don't have to specify all these placeholders manually, as `\ae\db\select()` includes all of them and replaces them with empty strings, if no value is provided.
 
 The example above will produce a list of authors in alphabetical order:
 
-```markdown
-There are 3 authors in the database:
+```txt
+There are 3 authors in the result set:
 - Neal Stephenson
 - Richard K. Morgan
 - William Ford Gibson
 ```
+
 
 ### Active record
 
-Database library has `aeDatabaseTable` abstract class that your table specific class can extend:
+In some cases you may want to update some property of an existing record without loading its data:
 
 ```php
-class Authors extends aeDatabaseTable {}
-```
-
-This one line of code is enough to start performing basic CRUD operations for that table:
-
-```php
-// Create an instance of Authors pointed at Neal Stephenson 
-// record in the "authors" table:
-$stephenson = Authors::find($stephenson_id);
-
-// Load only name and nationality properties
-$stephenson->load(array('name', 'nationality'));
-
-echo $stephenson->name; // Neal Stephenson
-echo ' -- ';
-echo $stephenson->nationality; // American
-```
-
-As you can see, finding a record does not actually load its data. In some cases you may  want to update some property of an existing record without loading its data:
-
-```php
-// Let's change William Gibson's nationality
-$gibson = Authors::find($gibson_id);
+$gibson = \ae\db\find('authors', $gibson_id);
 
 $gibson->nationality = 'American';
 
-// Update the record in the database
 $gibson->save();
 ```
 
-Let's create a new record and save it to the database:
+Let's make a new record and save it to the database:
 
 ```php
-$shaky = Authors::create(array(
-	'name' => 'William Shakespeare',
-	'nationality' => 'English'
-));
+$shaky = \ae\db\make('authors', [
+    'name' => 'William Shakespeare',
+    'nationality' => 'English'
+]);
 
-// Create a new record in the database
 $shaky->save();
 ```
 
-In order to retrieve several records from the database, you would make a regular query, but instead of calling `aeDatabase::result()` method, you should call `aeDatabaseTable::many()` method with the name of the table class as the first argument:
+Unlike `\ae\db\insert()` function, `\ae\db\make()` does not write to the database. You have to call `save()` method to do that.
 
-```php
-$authors = ae::database()
-	->query('SELECT * FROM `authors`')
-	->many('Authors');
-$count = $authors->count();
-
-echo "There are $count authors in the database:\n";
-
-while ($author = $authors->fetch())
-{
-	echo "- {$author->name}\n";
-}
-```
-
-```markdown
-There are 4 authors in the database:
-- Richard K. Morgan
-- Neal Stephenson
-- William Ford Gibson
-- William Shakespeare
-```
-
-Now, Shakespeare was a playwright, while the rest of the authors are novelists. Let's delete his record:
+Now, Shakespeare was a playwright, while the rest of the authors are novelists. So let's delete his record:
 
 ```php
 $shaky->delete();
@@ -1046,49 +1166,63 @@ $shaky->delete();
 
 ### Relationships
 
-Let's make things more interesting by introducing a new class of objects: books. First, we need to create a table to store them:
+Let's make things more interesting by introducing a second class of objects: <samp>books</samp>. First, we need to create a table to store them:
+
 
 ```php
-ae::database()->query("CREATE TABLE IF NOT EXISTS `books` (
-	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`author_id` int(10) unsigned NOT NULL,
-	`title` varchar(255) NOT NULL,
-	PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8")->make();
+\ae\db\query("CREATE TABLE IF NOT EXISTS {table} (
+        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+        `author_id` int(10) unsigned NOT NULL,
+        `title` varchar(255) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
+    ->aliases([
+        'table' => 'books'
+    ])
+    ->make();
 ```
 
-We also need a class to represent this table. To keep things interesting, we will name it `Novels`. Obviously `aeDatabaseTable` won't be able to guess the name of the table, so we will specify it manually by overriding the `aeDatabaseTable::name()` method:
+We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novels`. Obviously, `\ae\db\Table` won't be able to guess the name of the table now, so we must specify it manually by overriding the `name()` method:
 
 ```php
-class Novels extends aeDatabaseTable
+class Novels extends \ae\db\Table
 {
-	public static function name()
-	{
-		return 'books'; // that is the real name of the table
-	}
+    public static function name()
+    {
+        return 'books'; // the real name of the table
+    }
 }
 ```
 
-> There are several methods you can override like this: `aeDatabaseTable::database()` to return a different database connection object; `aeDatabaseTable::accessor()` to return an array of primary keys; `aeDatabaseTable::columns()` to return an array of data columns.
+> There are two other methods you can override: `\ae\db\Table::accessor()` to return an array of primary keys; `\ae\db\Table::columns()` to return an array of data columns.
 
 We could start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
 
+
 ```php
-class Authors extends aeDatabaseTable
+class Authors extends \ae\db\Table
 {
-	public function add_novel($title)
-	{
-		$ids = $this->ids();
-		
-		return Novels::create(array(
-			'author_id' => $ids['id'],
-			'title' => $title
-		))->save();
-	}
+    protected function has_many()
+    {
+        return {
+        
+        }
+    }
+    
+    public function add_novel($title)
+    {
+        $ids = $this->ids();
+        
+        return Novels::create([
+                'author_id' => $ids['id'],
+                'title' => $title
+            ])->save();
+    }
 }
 ```
 
-Finally, let's add a few books to the database:
+Now let's add a few books to the database:
+
 
 ```php
 $gibson->add_novel('Neuromancer');
@@ -1107,117 +1241,136 @@ $morgan->add_novel('Broken Angels');
 $morgan->add_novel('Woken Furies');
 ```
 
-So far so good. Let's add a method to `Novels` class that will return all book records sorted alphabetically:
+And finally, let's add a method to `Novels` class that will return all book records sorted alphabetically:
+
 
 ```php
-class Novels extends aeDatabaseTable
+class Novels extends \ae\db\Table
 {
-	public static function name()
-	{
-		return 'books'; // that is the real name of the table
-	}
-	
-	public static function all()
-	{
-		return static::database()
-			->select(self::name())
-			->joining('Authors', 'author')
-			->order_by('{table}.`title`')
-			->many('Novels');
-	}
+    public static function name()
+    {
+        return 'books'; // the real name of the table
+    }
+    
+    protected static function has_one()
+    {
+        return [
+            Authors::table() => '{self}.author_id = {target}.id'
+        ];
+    }
+    
+    public static function find_all()
+    {
+        return self::select()
+            ->with('author')
+            ->order_by('title')
+            ->many('Novels')
+    }
 }
 ```
 
-Most of this code should be familiar to you. The only novelty is `aeDatabase::joining()` method. The query will retrieve data from both "books" and "authors" tables, and we instruct the database driver to return "books" data as an instance of `Novels` class, and "authors" data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
+Most of this code should be familiar to you. The only new thing here is `with()` method. The query will retrieve data from both <samp>books</samp> and <samp>authors</samp> tables, and we instruct the database to return <samp>books</samp> data as an instance of `Novels` class, and <samp>authors</samp> data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
 
 Let's inventory our novel collection:
 
 ```php
-$novels = Novels::all();
-$count = $novels->count();
+$novels = Novels::find_all();
+$count = count($novels);
 
 echo "Here are all $count novels ordered alphabetically:\n";
 
-while ($novel = $novels->fetch())
+foreach ($novels as $novel)
 {
-	echo "- {$novel->title} by {$novel->author->name}\n";
+    echo "- {$novel->title} by {$novel->author->name}\n";
 }
 ```
 
-```markdown
+Which will output:
+
+```txt
 Here are all 9 novels ordered alphabetically:
 - Altered Carbon by Richard K. Morgan
 - Broken Angels by Richard K. Morgan
 - Count Zero by William Ford Gibson
 - Cryptonomicon by Neal Stephenson
-- Neuromancer by William Ford Gibson
 - Mona Lisa Overdrive by William Ford Gibson
+- Neuromancer by William Ford Gibson
 - Reamde by Neal Stephenson
 - Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
 ```
 
+
 ## Inspector
 
-Inspector utility allows you to debug and profile your application more easily. It comes with two libraries: "Log" and "Probe".
+æ inspector is a builtin development tool you can use to debug and profile your application. Once you turn it on, all errors and notices generated by your app are captured and presented in a separate browser window:
 
-### Log
+![](./utilities/inspector/inspector_log.png)
 
-Log library allows you to log events and dump variables for quick and easy debugging. It also automatically captures all uncaught exceptions, as well as all errors and notices. On shutdown, it appends the log as HTML comment to the output sent to the browser, or pipes it to standard error output in [CLI mode](http://php.net/manual/en/features.commandline.php). Optionally, the log can be appended to a file in a user-defined directory.
-
-**NB!** The parsing errors and anything that impedes PHP execution in a horrible manner will prevent log library to handle the error. This is a limitation of PHP.
-
-Here's a short example of how the library should be used:
+First of all, you must map all requests starting with <samp>/inspector</samp> to a handler returned by `\ae\inspector\assets()` function:
 
 ```php
-// You must load the inspector utility
-ae::register('utilities/inspector');
-
-// Put all logs to /log directory (if it is writable)
-ae::options('inspector')->set('directory_path', '/log');
-
-// Trigger an error artificially.
-trigger_error("Everything goes according to the plan.", E_USER_ERROR);
-
-// You can log a message and dump a variable
-ae::log("Let's dump something:", $_SERVER);
+\ae\request\map([
+    // ...
+    '/inspector' => \ae\inspector\assets(),
+    // ...
 ```
 
-In the context of a web site or application, æ appends the log to the output only if the client IP address is in the white list, which by default contains only 127.0.0.1, a.k.a. localhost.
+You show the inspector (and start catching error messages) by calling `\ae\inspector\show()` function (the argument is optional; the following values are used by default):
 
 ```php
-ae::options('inspector')->set('allowed_ips', '127.0.0.1, 192.168.1.101');
+\ae\inspector\show([
+	'globals'    => true,  // show global variables: $_GET, $_POST, $_SESSION, etc.
+	'locals'     => false, // dump local variables on errors and warnings
+    'queries'    => false, // show all database queries
+	'backtraces' => true,  // show backtraces on errors and warnings
+	'arguments'  => false, // dump function arguments when showing backtraces
+]);
 ```
 
-You can also automatically dump the environment variables and local variable scopes for errors:
+<!--
+    TODO: Huge dumps? Should user care or should we prevent dumping huge things automatically.
+-->
+
+### Debugging
+
+To log a message and/or dump a variable use `\ae\inspector\log()` function:
 
 ```php
-ae::options('inspector')->set('dump_context', true);
+$var = ['foo'];
+
+\ae\inspector\log('This message will be logged with a dump of an array.', $var);
 ```
 
-If the request has `X-Requested-With` header  set to `XMLHTTPRequest` (colloquially referred to as AJAX), instead of appending the log to the body of the response, æ will encode it into base64 and send it back via `X-ae-log` header of the response.
-
-æ comes with a small HTML application called **Inspector**. It allows you to browse all logs generated for the current page, including iFrames or AJAX requests. The log library will inject the inspector button into the page, if there are any messages logged. Pressing that button will open a new window, in which you can browse all items, view dumps, backtraces, etc.:
-
-![](utilities/inspector/screenshot_log.png)
-
-
-### Probe
-
-Probe library allows you to profile your code and see how much time and memory each part consumes.
+You can also log an error, warning, or notice:
 
 ```php
-// You must load the inspector utility
-ae::register('utilities/inspector');
+// Same thing, different color:
+\ae\inspector\error('This is an error.');
+\ae\inspector\warning('This is a warning.');
+\ae\inspector\notice('This is a notice');
+```
 
+If you don't want strings to be treated as messages, use `\ae\inspector\dump()` function instead:
+
+```php
+\ae\inspector\dump('This dump of a string is followed by dumps of a boolean and an array.', true, ['foo']);
+```
+
+### Profiling
+
+You can profile your application performance and memory footprint using `\ae\inspector\probe()`:
+
+```php
 // Create a probe
-$probe = ae::probe('Test probe')->mark('begin probing');
+$probe = \ae\inspector\probe('Test probe')
+	->mark('begin probing');
 
 usleep(10000);
 
 $probe->mark('slept for ~10ms');
 
-$a = array(); $j = 0; while($j < 10000) $a[] = ++$j;
+$a = []; $j = 0; while($j < 10000) $a[] = ++$j;
 
 $probe->mark('filled memory with some garbage');
 
@@ -1226,9 +1379,4 @@ unset($a);
 $probe->mark('cleaned the garbage');
 ```
 
-If you run this script, the probe will log the following messages:
-
-![](utilities/inspector/screenshot_probe.png)
-
-**NB!** Each logged message itself consumes a few hundred bytes of memory.
-
+![](./utilities/inspector/inspector_probe.png)
