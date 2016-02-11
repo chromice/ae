@@ -106,9 +106,6 @@ Hello universe!
 
 Request library is a lightweight abstraction of HTTP requests.
 
-
-### Header
-
 You can distinguish between different kinds of requests using `\ae\request\method()` function:
 
 ```php
@@ -154,9 +151,6 @@ To get the client IP address, you should use `\ae\request\address()` function. I
 $client_ip = \ae\request\address();
 ```
 
-
-### Body
-
 You can use `\ae\request\query()` and `\ae\request\data()` functions to access `$_GET` and `$_POST` arrays:
 
 ```php
@@ -180,7 +174,7 @@ $post = \ae\request\body(); // same as file_get_contents("php://input")
 ```
 
 
-### Mapping
+### Request mapping
 
 You should always strive to break down your application into independent components. The best way to handle a request is to map it to a specific function or template that encapsulates part of your application's functionality.
 
@@ -357,17 +351,6 @@ unset($buffer);
 echo "I'm not buffered, either! Duh...";
 ```
 
-Buffers can be used as micro templates, e.g. when mixing HTML and PHP code:
-
-```html
-<?php $buffer = \ae\buffer([
-    'url'    => $article->url,
-    'name'   => (strlen($article->name) > 20 ? substr($article->name, 0, 19) . '&hellip;' : $article->name),
-    'visits' => number_format($article->visits)
-]) ?>
-<p><a href="{url}">{name}</a> has been viewed {visits} times.</p>
-<?php echo $buffer ?>
-```
 
 ### Templating
 
@@ -1314,6 +1297,7 @@ First of all, you must map all requests starting with <samp>/inspector</samp> to
     // ...
     '/inspector' => \ae\inspector\assets(),
     // ...
+]);
 ```
 
 ### Debugging
@@ -1456,7 +1440,7 @@ $options['baz'] = 'How do you do?';
 Please note that <samp>baz</samp> can be set to any value type, because its default value is <samp>null</samp>. On the other hand, the following code will throw an `\ae\options\Exception`:
 
 ```php
-$options['foo'] = null; // Exception: foo can only be set to TRUE or FALSE
+$options['foo'] = null; // Exception: foo can only be TRUE or FALSE
 ```
 
 You can also set option values by passing an associative array via second argument to `\ae\options()`. Those values are subject to validation rules listed above. This is useful when you want to both declare and use the options object to configure, say, your library:
