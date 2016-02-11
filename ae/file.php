@@ -401,7 +401,7 @@ class aeFile
 	{
 		$this->_can('tell the position');
 		
-		if (flase === ($offset = ftell($this->file)))
+		if (false === ($offset = ftell($this->file)))
 		{
 			throw new aeFileException('Failed to return the offset.');
 		}

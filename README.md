@@ -187,8 +187,8 @@ Here's an example of a request being mapped to a page template:
 
 \ae\request\map([
     // ...
-    '/about-us' => \ae\template('/path/to/about-us-page.php'),
-    '/our-work' => \ae\template('/path/to/our-work-page.php'),
+    '/about-us' => \ae\template('path/to/about-us-page.php'),
+    '/our-work' => \ae\template('path/to/our-work-page.php'),
     // ...
 ]);
 ```
@@ -201,7 +201,8 @@ Or we can write a more generic rule that handles all root level pages by using a
 \ae\request\map([
     // ...
     '/{any}' => function ($slug) {
-        return \ae\template('/path/to/' . $slug . '-page.php'); // returns '/path/to/about-us-page.php' template, it it exists
+        return \ae\template('path/to/' . $slug . '-page.php');
+        // returns '/path/to/about-us-page.php' template, it it exists
     },
     // ...
 ]);
@@ -223,7 +224,7 @@ Now, let's assume we want users to be able to download files from a specific dir
 \ae\request\map([
     // ...
     '/download' => function ($file_path) {
-        return \ae\file('/path/to/downloadable/files/' . $file_path) // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
+        return \ae\file('path/to/downloadable/files/' . $file_path) // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
             ->download(true);
     },
     // ...
@@ -290,7 +291,7 @@ And finally, our last rule will display home page *or* show 404 error for all un
 \ae\request\map([
     // ...
     '/' => function ($path) {
-        return empty($path) ? \ae\template('/path/to/home-page.php') : null;
+        return empty($path) ? \ae\template('path/to/home-page.php') : null;
     }
 ]);
 ```
@@ -321,7 +322,7 @@ $response = \ae\response()
 
 $response
     ->cache(2 * \ae\cache\minute, \ae\cache\server_side)
-    ->dispatch('/hello-world.html');
+    ->dispatch('hello-world.html');
 
 ?>
 ```
@@ -426,13 +427,13 @@ If you want your response to be cached client-side for a number of minutes, you 
 You can save any response manually using `\ae\cache\save()` function:
 
 ```php
-\ae\cache\save('/hello-world.html', $response, 2 * \ae\cache\hour);
+\ae\cache\save('hello-world.html', $response, 2 * \ae\cache\hour);
 ```
 
 You can delete any cached response using `\ae\cache\delete()` function by passing full or partial URL to it:
 
 ```php
-\ae\cache\delete('/hello-world.html');
+\ae\cache\delete('hello-world.html');
 ```
 
 You should also remove all *stale* cache entries via `\ae\cache\clean()`:
@@ -529,7 +530,7 @@ catch (\ae\path\Exception $e)
 File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
 
 ```php
-$file = \ae\file('/path/to/file.ext')
+$file = \ae\file('path/to/file.ext')
     ->open('w+')
     ->lock()
     ->truncate()
@@ -539,7 +540,7 @@ $file->seek(0);
 
 if ($file->tell() === 0)
 {
-    echo $file->read();
+    echo $file->read($file->size());
 }
 
 // Unlock file and close its handle
@@ -549,10 +550,9 @@ unset($file);
 The library exposes basic information about the file:
 
 ```php
-$file = \ae\file('/path/to/file.txt');
+$file = \ae\file('path/to/file.txt');
 
 echo $file->size(); // 12
-echo $file->mode(); // 0666
 echo $file->name(); // file.txt
 echo $file->type(); // txt
 echo $file->mime(); // text/plain
@@ -560,19 +560,16 @@ echo $file->mime(); // text/plain
 $path = $file->path(); // $path = \ae\path('path/to/file.txt')
 ```
 
-Existing files can be renamed, copied, moved or deleted:
+Existing files can be copied, moved or deleted:
 
 ```php
-$file = \ae\file('/path/to/file.txt')
-    ->create(0775); // touch + chmod
+$file = \ae\file('path/to/file.txt');
 
 if ($file->exists())
 {
-    $mode = $file->mode();
-    $file->name('new-file.txt')->type('doc');
     $copy = $file->copy('./file-copy.txt');
     $file->delete();
-    $copy->move('./file.txt')->mode($mode);
+    $copy->move('./file.txt');
 }
 ```
 
@@ -586,7 +583,7 @@ $file = \ae\file($_FILES['file']['tmp_name']);
 
 if ($file->is_uploaded())
 {
-    $file->move('/destination/' . $_FILES['file']['name']);
+    $file->move('path/to/destination/' . $_FILES['file']['name']);
 }
 ```
 
