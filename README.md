@@ -1103,9 +1103,6 @@ There are 3 authors in the result set:
 - William Ford Gibson
 ```
 
-
-### Active record
-
 In some cases you may want to update some property of an existing record without loading its data:
 
 ```php
@@ -1116,10 +1113,10 @@ $gibson->nationality = 'American';
 $gibson->save();
 ```
 
-Or you may want to create a new record first and then save it to the database manually (as opposed to using `\ae\db\insert()` function):
+Or you may want to make a new record first and then save it to the database manually (as opposed to using `\ae\db\insert()` function):
 
 ```php
-$shaky = \ae\db\make('authors', [
+$shaky = \ae\db\create('authors', [
     'name' => 'William Shakespeare',
     'nationality' => 'English'
 ]);
@@ -1133,7 +1130,32 @@ Now, Shakespeare was a playwright, while the rest of the authors are novelists. 
 $shaky->delete();
 ```
 
-### Relationships
+
+### Table class
+
+You can extend base table class `\ae\db\Table`. You must implement `\ae\db\Table::name()` method:
+
+```php
+class Authors extends \ae\db\Table
+{
+    public static function name()
+    {
+        return 'authors';
+    }
+}
+```
+
+The base class implements the following methods that work exactly as corresponding `\ae\db\*()` functions:
+
+```php
+Authors::select($predicates);
+Authors::insert($data[, ...]);
+Authors::update($predicates, $data);
+Authors::delete($predicates);
+
+Authors::find($record_id);
+Authors::create($data);
+```
 
 Let's make things more interesting by introducing a second class of objects: <samp>books</samp>. First, we need to create a table to store them:
 
@@ -1147,47 +1169,46 @@ Let's make things more interesting by introducing a second class of objects: <sa
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
 
-We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novels`. Obviously, `\ae\db\Table` won't be able to guess the name of the table now, so we must specify it manually by overriding the `name()` method:
+We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novels`:
 
 ```php
 class Novels extends \ae\db\Table
 {
     public static function name()
     {
-        return 'books'; // the real name of the table
+        return 'books';
     }
 }
 ```
 
 > There are two other methods you can override: `\ae\db\Table::accessor()` to return an array of primary keys; `\ae\db\Table::columns()` to return an array of data columns.
 
-We can start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
-
+We can start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `add_novel()` method. We would also add `novels()` method for retrieving all novels written by an author:
 
 ```php
 class Authors extends \ae\db\Table
 {
-    protected function has_many()
+    public static function name()
     {
-        return {
-        
-        }
+        return 'authors';
     }
     
     public function add_novel($title)
     {
-        $ids = $this->ids();
-        
         return Novels::create([
-                'author_id' => $ids['id'],
+                'author_id' => $this->id,
                 'title' => $title
             ])->save();
+    }
+    
+    public function novels()
+    {
+        return Novels::select(['author_id' => $this->id]);
     }
 }
 ```
 
 Now let's add a few books to the database:
-
 
 ```php
 $gibson->add_novel('Neuromancer');
@@ -1198,7 +1219,7 @@ $stephenson->add_novel('Snow Crash');
 $stephenson->add_novel('Cryptonomicon');
 $stephenson->add_novel('Reamde');
 
-// Note: we don't have to load author's record to add a novel.
+// Note: we don't have to load author's record to add a novel!
 $morgan = Authors::find($morgan_id);
 
 $morgan->add_novel('Altered Carbon');
@@ -1214,32 +1235,24 @@ class Novels extends \ae\db\Table
 {
     public static function name()
     {
-        return 'books'; // the real name of the table
+        return 'books';
     }
     
-    protected static function has_one()
-    {
-        return [
-            Authors::table() => '{self}.author_id = {target}.id'
-        ];
-    }
-    
-    public static function find_all()
+    public static function all()
     {
         return self::select()
-            ->with('author')
-            ->order_by('title')
-            ->many('Novels')
+            ->with('author', 'Authors')
+            ->order_by('title');
     }
 }
 ```
 
-Most of this code should be familiar to you. The only new thing here is `with()` method. The query will retrieve data from both <samp>books</samp> and <samp>authors</samp> tables, and we instruct the database to return <samp>books</samp> data as an instance of `Novels` class, and <samp>authors</samp> data as an instance of `Authors` class (first argument) assigned to `author` property (second argument) of the corresponding novel object.
+Most of this code should be familiar to you. The only new thing here is `with()` method. The query will retrieve data from both <samp>books</samp> and <samp>authors</samp> tables, and we instruct the library to return <samp>books</samp> data as an instance of `Novels` class, and <samp>authors</samp> data as an instance of `Authors` class (second argument) assigned to `author` property (first argument) of the corresponding novel object.
 
 Let's inventory our novel collection:
 
 ```php
-$novels = Novels::find_all();
+$novels = Novels::all();
 $count = count($novels);
 
 echo "Here are all $count novels ordered alphabetically:\n";
@@ -1264,7 +1277,6 @@ Here are all 9 novels ordered alphabetically:
 - Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
 ```
-
 
 ## Inspector
 
