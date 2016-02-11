@@ -199,7 +199,7 @@ Here's an example of a request being mapped to a page template:
 ]);
 ```
 
-Alternatively, we could write a more generic rule that handles all root level pages by using a placeholder and mapping it to a function:
+Or we can write a more generic rule that handles all root level pages by using a placeholder and mapping it to a function:
 
 ```php
 // GET /about-us HTTP/1.1
@@ -387,7 +387,7 @@ Provided the content of <samp>your/page.php</samp> is:
 <body><?= $body ?></body>
 ```
 
-The `$output` variable would contain:
+The `$output` variable will contain:
 
 ```html
 <title>Example!</title>
@@ -499,7 +499,7 @@ And here are the rules that <samp>cache/.htaccess</samp> must contain:
 </IfModule>
 ```
 
-Apache would first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>. This way, there is no need for PHP code to be loaded and run, when serving cached responses.
+Apache will first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>. This way, there is no need for PHP code to be loaded and run, when serving cached responses.
 
 ## Filesystem
 
@@ -621,7 +621,7 @@ foreach ($file as $meta_name => $meta_value)
 }
 ```
 
-Metadata is transient and is never saved to disk.
+Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate useful information.
 
 
 ### Image
@@ -746,7 +746,7 @@ Form library allows you to generate form controls, validate submitted values and
 
 Each form must have a unique ID. This way the library knows which form has been submitted, even if there are multiple forms on the page.
 
-In general any form script would consist of three parts: form and field declaration, validation and HTML output.
+In general any form script consists of three parts: form and field declaration, validation and HTML output.
 
 Let's declare a simple form with three fields (text input, checkbox and select drop-down) and basic validation rules:
 
@@ -837,7 +837,7 @@ In cases where the amount of values is arbitrary you must declare the field as `
 $cb = $form->multiple('checked')->required('Check at least one box');
 ```
 
-You would then output this field like this:
+You then output this field like this:
 
 ```html
 <label><?= $cb->input('checkbox', 'foo') ?> Foo</label><br>
@@ -937,7 +937,7 @@ $field->valid_value('Wrong option selected.', [
 ]);
 ```
 
-Legitimate users would never see this error, but it prevents would-be hackers from tempering with the data.
+Legitimate users will never see this error, but it prevents would-be hackers from tempering with the data.
 
 
 ## Database
@@ -1196,7 +1196,7 @@ class Novels extends \ae\db\Table
 
 > There are two other methods you can override: `\ae\db\Table::accessor()` to return an array of primary keys; `\ae\db\Table::columns()` to return an array of data columns.
 
-We could start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
+We can start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `Authors::add_novel()` method:
 
 
 ```php
@@ -1316,7 +1316,9 @@ First of all, you must map all requests starting with <samp>/inspector</samp> to
     // ...
 ```
 
-You show the inspector (and start catching error messages) by calling `\ae\inspector\show()` function (the argument is optional; the following values are used by default):
+### Debugging
+
+You can show the inspector (and start catching error messages) by calling `\ae\inspector\show()` function (the argument is optional; the following values are used by default):
 
 ```php
 \ae\inspector\show([
@@ -1332,7 +1334,6 @@ You show the inspector (and start catching error messages) by calling `\ae\inspe
     TODO: Huge dumps? Should user care or should we prevent dumping huge things automatically.
 -->
 
-### Debugging
 
 To log a message and/or dump a variable use `\ae\inspector\log()` function:
 
@@ -1384,7 +1385,35 @@ $probe->mark('cleaned the garbage');
 
 ## Utilities
 
+### Exception safety
 
+æ is designed with strong exception safety in mind. You make you code exception-safe too by taking advantage of the object life cycle. 
+
+> `__construct()` method is called whenever a new object is instantiated. If the object is assigned to a variable, it will persist until either:
+> 
+> - the variable is `unset()`
+> - the scope where the variable was declared is destroyed, either naturally or *when an exception is thrown*
+> - execution of the program halts
+> 
+> `__destruct()` method is called when there are no more variables pointing to the object.
+
+If you find yourself cleaning up state after catching an exception, you are doing it wrong! Generally speaking, all resources your object has allocated must be deallocated in the destructor. But writing little wrapper-classes to manage each kind of resource is simply too tedious!
+
+If you just need to ensure some (usually global or static) variable is set to its previous state, use `\ae\switcher()` to create an object that will do it automatically:
+
+```php
+$a = 'foo';
+
+$switcher = \ae\switcher($a, 'bar');
+
+// $a === 'bar'
+
+unset($switcher);
+
+// $a === 'foo'
+```
+
+And if you need to run some arbitrary code (to free resources for instance), use `\ae\deferrer()`:
 
 ```php
 $file = fopen('some/file', 'r');
@@ -1394,30 +1423,59 @@ $deferrer = \ae\deferrer(function () use ($file) {
 });
 ```
 
+### Configuration options
 
+While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `configure()` method or function. Internally, all of them use `\ae\options()` function to create an object that:
+
+1. enumerates all possible option names
+2. provides default values for each option
+3. exposes an array-like interface to get and set values
+4. ensures that only declared option names can be used
+5. validates value types.
+
+Let's declare a simple set of options:
 
 ```php
-$a = 'foo';
+$options = \ae\options([
+    'foo' => true,
+    'bar' => [],
+    'baz' => null,
+]);
+```
 
-$switcher = \ae\switcher($a, 'bar');
+And that's how we can use it:
 
-echo $a; // 'bar';
+```php
+if (true === $options['foo']) {
+    $options['bar'] = [1, 2, 3];
+}
 
-unset($switcher);
+$options['baz'] = 'How do you do?';
+```
 
-echo $a; // 'foo'
+Please note that <samp>baz</samp> can be set to any value type, because its default value is <samp>null</samp>. On the other hand, the following code will throw an `\ae\options\Exception`:
+
+```php
+$options['foo'] = null; // Exception: foo can only be set to TRUE or FALSE
+```
+
+You can also set option values by passing an associative array via second argument to `\ae\options()`. Those values are subject to validation rules listed above. This is useful when you want to both declare and use the options object to configure, say, your library:
+
+```php
+class MyLibrary
+{
+    protected static $options;
+    
+    public static function configure(/* $values OR $name, $value*/)
+    {
+        $args = func_get_args();
+        $values = func_num_args() > 1 ? [ $args[0] => $args[1] ] ? $args[0];
+        
+        static::$options = \ae\options([
+            // options names and their default values
+        ], $values);
+    }
+}
 ```
 
 
-
-```php
-$pile = array('foo','fee');
-
-$stacker = \ae\stacker($pile, 'bar', 'pub');
-
-var_dump($pile); // array('foo','fee','bar','pub');
-
-unset($stacker);
-
-var_dump($pile); // array('foo','fee');
-```
