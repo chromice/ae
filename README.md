@@ -273,7 +273,7 @@ Image processing is a very common problem that can be solved in multiple ways. L
 ]);
 ```
 
-Similarly to the file download example, the file path is passed as *the last argument* to our handler. In addition to that, we catch the image format as *the first argument*. The object returned by `\ae\image()` conforms to `\ae\response\Cachable` interface (in addition to `\ae\response\Dispatchable`), which lets us call `cache()` method.
+Similarly to the file download example, the file path is passed as *the last argument* to our handler. In addition to that, we catch the image format as *the first argument*. The object returned by `\ae\image()` conforms to `\ae\response\Cachable` interface (in addition to `\ae\response\Dispatchable`) and implements `cache()` method.
 
 Please note that if the format is wrong, we show 404 error.
 
@@ -710,7 +710,7 @@ If you want to preserve association with the original image, you can append or p
 If you want to change the name *or* image type completely, you should provide file name to `save()` method:
 
 ```php
-$image = \ae\image('some/image.png')
+$image = \ae\image('some/image.png');
 
 $image
     ->quality(75)
@@ -719,7 +719,7 @@ $image
 
 $image
     ->interlaced(true)
-    ->save('image.gif') // some/image.gif
+    ->save('image.gif'); // some/image.gif
 ```
 
 
@@ -942,7 +942,7 @@ Provided the connection parameters are correct and the database (<samp>ae_db</sa
 
 ```php
 try {
-    \ae\db\query("SELECT 1")->make();
+    \ae\db\query("SELECT 1");
 } catch (\ae\db\Exception $e) {
     echo 'Something went wrong: ' . $e->getMessage();
 }
@@ -964,52 +964,42 @@ If you want to know what queries were made and how much memory and time they tak
 Let's first create <samp>authors</samp> table:
 
 ```php
-\ae\db\query("CREATE TABLE IF NOT EXISTS {table} (
+\ae\db\query("CREATE TABLE IF NOT EXISTS `authors` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
         `nationality` varchar(255) NOT NULL,
         PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-    ->aliases([
-        'table' => 'authors'
-    ])
-    ->make();
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
-
-Instead of specifying the table name inline, we used `{table}` placeholder and provided its value via `aliases()` method. The library will wrap the name with backticks (<samp>`</samp>) and replace the placeholder for us.
-
-While not particularly useful in this example, placeholders are generally a good way to keep you query code readable.
 
 Let's fill this table with some data:
 
 ```php
-\ae\db\query("INSERT INTO {table} ({data:names}) VALUES ({data:values})")
-    ->aliases([
-        'table' => 'authors'
-    ])
-    ->data([
+\ae\db\query("INSERT INTO `authors` ({data:names}) VALUES ({data:values})", null, [
         'name' => 'Richar K. Morgan', // (sic)
-        'nationality' => 'British'
-    ])
-    ->make();
+        'nationality' => 'Welsh', // (sic)
+    ]);
 
 $morgan_id = \ae\db\insert_id();
 ```
 
-In this example we used `{data:names}` and `{data:values}` placeholders and specified column names and corresponding values via `data()` method.
+In this example we used `{data:names}` and `{data:values}` placeholders and specified column names and corresponding values via third argument.
 
 Now, there's a typo in the authors name, so let's fix it:
 
 ```php
-\ae\db\query("UPDATE {table} SET {data:set} WHERE `id` = {author_id}")
-    ->aliases(['table' => 'authors'])
-    ->data(['name' => 'REPLACE(`name`, "Richar ", "Richard ")'], \ae\db\expressions)
-    ->data(['nationality' => 'English'], \ae\db\values)
-    ->variables(['author_id' => $morgan_id], \ae\db\values)
-    ->make();
+\ae\db\query("UPDATE `authors` 
+    SET {data:set}, `name` = REPLACE(`name`, {from}, {to}) 
+    WHERE `id` = {author_id}", [
+        'from'      => 'Richar ',
+        'to'        => 'Richard ',
+        'author_id' => $morgan_id
+    ], [
+        'nationality' => 'British'
+    ]);
 ```
 
-Here we used `{data:set}` placeholder and specified its value via `data()` method: one call with a database expression, and the other with a plain value. We also used `variables()` method to escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
+**CHANGE ME:** Here we used `{data:set}` placeholder and specified its value via `data()` method: one call with a database expression, and the other with a plain value. We also used `variables()` method to escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
 
 > Both `data()` and `variables()` methods escape values passed through them by default, i.e. `\ae\db\values` is the default value of the second argument.
 
@@ -1018,21 +1008,22 @@ Of course, these are just examples, there is actually a less verbose way to inse
 ```php
 // Update existing record
 \ae\db\update('authors', [
-    'nationality' => 'English'
-], ['id' => $morgan_id]);
+        'id' => $morgan_id
+    ], [
+        'nationality' => 'English'
+    ]);
 
 // Insert two more records
-$stephenson_id = \ae\db\insert('authors', [
-    'name' => 'Neal Stephenson',
-    'nationality' => 'American'
-]);
-$gibson_id = \ae\db\insert('authors', [
-    'name' => 'William Ford Gibson',
-    'nationality' => 'Canadian'
-]);
+list($stephenson, $gibson) = \ae\db\insert('authors', [
+        'name'        => 'Neal Stephenson',
+        'nationality' => 'American'
+    ], [
+        'name'        => 'William Ford Gibson',
+        'nationality' => 'Canadian'
+    ]);
 ```
 
-> There is also `insert_or_update()` function, which you can use to update a row or insert a new one, if it does not exist; `count()` for counting rows; `find()` for retrieving a particular row; and `delete()` for deleting rows from a table. Please consult the source code of the database library to learn more.
+> There is also `insert_or_update()` function, which you can use to update a row or insert a new one, if it does not exist; `count()` for counting rows; `find()` for retrieving a particular row by primary key; and `delete()` for deleting rows from a table. Please consult the source code of the database library to learn more.
 
 
 ### Transactions
@@ -1080,7 +1071,7 @@ This will produce:
 
 ```txt
 There are 3 authors in the database:
-- Richard K. Morgan (British)
+- Richard K. Morgan (English)
 - Neal Stephenson (American)
 - William Ford Gibson (Canadian)
 ```
@@ -1088,7 +1079,7 @@ There are 3 authors in the database:
 Now, let's change the query so that authors are ordered alphabetically:
 
 ```php
-$authors = \ae\db\query('SELECT * FROM `authors` {sql:order_by}')
+$authors = \ae\db\select('authors')
     ->order_by(['name' => 'ASC']);
 $count = count($authors);
 
@@ -1100,7 +1091,7 @@ foreach ($authors as $author)
 }
 ```
 
-Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `order_by()` method. 
+**CHANGE ME:** Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `order_by()` method. 
 
 > Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They let you to write complex parameterized queries without concatenating all bits of the query string yourself. Please consult the library source code to learn more.
 > 
@@ -1128,7 +1119,7 @@ $gibson->nationality = 'American';
 $gibson->save();
 ```
 
-Let's make a new record and save it to the database:
+Or you may want to create a new record first and then save it to the database manually (as opposed to using `\ae\db\insert()` function):
 
 ```php
 $shaky = \ae\db\make('authors', [
@@ -1138,8 +1129,6 @@ $shaky = \ae\db\make('authors', [
 
 $shaky->save();
 ```
-
-Unlike `\ae\db\insert()` function, `\ae\db\make()` does not write to the database. You have to call `save()` method to do that.
 
 Now, Shakespeare was a playwright, while the rest of the authors are novelists. So let's delete his record:
 
@@ -1153,16 +1142,12 @@ Let's make things more interesting by introducing a second class of objects: <sa
 
 
 ```php
-\ae\db\query("CREATE TABLE IF NOT EXISTS {table} (
+\ae\db\query("CREATE TABLE IF NOT EXISTS `books` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `author_id` int(10) unsigned NOT NULL,
         `title` varchar(255) NOT NULL,
         PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8")
-    ->aliases([
-        'table' => 'books'
-    ])
-    ->make();
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
 
 We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novels`. Obviously, `\ae\db\Table` won't be able to guess the name of the table now, so we must specify it manually by overriding the `name()` method:
@@ -1333,7 +1318,7 @@ You can also log an error, warning, or notice:
 // Same thing, different color:
 \ae\inspector\error('This is an error.');
 \ae\inspector\warning('This is a warning.');
-\ae\inspector\notice('This is a notice');
+\ae\inspector\notice('This is a notice.');
 ```
 
 If you don't want strings to be treated as messages, use `\ae\inspector\dump()` function instead:
@@ -1344,7 +1329,7 @@ If you don't want strings to be treated as messages, use `\ae\inspector\dump()` 
 
 ### Profiling
 
-You can profile your application performance and memory footprint using `\ae\inspector\probe()`:
+You can profile your application's performance and memory footprint using `\ae\inspector\probe()`:
 
 ```php
 // Create a probe
@@ -1409,7 +1394,7 @@ $deferrer = \ae\deferrer(function () use ($file) {
 
 ### Configuration options
 
-While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `configure()` method or function. Internally, all of them use `\ae\options()` function to create an object that:
+While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `\ae\*\configure()` function. Internally, all of them use `\ae\options()` function to create an object that:
 
 1. enumerates all possible option names
 2. provides default values for each option
