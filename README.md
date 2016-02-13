@@ -1,6 +1,6 @@
 # æ – minimalist PHP toolkit
 
-æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, database operations, easy debugging and profiling.
+æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, database operations, and easy debugging and profiling.
 
 This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
@@ -303,7 +303,7 @@ And finally, our last rule will display home page *or* show 404 error for all un
 
 Response library is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
 
-> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from calling `dispatch()` method yourself though, and rely on request library instead.
+> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from calling `dispatch()` method yourself though, and rely on request library.
 
 Here is an example of a simple application that creates a response, sets one custom header, caches it for 5 minutes, and dispatches it. The response is also automatically compressed using Apache's `mod_deflate`:
 
@@ -976,11 +976,14 @@ Let's fill this table with some data:
         'name' => 'Richar K. Morgan', // (sic)
         'nationality' => 'Welsh', // (sic)
     ]);
+    
+// Which is equivalent to:
+// \ae\db\query("INSERT INTO `authors` (`name`, `nationality`) VALUES ('Richar K. Morgan', 'Welsh')");
 
 $morgan_id = \ae\db\insert_id();
 ```
 
-In this example we used `{data:names}` and `{data:values}` placeholders and specified column names and corresponding values via third argument.
+In this example we used `{data:names}` and `{data:values}` placeholders and specified column names and corresponding values via the third argument.
 
 Now, there's a typo in the authors name, so let's fix it:
 
@@ -994,13 +997,19 @@ Now, there's a typo in the authors name, so let's fix it:
     ], [
         'nationality' => 'British'
     ]);
+    
+// Which is equivalent to:
+
+// \ae\db\query("UPDATE `authors` 
+//    SET `nationality` = 'British', `name` = REPLACE(`name`, 'Richar ', 'Richard ') 
+//    WHERE `id` = $morgan_id");
 ```
 
-**CHANGE ME:** Here we used `{data:set}` placeholder and specified its value via `data()` method: one call with a database expression, and the other with a plain value. We also used `variables()` method to escape the value of `$morgan_id` and replace `{author_id}` placeholder. 
+Here we used `{data:set}` placeholder and specified its value the third argument. We also used three parameters in the query and specified their values via the second argument.
 
-> Both `data()` and `variables()` methods escape values passed through them by default, i.e. `\ae\db\values` is the default value of the second argument.
+**NB!** You should always supply parameter and data values via the second and third arguments to prevent potential SQL injection attacks!
 
-Of course, these are just examples, there is actually a less verbose way to insert and update database rows:
+You can make any query to the database using `\ae\db\query()` function, but common operations are possible using less verbose functions.
 
 ```php
 // Update existing record
@@ -1019,33 +1028,6 @@ list($stephenson, $gibson) = \ae\db\insert('authors', [
         'nationality' => 'Canadian'
     ]);
 ```
-
-> There is also `insert_or_update()` function, which you can use to update a row or insert a new one, if it does not exist; `count()` for counting rows; `find()` for retrieving a particular row by primary key; and `delete()` for deleting rows from a table. Please consult the source code of the database library to learn more.
-
-
-### Transactions
-
-A sequence of interdependent database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
-
-```php
-// Open transaction
-$transaction = \ae\db\transaction();
-
-// ...perform a series of queries...
-
-$transaction->commit();
-
-// ...perform another series of queries...
-
-$transaction->commit();
-
-// Close transaction (rolling back any uncommitted queries)
-unset($transaction);
-```
-
-This way, if one of your SQL queries fails, it will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
-
-**NB!** Only one transaction can exist at a time.
 
 
 ### Retrieving data
@@ -1103,7 +1085,11 @@ There are 3 authors in the result set:
 - William Ford Gibson
 ```
 
-In some cases you may want to update some property of an existing record without loading its data:
+### Active record
+
+As you probably noticed `\ae\db\select()` and `\ae\db\insert()` functions always return results as objects. In addition to giving access to column values via corresponding properties, these objects expose three methods: `load()`, `save()`, and `delete()`.
+
+In some cases you may want to update a property of an existing record without loading its data:
 
 ```php
 $gibson = \ae\db\find('authors', $gibson_id);
@@ -1113,10 +1099,20 @@ $gibson->nationality = 'American';
 $gibson->save();
 ```
 
-Or you may want to make a new record first and then save it to the database manually (as opposed to using `\ae\db\insert()` function):
+Or you may want to load only a specific value from the database:
 
 ```php
-$shaky = \ae\db\create('authors', [
+$stephenson = \ae\db\find('authors', $stephenson_id);
+
+$stephenson->load(['name']);
+
+echo $stephenson->name; // echo "Neal Stephenson";
+```
+
+You can make a new record and save it to the database manually:
+
+```php
+$shaky = new \ae\db\Record('authors', [
     'name' => 'William Shakespeare',
     'nationality' => 'English'
 ]);
@@ -1130,35 +1126,42 @@ Now, Shakespeare was a playwright, while the rest of the authors are novelists. 
 $shaky->delete();
 ```
 
-
-### Table class
-
-You can extend base table class `\ae\db\Table`. You must implement `\ae\db\Table::name()` method:
+You can extend `\ae\db\ActiveRecord` class to add more functionality to these objects:
 
 ```php
-class Authors extends \ae\db\Table
+class Author extends \ae\db\ActiveRecord
 {
-    public static function name()
+    public static function table()
     {
         return 'authors';
     }
 }
 ```
 
-The base class implements the following methods that work exactly as corresponding `\ae\db\*()` functions:
+The base class implements several static methods that work exactly as corresponding `\ae\db\*()` functions (sans the usual first `$table` argument):
 
 ```php
-Authors::select($predicates);
-Authors::insert($data[, ...]);
-Authors::update($predicates, $data);
-Authors::delete($predicates);
+Author::select([$columns]);
+Author::insert($data[, ...]);
+Author::update($predicates, $data);
+Author::delete($predicates);
 
-Authors::find($record_id);
-Authors::create($data);
+Author::count($predicates);
+Author::find($record_id);
+```
+
+Of course, you can create a new record by instantiating this class:
+
+```php
+$leckie = new Author([
+    'name' => 'Ann Leckie',
+    'nationality' => 'American'
+]);
+
+$leckie->save();
 ```
 
 Let's make things more interesting by introducing a second class of objects: <samp>books</samp>. First, we need to create a table to store them:
-
 
 ```php
 \ae\db\query("CREATE TABLE IF NOT EXISTS `books` (
@@ -1169,12 +1172,12 @@ Let's make things more interesting by introducing a second class of objects: <sa
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
 
-We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novels`:
+We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novel`:
 
 ```php
-class Novels extends \ae\db\Table
+class Novel extends \ae\db\ActiveRecord
 {
-    public static function name()
+    public static function table()
     {
         return 'books';
     }
@@ -1183,27 +1186,28 @@ class Novels extends \ae\db\Table
 
 > There are two other methods you can override: `\ae\db\Table::accessor()` to return an array of primary keys; `\ae\db\Table::columns()` to return an array of data columns.
 
-We can start spawning new books using `Novels::create()` method, like we did with authors, but instead we will incapsulate this functionality into `add_novel()` method. We would also add `novels()` method for retrieving all novels written by an author:
+Now we could be adding new books using `Novel::insert()` method directly, but instead we will incapsulate this functionality into `add_novel()` method. We would also add `novels()` method for retrieving all novels written by an author:
 
 ```php
-class Authors extends \ae\db\Table
+class Author extends \ae\db\ActiveRecord
 {
-    public static function name()
+    public static function table()
     {
         return 'authors';
     }
     
     public function add_novel($title)
     {
-        return Novels::create([
-                'author_id' => $this->id,
-                'title' => $title
-            ])->save();
+        return Novel::insert([
+            'author_id' => $this->id,
+            'title' => $title
+        ]);
     }
     
     public function novels()
     {
-        return Novels::select(['author_id' => $this->id]);
+        return Novel::select()
+            ->where(['author_id' => $this->id]);
     }
 }
 ```
@@ -1220,39 +1224,40 @@ $stephenson->add_novel('Cryptonomicon');
 $stephenson->add_novel('Reamde');
 
 // Note: we don't have to load author's record to add a novel!
-$morgan = Authors::find($morgan_id);
+$morgan = Author::find($morgan_id);
 
 $morgan->add_novel('Altered Carbon');
 $morgan->add_novel('Broken Angels');
 $morgan->add_novel('Woken Furies');
 ```
 
-And finally, let's add a method to `Novels` class that will return all book records sorted alphabetically:
-
+And finally, let's add a method to `Novel` class that will return all book records sorted alphabetically:
 
 ```php
-class Novels extends \ae\db\Table
+class Novel extends \ae\db\ActiveRecord
 {
-    public static function name()
+    public static function table()
     {
         return 'books';
     }
     
-    public static function all()
+    public static function find_all()
     {
         return self::select()
-            ->with('author', 'Authors')
+            ->with('Author')
             ->order_by('title');
     }
 }
 ```
 
-Most of this code should be familiar to you. The only new thing here is `with()` method. The query will retrieve data from both <samp>books</samp> and <samp>authors</samp> tables, and we instruct the library to return <samp>books</samp> data as an instance of `Novels` class, and <samp>authors</samp> data as an instance of `Authors` class (second argument) assigned to `author` property (first argument) of the corresponding novel object.
+Most of this code should be familiar to you. The only new thing here is `with()` method which joins a record from <samp>authors</samp> table using <samp>author_id</samp> foreign key.
+
+> We could manually specify the foreign key name via the second argument, and the property name via the third, e.g. `->with('Author', 'author_id', 'author')`, but they are automatically derived from class name.
 
 Let's inventory our novel collection:
 
 ```php
-$novels = Novels::all();
+$novels = Novel::find_all();
 $count = count($novels);
 
 echo "Here are all $count novels ordered alphabetically:\n";
@@ -1277,6 +1282,32 @@ Here are all 9 novels ordered alphabetically:
 - Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
 ```
+
+
+### Transactions
+
+A sequence of interdependent database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
+
+```php
+// Open transaction
+$transaction = \ae\db\transaction();
+
+// ...perform a series of queries...
+
+$transaction->commit();
+
+// ...perform another series of queries...
+
+$transaction->commit();
+
+// Close transaction (rolling back any uncommitted queries)
+unset($transaction);
+```
+
+This way, if one of your SQL queries fails, it will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
+
+**NB!** Only one transaction can exist at a time.
+
 
 ## Inspector
 
