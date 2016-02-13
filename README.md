@@ -1009,16 +1009,23 @@ Here we used `{data:set}` placeholder and specified its value the third argument
 
 **NB!** You should always supply parameter and data values via the second and third arguments to prevent potential SQL injection attacks!
 
-You can make any query to the database using `\ae\db\query()` function, but common operations are possible using less verbose functions.
+
+### Specialized function 
+
+You can make any query with `\ae\db\query()` function, but it's not as convenient as specialized functions:
+
+- `\ae\db\select($table, $columns)`
+- `\ae\db\insert($table, $data[, $data, ...])`
+- `\ae\db\update($table, $predicate, $data)`
+- `\ae\db\delete($table, $predicate)`
+- `\ae\db\count($table, $predicate)`
+- `\ae\db\find($table, $record_id)`
+
+> All functions that use `$predicate` require it. If you want to apply, say, a <samp>DELETE</samp> query to all rows, use `\ae\db\all` constant for the second argument.
+
+Let's add more data:
 
 ```php
-// Update existing record
-\ae\db\update('authors', [
-        'id' => $morgan_id
-    ], [
-        'nationality' => 'English'
-    ]);
-
 // Insert two more records
 list($stephenson, $gibson) = \ae\db\insert('authors', [
         'name'        => 'Neal Stephenson',
@@ -1029,16 +1036,24 @@ list($stephenson, $gibson) = \ae\db\insert('authors', [
     ]);
 ```
 
-
-### Retrieving data
-
-Now that we have some rows in the table, let's retrieve and display them:
+We should also update Mr. Morgan's nationality:
 
 ```php
-$authors = \ae\db\select('authors');
+\ae\db\update('authors', [
+        'id' => $morgan_id
+    ], [
+        'nationality' => 'English'
+    ]);
+```
+
+Now that we have some rows in the table, let's retrieve and display them in alphabetical order:
+
+```php
+$authors = \ae\db\select('authors')
+    ->order_by('name', \ae\db\order\ascending);
 $count = count($authors);
 
-echo "There are $count authors in the database:\n";
+echo "There are $count authors in the result set:\n";
 
 foreach ($authors as $author)
 {
@@ -1046,48 +1061,28 @@ foreach ($authors as $author)
 }
 ```
 
-This will produce:
-
-```txt
-There are 3 authors in the database:
-- Richard K. Morgan (English)
-- Neal Stephenson (American)
-- William Ford Gibson (Canadian)
-```
-
-Now, let's change the query so that authors are ordered alphabetically:
-
-```php
-$authors = \ae\db\select('authors')
-    ->order_by(['name' => 'ASC']);
-$count = count($authors);
-
-echo "There are $count authors in the result set:\n";
-
-foreach ($authors as $author)
-{
-    echo "- {$author->name}\n";
-}
-```
-
-**CHANGE ME:** Again, instead of specifying `ORDER BY` clause directly in the query we are using a placeholder for it, that will be filled in only if we specify the clause via `order_by()` method. 
-
-> Database library has other placeholder/method combinations like this: `{sql:join}` / `join()`, `{sql:where}` / `where()`, `{sql:group_by}` / `group_by()`, `{sql:having}` / `having()` and `{sql:limit}` / `limit()`. They let you to write complex parameterized queries without concatenating all bits of the query string yourself. Please consult the library source code to learn more.
-> 
-> You don't have to specify all these placeholders manually, as `\ae\db\select()` includes all of them and replaces them with empty strings, if no value is provided.
-
 The example above will produce a list of authors in alphabetical order:
 
 ```txt
 There are 3 authors in the result set:
-- Neal Stephenson
-- Richard K. Morgan
-- William Ford Gibson
+- Neal Stephenson (American)
+- Richard K. Morgan (English)
+- William Ford Gibson (Canadian)
 ```
+
+You can add clauses to the `\ae\db\select()` queries by using modifier methods: 
+
+- `join($table, $predicate[, $type])`
+- `where($predicate[, ...])`
+- `group_by($column[, ...])` or `group_by($columns)`
+- `having($predicate[, ...])`
+- `order_by($column[, $order, ...])` or `order_by($columns_order)`
+- `limit($limit[, $offset])`
+
 
 ### Active record
 
-As you probably noticed `\ae\db\select()` and `\ae\db\insert()` functions always return results as objects. In addition to giving access to column values via corresponding properties, these objects expose three methods: `load()`, `save()`, and `delete()`.
+You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to giving access to column values via corresponding properties, these objects expose three methods: `load()`, `save()`, and `delete()`.
 
 In some cases you may want to update a property of an existing record without loading its data:
 
@@ -1138,15 +1133,14 @@ class Author extends \ae\db\ActiveRecord
 }
 ```
 
-The base class implements several static methods that work exactly as corresponding `\ae\db\*()` functions (sans the usual first `$table` argument):
+The base class implements several static methods that work exactly as corresponding `\ae\db\` functions, just without the first (`$table`) argument:
 
 ```php
 Author::select([$columns]);
 Author::insert($data[, ...]);
-Author::update($predicates, $data);
-Author::delete($predicates);
-
-Author::count($predicates);
+Author::update($predicate, $data);
+Author::delete($predicate);
+Author::count($predicate);
 Author::find($record_id);
 ```
 
@@ -1253,6 +1247,8 @@ class Novel extends \ae\db\ActiveRecord
 Most of this code should be familiar to you. The only new thing here is `with()` method which joins a record from <samp>authors</samp> table using <samp>author_id</samp> foreign key.
 
 > We could manually specify the foreign key name via the second argument, and the property name via the third, e.g. `->with('Author', 'author_id', 'author')`, but they are automatically derived from class name.
+
+<!-- TODO: Polymorphic relationships. -->
 
 Let's inventory our novel collection:
 
