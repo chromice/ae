@@ -5,7 +5,7 @@
 This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
 - **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
-- **Reliability**: All examples in this documentation are tested and their output is verified. [Documentation](./index.php) is the spec, [examples](./examples/) are unit tests. The syntax is designed to be expressive and error-resistant. 
+- **Reliability**: The APIs were designed to be expressive and error-resistant. The versions of this code have powered a few moderately important websites, which helped iron most kinks out.
 - **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
