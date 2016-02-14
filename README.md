@@ -224,7 +224,8 @@ Now, let's assume we want users to be able to download files from a specific dir
 \ae\request\map([
     // ...
     '/download' => function ($file_path) {
-        return \ae\file('path/to/downloadable/files/' . $file_path) // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
+        return \ae\file('path/to/downloadable/files/' . $file_path);
+        // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
             ->download(true);
     },
     // ...
@@ -232,9 +233,8 @@ Now, let's assume we want users to be able to download files from a specific dir
 ```
 
 <!--
-
     TODO: How do I pass a file though, e.g. show document.pdf, instead of downloading it?
-
+    
     \ae\file()->download(false);
     \ae\file()->download(true);
     \ae\file()->download('custom_name.ext');
@@ -303,7 +303,7 @@ And finally, our last rule will display home page *or* show 404 error for all un
 
 Response library is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
 
-> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from calling `dispatch()` method yourself though, and rely on request library.
+> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from calling `dispatch()` method yourself though, and use the request mapping pattern as much as possible.
 
 Here is an example of a simple application that creates a response, sets one custom header, caches it for 5 minutes, and dispatches it. The response is also automatically compressed using Apache's `mod_deflate`:
 
@@ -436,7 +436,7 @@ You can delete any cached response using `\ae\cache\delete()` function by passin
 \ae\cache\delete('hello-world.html');
 ```
 
-You should also remove all *stale* cache entries via `\ae\cache\clean()`:
+You should also periodically remove all *stale* cache entries via `\ae\cache\clean()`:
 
 ```php
 \ae\cache\clean();
@@ -450,9 +450,9 @@ To completely erase all cached data use `\ae\cache\purge()` function:
 \ae\cache\purge();
 ```
 
-The responses are saved to <samp>cache</samp> directory by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
+The responses are saved in <samp>cache</samp> directory (in the *web root* directory) by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
 
-Put the following rules into <samp>.htaccess</samp> file in the web root directory:
+Put the following rules into <samp>.htaccess</samp> file in the *web root* directory:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -483,7 +483,8 @@ And here are the rules that <samp>cache/.htaccess</samp> must contain:
 </IfModule>
 ```
 
-Apache will first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>. This way, there is no need for PHP code to be loaded and run, when serving cached responses.
+With everything in place, Apache will first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>, where your app can generate (and cache statically) a response.
+
 
 ## Filesystem
 
@@ -922,7 +923,7 @@ Legitimate users will never see this error, but it prevents would-be hackers fro
 
 ## Database
 
-Database library lets you make queries to MySQL database, and exposes a simple abstraction for tables and transactions.
+Database library lets you make queries to a MySQL database, and exposes a simple <abbr title="object-oriented">OO</abbr> abstraction for individual records.
 
 You must to provide connection parameters first:
 
@@ -935,7 +936,7 @@ You must to provide connection parameters first:
 ]);
 ```
 
-Provided the connection parameters are correct and the database (<samp>ae_db</samp> in this example) exists, you can create a connection and make a query:
+Provided the connection parameters are correct and the database (<samp>ae_db</samp> in this example) exists, we can try to make a query to it:
 
 ```php
 try {
@@ -947,18 +948,18 @@ try {
 
 As you can see, whenever something goes wrong, `\ae\db\Exception` exception is thrown. 
 
-If you want to know what queries were made and how much memory and time they take, you can turn query logging on:
+If you want to know what queries were made and how much memory and time they took, you should turn query logging on:
 
 ```php
 \ae\inspector\show('queries', true);
 ```
 
-> You must show inspector before you start making queries! See [Inspector](#inspector) section for more details.
+> You must show inspector before you start making queries! See [Inspector](#inspector) section for more information.
 
 
 ### Making queries 
 
-Let's first create <samp>authors</samp> table:
+Let's first create <samp>authors</samp> table using `\ae\db\query()` function:
 
 ```php
 \ae\db\query("CREATE TABLE IF NOT EXISTS `authors` (
@@ -1009,19 +1010,37 @@ Here we used `{data:set}` placeholder and specified its value the third argument
 
 **NB!** You should always supply parameter and data values via the second and third arguments to prevent potential SQL injection attacks!
 
+And if we run this query:
 
-### Specialized function 
+```php
+$result = \ae\db\query("SELECT * FROM `authors` WHERE `author_id` = {id}", [
+        'id' => $morgan_id
+    ]);
 
-You can make any query with `\ae\db\query()` function, but it's not as convenient as specialized functions:
+echo $result[0]->name . ' is ' . $result[0]->nationality;
+```
 
-- `\ae\db\select($table, $columns)`
-- `\ae\db\insert($table, $data[, $data, ...])`
-- `\ae\db\update($table, $predicate, $data)`
-- `\ae\db\delete($table, $predicate)`
-- `\ae\db\count($table, $predicate)`
-- `\ae\db\find($table, $record_id)`
+It should produce this string:
 
-> All functions that use `$predicate` require it. If you want to apply, say, a <samp>DELETE</samp> query to all rows, use `\ae\db\all` constant for the second argument.
+```txt
+Richard K. Morgan is British
+```
+
+
+### Specialized functions 
+
+You can make any query via `\ae\db\query()` function alone, but it's not as convenient as the specialized functions:
+
+- `\ae\db\select($table[, $columns])` – a <samp>SELECT</samp> query; accepts an array of column names as the second argument; returns a query object that can be used to add more clauses.
+- `\ae\db\insert($table, $data[, ...])` – an <samp>INSERT</samp> query; can insert multiple records; if more than one record is inserted, returns an array.
+- `\ae\db\update($table, $predicate, $data)` – an <samp>UPDATE</samp> query; returns the number of rows affected.
+- `\ae\db\delete($table, $predicate)` – a <samp>DELETE</samp> query; returns the number of rows affected.
+- `\ae\db\count($table, $predicate)` – a custom <samp>SELECT</samp> query; return a number of rows.
+- `\ae\db\find($table, $record_id)` – a custom <samp>SELECT</samp> query; returns a single record object or <samp>NULL</samp>, if no record is found.
+
+> All functions that use `$predicate`, do require it. If you want to, say, apply a <samp>DELETE</samp> query to all rows, you must use `\ae\db\all` constant. 
+> 
+> A predicate can be either an associative array of column/value pairs, or an object returned by `\ae\db\predicate()` function, e.g. `\ae\db\predicate('a_column LIKE "%{value}%"', ['value' => 'foo'])`.
 
 Let's add more data:
 
@@ -1046,11 +1065,11 @@ We should also update Mr. Morgan's nationality:
     ]);
 ```
 
-Now that we have some rows in the table, let's retrieve and display them in alphabetical order:
+Now that we have more rows in the table, let's retrieve and display them in alphabetical order:
 
 ```php
 $authors = \ae\db\select('authors')
-    ->order_by('name', \ae\db\order\ascending);
+    ->order_by('name', \ae\db\ascending);
 $count = count($authors);
 
 echo "There are $count authors in the result set:\n";
@@ -1070,14 +1089,15 @@ There are 3 authors in the result set:
 - William Ford Gibson (Canadian)
 ```
 
-You can add clauses to the `\ae\db\select()` queries by using modifier methods: 
+You can add clauses to the `\ae\db\select()` queries via chainable modifier methods: 
 
-- `join($table, $predicate[, $type])`
-- `where($predicate[, ...])`
-- `group_by($column[, ...])` or `group_by($columns)`
-- `having($predicate[, ...])`
-- `order_by($column[, $order, ...])` or `order_by($columns_order)`
-- `limit($limit[, $offset])`
+- `join($table, $predicate)` - adds a <samp>JOIN</samp> clause; multiple clauses can be added.
+- `where($predicate)` or `where($template, $parameters)` – adds a <samp>WHERE</samp> clause using a predicate object or by creating a predicate from template and parameters; multiple clauses are concatenated using <samp>AND</samp> operator.
+- `group_by($column)` or `group_by($column)` – adds a <samp>GROUP BY</samp> clause; accepts a column name or an array of column names.
+- `having($predicate)` or `having($template, $parameters)` – adds a <samp>HAVING</samp> clause.
+- `order_by($column[, $order])` or `order_by($columns_order)` – adds an <samp>ORDER BY</samp> clause; accepts a column name and an optional sort direction (`\ae\db\ascending` or `\ae\db\descending`), or an associative array of column/sort direction pairs.
+- `limit($limit[, $offset])` – add a <samp>LIMIT</samp> clause.
+
 
 
 ### Active record
