@@ -721,6 +721,112 @@ $image
 ```
 
 
+## Forms
+
+```php
+<?php
+
+// ------------------------
+// - Step 1: Declare form -
+// ------------------------
+
+$form = \ae\form('Profile', [
+        'first_name' => 'John',
+        'last_name' => 'Connor',
+    ])
+    ->attributes(['novalidate' => false]);
+
+// About you
+$form['first_name'] = \ae\form\text('First name')
+    ->required()
+    ->max_length(255);
+$form['last_name'] = \ae\form\text('Last name')
+    ->required()
+    ->max_length(255);
+
+$form['birth_date'] = \ae\form\date('Birthday date')
+    ->max_value('-18 years', 'You must be at least 18 years old!');
+
+$form['photos'] = \ae\form\file('Photos of you')->multiple()
+    ->accept('.jpg,.png,.gif')
+    ->min_width(200)
+    ->min_height(200)
+    ->max_size(10 * \ae\file\megabyte);
+
+$form['bio'] = \ae\form\text('Biography')
+    ->max_length(5000)
+    ->attributes(['novaliate' => false]);
+
+// Contact details
+$form['email'] = \ae\form\email('Email address')
+    ->required();
+$form['phone'] = \ae\form\text('phone'); // DO NOT use number() for phones!
+
+
+// -------------------------
+// - Step 2: Validate form -
+// -------------------------
+
+if ($form->is_submitted() && $form->is_valid())
+{
+    // All HTML5 constraints are met
+    // Time for custom validation
+    $is_valid = true;
+    
+    // Do not let Jon in. You know who you are!!!
+    if ($form['first_name']->value === 'jon')
+    {
+        $first_name->error = 'Piss off, Jon!';
+        $is_valid = false;
+    }
+    
+    // Submit file and return
+    if ($is_valid)
+    {
+        $user = Profile::find($user_id);
+        
+        foreach ($form as $name => $field)
+        {
+            $user->$name = $field->value;
+        }
+        
+        $user->save();
+        
+        echo '<p class="message success">Successfully saved!</message>';
+    }
+}
+
+
+// ----------------------------
+// - Step 3: Present the form -
+// ----------------------------
+
+
+/*
+    Option 1: Cast form to string
+*/
+
+echo $form;
+
+
+/*
+    Option 2: Render form manually
+*/
+
+?>
+<?= $form->open(['novalidate' => true]) ?>
+
+<?php foreach ($form as $name => $field): ?>
+    <div class="field <?= $field->classes() ?>">
+        <?= $field->label() ?>
+        <?= $field->control(['placholder' => 'Enter ' . $field->label]); ?>
+        <?= $field->error() ?>
+    </div>
+<?php endforeach ?>
+
+<?= $form->close() ?>
+```
+
 ## Form
 
 Form library allows you to generate form controls, validate submitted values and display error messages.
@@ -1128,9 +1234,9 @@ You can make a new record and save it to the database manually:
 
 ```php
 $shaky = new \ae\db\Record('authors', [
-    'name' => 'William Shakespeare',
-    'nationality' => 'English'
-]);
+        'name' => 'William Shakespeare',
+        'nationality' => 'English'
+    ]);
 
 $shaky->save();
 ```
@@ -1168,9 +1274,9 @@ Of course, you can create a new record by instantiating this class:
 
 ```php
 $leckie = new Author([
-    'name' => 'Ann Leckie',
-    'nationality' => 'American'
-]);
+        'name' => 'Ann Leckie',
+        'nationality' => 'American'
+    ]);
 
 $leckie->save();
 ```
