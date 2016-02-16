@@ -753,14 +753,33 @@ $form['photos'] = \ae\form\file('Photos of you')->multiple()
     ->min_height(200)
     ->max_size(10 * \ae\file\megabyte);
 
-$form['bio'] = \ae\form\text('Biography')
-    ->max_length(5000)
-    ->attributes(['novaliate' => false]);
-
 // Contact details
 $form['email'] = \ae\form\email('Email address')
     ->required();
 $form['phone'] = \ae\form\text('phone'); // DO NOT use number() for phones!
+
+// Customizable content
+$form['bio'] = \ae\form\blocks('Biography')
+	->first('intro', [
+		'text' => \ae\form\textarea('Intro')
+	], 'Add intro')
+	->any('text', [
+		'text' => \ae\form\textarea('Text')
+	], 'Add text block')
+	->any('image', [
+		'image' => \ae\form\file('Image')
+			->required()
+			->accept('image/*')
+			->min_dimensions(400, 400),
+		'align' => \ae\form\radio('Align', [
+				'left' => 'Left',
+				'center' => 'Center',
+				'right' => 'Right',
+			])
+			->required()
+			->initial('left'),
+	], 'Add image');
+	
 
 
 // -------------------------
@@ -801,7 +820,6 @@ if ($form->is_submitted() && $form->is_valid())
 // - Step 3: Present the form -
 // ----------------------------
 
-
 /*
     Option 1: Cast form to string
 */
@@ -812,7 +830,6 @@ echo $form;
 /*
     Option 2: Render form manually
 */
-
 ?>
 <?= $form->open(['novalidate' => true]) ?>
 
