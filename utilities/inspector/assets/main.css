@@ -58,7 +58,7 @@ h1, a.dump, .message a.backtrace, .message a.context, pre, code, kbd, var {
 	Layout
 */
 body {
-	background: #ccc;
+	background: #f6f6f6;
 }
 .log > li:after {
 	display: block;
@@ -115,7 +115,8 @@ h1 .time {
 }
 .log {
 	background: #fff;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+	border-top: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
 }
 .log > li {
 	margin-top: -1px;
