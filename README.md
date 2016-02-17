@@ -747,7 +747,8 @@ $form['last_name'] = \ae\form\text('Last name')
 $form['birth_date'] = \ae\form\date('Birthday date')
     ->max_value('-18 years', 'You must be at least 18 years old!');
 
-$form['photos'] = \ae\form\file('Photos of you')->multiple()
+$form['photos'] = \ae\form\file('Photos of you')
+    ->multiple()
     ->accept('.jpg,.png,.gif')
     ->min_width(200)
     ->min_height(200)
@@ -760,26 +761,26 @@ $form['phone'] = \ae\form\text('phone'); // DO NOT use number() for phones!
 
 // Customizable content
 $form['bio'] = \ae\form\blocks('Biography')
-	->first('intro', [
-		'text' => \ae\form\textarea('Intro')
-	], 'Add intro')
-	->any('text', [
-		'text' => \ae\form\textarea('Text')
-	], 'Add text block')
-	->any('image', [
-		'image' => \ae\form\file('Image')
-			->required()
-			->accept('image/*')
-			->min_dimensions(400, 400),
-		'align' => \ae\form\radio('Align', [
-				'left' => 'Left',
-				'center' => 'Center',
-				'right' => 'Right',
-			])
-			->required()
-			->initial('left'),
-	], 'Add image');
-	
+    ->first('intro', [
+        'text' => \ae\form\textarea('Intro')
+    ], 'Add intro')
+    ->any('text', [
+        'text' => \ae\form\textarea('Text')
+    ], 'Add text block')
+    ->any('image', [
+        'image' => \ae\form\file('Image')
+            ->required()
+            ->accept('image/*')
+            ->min_dimensions(400, 400),
+        'align' => \ae\form\radio('Align', [
+                'left' => 'Left',
+                'center' => 'Center',
+                'right' => 'Right',
+            ])
+            ->required()
+            ->initial('left'),
+    ], 'Add image');
+    
 
 
 // -------------------------
