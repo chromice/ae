@@ -1155,11 +1155,13 @@ Richard K. Morgan is British
 You can make any query via `\ae\db\query()` function alone, but it's not as convenient as the specialized functions:
 
 - `\ae\db\select($table[, $columns])` – a <samp>SELECT</samp> query; accepts an array of column names as the second argument; returns a query object that can be used to add more clauses.
-- `\ae\db\insert($table, $data[, ...])` – an <samp>INSERT</samp> query; can insert multiple records; if more than one record is inserted, returns an array.
+- `\ae\db\insert($table, $data[, ...])` – an <samp>INSERT</samp> query; returns the record as an object; if more than one record is inserted, returns an array of objects.
 - `\ae\db\update($table, $predicate, $data)` – an <samp>UPDATE</samp> query; returns the number of rows affected.
 - `\ae\db\delete($table, $predicate)` – a <samp>DELETE</samp> query; returns the number of rows affected.
-- `\ae\db\count($table, $predicate)` – a custom <samp>SELECT</samp> query; return a number of rows.
 - `\ae\db\find($table, $record_id)` – a custom <samp>SELECT</samp> query; returns a single record object or <samp>NULL</samp>, if no record is found.
+- `\ae\db\count($table[, $column], $predicate)` – a custom <samp>SELECT</samp> query; returns a number of rows; if `$column` is specified, only distinct values are counted.
+- `\ae\db\sum($table, $column, $predicate)` – a custom <samp>SELECT</samp> query; returns a sum of all column values.
+- `\ae\db\average($table, $column, $predicate)` – a custom <samp>SELECT</samp> query; returns an average of all column values.
 
 > All functions that use `$predicate`, do require it. If you want to, say, apply a <samp>DELETE</samp> query to all rows, you must use `\ae\db\all` constant. 
 > 
@@ -1214,13 +1216,12 @@ There are 3 authors in the result set:
 
 You can add clauses to the `\ae\db\select()` queries via chainable modifier methods: 
 
-- `join($table, $predicate)` - adds a <samp>JOIN</samp> clause; multiple clauses can be added.
+- `join($table, $foreign_keys)` - adds a <samp>JOIN</samp> clause; multiple clauses can be added.
 - `where($predicate)` or `where($template, $parameters)` – adds a <samp>WHERE</samp> clause using a predicate object or by creating a predicate from template and parameters; multiple clauses are concatenated using <samp>AND</samp> operator.
-- `group_by($column)` or `group_by($column)` – adds a <samp>GROUP BY</samp> clause; accepts a column name or an array of column names.
+- `group_by($column)` or `group_by($columns)` – adds a <samp>GROUP BY</samp> clause; accepts a column name or an array of column names.
 - `having($predicate)` or `having($template, $parameters)` – adds a <samp>HAVING</samp> clause.
 - `order_by($column[, $order])` or `order_by($columns_order)` – adds an <samp>ORDER BY</samp> clause; accepts a column name and an optional sort direction (`\ae\db\ascending` or `\ae\db\descending`), or an associative array of column/sort direction pairs.
 - `limit($limit[, $offset])` – add a <samp>LIMIT</samp> clause.
-
 
 
 ### Active record
@@ -1283,8 +1284,10 @@ Author::select([$columns]);
 Author::insert($data[, ...]);
 Author::update($predicate, $data);
 Author::delete($predicate);
-Author::count($predicate);
 Author::find($record_id);
+Author::count([$column,] $predicate);
+Author::sum($column, $predicate);
+Author::average($column, $predicate);
 ```
 
 Of course, you can create a new record by instantiating this class:
