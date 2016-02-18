@@ -5,7 +5,7 @@
 This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
 - **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
-- **Reliability**: The APIs were designed to be expressive and error-resistant. The versions of this code have powered a few moderately important websites, which helped iron most kinks out.
+- **Reliability**: The APIs were designed to be expressive and user error-resistant. Versions of this code have powered a few moderately complex websites and applications, which helped iron most of the kinks out.
 - **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
@@ -303,7 +303,7 @@ And finally, our last rule will display home page *or* show 404 error for all un
 
 Response library is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
 
-> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from calling `dispatch()` method yourself though, and use the request mapping pattern as much as possible.
+> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method yourself though, and use the request mapping pattern as much as possible.
 
 Here is an example of a simple application that creates a response, sets one custom header, caches it for 5 minutes, and dispatches it. The response is also automatically compressed using Apache's `mod_deflate`:
 
@@ -329,9 +329,9 @@ $response
 
 When response object is created, it starts buffering all output. Once the `dispatch()` method is called, the buffering stops, HTTP headers are set, and content is output.
 
-> You must explicitly specify the response path when calling `dispatch()` method. To create a response for the current request use `\ae\request\path()` function.
+> You must explicitly specify the response path when using `dispatch()` method. To create a response for the current request use `\ae\request\path()` function.
 
-By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp>. 
+By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp> 
 
 
 ### Buffering
@@ -568,6 +568,24 @@ foreach ($file as $meta_name => $meta_value)
 
 Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate useful information.
 
+### File size constants
+
+The file library also defines several constants that you are encouraged to use when dealing with file sizes:
+
+```php
+echo \ae\file\byte;     // 1
+echo \ae\file\kilobyte; // 1000
+echo \ae\file\kibibyte; // 1024
+echo \ae\file\megabyte; // 1000000
+echo \ae\file\mebibyte; // 1048576
+echo \ae\file\gigabyte; // 1000000000
+echo \ae\file\gibibyte; // 1073741824
+echo \ae\file\terabyte; // 1000000000000
+echo \ae\file\tebibyte; // 1099511627776
+echo \ae\file\petabyte; // 1000000000000000
+echo \ae\file\pebibyte; // 1125899906842624
+```
+
 
 ## Image
 
@@ -645,7 +663,7 @@ $thumbnail
     ->save();
 ```
 
-Here are all the filters exposed by the library:
+Here are all the filters available:
 
 - `blur()` blurs the image using the Gaussian method
 - `brightness($value)` changes the brightness of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>
@@ -689,7 +707,8 @@ $image
 
 Form library lets you create web forms and validate the both client- and server-side using HTML5 constraints. Both forms and individual controls implement `__toString()` magic method and can render themselves into valid HTML when cast to string. You can render a form manually, of course, if you so desire.
 
-### Declaring
+
+### Declaration
 
 You can create a new form using `\ae\form()` function. It takes a form name (unique within the context of a single web page) as the first argument, and (optionally) an array of default field values as the second argument:
 
@@ -705,11 +724,11 @@ You can add individual form fields to the form:
 $form['name'] = \ae\form\text('Full name')
     ->required()
     ->max_length(100);
-    
+
 $form['email'] = \ae\form\email('Email address')
     ->required();
 
-$form['phone'] = \ae\form\text('Phone number'); 
+$form['phone'] = \ae\form\tel('Phone number'); 
 // NB! Never use \ae\form\number() for phone numbers!
 
 $form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
@@ -724,15 +743,136 @@ $form['birth_date'] = \ae\form\date('Birthday date')
 
 $form['photos'] = \ae\form\file('Photos of you')
     ->multiple()
-    ->accept('.jpg,.png,.gif')
+    ->accept('image/*')
     ->min_width(200)
     ->min_height(200)
     ->max_size(10 * \ae\file\megabyte);
 ```
 
-### Validating
+You can assign an instance of any class extending `\ae\form\DataField` or `\ae\form\FileField` classes to a form. Once field is assigned, the form will use either `$_POST` or `$_FILES` array as its data source, depending on which parent class the object is related to.
 
-Once the form and its fields are declared, you can check if it has been submitted, and if the submitted values are valid:
+Field objects have methods that you can use to set their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more info.
+
+#### Common field types
+
+Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields. All field factory functions accept a field label as the first argument, and (optionally) a default value(s) as the second argument:
+
+##### Strings
+
+- `\ae\form\text()` uses <samp>&lt;input type="text"&gt;</samp> control
+- `\ae\form\password()` uses <samp>&lt;input type="password"&gt;</samp> control
+- `\ae\form\email()` uses <samp>&lt;input type="email"&gt;</samp> control; will accept multiple values, if `multiple()` method is applied
+- `\ae\form\tel()` uses <samp>&lt;input type="tel"&gt;</samp> control
+- `\ae\form\url()` uses <samp>&lt;input type="url"&gt;</samp> control
+- `\ae\form\search()` uses <samp>&lt;input type="search"&gt;</samp> control
+
+##### Number fields
+
+- `\ae\form\number()` uses <samp>&lt;input type="number"&gt;</samp> control
+- `\ae\form\range()` uses <samp>&lt;input type="range"&gt;</samp> control
+
+##### Dates and time fields
+
+- `\ae\form\date()` uses <samp>&lt;input type="date"&gt;</samp> control
+- `\ae\form\month()` uses <samp>&lt;input type="month"&gt;</samp> control
+- `\ae\form\week()` uses <samp>&lt;input type="week"&gt;</samp> control
+- `\ae\form\time()` uses <samp>&lt;input type="time"&gt;</samp> control
+- `\ae\form\datetime()` uses <samp>&lt;input type="datetime-local"&gt;</samp> control
+
+##### Fields with options
+
+- `\ae\form\select()` uses <samp>&lt;select&gt;</samp> control; will accept multiple values, if `multiple()` method is applied
+- `\ae\form\radio()` uses multiple <samp>&lt;input type="radio"&gt;</samp> controls
+- `\ae\form\checkbox()` behaves differently depending on whether options are provided via `options()` method:
+    - if no options are provided, uses a single <samp>&lt;input type="checkbox"&gt;</samp> control; its value is either `true` or `false`
+    - if one or more options are provided, uses multiple <samp>&lt;input type="checkbox"&gt;</samp> controls to render them; its value is an array of checked options.
+
+##### Miscellaneous
+
+- `\ae\form\color()` uses <samp>&lt;input type="color"&gt;</samp> control
+- `\ae\form\textarea()` uses <samp>&lt;textarea"&gt;</samp> control; mostly behaves like `\ae\form\text()` field, but does not have access to `pattern()` validation constraint
+- `\ae\form\file()` will accept multiple values, if `multiple()` method is applied
+
+
+#### HTML attributes
+
+...
+
+#### Multiple values
+
+The following field types will accept and produce multiple values, if `multiple()` method is applied:
+
+- `\ae\form\email()`
+- `\ae\form\file()`
+- `\ae\form\select()`
+
+> `\ae\form\checkbox()` does not have `multiple()` method, but the field will accept more than one value, if you provide multiple options via `options()` method.
+
+#### Validation constraints
+
+Most validation constraints are field type-specific, but all field types have access to the following constraints:
+
+- `required()` – the field must contain a non-empty a value; corresponds to <samp>required</samp> attribute in HTML5
+- `valid($function)` allows you to specify an arbitrary constraint via a *callable* `$function`; during validation field value is passed as the first argument, and function must return either `null` or an error message
+
+##### Text field constraints
+
+- `min_length($length)` and `max_length($length)` define maximum and minimum length constraints; correspond to <samp>minlength</samp> and <samp>maxlength</samp> attributes in HTML5
+- `pattern($pattern)` defines a pattern constraint; `$pattern` must contain a valid regular expression, e.g. `#[0-9a-f]{6}`; corresponds to <samp>pattern</samp> attribute in HTML5; use can use one of these constants:
+    - `\ae\form\integer` – an integer number, e.g. <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>
+    - `\ae\form\decimal` – a decimal number, e.g. <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>
+    - `\ae\form\numeric` – a string consisting of numeric characters, e.g. <samp>123</samp>, <samp>000</samp>
+    - `\ae\form\alpha` – a string consisting of alphabetic characters, e.g. <samp>abc</samp>, <samp>cdef</samp>
+    - `\ae\form\alphanumeric` – a string consisting of both alphabetic and numeric characters, e.g. <samp>a0b0c0</samp>, <samp>0000</samp>, <samp>abcde</samp>
+    - `\ae\form\color` – a hexadecimal representation of a color, e.g. <samp>#fff000</samp>, <samp>#434343</samp>
+    - `\ae\form\time` – a valid time, e.g. <samp>14:00:00</samp>, <samp>23:59:59.99</samp>
+    - `\ae\form\date` – a valid date, e.g. <samp>2009-10-15</samp>
+    - `\ae\form\datetime` – a valid date and time, e.g. <samp>2009-10-15T14:00:00-9:00</samp>
+    - `\ae\form\month` – a valid month, e.g. <samp>2009-10</samp>
+    - `\ae\form\week` – a valid week, e.g. <samp>2009-W42</samp>
+    - `\ae\form\email` – a valid email address
+    - `\ae\form\url` – a valid URL
+    - `\ae\form\uk_postcode` – a valid UK postal code
+
+
+##### Number and date field constraints
+
+- `min($value)` and `max($value)` define maximum and minimum value constraints; correspond to <samp>min</samp>, <samp>max</samp> attributes in HTML5
+
+##### File field constraints
+
+- `accept($types)` defines a file type constraint; `$types` must be a comma-separated list of either file extensions (with full stop character), valid MIME types, or <samp>audio/\*</samp> or <samp>image/\*</samp> or <samp>video/\*</samp>; corresponds to <samp>accept</samp> attribute in HTML
+- `min_size($size)`, `max_size($size)` define file size constraints
+- `min_width($width)`, `max_width($width)`, `min_height($height)`, `max_height($height)`, `min_dimensions($width, $height)`, `max_dimensions($width, $height)` define image dimension constraints
+
+All validation constraints will generate human readable error messages automatically. If you wish to override a default error message, you can do so by passing your error message as the last argument.
+
+### Special field types
+
+There are several special field types that do not have corresponding analogs in HTML:
+
+- `\ae\form\compound()` allows you to break multiple fields together to produce a single value, e.g. you can break name field into separate first, (optional) middle, and last name fields.
+- `\ae\form\repeater()` is a repeating sequence of a predefined group of fields.
+- `\ae\form\sequence()` is an arbitrary sequence of multiple predefined groups of fields.
+
+
+#### Compound field
+
+...
+
+
+#### Repeater field
+
+...
+
+#### Sequence field
+
+...
+
+
+### Validation
+
+Once the form is declared, you can check if it has been submitted, and if the submitted values are valid:
 
 ```php
 if ($form->is_submitted() && $form->is_valid())
@@ -765,16 +905,18 @@ if ($form->is_submitted() && $form->is_valid())
 }
 ```
 
+When method `is_valid()` is called, the form will iterate through all its fields, calling their `validate()` method. All validation constraints that were set when fields were declared are checked at this stage.
 
-### Displaying
 
-In order to render the form into HTML you can simply cast it to a string:
+### Presentation
+
+In order to render a form into HTML you can simply cast it to a string:
 
 ```php
-echo $form;
+echo (string) $form;
 ```
 
-Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` tags, and iterating through all fields and rendering them individually:
+Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` (and a few other) tags, and iterating through all fields and rendering them individually:
 
 ```php
 <?= $form->open(['novalidate' => true]) ?>
@@ -789,7 +931,6 @@ Alternatively, you can render the form by manually calling `open()` and `close()
 
 <?= $form->close() ?>
 ```
-
 
 
 ## Database
