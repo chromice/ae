@@ -343,14 +343,16 @@ $buffer = \ae\buffer();
 
 echo "I'm buffered!";
 
-$content = (string) $buffer;
+$content = (string) $buffer; // $content === "I'm buffered!"
 
-echo "I'm NOT buffered!";
+echo "I'm still buffered!";
 
 unset($buffer);
 
-echo "I'm not buffered, either! Duh...";
+echo "And I'm not buffered!";
 ```
+
+> `\ae\buffer()` returns an instance of `\ae\Buffer` class, which implements `__toString()` magic method that always returns a string currently contained in the buffer.
 
 
 ### Templating
@@ -364,19 +366,21 @@ $output = (string) \ae\template('your/page.php', [
 ]);
 ```
 
-Provided the content of <samp>your/page.php</samp> is:
+Provided the content of <samp>your/page.php</samp> is...
 
 ```php
 <title><?= $title ?></title>
 <body><?= $body ?></body>
 ```
 
-The `$output` variable will contain:
+...the `$output` variable will contain:
 
 ```html
 <title>Example!</title>
 <body><h1>Hello world!</h1></body>
 ```
+
+> `\ae\template()` returns an instance of `\ae\Template` class, which implements `__toString()` magic method that renders the template with specified parameters.
 
 
 ### Layout
@@ -486,47 +490,7 @@ And here are the rules that <samp>cache/.htaccess</samp> must contain:
 With everything in place, Apache will first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>, where your app can generate (and cache statically) a response.
 
 
-## Filesystem
-
-### Path
-
-Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as their argument. Internally, they all rely on path library to locate the actual file.
-
-By default, all paths are resolved relative to the location of your main script. Buy you are encouraged to explicitly specify the root directory:
-
-```php
-\ae\path\configure('root', '/some/absolute/path');
-
-$absolute_path = \ae\path('relative/path/to/file.ext');
-```
-
-A part of your application may need to resolve path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
-
-```php
-$dir = \ae\path('some/dir');
-
-$file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
-```
-
-> `\ae\path()` function and `path()` method always returns an object, but you must explicitly cast it to string, when you need one, e.g. `$path_string = (string) $path_object;`
-
-If specified path (or subpath) does not exist, `\ae\path\Exception` is thrown:
-
-```php
-try
-{
-    $location = \ae\path('non/existant/file.ext');
-}
-catch (\ae\path\Exception $e)
-{
-    echo $e->getMessage();
-}
-```
-
-> `\ae\file()` function does not immediately throw an exception for non-existent paths, so you can create a new file.
-
-
-### File
+## File
 
 File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
 
@@ -575,7 +539,7 @@ if ($file->exists())
 ```
 
 
-#### Handling uploaded files
+### Handling uploaded files
 
 The library can handle uploaded files as well:
 
@@ -588,7 +552,7 @@ if ($file->is_uploaded())
 }
 ```
 
-#### Passing metadata
+### Passing metadata
 
 You can assign arbitrary metadata to a file, e.g. database keys, related files, alternative names, etc.:
 
@@ -605,7 +569,7 @@ foreach ($file as $meta_name => $meta_value)
 Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate useful information.
 
 
-### Image
+## Image
 
 Image library is a wrapper around standard GD library functions.
 
@@ -620,7 +584,7 @@ echo $image->type();   // jpeg
 echo $image->mime();   // image/jpeg
 ```
 
-#### Resizing and cropping
+### Resizing and cropping
 
 You can transform the image by changing its dimensions in 4 different ways:
 
@@ -670,7 +634,7 @@ This way you can crop a specific region of the image. The `align()` method requi
     - a constant: `\ae\image\top`, `\ae\image\middle`, or `\ae\image\bottom`
 
 
-#### Applying filters
+### Applying filters
 
 You can also apply one or more filters:
 
@@ -692,7 +656,7 @@ Here are all the filters exposed by the library:
 - `pixelate($size)` applies pixelation effect to the image
 - `smooth($value)` makes the image smoother
 
-#### Converting and saving
+### Converting and saving
 
 By default when you use `save()` method the image type and name is preserved.
 
@@ -721,28 +685,39 @@ $image
 ```
 
 
-## Forms
+## Form
+
+Form library lets you create web forms and validate the both client- and server-side using HTML5 constraints. Both forms and individual controls implement `__toString()` magic method and can render themselves into valid HTML when cast to string. You can render a form manually, of course, if you so desire.
+
+### Declaring
+
+You can create a new form using `\ae\form()` function. It takes a form name (unique within the context of a single web page) as the first argument, and (optionally) an array of default field values as the second argument:
 
 ```php
-<?php
-
-// ------------------------
-// - Step 1: Declare form -
-// ------------------------
-
 $form = \ae\form('Profile', [
-        'first_name' => 'John',
-        'last_name' => 'Connor',
-    ])
-    ->attributes(['novalidate' => false]);
+        'name' => 'John Connor',
+    ]);
+```
 
-// About you
-$form['first_name'] = \ae\form\text('First name')
+You can add individual form fields to the form:
+
+```php
+$form['name'] = \ae\form\text('Full name')
     ->required()
-    ->max_length(255);
-$form['last_name'] = \ae\form\text('Last name')
-    ->required()
-    ->max_length(255);
+    ->max_length(100);
+    
+$form['email'] = \ae\form\email('Email address')
+    ->required();
+
+$form['phone'] = \ae\form\text('Phone number'); 
+// NB! Never use \ae\form\number() for phone numbers!
+
+$form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
+    ->options([
+        'home' => 'Home number',
+        'work' => 'Work number',
+        'mobile' => 'Mobile number',
+    ]);
 
 $form['birth_date'] = \ae\form\date('Birthday date')
     ->max_value('-18 years', 'You must be at least 18 years old!');
@@ -753,54 +728,27 @@ $form['photos'] = \ae\form\file('Photos of you')
     ->min_width(200)
     ->min_height(200)
     ->max_size(10 * \ae\file\megabyte);
+```
 
-// Contact details
-$form['email'] = \ae\form\email('Email address')
-    ->required();
-$form['phone'] = \ae\form\text('phone'); // DO NOT use number() for phones!
+### Validating
 
-// Customizable content
-$form['bio'] = \ae\form\blocks('Biography')
-    ->first('intro', [
-        'text' => \ae\form\textarea('Intro')
-    ], 'Add intro')
-    ->any('text', [
-        'text' => \ae\form\textarea('Text')
-    ], 'Add text block')
-    ->any('image', [
-        'image' => \ae\form\file('Image')
-            ->required()
-            ->accept('image/*')
-            ->min_dimensions(400, 400),
-        'align' => \ae\form\radio('Align', [
-                'left' => 'Left',
-                'center' => 'Center',
-                'right' => 'Right',
-            ])
-            ->required()
-            ->initial('left'),
-    ], 'Add image');
-    
+Once the form and its fields are declared, you can check if it has been submitted, and if the submitted values are valid:
 
-
-// -------------------------
-// - Step 2: Validate form -
-// -------------------------
-
+```php
 if ($form->is_submitted() && $form->is_valid())
 {
     // All HTML5 constraints are met
     // Time for custom validation
     $is_valid = true;
     
-    // Do not let Jon in. You know who you are!!!
-    if ($form['first_name']->value === 'jon')
+    // Validate name
+    if ($form['name']->value === 'John Connor')
     {
-        $first_name->error = 'Piss off, Jon!';
+        $form['name']->error = 'You are not John Connor! Enter your real name please.';
         $is_valid = false;
     }
     
-    // Submit file and return
+    // If name is valid, save the data
     if ($is_valid)
     {
         $user = Profile::find($user_id);
@@ -815,29 +763,26 @@ if ($form->is_submitted() && $form->is_valid())
         echo '<p class="message success">Successfully saved!</message>';
     }
 }
+```
 
 
-// ----------------------------
-// - Step 3: Present the form -
-// ----------------------------
+### Displaying
 
-/*
-    Option 1: Cast form to string
-*/
+In order to render the form into HTML you can simply cast it to a string:
 
+```php
 echo $form;
+```
 
+Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` tags, and iterating through all fields and rendering them individually:
 
-/*
-    Option 2: Render form manually
-*/
-?>
+```php
 <?= $form->open(['novalidate' => true]) ?>
 
-<?php foreach ($form as $name => $field): ?>
+<?php foreach ($form as $field): ?>
     <div class="field <?= $field->classes() ?>">
         <?= $field->label() ?>
-        <?= $field->control(['placholder' => 'Enter ' . $field->label]); ?>
+        <?= $field->control(['placeholder' => 'Enter ' . $field->label]); ?>
         <?= $field->error() ?>
     </div>
 <?php endforeach ?>
@@ -845,209 +790,11 @@ echo $form;
 <?= $form->close() ?>
 ```
 
-## Form
-
-Form library allows you to generate form controls, validate submitted values and display error messages.
-
-Each form must have a unique ID. This way the library knows which form has been submitted, even if there are multiple forms on the page.
-
-In general any form script consists of three parts: form and field declaration, validation and HTML output.
-
-Let's declare a simple form with three fields (text input, checkbox and select drop-down) and basic validation rules:
-
-```php
-$form = \ae\form('form-id');
-
-$input = $form->single('text_input')
-    ->required('This field is required.')
-    ->min_length('It should be at least 3 characters long.', 3)
-    ->max_length('Please keep it shorter than 100 characters.', 100);
-
-$checkbox = $form->single('checkbox_input')
-    ->required('You must check this checkbox!');
-
-$options = [
-    'foo' => 'Foo',
-    'bar' => 'Bar'
-];
-
-$select = $form->single('select_input')
-    ->valid_value('Wrong value selected.', $options);
-```
-
-Now, this declaration is enough to validate the form, has it been submitted:
-
-```php
-if ($form->is_submitted())
-{
-    $is_valid = $form->validate();
-    
-    if ($is_valid)
-    {
-        $values = $form->values();
-        
-        var_dump($values);
-    }
-}
-```
-
-If the form has not been submitted, you may want to populate it with default values:
-
-```php
-if (!$form->is_submitted())
-{
-    $form->value([
-        'text' => 'Foo'
-    ]);
-}
-```
-
-The HTML code of the form's content can be anything you like, but you must use `\ae\Form::open()` and `\ae\Form::close()` methods instead of `<form>` and `</form>` tags:
-
-```html
-<?= $form->open() ?>
-<div class="field">
-    <label for="<?= $input->id() ?>">Enter some text:</label>
-    <?= $input->input('text') ?>
-    <?= $input->error() ?>
-</div>
-<div class="field">
-    <label><?= $checkbox->input('checkbox') ?> Check me out!</label>
-    <?= $checkbox->error() ?>
-</div>
-<div class="field">
-    <label for="<?= $select->id() ?>">Select something (totally optional):</label>
-    <?= $select->select(['' => 'Nothing selected'] + $options) ?>
-    <?= $select->error() ?>
-</div>
-<div class="field">
-    <button type="submit">Submit</button>
-</div>
-<?= $form->close() ?>
-```
-
-Most generated form controls will have HTML5 validation attributes set automatically. If you want to turn off HTML5 validation in the browsers that support it, you should set the `novalidate` attribute of the form:
-
-```php
-<?= $form->open(['novalidate' => true]); ?>
-```
-
-### Field types
-
-Form library does not distinguish between various input types of HTML when the form is validated, as it operates only with values. However, if a field accepts multiple values (e.g. `<select multiple>`, `<input type="email" multiple>` or several `<input type="checkbox">`) you must declare the field appropriately for validation to work.
-
-In cases where the amount of values is arbitrary you must declare the field as `multiple`:
-
-```php
-$cb = $form->multiple('checked')->required('Check at least one box');
-```
-
-You then output this field like this:
-
-```html
-<label><?= $cb->input('checkbox', 'foo') ?> Foo</label><br>
-<label><?= $cb->input('checkbox', 'bar') ?> Bar</label>
-<?= $cb->error('<br><em class="error">','</em>') ?>
-```
-
-If you need a sequence of fields with the same validation rules, you should use a `sequence` field of predefined minimum and (optionally) maximum length:
-
-```php
-$tags = $form->sequence('tags', 1, 5);
-
-$tag_input = $tags->single('tag_input')
-    ->min_length('Should be at least 2 character long', 2);
-
-```
-
-The sequence will contain the minimum number of fields required, but you can let user control the length via "Add" and "Remove" buttons.
-
-```html
-<?php foreach ($tags as $index => $tag): ?>
-<div class="field">
-    <label for="<?= $tag->id() ?>">Tag <?= $index + 1 ?>:</label>
-    <?= $tag['tag_input']->input('input') ?> <?= $files->remove_button($index) ?>
-    <?= $tag['tag_input']->error('<br><em class="error">', '</em>') ?>
-</div>
-<?php endforeach ?>
-<?= $files->add_button() ?>
-```
-
-You can combine several sequences in one loop to create repeatable field groups.
-
-### Validation
-
-Form library comes with a few validation methods. Each method accepts validation error message as the first argument.
-
-Any field can be made required:
-
-```php
-$field->required('This field is required.');
-```
-
-If the value of the field is a decimal/integer number or time/date/month/week, you can validate its format and minimum and maximum value:
-
-```php
-$number->valid_pattern('Should contain a number.', \ae\valid\integer)
-    ->min_value('Must be equal to 2 or greater.', 2)
-    ->max_value('Must be equal to 4 or less.', 4);
-$date->valid_pattern('Should contain a date: YYYY-MM-DD.', \ae\valid\date)
-    ->min_value('Cannot be in the past.', date('Y-m-d'));
-```
-
-If value is a string you may validate its format and maximum and minimum length:
-
-```php
-$field->valid_pattern('This should be a valid email.', \ae\valid\email)
-    ->min_length('Cannot be shorter than 5 characters.', 5)
-    ->max_length('Cannot be longer than 100 characters.', 100);
-```
-
-The library defines a few common formats:
-
-- `\ae\valid\integer` — an integer number: <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>
-- `\ae\valid\decimal` — a decimal number: <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>
-- `\ae\valid\numeric` — a string consisting of numeric characters: <samp>123</samp>, <samp>000</samp>
-- `\ae\valid\alpha` — a string consisting of alphabetic characters: <samp>abc</samp>, <samp>cdef</samp>
-- `\ae\valid\alphanumeric` — a string consisting of both alphabetic and numeric characters: <samp>a0b0c0</samp>, <samp>0000</samp>, <samp>abcde</samp>
-- `\ae\valid\color` — a hex value of a color: <samp>#fff000</samp>, <samp>#434343</samp>
-- `\ae\valid\time` — a valid time: <samp>14:00:00</samp>, <samp>23:59:59.99</samp>
-- `\ae\valid\date` — a valid date: <samp>2009-10-15</samp>
-- `\ae\valid\datetime` — a valid date and time: <samp>2009-10-15T14:00:00-9:00</samp>
-- `\ae\valid\month` — a valid month: <samp>2009-10</samp>
-- `\ae\valid\week` — a valid week: <samp>2009-W42</samp>
-- `\ae\valid\email` — a valid email address
-- `\ae\valid\url` — a valid URL
-- `\ae\valid\uk_postcode` — a valid UK postal code
-
-You may define any other pattern manually:
-
-```php
-$field->valid_pattern('At least 5 alphabetic characters.', '[a-zA-Z]{5,}');
-```
-
-You can also use an anonymous function as a validator:
-
-```php
-$field->valid_value('Devils are not allowed.', function ($value) {
-    return $value != 666;
-});
-```
-
-If you let user choose a value (or multiple values) from a predefined list, you should always validate whether they submitted correct data:
-
-```php
-$field->valid_value('Wrong option selected.', [
-    'foo', 'bar' //, '...'
-]);
-```
-
-Legitimate users will never see this error, but it prevents would-be hackers from tempering with the data.
 
 
 ## Database
 
-Database library lets you make queries to a MySQL database, and exposes a simple <abbr title="object-oriented">OO</abbr> abstraction for individual records.
+Database library lets you make queries to a MySQL database, and exposes simple object-oriented abstractions for individual tables and records.
 
 You must to provide connection parameters first:
 
@@ -1217,7 +964,7 @@ There are 3 authors in the result set:
 
 You can add clauses to the `\ae\db\select()` queries via chainable modifier methods: 
 
-- `join($table, $foreign_keys)` - adds a <samp>JOIN</samp> clause; multiple clauses can be added.
+- `join($table, $on_predicate)` - adds a <samp>JOIN</samp> clause; accepts table name as the first argument, and an associative array of foreign key/primary key pairs as the second argument.
 - `where($predicate)` or `where($template, $parameters)` – adds a <samp>WHERE</samp> clause using a predicate object or by creating a predicate from template and parameters; multiple clauses are concatenated using <samp>AND</samp> operator.
 - `group_by($column)` or `group_by($columns)` – adds a <samp>GROUP BY</samp> clause; accepts a column name or an array of column names.
 - `having($predicate)` or `having($template, $parameters)` – adds a <samp>HAVING</samp> clause.
@@ -1291,7 +1038,7 @@ Author::sum($column, $predicate);
 Author::average($column, $predicate);
 ```
 
-Of course, you can create a new record by instantiating this class:
+Of course, you can create a new record by instantiating the class:
 
 ```php
 $leckie = new Author([
@@ -1536,6 +1283,33 @@ $probe->mark('cleaned the garbage');
 
 
 ## Utilities
+
+### File system paths
+
+Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as their argument. Internally, they all rely on path library to locate the actual file.
+
+By default, all paths are resolved relative to the location of your main script. Buy you are encouraged to explicitly specify the root directory:
+
+```php
+\ae\path\configure('root', '/some/absolute/path');
+
+$absolute_path = \ae\path('relative/path/to/file.ext');
+```
+
+A part of your application may need to resolve path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
+
+```php
+$dir = \ae\path('some/dir');
+
+$file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
+```
+
+`\ae\path()` function and `path()` method always returns an object, but you must explicitly cast it to string, when you need one:
+
+```php
+$path_string = (string) $path_object;
+```
+
 
 ### Exception safety
 
