@@ -40,10 +40,10 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ### Manual installation
 
-You can download the latest release manually, drop it into your project and `require` <samp>ae/loader.php</samp>:
+You can download the latest release manually, drop it into your project and `require` <samp>ae/core.php</samp>:
 
 ```php
-require 'path/to/ae/loader.php';
+require 'path/to/ae/core.php';
 ```
 
 ### Configuring Composer
@@ -69,7 +69,7 @@ If you are using [Composer](https://getcomposer.org), make sure your <samp>compo
 Let's create the most basic of web applications. Put this code into <samp>index.php</samp> in the web root directory:
 
 ```php
-require 'path/to/ae/loader.php';
+require 'path/to/ae/core.php';
 
 $path = \ae\request\path();
 
@@ -334,7 +334,7 @@ When response object is created, it starts buffering all output. Once the `dispa
 By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp> 
 
 
-### Buffering
+### Buffer
 
 You can create a buffer and assign it to a variable to start capturing output. All output is captured until the instance is destroyed or buffered content is used:
 
@@ -355,7 +355,7 @@ echo "And I'm not buffered!";
 > `\ae\buffer()` returns an instance of `\ae\Buffer` class, which implements `__toString()` magic method that always returns a string currently contained in the buffer.
 
 
-### Templating
+### Template
 
 Use `\ae\template()` to capture output of a parameterized script:
 
@@ -422,7 +422,7 @@ When rendered, it will produce this:
 </html>
 ```
 
-### Caching
+### Cache
 
 If you want your response to be cached client-side for a number of minutes, you should use `cache()` method of the response object. It will set <samp>Cache-Control</samp>, <samp>Last-Modified</samp>, and <samp>Expires</samp> headers for you. If the response is public (i.e. you passed `\ae\cache\server_side` to `cache()` method as the second argument), it will save the response server-side as well.
 
@@ -736,14 +736,15 @@ $form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
         'home' => 'Home number',
         'work' => 'Work number',
         'mobile' => 'Mobile number',
-    ]);
+    ])
+    ->required();
 
 $form['birth_date'] = \ae\form\date('Birthday date')
-    ->max_value('-18 years', 'You must be at least 18 years old!');
+    ->max('-18 years', 'You must be at least 18 years old!');
 
 $form['photos'] = \ae\form\file('Photos of you')
-    ->multiple()
     ->accept('image/*')
+    ->multiple()
     ->min_width(200)
     ->min_height(200)
     ->max_size(10 * \ae\file\megabyte);
@@ -753,54 +754,65 @@ You can assign an instance of any class extending `\ae\form\DataField` or `\ae\f
 
 Field objects have methods that you can use to set their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more info.
 
-#### Common field types
+#### Basic field types
 
 Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields. All field factory functions accept a field label as the first argument, and (optionally) a default value(s) as the second argument:
 
-##### Strings
+> You can specify default values when creating both form and field objects. However, default values of the form always override default values of its fields.
 
-- `\ae\form\text()` uses <samp>&lt;input type="text"&gt;</samp> control
-- `\ae\form\password()` uses <samp>&lt;input type="password"&gt;</samp> control
-- `\ae\form\email()` uses <samp>&lt;input type="email"&gt;</samp> control; will accept multiple values, if `multiple()` method is applied
-- `\ae\form\tel()` uses <samp>&lt;input type="tel"&gt;</samp> control
-- `\ae\form\url()` uses <samp>&lt;input type="url"&gt;</samp> control
-- `\ae\form\search()` uses <samp>&lt;input type="search"&gt;</samp> control
+##### Text strings
+
+- `\ae\form\text()` uses <samp>&lt;input type="text"&gt;</samp> control.
+- `\ae\form\password()` uses <samp>&lt;input type="password"&gt;</samp> control.
+- `\ae\form\search()` uses <samp>&lt;input type="search"&gt;</samp> control; all newline characters are removed automatically.
+- `\ae\form\tel()` uses <samp>&lt;input type="tel"&gt;</samp> control.
+- `\ae\form\url()` uses <samp>&lt;input type="url"&gt;</samp> control; has `pattern(\ae\form\url)` constraint applied.
+- `\ae\form\email()` uses <samp>&lt;input type="email"&gt;</samp> control; will accept multiple values, if `multiple()` method is called; has `pattern(\ae\form\email)` constraint applied.
 
 ##### Number fields
 
-- `\ae\form\number()` uses <samp>&lt;input type="number"&gt;</samp> control
-- `\ae\form\range()` uses <samp>&lt;input type="range"&gt;</samp> control
+- `\ae\form\integer()` uses <samp>&lt;input type="number"&gt;</samp> control; has `pattern(\ae\form\integer)` constraint applied.
+- `\ae\form\decimal()` uses <samp>&lt;input type="number"&gt;</samp> control; has `pattern(\ae\form\decimal)` constraint applied.
+- `\ae\form\range()` uses <samp>&lt;input type="range"&gt;</samp> control; has `pattern(\ae\form\decimal)` constraint applied; to match HTML5 spec, `min(0)` and `max(100)` constraints are applied to this field by default, and initial value is set to <samp>min+(max-min)/2</samp>.
+
 
 ##### Dates and time fields
 
-- `\ae\form\date()` uses <samp>&lt;input type="date"&gt;</samp> control
-- `\ae\form\month()` uses <samp>&lt;input type="month"&gt;</samp> control
-- `\ae\form\week()` uses <samp>&lt;input type="week"&gt;</samp> control
-- `\ae\form\time()` uses <samp>&lt;input type="time"&gt;</samp> control
-- `\ae\form\datetime()` uses <samp>&lt;input type="datetime-local"&gt;</samp> control
+- `\ae\form\date()` uses <samp>&lt;input type="date"&gt;</samp> control; has `pattern(\ae\form\date)` constraint applied.
+- `\ae\form\month()` uses <samp>&lt;input type="month"&gt;</samp> control; has `pattern(\ae\form\month)` constraint applied.
+- `\ae\form\week()` uses <samp>&lt;input type="week"&gt;</samp> control; has `pattern(\ae\form\week)` constraint applied.
+- `\ae\form\time()` uses <samp>&lt;input type="time"&gt;</samp> control; has `pattern(\ae\form\time)` constraint applied.
+- `\ae\form\datetime()` uses <samp>&lt;input type="datetime-local"&gt;</samp> control; has `pattern(\ae\form\datetime)` constraint applied.
 
 ##### Fields with options
 
-- `\ae\form\select()` uses <samp>&lt;select&gt;</samp> control; will accept multiple values, if `multiple()` method is applied
-- `\ae\form\radio()` uses multiple <samp>&lt;input type="radio"&gt;</samp> controls
+- `\ae\form\select()` uses <samp>&lt;select&gt;</samp> control; will accept multiple values, if `multiple()` method is called.
+- `\ae\form\radio()` uses multiple <samp>&lt;input type="radio"&gt;</samp> controls.
 - `\ae\form\checkbox()` behaves differently depending on whether options are provided via `options()` method:
     - if no options are provided, uses a single <samp>&lt;input type="checkbox"&gt;</samp> control; its value is either `true` or `false`
     - if one or more options are provided, uses multiple <samp>&lt;input type="checkbox"&gt;</samp> controls to render them; its value is an array of checked options.
 
 ##### Miscellaneous
 
-- `\ae\form\color()` uses <samp>&lt;input type="color"&gt;</samp> control
-- `\ae\form\textarea()` uses <samp>&lt;textarea"&gt;</samp> control; mostly behaves like `\ae\form\text()` field, but does not have access to `pattern()` validation constraint
-- `\ae\form\file()` will accept multiple values, if `multiple()` method is applied
+- `\ae\form\color()` uses <samp>&lt;input type="color"&gt;</samp> control; has `pattern(\ae\form\color)` constraint applied.
+- `\ae\form\textarea()` uses <samp>&lt;textarea"&gt;</samp> control; mostly behaves like `\ae\form\text()` field, but does not have access to `pattern()` validation constraint.
+- `\ae\form\file()` will accept multiple values, if `multiple()` method is called.
 
 
 #### HTML attributes
 
-...
+All fields have `attributes()` method, which you can use to change control's attributes:
+
+```php
+$field = \ae\form\textarea('Description')
+    ->attributes(['cols' => 40, 'rows' => 10]);
+```
+
+
 
 #### Multiple values
 
-The following field types will accept and produce multiple values, if `multiple()` method is applied:
+The following field types will accept and produce multiple values, if `multiple()` method is called:
 
 - `\ae\form\email()`
 - `\ae\form\file()`
@@ -812,44 +824,51 @@ The following field types will accept and produce multiple values, if `multiple(
 
 Most validation constraints are field type-specific, but all field types have access to the following constraints:
 
-- `required()` – the field must contain a non-empty a value; corresponds to <samp>required</samp> attribute in HTML5
-- `valid($function)` allows you to specify an arbitrary constraint via a *callable* `$function`; during validation field value is passed as the first argument, and function must return either `null` or an error message
+- `required()` – the field must contain a non-empty a value; corresponds to <samp>required</samp> attribute in HTML5.
+- `valid($function)` allows you to specify an arbitrary constraint using a *callable* `$function`; current field value is passed as the first argument, and reference to form is passed as the second argument; function must return either `null` or an error message:
+
+```php
+$field = \ae\form\text('First name')
+    ->valid(function ($value) {
+        return $value === 'Anton' ? 'Sorry Anton, cannot let you through!' : null;
+    });
+```
 
 ##### Text field constraints
 
-- `min_length($length)` and `max_length($length)` define maximum and minimum length constraints; correspond to <samp>minlength</samp> and <samp>maxlength</samp> attributes in HTML5
+- `min_length($length)` and `max_length($length)` define maximum and minimum length constraints; correspond to <samp>minlength</samp> and <samp>maxlength</samp> attributes in HTML5.
 - `pattern($pattern)` defines a pattern constraint; `$pattern` must contain a valid regular expression, e.g. `#[0-9a-f]{6}`; corresponds to <samp>pattern</samp> attribute in HTML5; use can use one of these constants:
-    - `\ae\form\integer` – an integer number, e.g. <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>
-    - `\ae\form\decimal` – a decimal number, e.g. <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>
-    - `\ae\form\numeric` – a string consisting of numeric characters, e.g. <samp>123</samp>, <samp>000</samp>
-    - `\ae\form\alpha` – a string consisting of alphabetic characters, e.g. <samp>abc</samp>, <samp>cdef</samp>
-    - `\ae\form\alphanumeric` – a string consisting of both alphabetic and numeric characters, e.g. <samp>a0b0c0</samp>, <samp>0000</samp>, <samp>abcde</samp>
-    - `\ae\form\color` – a hexadecimal representation of a color, e.g. <samp>#fff000</samp>, <samp>#434343</samp>
-    - `\ae\form\time` – a valid time, e.g. <samp>14:00:00</samp>, <samp>23:59:59.99</samp>
-    - `\ae\form\date` – a valid date, e.g. <samp>2009-10-15</samp>
-    - `\ae\form\datetime` – a valid date and time, e.g. <samp>2009-10-15T14:00:00-9:00</samp>
-    - `\ae\form\month` – a valid month, e.g. <samp>2009-10</samp>
-    - `\ae\form\week` – a valid week, e.g. <samp>2009-W42</samp>
-    - `\ae\form\email` – a valid email address
-    - `\ae\form\url` – a valid URL
-    - `\ae\form\uk_postcode` – a valid UK postal code
+    - `\ae\form\integer` – an integer number, e.g. <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>.
+    - `\ae\form\decimal` – a decimal number, e.g. <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>.
+    - `\ae\form\numeric` – a string consisting of numeric characters, e.g. <samp>123</samp>, <samp>000</samp>.
+    - `\ae\form\alpha` – a string consisting of alphabetic characters, e.g. <samp>abc</samp>, <samp>cdef</samp>.
+    - `\ae\form\alphanumeric` – a string consisting of both alphabetic and numeric characters, e.g. <samp>a0b0c0</samp>, <samp>0000</samp>, <samp>abcde</samp>.
+    - `\ae\form\color` – a hexadecimal representation of a color, e.g. <samp>#fff000</samp>, <samp>#434343</samp>.
+    - `\ae\form\time` – a valid time, e.g. <samp>14:00:00</samp>, <samp>23:59:59.99</samp>.
+    - `\ae\form\date` – a valid date, e.g. <samp>2009-10-15</samp>.
+    - `\ae\form\datetime` – a valid date and time, e.g. <samp>2009-10-15T14:00:00-9:00</samp>.
+    - `\ae\form\month` – a valid month, e.g. <samp>2009-10</samp>.
+    - `\ae\form\week` – a valid week, e.g. <samp>2009-W42</samp>.
+    - `\ae\form\email` – a valid email address.
+    - `\ae\form\url` – a valid URL.
+    - `\ae\form\uk_postcode` – a valid UK postal code.
 
 
 ##### Number and date field constraints
 
-- `min($value)` and `max($value)` define maximum and minimum value constraints; correspond to <samp>min</samp>, <samp>max</samp> attributes in HTML5
+- `min($value)` and `max($value)` define maximum and minimum value constraints; correspond to <samp>min</samp>, <samp>max</samp> attributes in HTML5; date/time fields parse `$value` using `strtotime()` function.
 
 ##### File field constraints
 
-- `accept($types)` defines a file type constraint; `$types` must be a comma-separated list of either file extensions (with full stop character), valid MIME types, or <samp>audio/\*</samp> or <samp>image/\*</samp> or <samp>video/\*</samp>; corresponds to <samp>accept</samp> attribute in HTML
-- `min_size($size)`, `max_size($size)` define file size constraints
-- `min_width($width)`, `max_width($width)`, `min_height($height)`, `max_height($height)`, `min_dimensions($width, $height)`, `max_dimensions($width, $height)` define image dimension constraints
+- `accept($types)` defines a file type constraint; `$types` must be a comma-separated list of either file extensions (with full stop character), valid MIME types, or <samp>audio/\*</samp> or <samp>image/\*</samp> or <samp>video/\*</samp>; corresponds to <samp>accept</samp> attribute in HTML.
+- `min_size($size)`, `max_size($size)` define file size constraints.
+- `min_width($width)`, `max_width($width)`, `min_height($height)`, `max_height($height)`, `min_dimensions($width, $height)`, `max_dimensions($width, $height)` define image dimension constraints.
 
 All validation constraints will generate human readable error messages automatically. If you wish to override a default error message, you can do so by passing your error message as the last argument.
 
-### Special field types
+### Complex field types
 
-There are several special field types that do not have corresponding analogs in HTML:
+There are several special field types that do not have corresponding analogs in HTML. The mix and arrange multiple basic (and complex) fields to create a more specialized field:
 
 - `\ae\form\compound()` allows you to break multiple fields together to produce a single value, e.g. you can break name field into separate first, (optional) middle, and last name fields.
 - `\ae\form\repeater()` is a repeating sequence of a predefined group of fields.
@@ -858,16 +877,76 @@ There are several special field types that do not have corresponding analogs in 
 
 #### Compound field
 
-...
+```php
+$day = \ae\form\integer('Day')->min(1)->max(31);
+$month = \ae\form\integer('Month')->min(1)->max(12);
+$year = \ae\form\integer('Month')->min(1900)->max(2100);
+
+$field = \ae\form\compound('Date', '2015-01-01')
+    ->parts($day, '/', $month, '/', $year)
+    ->serialize(function ($components) {
+        return str_pad($components[2], 4, '0') . '-' . 
+            str_pad($components[1], 2, '0') . '-' . 
+            str_pad($components[0], 2, '0');
+    })
+    ->unserialize(function ($value) {
+        preg_match('(\d{4})-(\d{2})-(\d{2})', $value, $components);
+        
+        return [
+            $components[3],
+            $components[2],
+            $components[1]
+        ];
+    })
+    ->required('Please enter date.')
+    ->pattern(\ae\form\date);
+```
 
 
 #### Repeater field
 
-...
+```php
+$name = \ae\form\text('Name')->required();
+$email = \ae\form\email('Email address')->required();
+
+$field = \ae\form\repeater('Invitation')
+    ->repeat([
+        'name' => $name,
+        'email' => $email
+    ], 'Invite more')
+    ->min_length(1)
+    ->max_length(10);
+```
 
 #### Sequence field
 
-...
+```php
+$textarea = \ae\form\textarea('Intro')
+    ->attributes(['cols' => 50, 'rows' => 10]);
+$image = \ae\form\file('Image')
+    ->required()
+    ->accept('image/*')
+    ->min_dimensions(400, 400);
+$align = \ae\form\radio('Align', left)
+    ->required()
+    ->options([
+        'left' => 'Left',
+        'center' => 'Center',
+        'right' => 'Right',
+    ]);
+
+$field = \ae\form\sequence('Content')
+    ->first('intro', [
+        'text' => $textarea
+    ], 'Add intro')
+    ->any('text', [
+        'text' => $textarea
+    ], 'Add text block')
+    ->any('image', [
+        'image' => $image,
+        'align' => $align,
+    ], 'Add image');
+```
 
 
 ### Validation
@@ -884,7 +963,7 @@ if ($form->is_submitted() && $form->is_valid())
     // Validate name
     if ($form['name']->value === 'John Connor')
     {
-        $form['name']->error = 'You are not John Connor! Enter your real name please.';
+        $form['name']->error = 'You are not John Connor! State your real name please.';
         $is_valid = false;
     }
     
@@ -922,7 +1001,7 @@ Alternatively, you can render the form by manually calling `open()` and `close()
 <?= $form->open(['novalidate' => true]) ?>
 
 <?php foreach ($form as $field): ?>
-    <div class="field <?= $field->classes() ?>">
+    <div class="field <?= $field->classes ?>">
         <?= $field->label() ?>
         <?= $field->control(['placeholder' => 'Enter ' . $field->label]); ?>
         <?= $field->error() ?>
@@ -932,6 +1011,19 @@ Alternatively, you can render the form by manually calling `open()` and `close()
 <?= $form->close() ?>
 ```
 
+All basic fields have the following properties that you can use to render them:
+
+- `label` contains the field label, e.g. <samp>Name</samp>, <samp>Options</samp>, etc.
+- `name` contains the field name, e.g. <samp>name</samp>, <samp>options[]</samp>, etc.; set by the form object when field is assigned to it.
+- `error` contains an error message set during validation, e.g. <samp>Name is required.</samp>.
+- `value` contains current value(s), either submitted or default.
+- `classes` contains a string of HTML classes indicating the state of the field, e.g. <samp>text-field required-field</samp>.
+
+The following method render individual components of a field:
+
+- `label([$attributes])` renders field label, e.g. <samp>&lt;label for=&quot;field-id&quot;&gt;Field label&lt;/label&gt;</samp>; returns an empty string for `\ae\form\checkbox()` fields with no options.
+- `control([$attributes])` renders field control, e.g. <samp>&lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;&quot;&gt;</samp>.
+- `error([$before = '<em class="error">', $after = '</em>'])` renders field error, if it has one.
 
 ## Database
 
