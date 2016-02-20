@@ -2,14 +2,14 @@
 
 æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, database operations, and easy debugging and profiling.
 
-This project has been created and maintained by its sole author to explore, validate and express his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
+This project has been created by its sole author to explore, express and validate his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
 - **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
 - **Reliability**: The APIs were designed to be expressive and user error-resistant. Versions of this code have powered a few moderately complex websites and applications, which helped iron most of the kinks out.
 - **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
-There is nothing particularly groundbreaking or fancy about this toolkit. If you just need a lean PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com). 
+There is nothing particularly groundbreaking or fancy about this toolkit. If you just need a lean PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com).
 
 æ will be perfect for you, if your definition of a web application falls along these lines:
 
@@ -17,10 +17,52 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 In other words, æ will not let you forget that most of the back-end programming is a glorified string manipulation, but it will alleviate the most cumbersome aspects of it. 
 
-In more practical terms, if you are putting together a site with a bunch of forms that save data to a database, æ comes with everything you need.
+In more practical terms, if you are putting together a site with some forms that save data to a database, and then present that data back to the user on a bunch of pages, æ comes with everything you need.
 
 You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck. ;-)
 
+* * *
+
+## Table of contents
+
+- [Getting started](#getting-started)
+    - [Requirements](#requirements)
+    - [Manual installation](#manual-installation)
+    - [Configuring Composer](#configuring-composer)
+    - [Hello world](#hello-world)
+- [Request](#request)
+    - [Request mapping](#request-mapping)
+- [Response](#response)
+    - [Buffer](#buffer)
+    - [Template](#template)
+    - [Layout](#layout)
+    - [Cache](#cache)
+- [File](#file)
+    - [Handling uploaded files](#handling-uploaded-files)
+    - [Passing metadata](#passing-metadata)
+    - [File size constants](#file-size-constants)
+- [Image](#image)
+    - [Resizing and cropping](#resizing-and-cropping)
+    - [Applying filters](#applying-filters)
+    - [Conversion and saving](#conversion-and-saving)
+- [Form](#form)
+    - [Declaration](#declaration)
+    - [Validation](#validation)
+    - [Presentation](#presentation)
+    - [Complex field types](#complex-field-types)
+- [Database](#database)
+    - [Making queries](#making-queries)
+    - [Query functions](#query-functions)
+    - [Active record](#active-record)
+    - [Transactions](#transactions)
+- [Inspector](#inspector)
+    - [Debugging](#debugging)
+    - [Profiling](#profiling)
+- [Utilities](#utilities)
+    - [File system paths](#file-system-paths)
+    - [Exception safety](#exception-safety)
+    - [Configuration options](#configuration-options)
+- [License](#license)
 
 * * *
 
@@ -119,7 +161,7 @@ else if (\ae\request\method() === \ae\request\POST)
 }
 ```
 
-You can access URI path segments using `\ae\request\path()`  method:
+You can access URI path segments using `\ae\request\path()` function:
 
 ```php
 // GET /some/arbitrary/script.php HTTP/1.1
@@ -140,8 +182,6 @@ All requests have a type (<samp>html</samp> by default), which is determined by 
 
 echo \ae\request\type(); // json
 ```
-
-While some purist may (somewhat rightfully) disagree with the author's choice of relying on file extensions to distinguish between different file types
 
 To get the client IP address, you should use `\ae\request\address()` function. If your app is running behind a reverse-proxy and/or load balancer, you must specify their IP addresses first:
 
@@ -164,7 +204,9 @@ $term = \ae\request\data('term'); // returns $_POST['term'] or NULL
 You can access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>), using `\ae\request\files()` function.
 
 ```php
-$files = \ae\request\files(); // returns an associative array of uploaded files (see \ae\file() for more)
+$files = \ae\request\files();
+// returns an associative array of uploaded files:
+// e.g. ['form_field_name' => \ae\file(), ...]
 ```
 
 If you need to access raw request body, use `\ae\request\body()` function:
@@ -176,11 +218,11 @@ $post = \ae\request\body(); // same as file_get_contents("php://input")
 
 ### Request mapping
 
-You should always strive to break down your application into independent components. The best way to handle a request is to map it to a specific function or template that encapsulates part of your application's functionality.
+You should always strive to break down your application into smallest independent components. The best way to handle a request is to map it to a specific function or template that encapsulates a part of your application's functionality.
 
 Requests are mapped using rules, which are key-value pairs of path pattern, and either an object that conforms to `\ae\response\Dispatchable` interface or a function that returns such an object.
 
-Here's an example of a request being mapped to a page template:
+Here's an example of a request being mapped to page templates:
 
 ```php
 // GET /about-us HTTP/1.1
@@ -193,7 +235,7 @@ Here's an example of a request being mapped to a page template:
 ]);
 ```
 
-Or we can write a more generic rule that handles all root level pages by using a placeholder and mapping it to a function:
+Or we can write a more generic rule that handles all root level pages by using a placeholder, and mapping it to a function:
 
 ```php
 // GET /about-us HTTP/1.1
@@ -208,11 +250,11 @@ Or we can write a more generic rule that handles all root level pages by using a
 ]);
 ```
 
-As you can see, we used `{any}` placeholder to catch the page slug and pass its value to our handler function as first argument.
+As you can see, we used `{any}` placeholder to catch the slug of the page and pass its value to our handler function as first argument.
 
-> `{any}` placeholder can match (and capture) a substring within only one path segment, i.e. it can match any character other than <smap>/</smap> (forward slash).
+> `{any}` placeholder can match (and capture) a substring only within one path segment, i.e. it can match any character other than <smap>/</smap> (forward slash).
 
-`\ae\template()` will throw an `\ae\path\Exception`, if the template file does not exist, which in turn will result in `\ae\response\error(404)` being dispatched.
+If the template file does not exist, `\ae\template()` will throw an `\ae\path\Exception`, which in turn will result in `\ae\response\error(404)` being dispatched.
 
 > If a request handler throws `\ae\path\Exception`, `\ae\response\error(404)` will be dispatched. If it throws any other exception, `\ae\response\error(500)` will be dispatched instead.
 
@@ -224,7 +266,7 @@ Now, let's assume we want users to be able to download files from a specific dir
 \ae\request\map([
     // ...
     '/download' => function ($file_path) {
-        return \ae\file('path/to/downloadable/files/' . $file_path);
+        return \ae\file('path/to/downloadable/files/' . $file_path)
         // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
             ->download(true);
     },
@@ -232,15 +274,9 @@ Now, let's assume we want users to be able to download files from a specific dir
 ]);
 ```
 
-<!--
-    TODO: How do I pass a file though, e.g. show document.pdf, instead of downloading it?
-    
-    \ae\file()->download(false);
-    \ae\file()->download(true);
-    \ae\file()->download('custom_name.ext');
--->
+First of all, we will take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *the last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply display the content of the file.
 
-First of all, we will take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is past as *the last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply display the content of the file.
+> You can pass a custom file to `download()` method, if you do not want to use the actual file name.
 
 Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that can take any image, resize it to predefined dimensions, and cache the result for 10 years:
 
@@ -276,17 +312,10 @@ Image processing is a very common problem that can be solved in multiple ways. L
 
 Similarly to the file download example, the file path is passed as *the last argument* to our handler. In addition to that, we catch the image format as *the first argument*. The object returned by `\ae\image()` conforms to `\ae\response\Cachable` interface (in addition to `\ae\response\Dispatchable`) and implements `cache()` method.
 
-Please note that if the format is wrong, we show 404 error.
-
-<!--
-    TODO: How do I make image downloadable?
--->
-
-
-And finally, our last rule will display home page *or* show 404 error for all unmatched requests by returning `null`:
+And finally, our last rule will display home page, *or* show 404 error for all unmatched requests by returning `null`:
 
 ```php
-// GET /about-us HTTP/1.1
+// GET / HTTP/1.1
 
 \ae\request\map([
     // ...
@@ -321,7 +350,7 @@ $response = \ae\response()
 <?php 
 
 $response
-    ->cache(2 * \ae\cache\minute, \ae\cache\server_side)
+    ->cache(5 * \ae\cache\minute, \ae\cache\server_side)
     ->dispatch('hello-world.html');
 
 ?>
@@ -336,7 +365,11 @@ By default all responses are <samp>text/html</samp>, but you can change the type
 
 ### Buffer
 
-You can create a buffer and assign it to a variable to start capturing output. All output is captured until the instance is destroyed or buffered content is used:
+You can create a buffer and assign it to a variable to start capturing output. All output is captured until the instance is destroyed:
+
+<!--
+     or buffered content is used ???
+-->
 
 ```php
 $buffer = \ae\buffer();
@@ -404,7 +437,7 @@ Another script <samp>hello_world.php</samp> can use it like this:
 
 ```php
 <?php $layout = \ae\layout('path/to/layout_html.php', [
-    'title' => 'Container example'
+    'title' => 'Layout example'
 ]); ?>
 <h1>Hello World!</h1>
 ```
@@ -414,7 +447,7 @@ When rendered, it will produce this:
 ```html
 <html>
 <head>
-    <title>Container example</title>
+    <title>Layout example</title>
 </head>
 <body>
     <h1>Hello World!</h1>
@@ -428,6 +461,45 @@ If you want your response to be cached client-side for a number of minutes, you 
 
 > Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Cacheable` interface, which allows you to cache them.
 
+#### Configuration
+
+The responses are saved to <samp>cache</samp> directory (in the *web root* directory) by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in that directory:
+
+1. Put the following rules into <samp>.htaccess</samp> file in the *web root* directory:
+
+    ```apache
+    <IfModule mod_rewrite.c>
+        RewriteEngine on
+        RewriteBase /
+
+        # Append ".html", if there is no extension...
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !\.\w+$
+        RewriteRule ^(.*?)$ /$1.html [L]
+
+        # ...and redirect to cache directory ("/cache")
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
+    </IfModule>
+    ```
+
+2. And here are the rules that <samp>cache/.htaccess</samp> must contain:
+
+    ```apache
+    <IfModule mod_rewrite.c>
+        RewriteEngine on
+
+        # If no matching file found, redirect back to index.php
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^(.*) /index.php?/$1 [L,QSA]
+    </IfModule>
+    ```
+
+With everything in place, Apache will first look for an unexpired cached response, and only if it finds nothing, will it route the request to <samp>/index.php</samp>.
+
+#### Cache functions
+
 You can save any response manually using `\ae\cache\save()` function:
 
 ```php
@@ -440,54 +512,19 @@ You can delete any cached response using `\ae\cache\delete()` function by passin
 \ae\cache\delete('hello-world.html');
 ```
 
-You should also periodically remove all *stale* cache entries via `\ae\cache\clean()`:
+It may be a good idea to periodically remove all *stale* cache entries via `\ae\cache\clean()`:
 
 ```php
 \ae\cache\clean();
 ```
 
-> The garbage collection is a resource-intensive operation, so its usage should be restricted to a cron job.
+> Garbage collection is a resource-intensive operation, so its usage should be restricted to a cron job.
 
 To completely erase all cached data use `\ae\cache\purge()` function:
 
 ```php
 \ae\cache\purge();
 ```
-
-The responses are saved in <samp>cache</samp> directory (in the *web root* directory) by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in this directory.
-
-Put the following rules into <samp>.htaccess</samp> file in the *web root* directory:
-
-```apache
-<IfModule mod_rewrite.c>
-    RewriteEngine on
-    RewriteBase /
-
-    # Append ".html", if there is no extension...
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} !\.\w+$
-    RewriteRule ^(.*?)$ /$1.html [L]
-
-    # ...and redirect to cache directory ("/cache")
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^(.*?)\.(\w+)$ /cache/$1/index.$2/index.$2 [L,ENV=FROM_ROOT:1]
-</IfModule>
-```
-
-And here are the rules that <samp>cache/.htaccess</samp> must contain:
-
-```apache
-<IfModule mod_rewrite.c>
-    RewriteEngine on
-
-    # If no matching file found, redirect back to index.php
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^(.*) /index.php?/$1 [L,QSA]
-</IfModule>
-```
-
-With everything in place, Apache will first look for a cached response, and only if it finds no valid response, will it route the request to <samp>/index.php</samp>, where your app can generate (and cache statically) a response.
 
 
 ## File
@@ -512,7 +549,7 @@ if ($file->tell() === 0)
 unset($file);
 ``` 
 
-The library exposes basic information about the file:
+You can access basic information about the file:
 
 ```php
 $file = \ae\file('path/to/file.txt');
@@ -525,7 +562,7 @@ echo $file->mime(); // text/plain
 $path = $file->path(); // $path = \ae\path('path/to/file.txt')
 ```
 
-Existing files can be copied, moved or deleted:
+Existing files can be copied, moved, and deleted:
 
 ```php
 $file = \ae\file('path/to/file.txt');
@@ -537,7 +574,6 @@ if ($file->exists())
     $copy->move('./file.txt');
 }
 ```
-
 
 ### Handling uploaded files
 
@@ -566,11 +602,11 @@ foreach ($file as $meta_name => $meta_value)
 }
 ```
 
-Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate useful information.
+Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate additional information about the file, when you pass an object representing it around.
 
 ### File size constants
 
-The file library also defines several constants that you are encouraged to use when dealing with file sizes:
+File library defines several constants that you are encouraged to use when dealing with file sizes:
 
 ```php
 echo \ae\file\byte;     // 1
@@ -602,16 +638,21 @@ echo $image->type();   // jpeg
 echo $image->mime();   // image/jpeg
 ```
 
+<!--
+    TODO: File specific information?
+    TODO: Copying, moving, deleting images?
+-->
+
 ### Resizing and cropping
 
 You can transform the image by changing its dimensions in 4 different ways:
 
-- `scale($w, $h)` scales the image in one or both dimensions; use `null` for either dimension to scale proportionally
-- `crop($w, $h)` crops the image to specified dimensions, even if it is smaller than target dimensions
-- `fit($w, $h)` scales the image, so it fits into a box defined by target dimensions
-- `fill($w, $h)` scales and crops the image, so it completely covers a box defined by target dimensions.
+- `scale($width, $height)` scales the image in one or both dimensions; use `null` for either dimension to scale proportionally.
+- `crop($width, $height)` crops the image to specified dimensions, even if it is smaller than target dimensions.
+- `fit($width, $height)` scales the image, so it fits into a box defined by target dimensions.
+- `fill($width, $height)` scales and crops the image, so it completely covers a box defined by target dimensions.
 
-You will rarely need to use the first two methods, as the the latter two cover most of use cases:
+You will rarely need to use the first two methods, as the latter two cover most of use cases:
 
 ```php
 $photo = \ae\image('path/to/photo.jpg');
@@ -632,7 +673,7 @@ $thumbnail = $small
     ->save();
 ```
 
-You can specify the point of origin using `align()` method before you apply `crop()` and `fill()` transformations to an image:
+You can specify the point of origin using `align()` method, before you apply `crop()` and `fill()` transformations to an image:
 
 ```php
 $thumbnail = $small
@@ -651,6 +692,7 @@ This way you can crop a specific region of the image. The `align()` method requi
     - a number from <samp>0</samp> (top) to <samp>1</samp> (bottom); <samp>0.5</samp> being the middle
     - a constant: `\ae\image\top`, `\ae\image\middle`, or `\ae\image\bottom`
 
+By default, the origin point is in the middle of both axes.
 
 ### Applying filters
 
@@ -665,16 +707,16 @@ $thumbnail
 
 Here are all the filters available:
 
-- `blur()` blurs the image using the Gaussian method
-- `brightness($value)` changes the brightness of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>
-- `contast($value)` changes the contrast of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>
-- `colorize($red, $green, $blue)` changes the contrast of the image; accepts numbers from <samp>0.0</samp> to <samp>1.0</samp>
-- `grayscale()` converts the image into grayscale
-- `negate()` reverses all colors of the image
-- `pixelate($size)` applies pixelation effect to the image
-- `smooth($value)` makes the image smoother
+- `blur()` blurs the image using the Gaussian method.
+- `brightness($value)` changes the brightness of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>.
+- `contast($value)` changes the contrast of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>.
+- `colorize($red, $green, $blue)` changes the contrast of the image; accepts numbers from <samp>0.0</samp> to <samp>1.0</samp>.
+- `grayscale()` converts the image into grayscale.
+- `negate()` reverses all colors of the image.
+- `pixelate($size)` applies pixelation effect to the image.
+- `smooth($value)` makes the image smoother; accepts integer values, <samp>-8</samp> to <samp>8</samp> being the sweat spot.
 
-### Converting and saving
+### Conversion and saving
 
 By default when you use `save()` method the image type and name is preserved.
 
@@ -705,12 +747,12 @@ $image
 
 ## Form
 
-Form library lets you create web forms and validate the both client- and server-side using HTML5 constraints. Both forms and individual controls implement `__toString()` magic method and can render themselves into valid HTML when cast to string. You can render a form manually, of course, if you so desire.
+Form library lets you create web forms and validate them both on the client and the server sides using HTML5 constraints. Both forms and individual controls implement `__toString()` magic method and can render themselves into valid HTML when cast to string, but you can render them manually, if you so desire.
 
 
 ### Declaration
 
-You can create a new form using `\ae\form()` function. It takes a form name (unique within the context of a single web page) as the first argument, and (optionally) an array of default field values as the second argument:
+You can create a new form using `\ae\form()` function. It takes form name – it must be unique within the context of a single web page – as the first argument, and (optionally) an array of default field values as the second argument:
 
 ```php
 $form = \ae\form('Profile', [
@@ -729,7 +771,7 @@ $form['email'] = \ae\form\email('Email address')
     ->required();
 
 $form['phone'] = \ae\form\tel('Phone number'); 
-// NB! Never use \ae\form\number() for phone numbers!
+// N.B. Never use \ae\form\number() for phone numbers!
 
 $form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
     ->options([
@@ -739,7 +781,7 @@ $form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
     ])
     ->required();
 
-$form['birth_date'] = \ae\form\date('Birthday date')
+$form['birth_date'] = \ae\form\date('Date of birth')
     ->max('-18 years', 'You must be at least 18 years old!');
 
 $form['photos'] = \ae\form\file('Photos of you')
@@ -752,11 +794,11 @@ $form['photos'] = \ae\form\file('Photos of you')
 
 You can assign an instance of any class extending `\ae\form\DataField` or `\ae\form\FileField` classes to a form. Once field is assigned, the form will use either `$_POST` or `$_FILES` array as its data source, depending on which parent class the object is related to.
 
-Field objects have methods that you can use to set their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more info.
+Field objects have methods that you can use to set their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more information.
 
 #### Basic field types
 
-Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields. All field factory functions accept a field label as the first argument, and (optionally) a default value(s) as the second argument:
+Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields out of the box. All field factory functions accept a field label as the first argument, and (optionally) a default value(s) as the second argument:
 
 > You can specify default values when creating both form and field objects. However, default values of the form always override default values of its fields.
 
@@ -825,19 +867,19 @@ The following field types will accept and produce multiple values, if `multiple(
 Most validation constraints are field type-specific, but all field types have access to the following constraints:
 
 - `required()` – the field must contain a non-empty a value; corresponds to <samp>required</samp> attribute in HTML5.
-- `valid($function)` allows you to specify an arbitrary constraint using a *callable* `$function`; current field value is passed as the first argument, and reference to form is passed as the second argument; function must return either `null` or an error message:
+- `valid($function)` allows you to specify an arbitrary constraint using a *callable* `$function`; current field value is passed as the first argument, and reference to form is passed as the second argument; function must return either `true`, if the value is valid, or an error message:
 
 ```php
 $field = \ae\form\text('First name')
-    ->valid(function ($value) {
-        return $value === 'Anton' ? 'Sorry Anton, cannot let you through!' : null;
+    ->valid(function ($value, $form) {
+        return $value === 'Anton' ? 'Sorry Anton, cannot let you through!' : true;
     });
 ```
 
 ##### Text field constraints
 
-- `min_length($length)` and `max_length($length)` define maximum and minimum length constraints; correspond to <samp>minlength</samp> and <samp>maxlength</samp> attributes in HTML5.
-- `pattern($pattern)` defines a pattern constraint; `$pattern` must contain a valid regular expression, e.g. `#[0-9a-f]{6}`; corresponds to <samp>pattern</samp> attribute in HTML5; use can use one of these constants:
+- `min_length($length)` and `max_length($length)` define maximum and minimum length constraints; they correspond to <samp>minlength</samp> and <samp>maxlength</samp> attributes in HTML5.
+- `pattern($pattern)` defines a pattern constraint; `$pattern` must be a valid regular expression without slashes, e.g. `#[0-9a-f]{6}`; it corresponds to <samp>pattern</samp> attribute in HTML5; the library has several patterns defined as constants:
     - `\ae\form\integer` – an integer number, e.g. <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>.
     - `\ae\form\decimal` – a decimal number, e.g. <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>.
     - `\ae\form\numeric` – a string consisting of numeric characters, e.g. <samp>123</samp>, <samp>000</samp>.
@@ -856,7 +898,7 @@ $field = \ae\form\text('First name')
 
 ##### Number and date field constraints
 
-- `min($value)` and `max($value)` define maximum and minimum value constraints; correspond to <samp>min</samp>, <samp>max</samp> attributes in HTML5; date/time fields parse `$value` using `strtotime()` function.
+- `min($value)` and `max($value)` define minimum and maximum value constraints; the correspond to <samp>min</samp>, <samp>max</samp> attributes in HTML5; date/time fields parse `$value` using `strtotime()` function.
 
 ##### File field constraints
 
@@ -864,89 +906,7 @@ $field = \ae\form\text('First name')
 - `min_size($size)`, `max_size($size)` define file size constraints.
 - `min_width($width)`, `max_width($width)`, `min_height($height)`, `max_height($height)`, `min_dimensions($width, $height)`, `max_dimensions($width, $height)` define image dimension constraints.
 
-All validation constraints will generate human readable error messages automatically. If you wish to override a default error message, you can do so by passing your error message as the last argument.
-
-### Complex field types
-
-There are several special field types that do not have corresponding analogs in HTML. The mix and arrange multiple basic (and complex) fields to create a more specialized field:
-
-- `\ae\form\compound()` allows you to break multiple fields together to produce a single value, e.g. you can break name field into separate first, (optional) middle, and last name fields.
-- `\ae\form\repeater()` is a repeating sequence of a predefined group of fields.
-- `\ae\form\sequence()` is an arbitrary sequence of multiple predefined groups of fields.
-
-
-#### Compound field
-
-```php
-$day = \ae\form\integer('Day')->min(1)->max(31);
-$month = \ae\form\integer('Month')->min(1)->max(12);
-$year = \ae\form\integer('Month')->min(1900)->max(2100);
-
-$field = \ae\form\compound('Date', '2015-01-01')
-    ->parts($day, '/', $month, '/', $year)
-    ->serialize(function ($components) {
-        return str_pad($components[2], 4, '0') . '-' . 
-            str_pad($components[1], 2, '0') . '-' . 
-            str_pad($components[0], 2, '0');
-    })
-    ->unserialize(function ($value) {
-        preg_match('(\d{4})-(\d{2})-(\d{2})', $value, $components);
-        
-        return [
-            $components[3],
-            $components[2],
-            $components[1]
-        ];
-    })
-    ->required('Please enter date.')
-    ->pattern(\ae\form\date);
-```
-
-
-#### Repeater field
-
-```php
-$name = \ae\form\text('Name')->required();
-$email = \ae\form\email('Email address')->required();
-
-$field = \ae\form\repeater('Invitation')
-    ->repeat([
-        'name' => $name,
-        'email' => $email
-    ], 'Invite more')
-    ->min_length(1)
-    ->max_length(10);
-```
-
-#### Sequence field
-
-```php
-$textarea = \ae\form\textarea('Intro')
-    ->attributes(['cols' => 50, 'rows' => 10]);
-$image = \ae\form\file('Image')
-    ->required()
-    ->accept('image/*')
-    ->min_dimensions(400, 400);
-$align = \ae\form\radio('Align', left)
-    ->required()
-    ->options([
-        'left' => 'Left',
-        'center' => 'Center',
-        'right' => 'Right',
-    ]);
-
-$field = \ae\form\sequence('Content')
-    ->first('intro', [
-        'text' => $textarea
-    ], 'Add intro')
-    ->any('text', [
-        'text' => $textarea
-    ], 'Add text block')
-    ->any('image', [
-        'image' => $image,
-        'align' => $align,
-    ], 'Add image');
-```
+All validation constraints will generate human readable error messages automatically. If you wish to override the default error message, you can do so by passing your error message as *the last argument*.
 
 
 ### Validation
@@ -984,7 +944,7 @@ if ($form->is_submitted() && $form->is_valid())
 }
 ```
 
-When method `is_valid()` is called, the form will iterate through all its fields, calling their `validate()` method. All validation constraints that were set when fields were declared are checked at this stage.
+When `is_valid()` method is called, the form will iterate all its fields, calling their `validate()` method. All validation constraints that were set when fields were declared are checked at this stage.
 
 
 ### Presentation
@@ -995,7 +955,7 @@ In order to render a form into HTML you can simply cast it to a string:
 echo (string) $form;
 ```
 
-Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` (and a few other) tags, and iterating through all fields and rendering them individually:
+Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` (and a few hidden) tags, and iterating all fields and rendering them individually:
 
 ```php
 <?= $form->open(['novalidate' => true]) ?>
@@ -1011,10 +971,10 @@ Alternatively, you can render the form by manually calling `open()` and `close()
 <?= $form->close() ?>
 ```
 
-All basic fields have the following properties that you can use to render them:
+All basic fields expose the following properties that you can use to render them:
 
 - `label` contains the field label, e.g. <samp>Name</samp>, <samp>Options</samp>, etc.
-- `name` contains the field name, e.g. <samp>name</samp>, <samp>options[]</samp>, etc.; set by the form object when field is assigned to it.
+- `name` contains the field name, e.g. <samp>name</samp>, <samp>options[]</samp>, <samp>repeater[0][name]</samp>, etc.; set by the form object when the field is assigned to it.
 - `error` contains an error message set during validation, e.g. <samp>Name is required.</samp>.
 - `value` contains current value(s), either submitted or default.
 - `classes` contains a string of HTML classes indicating the state of the field, e.g. <samp>text-field required-field</samp>.
@@ -1025,11 +985,151 @@ The following method render individual components of a field:
 - `control([$attributes])` renders field control, e.g. <samp>&lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;&quot;&gt;</samp>.
 - `error([$before = '<em class="error">', $after = '</em>'])` renders field error, if it has one.
 
+
+### Complex field types
+
+Complex fields use multiple basic fields to create a more specialized field:
+
+- `\ae\form\fieldset()` acts as a container for several fields; it uses <samp>&lt;fieldset&gt;</samp> control.
+
+There are  several special field types that do not have corresponding analogues in HTML:
+
+- `\ae\form\compound()` allows you to break multiple fields together to produce a single value, e.g. you can break name field into separate first, (optional) middle, and last name fields.
+- `\ae\form\repeater()` is a repeating sequence of a predefined group of fields.
+- `\ae\form\sequence()` is an arbitrary sequence of multiple predefined groups of fields.
+
+#### Field set
+
+In order to create a <samp>&lt;fieldset&gt;</samp>, you have to pass its legend as the first argument to `\ae\form\fieldset()` function. The returned object is a simple container with an array-like accessor/mutator:
+
+```php
+// ...
+$form['about'] = \ae\form\fieldset('About you');
+$form['about']['name'] = \ae\form\text('Name');
+$form['about']['dob'] = \ae\form\date('Date of birth');
+// ...
+```
+
+You can iterate its fields via any loop construct and access its legend via `legend` property to, say, render it:
+
+```php
+<fieldset>
+    <legend><?= $fieldset->legend ?></legend>
+<?php foreach($fieldset as $field): ?>
+    <?= $field ?>
+<?php endforeach; ?>
+</fieldset>
+```
+
+#### Compound field
+
+A compound field is a set of basic fields that by and large acts as a basic text field: its value is a string; you can apply validation constraints to it; it exposes the same properties and methods:
+
+```php
+$day = \ae\form\integer('Day')->min(1)->max(31);
+$month = \ae\form\integer('Month')->min(1)->max(12);
+$year = \ae\form\integer('Month')->min(1900)->max(2100);
+
+$field = \ae\form\compound('Date', '2015-01-01')
+    ->components($day, '/', $month, '/', $year)
+    ->serialize(function ($array) {
+        return str_pad($array[2], 4, '0') . '-' . 
+            str_pad($array[1], 2, '0') . '-' . 
+            str_pad($array[0], 2, '0');
+    })
+    ->unserialize(function ($string) {
+        preg_match('(\d{4})-(\d{2})-(\d{2})', $string, $components);
+        
+        return [
+            $components[3],
+            $components[2],
+            $components[1]
+        ];
+    })
+    ->required('Please enter a valid date!')
+    ->pattern(\ae\form\date);
+```
+
+In addition to regular methods, compound fields also exposes these:
+
+- `components(...)` sets all parts comprising the field, plus any filler strings.
+- `serialize($function)` defines a function that takes an array of the field parts' values and constructs a string out of them.
+- `unserialize($function)` define a function that takes a string and breaks it into parts.
+
+#### Repeater
+
+A repeater is comprised of the same field set repeated several times:
+
+```php
+$name = \ae\form\text('Name')->required();
+$email = \ae\form\email('Email address')->required();
+
+$field = \ae\form\repeater('Invitation')
+    ->components([
+        'name' => $name,
+        'email' => $email
+    ])
+    ->min_length(1)
+    ->max_length(10)
+    ->add_label('Invite more')
+    ->remove_label('Remove invitation');
+```
+
+It exposes five methods:
+
+- `components($fields)` expects an associative array of repeated fields.
+- `min_length($length)` applies a minimum length constraint; it is one by default.
+- `max_length($length)` applies a maximum length constraint; there is no default maximum.
+- `add_label($label)` sets label of the add <samp>&lt;button&gt;</samp>.
+- `remove_label($label)` sets label of the remove <samp>&lt;button&gt;</samp>.
+
+You can iterate the field sets:
+
+```php
+<?php foreach($repeater as $fieldset): ?>
+    <?= $fieldset ?>
+<?php endforeach; ?>
+```
+
+#### Sequence
+
+```php
+$textarea = \ae\form\textarea('Content')
+    ->attributes(['cols' => 50, 'rows' => 10]);
+$image = \ae\form\file('Image')
+    ->required()
+    ->accept('image/*')
+    ->min_dimensions(400, 400);
+$align = \ae\form\radio('Align', 'left')
+    ->required()
+    ->options([
+        'left' => 'Left',
+        'center' => 'Center',
+        'right' => 'Right',
+    ]);
+
+$field = \ae\form\sequence('Content')
+    ->first('intro', [
+        'text' => $textarea
+    ], 'Add intro')
+    ->always('background', [
+        'image' => $image
+    ])
+    ->any('text', [
+        'text' => $textarea
+    ], 'Add text block')
+    ->any('image', [
+        'image' => $image,
+        'align' => $align,
+    ], 'Add image');
+```
+
+
 ## Database
 
 Database library lets you make queries to a MySQL database, and exposes simple object-oriented abstractions for individual tables and records.
 
-You must to provide connection parameters first:
+Before we can do anything, you must configure the connection:
 
 ```php
 \ae\db\configure([
@@ -1040,7 +1140,7 @@ You must to provide connection parameters first:
 ]);
 ```
 
-Provided the connection parameters are correct and the database (<samp>ae_db</samp> in this example) exists, we can try to make a query to it:
+Provided the connection parameters are correct and the database (<samp>ae_db</samp> in this example) exists, we can try to make a query:
 
 ```php
 try {
@@ -1050,7 +1150,7 @@ try {
 }
 ```
 
-As you can see, whenever something goes wrong, `\ae\db\Exception` exception is thrown. 
+As you can see, whenever something goes wrong in the database layer, `\ae\db\Exception` is thrown. 
 
 If you want to know what queries were made and how much memory and time they took, you should turn query logging on:
 
@@ -1058,12 +1158,12 @@ If you want to know what queries were made and how much memory and time they too
 \ae\inspector\show('queries', true);
 ```
 
-> You must show inspector before you start making queries! See [Inspector](#inspector) section for more information.
+You must show inspector first though, before you start making any queries! See [Inspector](#inspector) section for more information.
 
 
 ### Making queries 
 
-Let's first create <samp>authors</samp> table using `\ae\db\query()` function:
+Let's create a table named <samp>authors</samp> first:
 
 ```php
 \ae\db\query("CREATE TABLE IF NOT EXISTS `authors` (
@@ -1074,7 +1174,7 @@ Let's first create <samp>authors</samp> table using `\ae\db\query()` function:
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
 
-Let's fill this table with some data:
+Now we can add data to this table:
 
 ```php
 \ae\db\query("INSERT INTO `authors` ({data:names}) VALUES ({data:values})", null, [
@@ -1090,7 +1190,7 @@ $morgan_id = \ae\db\insert_id();
 
 In this example we used `{data:names}` and `{data:values}` placeholders and specified column names and corresponding values via the third argument.
 
-Now, there's a typo in the authors name, so let's fix it:
+Now, there's a typo in the author's name, so let's fix it:
 
 ```php
 \ae\db\query("UPDATE `authors` 
@@ -1110,30 +1210,23 @@ Now, there's a typo in the authors name, so let's fix it:
 //    WHERE `id` = $morgan_id");
 ```
 
-Here we used `{data:set}` placeholder and specified its value the third argument. We also used three parameters in the query and specified their values via the second argument.
+Here we used `{data:set}` placeholder and specified its value via the third argument. We also used three parameters in the query and specified their values via the second argument.
 
-**NB!** You should always supply parameter and data values via the second and third arguments to prevent potential SQL injection attacks!
+> **N.B.** You should always supply parameter and data values via the second and third arguments. The library escapes those values which prevents potential SQL injection attacks!
 
-And if we run this query:
+Now let's retrieve that record from the database:
 
 ```php
 $result = \ae\db\query("SELECT * FROM `authors` WHERE `author_id` = {id}", [
         'id' => $morgan_id
     ]);
 
-echo $result[0]->name . ' is ' . $result[0]->nationality;
+echo $result[0]->name . ' is ' . $result[0]->nationality; // Richard K. Morgan is British
 ```
 
-It should produce this string:
+### Query functions 
 
-```txt
-Richard K. Morgan is British
-```
-
-
-### Specialized functions 
-
-You can make any query via `\ae\db\query()` function alone, but it's not as convenient as the specialized functions:
+You can make any query via `\ae\db\query()` function alone, but it's not as convenient as specialized query functions:
 
 - `\ae\db\select($table[, $columns])` – a <samp>SELECT</samp> query; accepts an array of column names as the second argument; returns a query object that can be used to add more clauses.
 - `\ae\db\insert($table, $data[, ...])` – an <samp>INSERT</samp> query; returns the record as an object; if more than one record is inserted, returns an array of objects.
@@ -1146,9 +1239,9 @@ You can make any query via `\ae\db\query()` function alone, but it's not as conv
 
 > All functions that use `$predicate`, do require it. If you want to, say, apply a <samp>DELETE</samp> query to all rows, you must use `\ae\db\all` constant. 
 > 
-> A predicate can be either an associative array of column/value pairs, or an object returned by `\ae\db\predicate()` function, e.g. `\ae\db\predicate('a_column LIKE "%{value}%"', ['value' => 'foo'])`.
+> A predicate can be either an associative array of column name/value pairs, or an object returned by `\ae\db\predicate()` function, e.g. `\ae\db\predicate('a_column LIKE "%{value}%"', ['value' => 'foo'])`.
 
-Let's add more data:
+Let's insert more data:
 
 ```php
 // Insert two more records
@@ -1197,7 +1290,7 @@ There are 3 authors in the result set:
 
 You can add clauses to the `\ae\db\select()` queries via chainable modifier methods: 
 
-- `join($table, $on_predicate)` - adds a <samp>JOIN</samp> clause; accepts table name as the first argument, and an associative array of foreign key/primary key pairs as the second argument.
+- `join($table, $on)`, `inner_join($table, $on)`, `left_join($table, $on)`, `right_join($table, $on)`, `full_join($table, $on)` – adds a <samp>JOIN</samp> clause; accepts table name as the first argument, and an associative array of foreign key/primary key pairs as the second argument; `join()` and `inner_join()` are synonyms.
 - `where($predicate)` or `where($template, $parameters)` – adds a <samp>WHERE</samp> clause using a predicate object or by creating a predicate from template and parameters; multiple clauses are concatenated using <samp>AND</samp> operator.
 - `group_by($column)` or `group_by($columns)` – adds a <samp>GROUP BY</samp> clause; accepts a column name or an array of column names.
 - `having($predicate)` or `having($template, $parameters)` – adds a <samp>HAVING</samp> clause.
@@ -1207,7 +1300,7 @@ You can add clauses to the `\ae\db\select()` queries via chainable modifier meth
 
 ### Active record
 
-You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to giving access to column values via corresponding properties, these objects expose three methods: `load()`, `save()`, and `delete()`.
+You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to exposing column values via properties, these objects also have three methods: `load()`, `save()`, and `delete()`.
 
 In some cases you may want to update a property of an existing record without loading its data:
 
@@ -1240,7 +1333,7 @@ $shaky = new \ae\db\Record('authors', [
 $shaky->save();
 ```
 
-Now, Shakespeare was a playwright, while the rest of the authors are novelists. So let's delete his record:
+Now, Shakespeare was a playwright, and the rest of the authors are novelists, so let's delete his record:
 
 ```php
 $shaky->delete();
@@ -1293,7 +1386,7 @@ Let's make things more interesting by introducing a second class of objects: <sa
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
 
-We also need a class to represent this table. The class name is totally arbitrary, so we will name it `Novel`:
+We also need a class to represent this table. The class name is totally arbitrary, so we will call it `Novel`:
 
 ```php
 class Novel extends \ae\db\ActiveRecord
@@ -1371,7 +1464,7 @@ class Novel extends \ae\db\ActiveRecord
 }
 ```
 
-Most of this code should be familiar to you. The only new thing here is `with()` method which joins a record from <samp>authors</samp> table using <samp>author_id</samp> foreign key.
+The only new method in this example is `with()`. It adds a <samp>LEFT JOIN</samp> clause for <samp>authors</samp> table using <samp>author_id</samp> foreign key.
 
 > We could manually specify the foreign key name via the second argument, and the property name via the third, e.g. `->with('Author', 'author_id', 'author')`, but they are automatically derived from class name.
 
@@ -1409,7 +1502,7 @@ Here are all 9 novels ordered alphabetically:
 
 ### Transactions
 
-A sequence of interdependent database queries must always be wrapped in a transaction to prevent race condition and ensure data integrity:
+You should always make a sequence of interdependent database queries using a transaction to prevent a race condition and ensure data integrity:
 
 ```php
 // Open transaction
@@ -1427,9 +1520,9 @@ $transaction->commit();
 unset($transaction);
 ```
 
-This way, if one of your SQL queries fails, it will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
+It could be that one of your queries fails, which will throw an exception and all uncommitted queries will be rolled back, when the `$transaction` object is destroyed.
 
-**NB!** Only one transaction can exist at a time.
+> **N.B.** Only one transaction can exist at a time.
 
 
 ## Inspector
@@ -1521,7 +1614,7 @@ $probe->mark('cleaned the garbage');
 
 Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as their argument. Internally, they all rely on path library to locate the actual file.
 
-By default, all paths are resolved relative to the location of your main script. Buy you are encouraged to explicitly specify the root directory:
+By default, all paths are resolved relative to the location of your main script. But you are encouraged to explicitly specify the root directory:
 
 ```php
 \ae\path\configure('root', '/some/absolute/path');
@@ -1543,10 +1636,25 @@ $file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext')
 $path_string = (string) $path_object;
 ```
 
+When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesired, you should use `exists()`, `is_directory()`, and `is_file()` methods to check first, whether the path points to an existing file or directory.
+
+You can iterate path segments using `foreach`, `for`, and `while` loops:
+
+```php
+$path = \ae\path('path/that/may/not/exist');
+$absolute_path = '';
+
+foreach ($path as $segment)
+{
+    $absolute_path.= '/' . $segment;
+}
+
+echo $absolute_path;
+```
 
 ### Exception safety
 
-æ is designed with strong exception safety in mind. You make you code exception-safe too by taking advantage of the object life cycle. 
+æ is designed with strong exception safety in mind. You can make you code exception-safe too by taking advantage of the object life cycle. 
 
 > `__construct()` method is called whenever a new object is instantiated. If the object is assigned to a variable, it will persist until either:
 > 
@@ -1589,7 +1697,7 @@ While most æ libraries come with sensible defaults, they also allow you to conf
 1. enumerates all possible option names
 2. provides default values for each option
 3. exposes an array-like interface to get and set values
-4. ensures that only declared option names can be used
+4. ensures that only declared option names are used
 5. validates value types.
 
 Let's declare a simple set of options:
@@ -1638,3 +1746,10 @@ class MyLibrary
 ```
 
 
+## License 
+
+Copyright 2011-2016 Anton Muraviev <anton@goodmoaning.me>
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
