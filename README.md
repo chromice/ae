@@ -990,10 +990,7 @@ The following method render individual components of a field:
 
 Complex fields use multiple basic fields to create a more specialized field:
 
-- `\ae\form\fieldset()` acts as a container for several fields; it uses <samp>&lt;fieldset&gt;</samp> control.
-
-There are  several special field types that do not have corresponding analogues in HTML:
-
+- `\ae\form\fieldset()` acts as a container for several fields; it corresponds to  <samp>&lt;fieldset&gt;</samp> element in HTML.
 - `\ae\form\compound()` allows you to break multiple fields together to produce a single value, e.g. you can break name field into separate first, (optional) middle, and last name fields.
 - `\ae\form\repeater()` is a repeating sequence of a predefined group of fields.
 - `\ae\form\sequence()` is an arbitrary sequence of multiple predefined groups of fields.
