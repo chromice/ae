@@ -62,6 +62,7 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [File system paths](#file-system-paths)
     - [Exception safety](#exception-safety)
     - [Configuration options](#configuration-options)
+    - [Unit testing](#unit-testing)
 - [License](#license)
 
 * * *
@@ -1544,11 +1545,11 @@ You can show the inspector (and start catching error messages) by calling `\ae\i
 
 ```php
 \ae\inspector\show([
-	'globals'    => true,  // show global variables: $_GET, $_POST, $_SESSION, etc.
-	'locals'     => false, // dump local variables on errors and warnings
+    'globals'    => true,  // show global variables: $_GET, $_POST, $_SESSION, etc.
+    'locals'     => false, // dump local variables on errors and warnings
     'queries'    => false, // show all database queries
-	'backtraces' => true,  // show backtraces on errors and warnings
-	'arguments'  => false, // dump function arguments when showing backtraces
+    'backtraces' => true,  // show backtraces on errors and warnings
+    'arguments'  => false, // dump function arguments when showing backtraces
 ]);
 ```
 
@@ -1741,6 +1742,63 @@ class MyLibrary
     }
 }
 ```
+
+### Unit testing
+
+Most examples in this documentation both illustrate how things work and serve as unit tests.
+
+Each example listing is a separate, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. You pass paths to both files to `\ae\\example()` function, it lints and runs the script, optionally compares it to reference file, and (if no errors were encountered) outputs the source code:
+
+```php
+echo \ae\example('path/to/example.php', 'path/to/output.txt');
+```
+
+If you want to display the output of the script as well, just use `\ae\example()` again passing path to output file as the first argument:
+
+```php
+echo \ae\example('path/to/output.txt');
+```
+
+Not everything in your script is relevant to the end user, who just wants to know how to use your code. You can turn source output on and off using `/// +++` and `/// ---` comments:
+
+```php
+<?php
+/// ---
+
+// This part will be cut out from the source code shown in the documentation,
+// so you can secretly set everything up for the test.
+
+$_GET['what'] = 'world';
+
+/// +++
+// GET /index.php?what=world HTTP/1.1
+
+echo 'Hello ' . $_GET['what'] . '!';
+
+/// ---
+
+// You can also check state and trigger an error or throw an exception 
+// manually, if something is not right:
+
+if (1 === 2) {
+    throw new Exception('Cats are sleeping with dogs!');
+}
+
+/// +++
+?>
+```
+
+Which in the documentation will simply look like this:
+
+```php
+<?php
+// GET /index.php?what=world HTTP/1.1
+
+echo 'Hello ' . $_GET['what'] . '!';
+
+?>
+```
+
 
 
 ## License 
