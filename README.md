@@ -991,7 +991,7 @@ The following method render individual components of a field:
 Complex fields use multiple basic fields to create a more specialized field:
 
 - `\ae\form\fieldset()` acts as a container for several fields; it corresponds to  <samp>&lt;fieldset&gt;</samp> element in HTML.
-- `\ae\form\compound()` allows you to break multiple fields together to produce a single value, e.g. you can break name field into separate first, (optional) middle, and last name fields.
+- `\ae\form\compound()` allows you to combine multiple fields together to produce a single value, e.g. you could break name field into separate first, (optional) middle, and last name fields.
 - `\ae\form\repeater()` is a repeating sequence of a predefined group of fields.
 - `\ae\form\sequence()` is an arbitrary sequence of multiple predefined groups of fields.
 
@@ -1025,7 +1025,7 @@ A compound field is a set of basic fields that by and large acts as a basic text
 ```php
 $day = \ae\form\integer('Day')->min(1)->max(31);
 $month = \ae\form\integer('Month')->min(1)->max(12);
-$year = \ae\form\integer('Month')->min(1900)->max(2100);
+$year = \ae\form\integer('Year')->min(1900)->max(2100);
 
 $field = \ae\form\compound('Date', '2015-01-01')
     ->components($day, '/', $month, '/', $year)
@@ -1049,9 +1049,9 @@ $field = \ae\form\compound('Date', '2015-01-01')
 
 In addition to regular methods, compound fields also exposes these:
 
-- `components(...)` sets all parts comprising the field, plus any filler strings.
-- `serialize($function)` defines a function that takes an array of the field parts' values and constructs a string out of them.
-- `unserialize($function)` define a function that takes a string and breaks it into parts.
+- `components(...)` sets all components comprising the field, plus any filler strings.
+- `serialize($function)` accepts a function that takes an array of individual component values and concatenates them.
+- `unserialize($function)` accepts a function that breaks a string into an array of component values.
 
 #### Repeater
 
