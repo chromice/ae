@@ -1463,7 +1463,7 @@ class Novel extends \ae\db\ActiveRecord
 
 The only new method in this example is `with()`. It adds a <samp>LEFT JOIN</samp> clause for <samp>authors</samp> table using <samp>author_id</samp> foreign key.
 
-> We could manually specify the foreign key name via the second argument, and the property name via the third, e.g. `->with('Author', 'author_id', 'author')`, but they are automatically derived from class name.
+> We could manually specify the foreign key name via the second argument, and the property name via the third, e.g. `->with('Author', 'author_id', 'author')`, but they are automatically derived from class name and schema.
 
 <!-- TODO: Polymorphic relationships. -->
 
@@ -1619,7 +1619,7 @@ By default, all paths are resolved relative to the location of your main script.
 $absolute_path = \ae\path('relative/path/to/file.ext');
 ```
 
-A part of your application may need to resolve path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
+A part of your application may need to resolve a path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
 
 ```php
 $dir = \ae\path('some/dir');
@@ -1627,13 +1627,13 @@ $dir = \ae\path('some/dir');
 $file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
 ```
 
-`\ae\path()` function and `path()` method always returns an object, but you must explicitly cast it to string, when you need one:
+`\ae\path()` function and `path()` method always returns an object. You must explicitly cast it to string, when you need one:
 
 ```php
 $path_string = (string) $path_object;
 ```
 
-When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesired, you should use `exists()`, `is_directory()`, and `is_file()` methods to check first, whether the path points to an existing file or directory.
+When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesirable, you should use `exists()`, `is_directory()`, and `is_file()` methods first to check, whether the path exists, and points to a directory or file.
 
 You can iterate path segments using `foreach`, `for`, and `while` loops:
 
@@ -1689,7 +1689,7 @@ $deferrer = \ae\deferrer(function () use ($file) {
 
 ### Configuration options
 
-While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `\ae\*\configure()` function. Internally, all of them use `\ae\options()` function to create an object that:
+While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `\ae\*\configure()` functions. Internally, all of them use `\ae\options()` function to create an object that:
 
 1. enumerates all possible option names
 2. provides default values for each option
