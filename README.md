@@ -649,7 +649,7 @@ echo $image->mime();   // image/jpeg
 You can transform the image by changing its dimensions in 4 different ways:
 
 - `scale($width, $height)` scales the image in one or both dimensions; use `null` for either dimension to scale proportionally.
-- `crop($width, $height)` crops the image to specified dimensions, even if it is smaller than target dimensions.
+- `crop($width, $height)` crops the image to specified dimensions; if the image is smaller in either dimension, the difference will be padded with transparent pixels.
 - `fit($width, $height)` scales the image, so it fits into a box defined by target dimensions.
 - `fill($width, $height)` scales and crops the image, so it completely covers a box defined by target dimensions.
 
@@ -1063,33 +1063,35 @@ $name = \ae\form\text('Name')->required();
 $email = \ae\form\email('Email address')->required();
 
 $field = \ae\form\repeater('Invitation')
-    ->components([
+    ->repeat([
         'name' => $name,
         'email' => $email
-    ])
+    ], 'Invite more', 'Remove invitation')
     ->min_length(1)
-    ->max_length(10)
-    ->add_label('Invite more')
-    ->remove_label('Remove invitation');
+    ->max_length(10);
 ```
 
-It exposes five methods:
+It exposes three methods:
 
-- `components($fields)` expects an associative array of repeated fields.
+- `repeat($fields[, $add_label, $remove_label])` expects an associative array of repeated fields and (optionally) labels for add/remove buttons.
 - `min_length($length)` applies a minimum length constraint; it is one by default.
 - `max_length($length)` applies a maximum length constraint; there is no default maximum.
-- `add_label($label)` sets label of the add <samp>&lt;button&gt;</samp>.
-- `remove_label($label)` sets label of the remove <samp>&lt;button&gt;</samp>.
 
-You can iterate the field sets:
+You can iterate and render the items manually:
 
 ```php
-<?php foreach($repeater as $fieldset): ?>
-    <?= $fieldset ?>
+<?php foreach($repeater as $item): ?>
+    <?= $item['name'] ?>
+    <?= $item['email'] ?>
+    <?= $item->remove_button(); ?>
 <?php endforeach; ?>
+
+<?= $repeater->add_button(); ?>
 ```
 
 #### Sequence
+
+A sequence field is comprised of several repeating field sets:
 
 ```php
 $textarea = \ae\form\textarea('Content')
@@ -1109,7 +1111,7 @@ $align = \ae\form\radio('Align', 'left')
 $field = \ae\form\sequence('Content')
     ->first('intro', [
         'text' => $textarea
-    ], 'Add intro')
+    ], 'Add intro', 'Remove intro')
     ->always('background', [
         'image' => $image
     ])
@@ -1121,6 +1123,8 @@ $field = \ae\form\sequence('Content')
         'align' => $align,
     ], 'Add image');
 ```
+
+
 
 
 ## Database
@@ -1747,7 +1751,7 @@ class MyLibrary
 
 Most examples in this documentation both illustrate how things work and serve as unit tests.
 
-Each example listing is a separate, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. You pass paths to both files to `\ae\\example()` function, it lints and runs the script, optionally compares it to reference file, and (if no errors were encountered) outputs the source code:
+Each example listing is a separate, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. You pass paths to both files to `\ae\example()` function, it lints and runs the script, optionally compares it to reference file, and (if no errors were encountered) outputs the source code:
 
 ```php
 echo \ae\example('path/to/example.php', 'path/to/output.txt');
@@ -1759,23 +1763,26 @@ If you want to display the output of the script as well, just use `\ae\example()
 echo \ae\example('path/to/output.txt');
 ```
 
-Not everything in your script is relevant to the end user, who just wants to know how to use your code. You can turn source output on and off using `/// +++` and `/// ---` comments:
+Not everything in your script is relevant to the end user, who just wants to know how to use your code. You can turn source output on and off using `// +++` and `// ---` comments:
 
 ```php
 <?php
-/// ---
+// ---
 
 // This part will be cut out from the source code shown in the documentation,
 // so you can secretly set everything up for the test.
 
 $_GET['what'] = 'world';
 
-/// +++
+// +++
 // GET /index.php?what=world HTTP/1.1
 
 echo 'Hello ' . $_GET['what'] . '!';
 
-/// ---
+// ---
+
+// You should reset all variables you changed to previous state
+unset($_GET['what']);
 
 // You can also check state and trigger an error or throw an exception 
 // manually, if something is not right:
@@ -1784,11 +1791,11 @@ if (1 === 2) {
     throw new Exception('Cats are sleeping with dogs!');
 }
 
-/// +++
+// +++
 ?>
 ```
 
-Which in the documentation will simply look like this:
+Which in the documentation will look like this:
 
 ```php
 <?php
