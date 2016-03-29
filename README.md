@@ -1,6 +1,6 @@
 # æ – minimalist PHP toolkit
 
-æ (pronounced "ash") is a collection of loosely coupled PHP libraries for all your web development needs: request routing, response caching, templating, form validation, image manipulation, database operations, and easy debugging and profiling.
+æ (pronounced "ash") is a collection of loosely coupled PHP libraries for request routing, response caching, templating, form validation, image manipulation, database operations, and easy debugging and profiling.
 
 This project has been created by its sole author to explore, express and validate his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
@@ -19,7 +19,7 @@ In other words, æ will not let you forget that most of the back-end programming
 
 In more practical terms, if you are putting together a site with some forms that save data to a database, and then present that data back to the user on a bunch of pages, æ comes with everything you need.
 
-You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck. ;-)
+You may still find it useful, even if you are thinking of web app architecture in terms of dispatchers, controllers, events, filters, etc. The author assumes you are working on something complex and wishes you a hearty good luck!
 
 * * *
 
@@ -109,7 +109,7 @@ If you are using [Composer](https://getcomposer.org), make sure your <samp>compo
 
 ### Hello world
 
-Let's create the most basic of web applications. Put this code into <samp>index.php</samp> in the web root directory:
+Let's create the most basic of web applications. Create a file named <samp>index.php</samp> in the web root directory and paste this code into it:
 
 ```php
 require 'path/to/ae/core.php';
@@ -119,7 +119,7 @@ $path = \ae\request\path();
 echo 'Hello ' . ( isset($path[0]) ? $path[0] : 'world' ) . '!';
 ```
 
-Now let's also instruct Apache to redirect all unresolved URIs to <samp>index.php</samp>, by adding the following rules to <samp>.htaccess</samp> file:
+Now let's instruct Apache to redirect all unresolved URIs to <samp>index.php</samp>, by adding the following rules to <samp>.htaccess</samp> file in the web root:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -132,7 +132,7 @@ Now let's also instruct Apache to redirect all unresolved URIs to <samp>index.ph
 </IfModule>
 ```
 
-Now, if you open our app (located at, say, <samp>http://localhost/</samp>) in a browser you should see this:
+Now, if you open our app at, say, <samp>http://localhost/</samp> in a browser, you should see this:
 
 ```txt
 Hello world!
@@ -144,86 +144,96 @@ If you change the address to <samp>http://localhost/universe</samp>, you should 
 Hello universe!
 ```
 
+Splendid! Now let's familiarise you with all the libraries and hack together a few more simple apps.
+
 
 ## Request
 
-Request library is a lightweight abstraction of HTTP requests.
+Request library is a lightweight abstraction of HTTP requests that let's you do the following:
 
-You can distinguish between different kinds of requests using `\ae\request\method()` function:
+- Distinguish between different kinds of requests via `\ae\request\method()` function:
 
-```php
-if (\ae\request\method() === \ae\request\GET)
-{
-    echo "<p>This is a GET request.</p>";
-}
-else if (\ae\request\method() === \ae\request\POST)
-{
-    echo "<p>This is a POST request.</p>";
-}
-```
+    ```php
+    if (\ae\request\method() === \ae\request\GET)
+    {
+        echo "<p>This is a GET request.</p>";
+    }
+    else if (\ae\request\method() === \ae\request\POST)
+    {
+        echo "<p>This is a POST request.</p>";
+    }
+    ```
 
-You can access URI path segments using `\ae\request\path()` function:
+- Access URI path segments via `\ae\request\path()` function:
 
-```php
-// GET /some/arbitrary/script.php HTTP/1.1
+    ```php
+    // GET /some/arbitrary/script.php HTTP/1.1
 
-$path = \ae\request\path();
+    $path = \ae\request\path();
 
-echo $path[0]; // some
-echo $path[1]; // arbitrary
-echo $path[2]; // script.php
+    echo $path[0]; // some
+    echo $path[1]; // arbitrary
+    echo $path[2]; // script.php
 
-echo $path; // some/arbitrary/script.php
-```
+    echo $path[-3]; // some
+    echo $path[-2]; // arbitrary
+    echo $path[-1]; // script.php
 
-All requests have a type (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
+    echo $path; // some/arbitrary/script.php
+    ```
 
-```php
-// GET /some/arbitrary/request.json HTTP/1.1
+- Get the expected response type (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
 
-echo \ae\request\type(); // json
-```
+    ```php
+    // GET /some/arbitrary/request.json HTTP/1.1
 
-To get the client IP address, you should use `\ae\request\address()` function. If your app is running behind a reverse-proxy and/or load balancer, you must specify their IP addresses first:
+    echo \ae\request\type(); // json
+    ```
 
-```php
-\ae\request\configure('proxies', ['83.14.1.1', '83.14.1.2']);
+- Get the client IP address via `\ae\request\address()` function.
+    
+    > **N.B.** If your app is running behind a reverse-proxy and/or load balancer, you must specify their IP addresses first
+    
+    ```php
+    \ae\request\configure('proxies', ['83.14.1.1', '83.14.1.2']);
 
-$client_ip = \ae\request\address();
-```
+    $client_ip = \ae\request\address();
+    ```
+    
+- Access `$_GET` query arguments and `$_POST` data via `\ae\request\query()` and `\ae\request\data()` functions respectively:
 
-You can use `\ae\request\query()` and `\ae\request\data()` functions to access `$_GET` and `$_POST` arrays:
+    ```php
+    $get = \ae\request\query(); // returns $_GET
+    $post = \ae\request\data(); // returns $_POST
 
-```php
-$get = \ae\request\query(); // returns $_GET
-$post = \ae\request\data(); // returns $_POST
+    $action = \ae\request\query('action', 'search'); // returns $_GET['action'] or 'search'
+    $term = \ae\request\data('term'); // returns $_POST['term'] or NULL
+    ```
 
-$action = \ae\request\query('action', 'search'); // returns $_GET['action'] or 'search'
-$term = \ae\request\data('term'); // returns $_POST['term'] or NULL
-```
+- Access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>) via `\ae\request\files()` function.
 
-You can access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>), using `\ae\request\files()` function.
+    ```php
+    $files = \ae\request\files();
+    // returns an associative array of uploaded files:
+    // e.g. ['form_field_name' => \ae\file(), ...]
+    ```
 
-```php
-$files = \ae\request\files();
-// returns an associative array of uploaded files:
-// e.g. ['form_field_name' => \ae\file(), ...]
-```
+- Access raw request body, use `\ae\request\body()` function:
 
-If you need to access raw request body, use `\ae\request\body()` function:
+    ```php
+    $post = \ae\request\body(); // same as file_get_contents("php://input")
+    ```
 
-```php
-$post = \ae\request\body(); // same as file_get_contents("php://input")
-```
+- Map requests to a function/method or instance of a class that implements `\ae\response\Dispatchable` interface.
 
 
 ### Request mapping
 
 You should always strive to break down your application into smallest independent components. The best way to handle a request is to map it to a specific function or template that encapsulates a part of your application's functionality.
 
-Requests are mapped using rules, which are key-value pairs of path pattern, and either an object that conforms to `\ae\response\Dispatchable` interface or a function that returns such an object.
+Requests are mapped using rules, key-value pairs of a path pattern, and either an object that conforms to `\ae\response\Dispatchable` interface or a function/method that returns such an object.
 
-Here's an example of a request being mapped to page templates:
+Here's an example of a request (<samp>GET /about-us HTTP/1.1</samp>) being mapped to a page template (<samp>about-us-page.php</samp>):
 
 ```php
 // GET /about-us HTTP/1.1
@@ -236,7 +246,7 @@ Here's an example of a request being mapped to page templates:
 ]);
 ```
 
-Or we can write a more generic rule that handles all root level pages by using a placeholder, and mapping it to a function:
+Now let's write a more generic rule that handles all root level pages by using a placeholder, and mapping it to a function:
 
 ```php
 // GET /about-us HTTP/1.1
@@ -251,15 +261,15 @@ Or we can write a more generic rule that handles all root level pages by using a
 ]);
 ```
 
-As you can see, we used `{any}` placeholder to catch the slug of the page and pass its value to our handler function as first argument.
+We used `{any}` placeholder to catch the slug of the page and pass its value to our handler function as the first argument.
 
-> `{any}` placeholder can match (and capture) a substring only within one path segment, i.e. it can match any character other than <smap>/</smap> (forward slash).
+> `{any}` placeholder can match (and capture) a substring only within one path segment, i.e. it can match any character other than <smap>/</smap> (forward slash). There are also `{alpha}` and `{numeric}` placeholders that match and capture only alphabetic or numeric characters.
 
 If the template file does not exist, `\ae\template()` will throw an `\ae\path\Exception`, which in turn will result in `\ae\response\error(404)` being dispatched.
 
-> If a request handler throws `\ae\path\Exception`, `\ae\response\error(404)` will be dispatched. If it throws any other exception, `\ae\response\error(500)` will be dispatched instead.
+> **N.B.** If a request handler throws `\ae\path\Exception`, `\ae\response\error(404)` is dispatched. If it throws any other exception, `\ae\response\error(500)` is dispatched instead.
 
-Now, let's assume we want users to be able to download files from a specific directory:
+Now, let's allows users to download files from a specific directory:
 
 ```php
 // GET /download/directory/document.pdf HTTP/1.1
@@ -275,7 +285,7 @@ Now, let's assume we want users to be able to download files from a specific dir
 ]);
 ```
 
-First of all, we will take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *the last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply display the content of the file.
+First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply passing through the file content.
 
 > You can pass a custom file to `download()` method, if you do not want to use the actual file name.
 
@@ -305,7 +315,7 @@ Image processing is a very common problem that can be solved in multiple ways. L
         
         return \ae\image('image/directory/'. $path)
             ->fill($width, $height)
-            ->cache(10 * \ae\cache\year, \ae\cache\server_side);
+            ->cache(10 * \ae\cache\year, \ae\cache\server);
     },
     // ...
 ]);
@@ -326,14 +336,12 @@ And finally, our last rule will display home page, *or* show 404 error for all u
 ]);
 ```
 
-> All rules are processed in sequence. You should always put rules with higher specificity at the top. <samp>'/'</samp> is the least specific rule and will match *any* request.
+> **N.B.** All rules are processed in sequence. You should always put rules with higher specificity at the top. <samp>'/'</samp> is the least specific rule and will match *any* request.
 
 
 ## Response
 
 Response library is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
-
-> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method yourself though, and use the request mapping pattern as much as possible.
 
 Here is an example of a simple application that creates a response, sets one custom header, caches it for 5 minutes, and dispatches it. The response is also automatically compressed using Apache's `mod_deflate`:
 
@@ -351,7 +359,7 @@ $response = \ae\response()
 <?php 
 
 $response
-    ->cache(5 * \ae\cache\minute, \ae\cache\server_side)
+    ->cache(5 * \ae\cache\minute, \ae\cache\server)
     ->dispatch('hello-world.html');
 
 ?>
@@ -362,6 +370,8 @@ When response object is created, it starts buffering all output. Once the `dispa
 > You must explicitly specify the response path when using `dispatch()` method. To create a response for the current request use `\ae\request\path()` function.
 
 By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp> 
+
+> **N.B.** Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method yourself though, and use the request mapping pattern as much as possible.
 
 
 ### Buffer
@@ -458,15 +468,44 @@ When rendered, it will produce this:
 
 ### Cache
 
-If you want your response to be cached client-side for a number of minutes, you should use `cache()` method of the response object. It will set <samp>Cache-Control</samp>, <samp>Last-Modified</samp>, and <samp>Expires</samp> headers for you. If the response is public (i.e. you passed `\ae\cache\server_side` to `cache()` method as the second argument), it will save the response server-side as well.
+Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Cacheable` interface, which allows you to call their `cache()` method to cache them for a number of minutes:
 
-> Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Cacheable` interface, which allows you to cache them.
+- `->cache(3600)` will simply set <samp>Cache-Control</samp>, <samp>Last-Modified</samp>, and <samp>Expires</samp> headers
+- `->cache(3600, \ae\cache\server)` will save the response to the server-side cache as well
+
+You can also use cache functions directly:
+
+- Save any response manually using `\ae\cache\save()` function:
+
+```php
+\ae\cache\save('hello-world.html', $response, 2 * \ae\cache\hour);
+```
+
+- Delete any cached response via `\ae\cache\delete()` function by passing full or partial URL to it:
+
+```php
+\ae\cache\delete('hello-world.html');
+```
+
+- Remove all *stale* cache entries via `\ae\cache\clean()`:
+
+    ```php
+    \ae\cache\clean();
+    ```
+
+- Erase all cached data completely via `\ae\cache\purge()` function:
+
+    ```php
+    \ae\cache\purge();
+    ```
+
+> **N.B.** Cache cleaning and purging can be resource-intensive and should not be performed while processing a regular user request. You should create a dedicated cron script or use some other job queueing mechanism for that.
 
 #### Configuration
 
-The responses are saved to <samp>cache</samp> directory (in the *web root* directory) by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in that directory:
+The responses are saved to <samp>cache</samp> directory (in the web root directory) by default. For caching to work correctly this directory must exist and be writable. You must also configure Apache to look for cached responses in that directory:
 
-1. Put the following rules into <samp>.htaccess</samp> file in the *web root* directory:
+1. Put the following rules into <samp>.htaccess</samp> file in the web root directory:
 
     ```apache
     <IfModule mod_rewrite.c>
@@ -497,161 +536,130 @@ The responses are saved to <samp>cache</samp> directory (in the *web root* direc
     </IfModule>
     ```
 
-With everything in place, Apache will first look for an unexpired cached response, and only if it finds nothing, will it route the request to <samp>/index.php</samp>.
-
-#### Cache functions
-
-You can save any response manually using `\ae\cache\save()` function:
-
-```php
-\ae\cache\save('hello-world.html', $response, 2 * \ae\cache\hour);
-```
-
-You can delete any cached response using `\ae\cache\delete()` function by passing full or partial URL to it:
-
-```php
-\ae\cache\delete('hello-world.html');
-```
-
-It may be a good idea to periodically remove all *stale* cache entries via `\ae\cache\clean()`:
-
-```php
-\ae\cache\clean();
-```
-
-> Garbage collection is a resource-intensive operation, so its usage should be restricted to a cron job.
-
-To completely erase all cached data use `\ae\cache\purge()` function:
-
-```php
-\ae\cache\purge();
-```
+With everything in place, Apache will first look for an unexpired cached response, and only if it finds nothing, will it route the request to <samp>index.php</samp> in the web root directory.
 
 
 ## File
 
-File library is a wrapper for standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
+File library is a wrapper that uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
 
-```php
-$file = \ae\file('path/to/file.ext')
-    ->open('w+')
-    ->lock()
-    ->truncate()
-    ->write('Hello World');
+- Open and lock the file, and read and write its content:
+
+    ```php
+    $file = \ae\file('path/to/file.ext')
+        ->open('w+')
+        ->lock()
+        ->truncate()
+        ->write('Hello World');
     
-$file->seek(0);
+    $file->seek(0);
 
-if ($file->tell() === 0)
-{
-    echo $file->read($file->size());
-}
+    if ($file->tell() === 0)
+    {
+        echo $file->read($file->size());
+    }
 
-// Unlock file and close its handle
-unset($file);
-``` 
+    // Unlock file and close its handle
+    unset($file);
+    ``` 
 
-You can access basic information about the file:
+- Access basic information about the file:
 
-```php
-$file = \ae\file('path/to/file.txt');
+    ```php
+    $file = \ae\file('path/to/file.txt');
 
-echo $file->size(); // 12
-echo $file->name(); // file.txt
-echo $file->type(); // txt
-echo $file->mime(); // text/plain
+    echo $file->size(); // 12
+    echo $file->name(); // file.txt
+    echo $file->type(); // txt
+    echo $file->mime(); // text/plain
 
-$path = $file->path(); // $path = \ae\path('path/to/file.txt')
-```
+    $path = $file->path(); // $path = \ae\path('path/to/file.txt')
+    ```
 
-Existing files can be copied, moved, and deleted:
+- Copy, move, and delete existing files:
 
-```php
-$file = \ae\file('path/to/file.txt');
+    ```php
+    $file = \ae\file('path/to/file.txt');
 
-if ($file->exists())
-{
-    $copy = $file->copy('./file-copy.txt');
-    $file->delete();
-    $copy->move('./file.txt');
-}
-```
+    if ($file->exists())
+    {
+        $copy = $file->copy('./file-copy.txt');
+        $file->delete();
+        $copy->move('./file.txt');
+    }
+    ```
 
-### Handling uploaded files
+- Handle uploaded files:
 
-The library can handle uploaded files as well:
+    ```php
+    $file = \ae\file($_FILES['file']['tmp_name']);
 
-```php
-$file = \ae\file($_FILES['file']['tmp_name']);
+    if ($file->is_uploaded())
+    {
+        $file->move('path/to/destination/' . $_FILES['file']['name']);
+    }
+    ```
 
-if ($file->is_uploaded())
-{
-    $file->move('path/to/destination/' . $_FILES['file']['name']);
-}
-```
+- Assign arbitrary metadata to a file, e.g. database keys, related files, alternative names, etc.:
 
-### Passing metadata
+    ```php
+    $file['real_name'] = 'My text file (1).txt';
+    $file['resource_id'] = 123;
 
-You can assign arbitrary metadata to a file, e.g. database keys, related files, alternative names, etc.:
+    foreach ($file as $meta_name => $meta_value)
+    {
+        echo "{$meta_name}: $meta_value\n";
+    }
+    ```
 
-```php
-$file['real_name'] = 'My text file (1).txt';
-$file['resource_id'] = 123;
+    > **N.B.** Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate additional information about the file.
 
-foreach ($file as $meta_name => $meta_value)
-{
-    echo "{$meta_name}: $meta_value\n";
-}
-```
+- Keep file size calculations readable:
 
-Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate additional information about the file, when you pass an object representing it around.
-
-### File size constants
-
-File library defines several constants that you are encouraged to use when dealing with file sizes:
-
-```php
-echo \ae\file\byte;     // 1
-echo \ae\file\kilobyte; // 1000
-echo \ae\file\kibibyte; // 1024
-echo \ae\file\megabyte; // 1000000
-echo \ae\file\mebibyte; // 1048576
-echo \ae\file\gigabyte; // 1000000000
-echo \ae\file\gibibyte; // 1073741824
-echo \ae\file\terabyte; // 1000000000000
-echo \ae\file\tebibyte; // 1099511627776
-echo \ae\file\petabyte; // 1000000000000000
-echo \ae\file\pebibyte; // 1125899906842624
-```
+    ```php
+    echo \ae\file\byte;     // 1
+    echo \ae\file\kilobyte; // 1000
+    echo \ae\file\kibibyte; // 1024
+    echo \ae\file\megabyte; // 1000000
+    echo \ae\file\mebibyte; // 1048576
+    echo \ae\file\gigabyte; // 1000000000
+    echo \ae\file\gibibyte; // 1073741824
+    echo \ae\file\terabyte; // 1000000000000
+    echo \ae\file\tebibyte; // 1099511627776
+    echo \ae\file\petabyte; // 1000000000000000
+    echo \ae\file\pebibyte; // 1125899906842624
+    ```
 
 
 ## Image
 
-Image library is a wrapper around standard GD library functions.
+Image library is a wrapper around standard GD library functions. It lets effortlessly resize, crop and apply filters to an image, and also:
 
-You can retrieve basic information about the image:
+- Retrieve basic information about the image:
 
-```php
-$image = \ae\image('example/image_320x240.jpg');
+    ```php
+    $image = \ae\image('example/image_320x240.jpg');
 
-echo $image->width();  // 320
-echo $image->height(); // 240
-echo $image->type();   // jpeg
-echo $image->mime();   // image/jpeg
-```
+    echo $image->width();  // 320
+    echo $image->height(); // 240
+    echo $image->type();   // jpeg
+    echo $image->mime();   // image/jpeg
+    ```
 
-<!--
-    TODO: File specific information?
-    TODO: Copying, moving, deleting images?
--->
+- Get access to the image file and perform file operations with it:
+    
+    ```php
+    $file = $image->file()->delete();
+    ```
 
 ### Resizing and cropping
 
 You can transform the image by changing its dimensions in 4 different ways:
 
-- `scale($width, $height)` scales the image in one or both dimensions; use `null` for either dimension to scale proportionally.
+- `scale($width, $height)` scales the image in one or both dimensions; pass `null` for either dimension to scale proportionally.
 - `crop($width, $height)` crops the image to specified dimensions; if the image is smaller in either dimension, the difference will be padded with transparent pixels.
-- `fit($width, $height)` scales the image, so it fits into a box defined by target dimensions.
-- `fill($width, $height)` scales and crops the image, so it completely covers a box defined by target dimensions.
+- `fit($width, $height)` scales the image, so it fits into a rectangle defined by target dimensions.
+- `fill($width, $height)` scales and crops the image, so it completely covers a rectangle defined by target dimensions.
 
 You will rarely need to use the first two methods, as the latter two cover most of use cases:
 
@@ -748,12 +756,13 @@ $image
 
 ## Form
 
-Form library lets you create web forms and validate them both on the client and the server sides using HTML5 constraints. Both forms and individual controls implement `__toString()` magic method and can render themselves into valid HTML when cast to string, but you can render them manually, if you so desire.
+Form library lets you create web forms and validate them both on the client and the server sides using HTML5 constraints. Both forms and individual controls render themselves into valid HTML when cast to string (by implementing `__toString()` magic method), but you can render them manually, if you so desire.
 
 
 ### Declaration
 
-You can create a new form using `\ae\form()` function. It takes form name – it must be unique within the context of a single web page – as the first argument, and (optionally) an array of default field values as the second argument:
+You can create a new form using `\ae\form()` function. It takes form name as the first argument, and (optionally) an array of default field values as the second argument:
+
 
 ```php
 $form = \ae\form('Profile', [
@@ -761,7 +770,9 @@ $form = \ae\form('Profile', [
     ]);
 ```
 
-You can add individual form fields to the form:
+> **N.B.** The form name must be unique within the context of a single web page.
+
+Once form is created, you can assign individual form fields to it:
 
 ```php
 $form['name'] = \ae\form\text('Full name')
@@ -793,9 +804,9 @@ $form['photos'] = \ae\form\file('Photos of you')
     ->max_size(10 * \ae\file\megabyte);
 ```
 
-You can assign an instance of any class extending `\ae\form\DataField` or `\ae\form\FileField` classes to a form. Once field is assigned, the form will use either `$_POST` or `$_FILES` array as its data source, depending on which parent class the object is related to.
+> You can assign an instance of any subclass of `\ae\form\DataField` or `\ae\form\FileField` classes to a form. Once field is assigned, the form will use either `$_POST` or `$_FILES` array as its data source, depending on which parent class the object is related to.
 
-Field objects have methods that you can use to set their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more information.
+Field objects expose methods that you can use to define their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more information.
 
 #### Basic field types
 
@@ -945,7 +956,7 @@ if ($form->is_submitted() && $form->is_valid())
 }
 ```
 
-When `is_valid()` method is called, the form will iterate all its fields, calling their `validate()` method. All validation constraints that were set when fields were declared are checked at this stage.
+When `is_valid()` method is called, the form will iterate all its fields, calling their `validate()` method. All validation constraints that were set prior to that are checked at this stage.
 
 
 ### Presentation
@@ -975,8 +986,8 @@ Alternatively, you can render the form by manually calling `open()` and `close()
 All basic fields expose the following properties that you can use to render them:
 
 - `label` contains the field label, e.g. <samp>Name</samp>, <samp>Options</samp>, etc.
-- `name` contains the field name, e.g. <samp>name</samp>, <samp>options[]</samp>, <samp>repeater[0][name]</samp>, etc.; set by the form object when the field is assigned to it.
-- `error` contains an error message set during validation, e.g. <samp>Name is required.</samp>.
+- `name` contains the field name, e.g. <samp>name</samp>, <samp>options[]</samp>, <samp>repeater[0][name]</samp>, etc. set by the form object when the field is assigned to it.
+- `error` contains an error message set during validation, e.g. <samp>Name is required</samp>.
 - `value` contains current value(s), either submitted or default.
 - `classes` contains a string of HTML classes indicating the state of the field, e.g. <samp>text-field required-field</samp>.
 
@@ -1021,7 +1032,7 @@ You can iterate its fields via any loop construct and access its legend via `leg
 
 #### Compound field
 
-A compound field is a set of basic fields that by and large acts as a basic text field: its value is a string; you can apply validation constraints to it; it exposes the same properties and methods:
+A compound field is a set of basic fields that by and large acts as a text field: its value is a string; you can apply validation constraints to it; it exposes the same properties and methods:
 
 ```php
 $day = \ae\form\integer('Day')->min(1)->max(31);
@@ -1062,7 +1073,7 @@ A repeater is comprised of the same field set repeated several times:
 $name = \ae\form\text('Name')->required();
 $email = \ae\form\email('Email address')->required();
 
-$field = \ae\form\repeater('Invitation')
+$repeater = \ae\form\repeater('Invitation')
     ->repeat([
         'name' => $name,
         'email' => $email
@@ -1091,7 +1102,7 @@ You can iterate and render the items manually:
 
 #### Sequence
 
-A sequence field is comprised of several repeating field sets:
+A sequence field is comprised of several repeating blocks of fields:
 
 ```php
 $textarea = \ae\form\textarea('Content')
@@ -1108,7 +1119,7 @@ $align = \ae\form\radio('Align', 'left')
         'right' => 'Right',
     ]);
 
-$field = \ae\form\sequence('Content')
+$sequence = \ae\form\sequence('Content')
     ->first('intro', [
         'text' => $textarea
     ], 'Add intro', 'Remove intro')
@@ -1124,8 +1135,31 @@ $field = \ae\form\sequence('Content')
     ], 'Add image');
 ```
 
+It exposes several methods that expect the block name, an associative array of its fields, and (optionally) labels for add/remove buttons:
+
+- `any($name, $fields[, $add_label, $remove_label])` defines a block that can appear at any point in the sequence.
+- `first($name, $fields[, $add_label, $remove_label])` defines a block that will always appear first and can only be added once.
+- `last($name, $fields[, $add_label, $remove_label])` defines a block that will always appear last and can only be added once.
+- `always($name, $fields)` defines a block that is always present once and cannot be removed.
 
 
+You can iterate and render the blocks manually:
+
+```php
+<?php foreach($sequence as $block): ?>
+    <?php if ($block->type === 'background'): ?>
+        <?= $block['image'] ?>
+    <?php if ($block->type === 'image'): ?>
+        <?= $block['image'] ?>
+        <?= $block['align'] ?>
+    <?php else: ?>
+        <?= $block['text'] ?>
+    <?php endif ?>
+    <?= $block->remove_button(); ?>
+<?php endforeach; ?>
+
+<?= $sequence->add_buttons(); ?>
+```
 
 ## Database
 
@@ -1152,7 +1186,7 @@ try {
 }
 ```
 
-As you can see, whenever something goes wrong in the database layer, `\ae\db\Exception` is thrown. 
+If something goes wrong in the database layer, `\ae\db\Exception` is thrown. 
 
 If you want to know what queries were made and how much memory and time they took, you should turn query logging on:
 
@@ -1302,7 +1336,7 @@ You can add clauses to the `\ae\db\select()` queries via chainable modifier meth
 
 ### Active record
 
-You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to exposing column values via properties, these objects also have three methods: `load()`, `save()`, and `delete()`.
+You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to exposing column values via properties, these objects also have four methods: `values()`, `load()`, `save()`, and `delete()`.
 
 In some cases you may want to update a property of an existing record without loading its data:
 
@@ -1402,7 +1436,7 @@ class Novel extends \ae\db\ActiveRecord
 
 > There are two other methods you can override: `\ae\db\Table::accessor()` to return an array of primary keys; `\ae\db\Table::columns()` to return an array of data columns.
 
-Now we could be adding new books using `Novel::insert()` method directly, but instead we will incapsulate this functionality into `add_novel()` method. We would also add `novels()` method for retrieving all novels written by an author:
+Now we could be adding new books using `Novel::insert()` method directly, but instead we will incapsulate this functionality into `Author::add_novel()` method. We would also add `Author::novels()` method for retrieving all novels written by an author:
 
 ```php
 class Author extends \ae\db\ActiveRecord
@@ -1518,7 +1552,7 @@ $transaction->commit();
 
 $transaction->commit();
 
-// Close transaction (rolling back any uncommitted queries)
+// Close transaction (rolling back any uncommitted changes)
 unset($transaction);
 ```
 
@@ -1533,7 +1567,7 @@ It could be that one of your queries fails, which will throw an exception and al
 
 ![](./utilities/inspector/screenshot_log.png)
 
-First of all, you must map all requests starting with <samp>/inspector</samp> to a handler returned by `\ae\inspector\assets()` function:
+Inspector is a tiny web app that requires all requests starting with <samp>/inspector</samp> be mapped to a handler returned by `\ae\inspector\assets()` function:
 
 ```php
 \ae\request\map([
@@ -1614,7 +1648,7 @@ $probe->mark('cleaned the garbage');
 
 ### File system paths
 
-Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as their argument. Internally, they all rely on path library to locate the actual file.
+Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as an argument. Internally, they all rely on path library to locate the actual file.
 
 By default, all paths are resolved relative to the location of your main script. But you are encouraged to explicitly specify the root directory:
 
@@ -1632,7 +1666,7 @@ $dir = \ae\path('some/dir');
 $file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
 ```
 
-`\ae\path()` function and `path()` method always returns an object. You must explicitly cast it to string, when you need one:
+`\ae\path()` function and `path()` method always return an object. You must explicitly cast it to string, when you need one:
 
 ```php
 $path_string = (string) $path_object;
@@ -1640,10 +1674,10 @@ $path_string = (string) $path_object;
 
 When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesirable, you should use `exists()`, `is_directory()`, and `is_file()` methods first to check, whether the path exists, and points to a directory or file.
 
-You can iterate path segments using `foreach`, `for`, and `while` loops:
+You can iterate path segments and access them individually using an index:
 
 ```php
-$path = \ae\path('path/that/may/not/exist');
+$path = \ae\path('some/file/path.txt');
 $absolute_path = '';
 
 foreach ($path as $segment)
@@ -1652,6 +1686,10 @@ foreach ($path as $segment)
 }
 
 echo $absolute_path;
+
+echo $path[-3]; // some
+echo $path[-2]; // file
+echo $path[-1]; // path.txt
 ```
 
 ### Exception safety
@@ -1682,7 +1720,7 @@ unset($switcher);
 // $a === 'foo'
 ```
 
-And if you need to run some arbitrary code (to free resources for instance), use `\ae\deferrer()`:
+And if you need to run some arbitrary code (to free resources for instance), use `\ae\deferrer()` to create an object that will do so when it's destroyed:
 
 ```php
 $file = fopen('some/file', 'r');
@@ -1696,11 +1734,11 @@ $deferrer = \ae\deferrer(function () use ($file) {
 
 While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `\ae\*\configure()` functions. Internally, all of them use `\ae\options()` function to create an object that:
 
-1. enumerates all possible option names
-2. provides default values for each option
-3. exposes an array-like interface to get and set values
-4. ensures that only declared option names are used
-5. validates value types.
+- enumerates all possible option names
+- provides default values for each option
+- exposes an array-like interface to get and set values
+- ensures that only declared option names are used
+- validates value types.
 
 Let's declare a simple set of options:
 
@@ -1712,7 +1750,7 @@ $options = \ae\options([
 ]);
 ```
 
-And that's how we can use it:
+The options object can be used as a regular associative array:
 
 ```php
 if (true === $options['foo']) {
@@ -1722,7 +1760,7 @@ if (true === $options['foo']) {
 $options['baz'] = 'How do you do?';
 ```
 
-Please note that <samp>baz</samp> can be set to any value type, because its default value is <samp>null</samp>. On the other hand, the following code will throw an `\ae\options\Exception`:
+Note that <samp>baz</samp> option can be set to any value type, because its default value is <samp>null</samp>. In contrast that, the following code will throw an `\ae\options\Exception`:
 
 ```php
 $options['foo'] = null; // Exception: foo can only be TRUE or FALSE
@@ -1749,9 +1787,9 @@ class MyLibrary
 
 ### Unit testing
 
-Most examples in this documentation both illustrate how things work and serve as unit tests.
+Most examples in this documentation both illustrate how things work and serve as unit tests. Each example is a separate listing, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. 
 
-Each example listing is a separate, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. You pass paths to both files to `\ae\example()` function, it lints and runs the script, optionally compares it to reference file, and (if no errors were encountered) outputs the source code:
+You can pass paths to both files to `\ae\example()` function. It lints and runs the script, optionally compares it to reference file, and (if no errors were encountered) outputs the source code:
 
 ```php
 echo \ae\example('path/to/example.php', 'path/to/output.txt');
@@ -1763,13 +1801,13 @@ If you want to display the output of the script as well, just use `\ae\example()
 echo \ae\example('path/to/output.txt');
 ```
 
-Not everything in your script is relevant to the end user, who just wants to know how to use your code. You can turn source output on and off using `// +++` and `// ---` comments:
+Not everything in your test script is relevant to the end user, who just wants to know how to use your code. You can turn source output on and off using `// +++` and `// ---` comments:
 
 ```php
 <?php
 // ---
 
-// This part will be cut out from the source code shown in the documentation,
+// This part will be cut out from the listing shown in the documentation,
 // so you can secretly set everything up for the test.
 
 $_GET['what'] = 'world';
