@@ -285,9 +285,9 @@ Now, let's allows users to download files from a specific directory:
 ]);
 ```
 
-First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply passing through the file content.
+First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply pass through the file content.
 
-> You can pass a custom file to `download()` method, if you do not want to use the actual file name.
+> You can pass a custom file name to `download()` method, if you do not want to use the actual name of the file.
 
 Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that can take any image, resize it to predefined dimensions, and cache the result for 10 years:
 
