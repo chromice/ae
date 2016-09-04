@@ -4,8 +4,8 @@
 
 This project has been created by its sole author to explore, express and validate his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
-- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with, either: all libraries come preconfigured with sensible default values.
-- **Reliability**: The APIs were designed to be expressive and user error-resistant. Versions of this code have powered a few moderately complex websites and applications, which helped iron most of the kinks out.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with either: all libraries come preconfigured with sensible default values.
+- **Reliability**: The APIs were designed to be expressive and user error-resistant. Versions of this code have powered a few moderately complex websites and applications.
 - **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
 
@@ -15,7 +15,7 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 > A web application is a bunch of scripts thrown together to concatenate a string of text (HTTP response) in response to another string of text (HTTP request).
 
-In other words, æ will not let you forget that most of the back-end programming is a glorified string concatenation, but it will alleviate the most cumbersome aspects of it. 
+In other words, æ will not let you forget that most of the back-end code is a glorified string concatenation, but it will alleviate the most cumbersome aspects of it. 
 
 In more practical terms, if you are putting together a site with some forms that save data to a database, and then present that data back to the user on a bunch of pages, æ comes with everything you need.
 
