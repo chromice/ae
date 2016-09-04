@@ -15,7 +15,7 @@ There is nothing particularly groundbreaking or fancy about this toolkit. If you
 
 > A web application is a bunch of scripts thrown together to concatenate a string of text (HTTP response) in response to another string of text (HTTP request).
 
-In other words, æ will not let you forget that most of the back-end programming is a glorified string manipulation, but it will alleviate the most cumbersome aspects of it. 
+In other words, æ will not let you forget that most of the back-end programming is a glorified string concatenation, but it will alleviate the most cumbersome aspects of it. 
 
 In more practical terms, if you are putting together a site with some forms that save data to a database, and then present that data back to the user on a bunch of pages, æ comes with everything you need.
 
@@ -70,7 +70,7 @@ You may still find it useful, even if you are thinking of web app architecture i
 
 ## Getting started
 
-### Requirements
+### Platform requirements
 
 <!--
     TODO: Make sure all requirement are correct, i.e.  check older versions of Apache and MySQL
@@ -112,7 +112,7 @@ If you are using [Composer](https://getcomposer.org), make sure your <samp>compo
 Let's create the most basic of web applications. Create a file named <samp>index.php</samp> in the web root directory and paste this code into it:
 
 ```php
-require 'path/to/ae/core.php';
+<?php require 'path/to/ae/core.php';
 
 $path = \ae\request\path();
 
@@ -231,7 +231,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 
 You should always strive to break down your application into smallest independent components. The best way to handle a request is to map it to a specific function or template that encapsulates a part of your application's functionality.
 
-Requests are mapped using rules, key-value pairs of a path pattern, and either an object that conforms to `\ae\response\Dispatchable` interface or a function/method that returns such an object.
+Requests are mapped using rules, key-value pairs of a path pattern and either an object that conforms to `\ae\response\Dispatchable` interface or a function/method that returns such an object.
 
 Here's an example of a request (<samp>GET /about-us HTTP/1.1</samp>) being mapped to a page template (<samp>about-us-page.php</samp>):
 
@@ -279,15 +279,15 @@ Now, let's allows users to download files from a specific directory:
     '/download' => function ($file_path) {
         return \ae\file('path/to/downloadable/files/' . $file_path)
         // returns '/path/to/downloadable/files/directory/document.pdf' file, if it exists
-            ->download(true);
+            ->attachment();
     },
     // ...
 ]);
 ```
 
-First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `download()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply pass through the file content.
+First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `attachment()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply pass through the file content.
 
-> You can pass a custom file name to `download()` method, if you do not want to use the actual name of the file.
+> You can pass a custom file name to `attachment()` method, if you do not want to use the actual name of the file.
 
 Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that can take any image, resize it to predefined dimensions, and cache the result for 10 years:
 
@@ -371,7 +371,7 @@ When response object is created, it starts buffering all output. Once the `dispa
 
 By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp> 
 
-> **N.B.** Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method yourself though, and use the request mapping pattern as much as possible.
+> **N.B.** Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method yourself though, and use the request mapping pattern described previously.
 
 
 ### Buffer
@@ -470,8 +470,8 @@ When rendered, it will produce this:
 
 Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Cacheable` interface, which allows you to call their `cache()` method to cache them for a number of minutes:
 
-- `->cache(3600)` will simply set <samp>Cache-Control</samp>, <samp>Last-Modified</samp>, and <samp>Expires</samp> headers
-- `->cache(3600, \ae\cache\server)` will save the response to the server-side cache as well
+- `->cache(60)` will simply set <samp>Cache-Control</samp>, <samp>Last-Modified</samp>, and <samp>Expires</samp> headers
+- `->cache(60, \ae\cache\server)` will save the response to the server-side cache as well
 
 You can also use cache functions directly:
 
@@ -633,7 +633,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 
 ## Image
 
-Image library is a wrapper around standard GD library functions. It lets effortlessly resize, crop and apply filters to an image, and also:
+Image library is a wrapper around standard GD library functions. It lets you effortlessly resize, crop and apply filters to an image, and also:
 
 - Retrieve basic information about the image:
 
@@ -661,7 +661,7 @@ You can transform the image by changing its dimensions in 4 different ways:
 - `fit($width, $height)` scales the image, so it fits into a rectangle defined by target dimensions.
 - `fill($width, $height)` scales and crops the image, so it completely covers a rectangle defined by target dimensions.
 
-You will rarely need to use the first two methods, as the latter two cover most of use cases:
+You will rarely need the first two methods, as the latter two cover most of use cases:
 
 ```php
 $photo = \ae\image('path/to/photo.jpg');
@@ -761,7 +761,7 @@ Form library lets you create web forms and validate them both on the client and 
 
 ### Declaration
 
-You can create a new form using `\ae\form()` function. It takes form name as the first argument, and (optionally) an array of default field values as the second argument:
+You can create a new form using `\ae\form()` function. It takes form name as the first argument, and (optionally) an array of initial values as the second argument:
 
 
 ```php
@@ -785,7 +785,7 @@ $form['email'] = \ae\form\email('Email address')
 $form['phone'] = \ae\form\tel('Phone number'); 
 // N.B. Never use \ae\form\number() for phone numbers!
 
-$form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
+$form['phone_type'] = \ae\form\radio('Is it home, work, or mobile number?', 'home')
     ->options([
         'home' => 'Home number',
         'work' => 'Work number',
@@ -807,13 +807,13 @@ $form['photos'] = \ae\form\file('Photos of you')
 
 > You can assign an instance of any subclass of `\ae\form\DataField` or `\ae\form\FileField` classes to a form. Once field is assigned, the form will use either `$_POST` or `$_FILES` array as its data source, depending on which parent class the object is related to.
 
-Field objects expose methods that you can use to define their validation constraints. Most of those constraints have/behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more information.
+Field objects expose methods that you can use to define their validation constraints. Most of those constraints behave similar to their HTML5 counterparts. See [Constraints](#validation-constraints) section for more information.
 
 #### Basic field types
 
-Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields out of the box. All field factory functions accept a field label as the first argument, and (optionally) a default value(s) as the second argument:
+Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields out of the box. All field factory functions accept a field label as the first argument, and (optionally) an initial value(s) as the second argument:
 
-> You can specify default values when creating both form and field objects. However, default values of the form always override default values of its fields.
+> You can specify initial values when creating both form and field objects. However, initial values of the form always override initial values of its fields.
 
 ##### Text strings
 
@@ -1337,7 +1337,7 @@ You can add clauses to the `\ae\db\select()` queries via chainable modifier meth
 
 ### Active record
 
-You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to exposing column values via properties, these objects also have four methods: `values()`, `load()`, `save()`, and `delete()`.
+You might have noticed that `\ae\db\select()` and `\ae\db\insert()` functions return results as objects. In addition to exposing column values via their properties, these objects also expose four methods: `values()`, `load()`, `save()`, and `delete()`.
 
 In some cases you may want to update a property of an existing record without loading its data:
 
@@ -1437,7 +1437,7 @@ class Novel extends \ae\db\ActiveRecord
 
 > There are two other methods you can override: `\ae\db\Table::accessor()` to return an array of primary keys; `\ae\db\Table::columns()` to return an array of data columns.
 
-Now we could be adding new books using `Novel::insert()` method directly, but instead we will incapsulate this functionality into `Author::add_novel()` method. We would also add `Author::novels()` method for retrieving all novels written by an author:
+Now we could be adding new books using `Novel::insert()` method directly, but instead we are going to incapsulate this functionality into `Author::add_novel()` method. We will also add `Author::novels()` method for retrieving all novels written by an author:
 
 ```php
 class Author extends \ae\db\ActiveRecord
