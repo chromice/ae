@@ -794,6 +794,7 @@ $form['phone_type'] = \ae\form\radio('Is home/work/mobile number?', 'home')
     ->required();
 
 $form['birth_date'] = \ae\form\date('Date of birth')
+    // compare to date 18 years ago using strtotime()
     ->max('-18 years', 'You must be at least 18 years old!');
 
 $form['photos'] = \ae\form\file('Photos of you')
@@ -1648,7 +1649,7 @@ $probe->mark('cleaned the garbage');
 
 ### File system paths
 
-Several builtin function (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as an argument. Internally, they all rely on path library to locate the actual file.
+Several builtin functions (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as an argument. Internally, they all rely on path library to locate the actual file.
 
 By default, all paths are resolved relative to the location of your main script. But you are encouraged to explicitly specify the root directory:
 
