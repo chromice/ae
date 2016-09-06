@@ -796,8 +796,8 @@ $form['phone_type'] = \ae\form\radio('Is it home, work, or mobile number?', 'hom
 $form['birth_date'] = \ae\form\date('Date of birth')
     ->max('-18 years', 'You must be at least 18 years old!');
 
-$form['photos'] = \ae\form\file('Photos of you')
-    ->accept('image/*')
+$form['photos'] = \ae\form\image('Photos of you')
+    ->accept('image/jpeg')
     ->multiple()
     ->min_width(200)
     ->min_height(200)
@@ -850,7 +850,7 @@ Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` field
 
 - `\ae\form\color()` uses <samp>&lt;input type="color"&gt;</samp> control; has `pattern(\ae\form\color)` constraint applied.
 - `\ae\form\textarea()` uses <samp>&lt;textarea"&gt;</samp> control; mostly behaves like `\ae\form\text()` field, but does not have access to `pattern()` validation constraint.
-- `\ae\form\file()` will accept multiple values, if `multiple()` method is called.
+- `\ae\form\file()` and `\ae\form\image()` both use <samp>&lt;input type="file"&gt;</samp> control; will accept multiple values, if `multiple()` method is called.
 
 
 #### HTML attributes
@@ -863,13 +863,13 @@ $field = \ae\form\textarea('Description')
 ```
 
 
-
 #### Multiple values
 
 The following field types will accept and produce multiple values, if `multiple()` method is called:
 
 - `\ae\form\email()`
 - `\ae\form\file()`
+- `\ae\form\image()`
 - `\ae\form\select()`
 
 > `\ae\form\checkbox()` does not have `multiple()` method, but the field will accept more than one value, if you provide multiple options via `options()` method.
@@ -887,6 +887,8 @@ $field = \ae\form\text('First name')
         return $value === 'Anton' ? 'Sorry Anton, cannot let you through!' : true;
     });
 ```
+
+All validation constraints presented below will generate human readable error messages automatically. If you wish to override the default error message, you can do so by passing your error message as *the last argument*.
 
 ##### Text field constraints
 
@@ -916,9 +918,10 @@ $field = \ae\form\text('First name')
 
 - `accept($types)` defines a file type constraint; `$types` must be a comma-separated list of either file extensions (with full stop character), valid MIME types, or <samp>audio/\*</samp> or <samp>image/\*</samp> or <samp>video/\*</samp>; corresponds to <samp>accept</samp> attribute in HTML.
 - `min_size($size)`, `max_size($size)` define file size constraints.
-- `min_width($width)`, `max_width($width)`, `min_height($height)`, `max_height($height)`, `min_dimensions($width, $height)`, `max_dimensions($width, $height)` define image dimension constraints.
 
-All validation constraints will generate human readable error messages automatically. If you wish to override the default error message, you can do so by passing your error message as *the last argument*.
+##### Image field constraints
+
+- `min_width($width)`, `max_width($width)`, `min_height($height)`, `max_height($height)`, `min_dimensions($width, $height)`, `max_dimensions($width, $height)` define image dimension constraints.
 
 
 ### Validation
@@ -1107,9 +1110,8 @@ A sequence field is comprised of several repeating blocks of fields:
 ```php
 $textarea = \ae\form\textarea('Content')
     ->attributes(['cols' => 50, 'rows' => 10]);
-$image = \ae\form\file('Image')
+$image = \ae\form\image('Image')
     ->required()
-    ->accept('image/*')
     ->min_dimensions(400, 400);
 $align = \ae\form\radio('Align', 'left')
     ->required()
