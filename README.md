@@ -117,6 +117,8 @@ Let's create the most basic of web applications. Create a file named <samp>index
 $path = \ae\request\path();
 
 echo 'Hello ' . ( isset($path[0]) ? $path[0] : 'world' ) . '!';
+
+?>
 ```
 
 Now let's instruct Apache to redirect all unresolved URIs to <samp>index.php</samp>, by adding the following rules to <samp>.htaccess</samp> file in the web root:
