@@ -42,4 +42,3 @@
 	endforeach;
 ?>
 </ul>
-<?php 	$response->dispatch() ?>
