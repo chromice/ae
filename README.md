@@ -184,12 +184,12 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     echo $path; // some/arbitrary/script.php
     ```
 
-- Get the expected response type (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
+- Get the expected response extension (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
 
     ```php
     // GET /some/arbitrary/request.json HTTP/1.1
 
-    echo \ae\request\type(); // json
+    echo \ae\request\extension(); // json
     ```
 
 - Get the client IP address via `\ae\request\address()` function.
@@ -223,7 +223,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 - Access raw request body, use `\ae\request\body()` function:
 
     ```php
-    $post = \ae\request\body(); // same as file_get_contents("php://input")
+    $raw = \ae\request\body(); // same as file_get_contents("php://input")
     ```
 
 - Map requests to a function/method or instance of a class that implements `\ae\response\Dispatchable` interface.
@@ -248,30 +248,11 @@ Here's an example of a request (<samp>GET /about-us HTTP/1.1</samp>) being mappe
 ]);
 ```
 
-Now let's write a more generic rule that handles all root level pages by using a placeholder, and mapping it to a function:
-
-```php
-// GET /about-us HTTP/1.1
-
-\ae\request\map([
-    // ...
-    '/{any}' => function ($slug) {
-        return \ae\template('path/to/' . $slug . '-page.php');
-        // returns '/path/to/about-us-page.php' template, it it exists
-    },
-    // ...
-]);
-```
-
-We used `{any}` placeholder to catch the slug of the page and pass its value to our handler function as the first argument.
-
-> `{any}` placeholder can match (and capture) a substring only within one path segment, i.e. it can match any character other than <smap>/</smap> (forward slash). There are also `{alpha}` and `{numeric}` placeholders that match and capture only alphabetic or numeric characters.
-
 If the template file does not exist, `\ae\template()` will throw an `\ae\path\Exception`, which in turn will result in `\ae\response\error(404)` being dispatched.
 
 > **N.B.** If a request handler throws `\ae\path\Exception`, `\ae\response\error(404)` is dispatched. If it throws any other exception, `\ae\response\error(500)` is dispatched instead.
 
-Now, let's allows users to download files from a specific directory:
+Now, let's enable users to download files from a specific directory:
 
 ```php
 // GET /download/directory/document.pdf HTTP/1.1
@@ -287,9 +268,9 @@ Now, let's allows users to download files from a specific directory:
 ]);
 ```
 
-First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `attachment()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply pass through the file content.
+First of all, we take advantage of the fact that `\ae\file()` function returns an object that conforms to `\ae\response\Dispatchable` interface. Secondly, whenever actual matched URI path is longer than the pattern, the remainder of it is passed as *last argument* to our handler. And thirdly, we use `attachment()` method to set <samp>Content-Disposition</samp> header to <samp>attachment</samp>, and force the download rather than simply pass the file content through.
 
-> You can pass a custom file name to `attachment()` method, if you do not want to use the actual name of the file.
+> You can pass a custom file name to `attachment()` method as the first argument, if you do not want to use the actual name of the file.
 
 Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that can take any image, resize it to predefined dimensions, and cache the result for 10 years:
 
@@ -324,6 +305,25 @@ Image processing is a very common problem that can be solved in multiple ways. L
 ```
 
 Similarly to the file download example, the file path is passed as *the last argument* to our handler. In addition to that, we catch the image format as *the first argument*. The object returned by `\ae\image()` conforms to `\ae\response\Cachable` interface (in addition to `\ae\response\Dispatchable`) and implements `cache()` method.
+
+> There are also: `{numeric}` placeholder that matches and captures only numeric characters; `{any}` placeholder can match (and capture) a substring only within one path segment, i.e. it can match any character other than <samp>/</samp> (forward slash).
+
+Now let's write a more generic rule that handles all root level pages by using a placeholder, and mapping it to a function:
+
+```php
+// GET /about-us HTTP/1.1
+
+\ae\request\map([
+    // ...
+    '/{any}' => function ($slug) {
+        return \ae\template('path/to/' . $slug . '-page.php');
+        // returns '/path/to/about-us-page.php' template, it it exists
+    },
+    // ...
+]);
+```
+
+Here we use `{any}` placeholder to catch the slug of the page and pass its value to our handler function as the first argument.
 
 And finally, our last rule will display home page, *or* show 404 error for all unmatched requests by returning `null`:
 
@@ -373,7 +373,7 @@ When response object is created, it starts buffering all output. Once the `dispa
 
 By default all responses are <samp>text/html</samp>, but you can change the type by either setting <samp>Content-type</samp> header to a valid mime-type or appending an appropriate file extension to the dispatched path, e.g. <samp>.html</samp>, <samp>.css</samp>, <samp>.js</samp>, <samp>.json</samp> 
 
-> **N.B.** Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method yourself though, and use the request mapping pattern described previously.
+> **N.B.** Objects returned by `\ae\response()`, `\ae\buffer()`, `\ae\template()`, `\ae\file()`, `\ae\image()` implement `\ae\response\Dispatchable` interface, which allows you to dispatch them. You should refrain from using `dispatch()` method explicitly though, and use the request mapping pattern described previously.
 
 
 ### Buffer
@@ -431,7 +431,7 @@ Provided the content of <samp>your/page.php</samp> is...
 
 ### Layout
 
-Layout library allows you to wrap output of a script with output of another script. The layout script is executed *last* , thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
+Layout library allows you to wrap output of a script with output of another script. The layout script is executed *last*, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
 Here's an example of HTML body container <samp>layout_html.php</samp>:
 
@@ -479,15 +479,15 @@ You can also use cache functions directly:
 
 - Save any response manually using `\ae\cache\save()` function:
 
-```php
-\ae\cache\save('hello-world.html', $response, 2 * \ae\cache\hour);
-```
+    ```php
+    \ae\cache\save('hello-world.html', $response, 2 * \ae\cache\hour);
+    ```
 
 - Delete any cached response via `\ae\cache\delete()` function by passing full or partial URL to it:
 
-```php
-\ae\cache\delete('hello-world.html');
-```
+    ```php
+    \ae\cache\delete('hello-world.html');
+    ```
 
 - Remove all *stale* cache entries via `\ae\cache\clean()`:
 
@@ -572,8 +572,8 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 
     echo $file->size(); // 12
     echo $file->name(); // file.txt
-    echo $file->type(); // txt
     echo $file->mime(); // text/plain
+    echo $file->extention(); // txt
 
     $path = $file->path(); // $path = \ae\path('path/to/file.txt')
     ```
@@ -644,14 +644,14 @@ Image library is a wrapper around standard GD library functions. It lets you eff
 
     echo $image->width();  // 320
     echo $image->height(); // 240
-    echo $image->type();   // jpeg
     echo $image->mime();   // image/jpeg
+    echo $image->extension(); // jpg
     ```
 
 - Get access to the image file and perform file operations with it:
     
     ```php
-    $file = $image->file()->delete();
+    $image->file()->delete();
     ```
 
 ### Resizing and cropping
@@ -668,17 +668,12 @@ You will rarely need the first two methods, as the latter two cover most of use 
 ```php
 $photo = \ae\image('path/to/photo.jpg');
 
-$big = $photo
+$regular = $photo
     ->fit(1600, 1600)
     ->suffix('_big')
     ->save();
 
-$small = $big
-    ->fit(640, 640)
-    ->suffix('_small')
-    ->save();
-
-$thumbnail = $small
+$thumbnail = $photo
     ->fill(320, 320)
     ->suffix('_thumbnail')
     ->save();
@@ -687,7 +682,7 @@ $thumbnail = $small
 You can specify the point of origin using `align()` method, before you apply `crop()` and `fill()` transformations to an image:
 
 ```php
-$thumbnail = $small
+$photo
     ->align(\ae\image\left, \ae\image\top)
     ->fill(320, 320)
     ->suffix('_thumbnail')
@@ -721,7 +716,7 @@ Here are all the filters available:
 - `blur()` blurs the image using the Gaussian method.
 - `brightness($value)` changes the brightness of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>.
 - `contast($value)` changes the contrast of the image; accepts a number from <samp>-1.0</samp> to <samp>1.0</samp>.
-- `colorize($red, $green, $blue)` changes the contrast of the image; accepts numbers from <samp>0.0</samp> to <samp>1.0</samp>.
+- `colorize($red, $green, $blue)` changes the average color of the image; accepts numbers from <samp>0.0</samp> to <samp>1.0</samp>.
 - `grayscale()` converts the image into grayscale.
 - `negate()` reverses all colors of the image.
 - `pixelate($size)` applies pixelation effect to the image.
@@ -800,7 +795,6 @@ $form['birth_date'] = \ae\form\date('Date of birth')
     ->max('-18 years', 'You must be at least 18 years old!');
 
 $form['photos'] = \ae\form\image('Photos of you')
-    ->accept('image/jpeg')
     ->multiple()
     ->min_width(200)
     ->min_height(200)
@@ -831,7 +825,6 @@ Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` field
 - `\ae\form\integer()` uses <samp>&lt;input type="number"&gt;</samp> control; has `pattern(\ae\form\integer)` constraint applied.
 - `\ae\form\decimal()` uses <samp>&lt;input type="number"&gt;</samp> control; has `pattern(\ae\form\decimal)` constraint applied.
 - `\ae\form\range()` uses <samp>&lt;input type="range"&gt;</samp> control; has `pattern(\ae\form\decimal)` constraint applied; to match HTML5 spec, `min(0)` and `max(100)` constraints are applied to this field by default, and initial value is set to <samp>min+(max-min)/2</samp>.
-
 
 ##### Dates and time fields
 
@@ -973,7 +966,7 @@ In order to render a form into HTML you can simply cast it to a string:
 echo (string) $form;
 ```
 
-Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` (and a few hidden) tags, and iterating all fields and rendering them individually:
+Alternatively, you can render the form by manually calling `open()` and `close()` methods to create `<form>` and `</form>` (and a few hidden) tags, and iterating all its fields and rendering them individually:
 
 ```php
 <?= $form->open(['novalidate' => true]) ?>
@@ -1002,7 +995,6 @@ The following method render individual components of a field:
 - `label([$attributes])` renders field label, e.g. <samp>&lt;label for=&quot;field-id&quot;&gt;Field label&lt;/label&gt;</samp>; returns an empty string for `\ae\form\checkbox()` fields with no options.
 - `control([$attributes])` renders field control, e.g. <samp>&lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;&quot;&gt;</samp>.
 - `error([$before = '<em class="error">', $after = '</em>'])` renders field error, if it has one.
-
 
 ### Complex field types
 
@@ -1067,7 +1059,7 @@ $field = \ae\form\compound('Date', '2015-01-01')
 
 In addition to regular methods, compound fields also exposes these:
 
-- `components(...)` sets all components comprising the field, plus any filler strings.
+- `components(...)` sets all components comprising the field, including any filler strings.
 - `serialize($function)` accepts a function that takes an array of individual component values and concatenates them.
 - `unserialize($function)` accepts a function that breaks a string into an array of component values.
 
@@ -1091,7 +1083,7 @@ $repeater = \ae\form\repeater('Invitation')
 It exposes three methods:
 
 - `repeat($fields[, $add_label, $remove_label])` expects an associative array of repeated fields and (optionally) labels for add/remove buttons.
-- `min_length($length)` applies a minimum length constraint; it is one by default.
+- `min_length($length)` applies a minimum length constraint; <samp>1</samp> by default.
 - `max_length($length)` applies a maximum length constraint; there is no default maximum.
 
 You can iterate and render the items manually:
@@ -1267,7 +1259,7 @@ echo $result[0]->name . ' is ' . $result[0]->nationality; // Richard K. Morgan i
 
 ### Query functions 
 
-You can make any query via `\ae\db\query()` function alone, but it's not as convenient as specialized query functions:
+You can make any query just with `\ae\db\query()` function alone, but it's not as convenient as using one of specialized query functions:
 
 - `\ae\db\select($table[, $columns])` – a <samp>SELECT</samp> query; accepts an array of column names as the second argument; returns a query object that can be used to add more clauses.
 - `\ae\db\insert($table, $data[, ...])` – an <samp>INSERT</samp> query; returns the record as an object; if more than one record is inserted, returns an array of objects.
@@ -1499,7 +1491,7 @@ class Novel extends \ae\db\ActiveRecord
     public static function find_all()
     {
         return self::select()
-            ->with('Author')
+            ->with('Author', 'author_id', 'author')
             ->order_by('title');
     }
 }
@@ -1507,9 +1499,7 @@ class Novel extends \ae\db\ActiveRecord
 
 The only new method in this example is `with()`. It adds a <samp>LEFT JOIN</samp> clause for <samp>authors</samp> table using <samp>author_id</samp> foreign key.
 
-> We could manually specify the foreign key name via the second argument, and the property name via the third, e.g. `->with('Author', 'author_id', 'author')`, but they are automatically derived from class name and schema.
-
-<!-- TODO: Polymorphic relationships. -->
+<!-- TODO: Polymorphic relationships, e.g. fk_id/fk_table -->
 
 Let's inventory our novel collection:
 
@@ -1631,7 +1621,7 @@ You can profile your application's performance and memory footprint using `\ae\i
 ```php
 // Create a probe
 $probe = \ae\inspector\probe('Test probe')
-	->mark('begin probing');
+    ->mark('begin probing');
 
 usleep(10000);
 
@@ -1765,7 +1755,7 @@ if (true === $options['foo']) {
 $options['baz'] = 'How do you do?';
 ```
 
-Note that <samp>baz</samp> option can be set to any value type, because its default value is <samp>null</samp>. In contrast that, the following code will throw an `\ae\options\Exception`:
+Note that <samp>baz</samp> option can be set to any value type, because its default value is <samp>null</samp>. In contrast, the following code will throw an `\ae\options\Exception`:
 
 ```php
 $options['foo'] = null; // Exception: foo can only be TRUE or FALSE
@@ -1794,7 +1784,7 @@ class MyLibrary
 
 Most examples in this documentation both illustrate how things work and serve as unit tests. Each example is a separate listing, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. 
 
-You can pass paths to both files to `\ae\example()` function. It lints and runs the script, optionally compares it to reference file, and (if no errors were encountered) outputs the source code:
+You can pass paths to both files to `\ae\example()` function. It lints and runs the script, optionally compares it to a reference file, and (if no errors were encountered) outputs the source code:
 
 ```php
 echo \ae\example('path/to/example.php', 'path/to/output.txt');
@@ -1814,6 +1804,7 @@ Not everything in your test script is relevant to the end user, who just wants t
 
 // This part will be cut out from the listing shown in the documentation,
 // so you can secretly set everything up for the test.
+
 
 $_GET['what'] = 'world';
 
