@@ -648,11 +648,19 @@ Image library is a wrapper around standard GD library functions. It lets you eff
     echo $image->extension(); // jpg
     ```
 
-- Get access to the image file and perform file operations with it:
-    
+- Copy, move, and delete the image:
+
     ```php
-    $image->file()->delete();
+    $image = \ae\image('example/image.jpg');
+
+    if ($image->exists())
+    {
+        $copy = $image->copy('./image-copy.jpg');
+        $image->delete();
+        $copy->move('./image.jpg');
+    }
     ```
+
 
 ### Resizing and cropping
 
@@ -1779,6 +1787,24 @@ class MyLibrary
     }
 }
 ```
+
+### Localization
+
+```php
+\ae\message\define('form', 'min_size', 'File is too small.');
+```
+
+```php
+\ae\message\define('form', 'min_size', function ($min_size) {
+    return \ae\message('form', 'min_size') . 
+        ' Should be at least ' . \ae\message('file', 'size', $min_size) . '.';
+});
+```
+
+```php
+$message = \ae\message('form', 'min_size', 10 * \ae\file\kilobyte);
+```
+
 
 ### Unit testing
 
