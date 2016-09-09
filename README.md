@@ -137,12 +137,16 @@ Now let's instruct Apache to redirect all unresolved URIs to <samp>index.php</sa
 Now, if you open our app at, say, <samp>http://localhost/</samp> in a browser, you should see this:
 
 ```txt
+GET / HTTP/1.1
+
 Hello world!
 ```
 
 If you change the address to <samp>http://localhost/universe</samp>, you should see:
 
 ```txt
+GET /universe HTTP/1.1
+
 Hello universe!
 ```
 
@@ -158,13 +162,25 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     ```php
     if (\ae\request\method() === \ae\request\GET)
     {
-        echo "<p>This is a GET request.</p>";
+        echo "This is a GET request.";
     }
     else if (\ae\request\method() === \ae\request\POST)
     {
-        echo "<p>This is a POST request.</p>";
+        echo "This is a POST request.";
     }
     ```
+    
+    ```txt
+    GET / HTTP/1.1
+    
+    This is a GET request.
+    ´´´
+    
+    ```txt
+    POST / HTTP/1.1
+    
+    This is a POST request.
+    ´´´
 
 - Access URI path segments via `\ae\request\path()` function:
 
@@ -173,15 +189,15 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 
     $path = \ae\request\path();
 
-    echo $path[0]; // some
-    echo $path[1]; // arbitrary
-    echo $path[2]; // script.php
+    $path[0]; // 'some'
+    $path[1]; // 'arbitrary'
+    $path[2]; // 'script.php'
 
-    echo $path[-3]; // some
-    echo $path[-2]; // arbitrary
-    echo $path[-1]; // script.php
+    $path[-3]; // 'some'
+    $path[-2]; // 'arbitrary'
+    $path[-1]; // 'script.php'
 
-    echo $path; // some/arbitrary/script.php
+    $path; // 'some/arbitrary/script.php'
     ```
 
 - Get the expected response extension (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
@@ -189,7 +205,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     ```php
     // GET /some/arbitrary/request.json HTTP/1.1
 
-    echo \ae\request\extension(); // json
+    \ae\request\extension(); // 'json'
     ```
 
 - Get the client IP address via `\ae\request\address()` function.
@@ -199,17 +215,17 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     ```php
     \ae\request\configure('proxies', ['83.14.1.1', '83.14.1.2']);
 
-    $client_ip = \ae\request\address();
+    $client_ip = \ae\request\address(); 
     ```
     
 - Access `$_GET` query arguments and `$_POST` data via `\ae\request\query()` and `\ae\request\data()` functions respectively:
 
     ```php
-    $get = \ae\request\query(); // returns $_GET
-    $post = \ae\request\data(); // returns $_POST
+    $get = \ae\request\query(); // $_GET
+    $post = \ae\request\data(); // $_POST
 
-    $action = \ae\request\query('action', 'search'); // returns $_GET['action'] or 'search'
-    $term = \ae\request\data('term'); // returns $_POST['term'] or NULL
+    echo \ae\request\query('action', 'search');
+    echo \ae\request\data('term');
     ```
 
 - Access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>) via `\ae\request\files()` function.
@@ -223,7 +239,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 - Access raw request body, use `\ae\request\body()` function:
 
     ```php
-    $raw = \ae\request\body(); // same as file_get_contents("php://input")
+    $raw = \ae\request\body(); // file_get_contents("php://input")
     ```
 
 - Map requests to a function/method or instance of a class that implements `\ae\response\Dispatchable` interface.
