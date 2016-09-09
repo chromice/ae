@@ -62,7 +62,7 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [File system paths](#file-system-paths)
     - [Exception safety](#exception-safety)
     - [Configuration options](#configuration-options)
-    - [Unit testing](#unit-testing)
+- [Testing](#testing)
 - [License](#license)
 
 * * *
@@ -883,16 +883,16 @@ The following field types will accept and produce multiple values, if `multiple(
 Most validation constraints are field type-specific, but all field types have access to the following constraints:
 
 - `required()` – the field must contain a non-empty a value; corresponds to <samp>required</samp> attribute in HTML5.
-- `valid($function)` allows you to specify an arbitrary constraint using a *callable* `$function`; current field value is passed as the first argument, and reference to form is passed as the second argument; function must return either `true`, if the value is valid, or an error message:
+- `valid($function)` allows you to specify an arbitrary constraint using a *callable* `$function`; current field value is passed as the only argument; function must return either `true`, if the value is valid, or an error message:
 
 ```php
 $field = \ae\form\text('First name')
-    ->valid(function ($value, $form) {
+    ->valid(function ($value) {
         return $value === 'Anton' ? 'Sorry Anton, cannot let you through!' : true;
     });
 ```
 
-All validation constraints presented below will generate human readable error messages automatically. If you wish to override the default error message, you can do so by passing your error message as *the last argument*.
+> **N.B.** All validation constraints presented below will generate human-readable error messages automatically. If you wish to override the default error message, you can do so by passing your error message (or an anonymous function that returns one) as *the last argument*.
 
 ##### Text field constraints
 
@@ -1003,6 +1003,33 @@ The following method render individual components of a field:
 - `label([$attributes])` renders field label, e.g. <samp>&lt;label for=&quot;field-id&quot;&gt;Field label&lt;/label&gt;</samp>; returns an empty string for `\ae\form\checkbox()` fields with no options.
 - `control([$attributes])` renders field control, e.g. <samp>&lt;input type=&quot;text&quot; name=&quot;name&quot; value=&quot;&quot;&gt;</samp>.
 - `error([$before = '<em class="error">', $after = '</em>'])` renders field error, if it has one.
+
+### Localization 
+
+All validation constraints generate human-readable error messages automatically:
+
+```php
+$form['name'] = \ae\form\text('Full name')->required()->max_length(100);
+```
+
+You can change the default validation error message by passing a string as the last argument to any validation constrain function: 
+
+```php
+$form['name'] = \ae\form\text('Full name')
+    ->required('Please state your full name.')
+    ->max_length(100);
+```
+
+You can also customize error messages based on value by passing an anonymous function instead of a string: 
+
+```php
+$form['name'] = \ae\form\text('Full name')
+    ->required('Please state your full name.')
+    ->max_length(100, function ($value) {
+        $diff = strlen($value) - 100;
+        return 'Your name is ' . $diff . ' character' . ($diff !== 1 ? 's' : '') . ' longer than it should be!'
+    });
+```
 
 ### Complex field types
 
@@ -1788,25 +1815,7 @@ class MyLibrary
 }
 ```
 
-### Localization
-
-```php
-\ae\message\define('form', 'min_size', 'File is too small.');
-```
-
-```php
-\ae\message\define('form', 'min_size', function ($min_size) {
-    return \ae\message('form', 'min_size') . 
-        ' Should be at least ' . \ae\message('file', 'size', $min_size) . '.';
-});
-```
-
-```php
-$message = \ae\message('form', 'min_size', 10 * \ae\file\kilobyte);
-```
-
-
-### Unit testing
+## Testing
 
 Most examples in this documentation both illustrate how things work and serve as unit tests. Each example is a separate listing, optionally accompanied by reference output, which can be a plain text document, an image, or any other file. 
 
