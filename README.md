@@ -557,6 +557,13 @@ The responses are saved to <samp>cache</samp> directory (in the web root directo
 
 With everything in place, Apache will first look for an unexpired cached response, and only if it finds nothing, will it route the request to <samp>index.php</samp> in the web root directory.
 
+You can change cache directory location like this:
+
+```php
+\ae\cache\configure('directory', 'path/to/cache');
+```
+
+
 
 ## File
 
