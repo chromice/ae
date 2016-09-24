@@ -1,8 +1,0 @@
-<IfModule mod_rewrite.c>
-	RewriteEngine on
-	RewriteBase /
-	
-	# If no matching file found, redirect back to index.php
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*) index.php?/$1 [L,QSA]
-</IfModule>
