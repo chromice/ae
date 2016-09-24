@@ -117,6 +117,8 @@ Let's create the most basic of web applications. Create a file named <samp>index
 
 $path = \ae\request\path();
 
+echo \ae\request\method() . ' ' . $path . ' HTTP/1.1';
+
 echo 'Hello ' . ( isset($path[0]) ? $path[0] : 'world' ) . '!';
 
 ?>
