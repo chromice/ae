@@ -172,25 +172,15 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
         echo "This is a POST request.";
     }
     ```
-    
-    ```txt
-    GET / HTTP/1.1
-    
-    This is a GET request.
-    ´´´
-    
-    ```txt
-    POST / HTTP/1.1
-    
-    This is a POST request.
-    ´´´
 
-- Access URI path segments via `\ae\request\path()` function:
+- Access URI path segments via `\ae\request\path()` function diectly or via path object it returns when called with no argument:
 
     ```php
     // GET /some/arbitrary/script.php HTTP/1.1
 
     $path = \ae\request\path();
+    
+    $path; // 'some/arbitrary/script.php'
 
     $path[0]; // 'some'
     $path[1]; // 'arbitrary'
@@ -199,8 +189,10 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     $path[-3]; // 'some'
     $path[-2]; // 'arbitrary'
     $path[-1]; // 'script.php'
-
-    $path; // 'some/arbitrary/script.php'
+    
+    \ae\request\path(2); // 'script.php'
+    \ae\request\path(3); // NULL
+    \ae\request\path(3, 'fallback'); // 'fallback'
     ```
 
 - Get the expected response extension (<samp>html</samp> by default), which is determined by the *extension* part of the URI path.
