@@ -1322,7 +1322,7 @@ You can make any query just with `\ae\db\query()` function alone, but it's not a
 - `\ae\db\select($table[, $columns])` – a <samp>SELECT</samp> query; accepts an array of column names as the second argument; returns a query object that can be used to add more clauses.
 - `\ae\db\insert($table, $data)` – an <samp>INSERT</samp> query; returns the record as an object.
 - `\ae\db\replace($table, $data)` – a <samp>REPLACE</samp> query; returns the record as an object.
-- `\ae\db\update($table, $predicate, $data)` – an <samp>UPDATE</samp> query; returns the number of rows affected.
+- `\ae\db\update($table, $data, $predicate)` – an <samp>UPDATE</samp> query; returns the number of rows affected.
 - `\ae\db\delete($table, $predicate)` – a <samp>DELETE</samp> query; returns the number of rows affected.
 - `\ae\db\find($table, $record_id)` – a custom <samp>SELECT</samp> query; returns a single record object or <samp>NULL</samp>, if no record is found.
 - `\ae\db\count($table[, $column], $predicate)` – a custom <samp>SELECT</samp> query; returns a number of rows; if `$column` is specified, only distinct values are counted.
@@ -1337,10 +1337,11 @@ Let's insert more data:
 
 ```php
 // Insert two more records
-list($stephenson, $gibson) = \ae\db\insert('authors', [
+$stephenson = \ae\db\insert('authors', [
         'name'        => 'Neal Stephenson',
         'nationality' => 'American'
-    ], [
+    ]);
+$gibson = \ae\db\insert('authors', [
         'name'        => 'William Ford Gibson',
         'nationality' => 'Canadian'
     ]);
@@ -1350,9 +1351,9 @@ We should also update Mr. Morgan's nationality:
 
 ```php
 \ae\db\update('authors', [
-        'id' => $morgan_id
-    ], [
         'nationality' => 'English'
+    ], [
+        'id' => $morgan_id
     ]);
 ```
 
@@ -1383,7 +1384,7 @@ There are 3 authors in the result set:
 You can add clauses to the `\ae\db\select()` queries via chainable modifier methods: 
 
 - `join($table, $on)`, `inner_join($table, $on)`, `left_join($table, $on)`, `right_join($table, $on)`, `full_join($table, $on)` – adds a <samp>JOIN</samp> clause; accepts table name as the first argument, and an associative array of foreign key/primary key pairs as the second argument; `join()` and `inner_join()` are synonyms.
-- `where($predicate)` or `where($template, $parameters)` – adds a <samp>WHERE</samp> clause using a predicate object or by creating a predicate from template and parameters; multiple clauses are concatenated using <samp>AND</samp> operator.
+- `where($predicate)` or `where($template, $parameters)` – adds a <samp>WHERE</samp> clause using a predicate object or by creating a predicate from template string and parameters; multiple clauses are concatenated using <samp>AND</samp> operator.
 - `group_by($column)` or `group_by($columns)` – adds a <samp>GROUP BY</samp> clause; accepts a column name or an array of column names.
 - `having($predicate)` or `having($template, $parameters)` – adds a <samp>HAVING</samp> clause.
 - `order_by($column[, $order])` or `order_by($columns_order)` – adds an <samp>ORDER BY</samp> clause; accepts a column name and an optional sort direction (`\ae\db\ascending` or `\ae\db\descending`), or an associative array of column/sort direction pairs.
@@ -1449,7 +1450,7 @@ The base class implements several static methods that work exactly as correspond
 Author::select([$columns]);
 Author::insert($data);
 Author::replace($data);
-Author::update($predicate, $data);
+Author::update($data, $predicate);
 Author::delete($predicate);
 Author::find($record_id);
 Author::count([$column,] $predicate);
@@ -1522,23 +1523,23 @@ class Author extends \ae\db\ActiveRecord
 Now let's add a few books to the database:
 
 ```php
-$gibson->add_novel('Neuromancer');
-$gibson->add_novel('Count Zero');
-$gibson->add_novel('Mona Lisa Overdrive');
+$gibson->add_novel('Neuromancer', 1984);
+$gibson->add_novel('Count Zero', 1986);
+$gibson->add_novel('Mona Lisa Overdrive', 1988);
 
-$stephenson->add_novel('Snow Crash');
-$stephenson->add_novel('Cryptonomicon');
-$stephenson->add_novel('Reamde');
+$stephenson->add_novel('Snow Crash', 1992);
+$stephenson->add_novel('Cryptonomicon', 1999);
+$stephenson->add_novel('Reamde', 2011);
 
 // Note: we don't have to load author's record to add a novel!
 $morgan = Author::find($morgan_id);
 
-$morgan->add_novel('Altered Carbon');
-$morgan->add_novel('Broken Angels');
-$morgan->add_novel('Woken Furies');
+$morgan->add_novel('Altered Carbon', 2002);
+$morgan->add_novel('Broken Angels', 2003);
+$morgan->add_novel('Woken Furies', 2005);
 ```
 
-And finally, let's add a method to `Novel` class that will return all book records sorted alphabetically:
+And finally, let's add a couple of methods to `Novel` class that will return book records sorted alphabetically:
 
 ```php
 class Novel extends \ae\db\ActiveRecord
@@ -1554,17 +1555,25 @@ class Novel extends \ae\db\ActiveRecord
             ->with('Author', 'author_id', 'author')
             ->order_by('title');
     }
+    
+    public static function find_recent()
+    {
+        return self::find_all()
+            ->where('published_on > {date}', [
+                'date' => date('Y-m-d', strtotime('-15 years'))
+            ]);
+    }
 }
 ```
 
-The only new method in this example is `with()`. It adds a <samp>LEFT JOIN</samp> clause for <samp>authors</samp> table using <samp>author_id</samp> foreign key.
+Note how we call `with()` method to add a <samp>LEFT JOIN</samp> clause for <samp>authors</samp> table using <samp>author_id</samp> foreign key, and how we reuse `find_all()` query in `find_recent()` by appending a <samp>WHERE</samp> clause that filters out all novels published more than 15 years ago.
 
 <!-- TODO: Polymorphic relationships, e.g. fk_id/fk_table -->
 
-Let's inventory our novel collection:
+Let's inventory our recent novel collection:
 
 ```php
-$novels = Novel::find_all();
+$novels = Novel::find_recent();
 $count = count($novels);
 
 echo "Here are all $count novels ordered alphabetically:\n";
@@ -1578,15 +1587,10 @@ foreach ($novels as $novel)
 Which will output:
 
 ```txt
-Here are all 9 novels ordered alphabetically:
+Here are all 4 novels ordered alphabetically:
 - Altered Carbon by Richard K. Morgan
 - Broken Angels by Richard K. Morgan
-- Count Zero by William Ford Gibson
-- Cryptonomicon by Neal Stephenson
-- Mona Lisa Overdrive by William Ford Gibson
-- Neuromancer by William Ford Gibson
 - Reamde by Neal Stephenson
-- Snow Crash by Neal Stephenson
 - Woken Furies by Richard K. Morgan
 ```
 
