@@ -200,7 +200,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     ```php
     // GET /some/arbitrary/request.json HTTP/1.1
 
-    \ae\request\extension(); // 'json'
+    \ae\request\ext(); // 'json'
     ```
 
 - Get the client IP address via `\ae\request\address()` function.
@@ -216,11 +216,14 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 - Access `$_GET` query arguments and `$_POST` data via `\ae\request\query()` and `\ae\request\data()` functions respectively:
 
     ```php
+    // POST /search HTTP/1.1
+    // term=foo
+    
     $get = \ae\request\query(); // $_GET
     $post = \ae\request\data(); // $_POST
 
-    echo \ae\request\query('action', 'search');
-    echo \ae\request\data('term');
+    \ae\request\query('action', 'search'); // 'search'
+    \ae\request\data('term'); // 'foo'
     ```
 
 - Access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>) via `\ae\request\files()` function.
@@ -229,6 +232,12 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     $files = \ae\request\files();
     // returns an associative array of uploaded files:
     // e.g. ['form_field_name' => \ae\file(), ...]
+    ```
+    
+- Get a request header via `\ae\request\header()` function:
+
+    ```php
+    $charset = \ae\request\header('Accept-Charset'); // 'utf-8'
     ```
 
 - Access raw request body, use `\ae\request\body()` function:
