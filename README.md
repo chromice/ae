@@ -1818,26 +1818,26 @@ echo $path[-1]; // path.txt
 
 If you find yourself cleaning up state after catching an exception, you are doing it wrong! Generally speaking, all resources your object has allocated must be deallocated in the destructor. But writing little wrapper-classes to manage each kind of resource is simply too tedious!
 
-If you just need to ensure some (usually global or static) variable is set to its previous state, use `\ae\switcher()` to create an object that will do it automatically:
+If you just need to ensure some (usually global or static) variable is set to its previous state, use `\ae\switch()` to create an object that will do it automatically:
 
 ```php
 $a = 'foo';
 
-$switcher = \ae\switcher($a, 'bar');
+$switch = \ae\switch($a, 'bar');
 
 $a; // 'bar'
 
-unset($switcher);
+unset($switch);
 
 $a; // 'foo'
 ```
 
-And if you need to run some arbitrary code (to free resources for instance), use `\ae\deferrer()` to create an object that will do so when it's destroyed:
+And if you need to run some arbitrary code (to free resources for instance), use `\ae\defer()` to create an object that will do so when it's destroyed:
 
 ```php
 $file = fopen('some/file', 'r');
 
-$deferrer = \ae\deferrer(function () use ($file) {
+$fclose = \ae\defer(function () use ($file) {
     fclose($file);
 });
 ```
