@@ -217,6 +217,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 
     ```php
     // POST /search HTTP/1.1
+    // 
     // term=foo
     
     $get = \ae\request\query(); // $_GET
@@ -231,7 +232,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     ```php
     $files = \ae\request\files();
     // returns an associative array of uploaded files:
-    // e.g. ['form_field_name' => \ae\file(), ...]
+    // e.g. ['form_input_name' => \ae\file(), ...]
     ```
     
 - Get a request header via `\ae\request\header()` function:
@@ -292,7 +293,7 @@ First of all, we take advantage of the fact that `\ae\file()` function returns a
 
 > You can pass a custom file name to `attachment()` method as the first argument, if you do not want to use the actual name of the file.
 
-Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that can take any image, resize it to predefined dimensions, and cache the result for 10 years:
+Image processing is a very common problem that can be solved in multiple ways. Let's create a simple image processor that accepts an image file path, resizes it to predefined dimensions, and caches the result for 10 years:
 
 ```php
 // GET /resized/square/avatars/photo.jpg HTTP/1.1
@@ -409,7 +410,7 @@ $buffer = \ae\buffer();
 
 echo "I'm buffered!";
 
-$content = (string) $buffer; // $content === "I'm buffered!"
+$content = (string) $buffer; // "I'm buffered!"
 
 echo "I'm still buffered!";
 
@@ -426,20 +427,20 @@ echo "And I'm not buffered!";
 Use `\ae\template()` to capture output of a parameterized script:
 
 ```php
-$output = (string) \ae\template('your/page.php', [
+echo \ae\template('path/to/template.php', [
     'title' => 'Example!',
     'body' => '<h1>Hello world!</h1>'
 ]);
 ```
 
-Provided the content of <samp>your/page.php</samp> is...
+Provided the content of <samp>template.php</samp> is...
 
 ```php
 <title><?= $title ?></title>
 <body><?= $body ?></body>
 ```
 
-...the `$output` variable will contain:
+...the script will output:
 
 ```html
 <title>Example!</title>
@@ -453,7 +454,7 @@ Provided the content of <samp>your/page.php</samp> is...
 
 Layout library allows you to wrap output of a script with output of another script. The layout script is executed *last*, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
-Here's an example of HTML body container <samp>layout_html.php</samp>:
+Here's an example of a simple layout <samp>layout_html.php</samp>:
 
 ```html
 <html>
@@ -567,7 +568,6 @@ You can change cache directory location like this:
 ```
 
 
-
 ## File
 
 File library is a wrapper that uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
@@ -575,7 +575,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 - Open and lock the file, and read and write its content:
 
     ```php
-    $file = \ae\file('path/to/file.ext')
+    $file = \ae\file('path/to/file.txt')
         ->open('w+')
         ->lock()
         ->truncate()
@@ -590,19 +590,25 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 
     // Unlock file and close its handle
     unset($file);
-    ``` 
+    ```
+    
+    <!--
+    ```txt
+    Hello World
+    ```
+    -->
 
 - Access basic information about the file:
 
     ```php
     $file = \ae\file('path/to/file.txt');
 
-    echo $file->size(); // 12
-    echo $file->mime(); // text/plain
-    echo $file->name(); // file.txt
-    echo $file->ext();  // txt
+    $file->size(); // 12
+    $file->mime(); // 'text/plain'
+    $file->name(); // 'file.txt'
+    $file->ext();  // 'txt'
 
-    $path = $file->path(); // $path = \ae\path('path/to/file.txt')
+    $path = $file->path(); // \ae\path('path/to/file.txt')
     ```
 
 - Copy, move, and delete existing files:
@@ -640,23 +646,30 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
         echo "{$meta_name}: $meta_value\n";
     }
     ```
+    
+    <!--
+    ```txt
+    real_name: My text file (1).txt
+    resource_id: 123
+    ```
+    -->
 
     > **N.B.** Metadata is transient and is never saved to disk, but it may be used by different parts of your application to communicate additional information about the file.
 
 - Keep file size calculations readable:
 
     ```php
-    echo \ae\file\byte;     // 1
-    echo \ae\file\kilobyte; // 1000
-    echo \ae\file\kibibyte; // 1024
-    echo \ae\file\megabyte; // 1000000
-    echo \ae\file\mebibyte; // 1048576
-    echo \ae\file\gigabyte; // 1000000000
-    echo \ae\file\gibibyte; // 1073741824
-    echo \ae\file\terabyte; // 1000000000000
-    echo \ae\file\tebibyte; // 1099511627776
-    echo \ae\file\petabyte; // 1000000000000000
-    echo \ae\file\pebibyte; // 1125899906842624
+    \ae\file\byte;     // 1
+    \ae\file\kilobyte; // 1000
+    \ae\file\kibibyte; // 1024
+    \ae\file\megabyte; // 1000000
+    \ae\file\mebibyte; // 1048576
+    \ae\file\gigabyte; // 1000000000
+    \ae\file\gibibyte; // 1073741824
+    \ae\file\terabyte; // 1000000000000
+    \ae\file\tebibyte; // 1099511627776
+    \ae\file\petabyte; // 1000000000000000
+    \ae\file\pebibyte; // 1125899906842624
     ```
 
 
@@ -670,14 +683,14 @@ Image library is a wrapper around standard GD library functions. It lets you eff
     $image = \ae\image('example/image_320x240.jpg');
     
     // image-specific info
-    echo $image->width();  // 320
-    echo $image->height(); // 240
+    $image->width();  // 320
+    $image->height(); // 240
     
     // general file info
-    echo $image->size();   // 1024
-    echo $image->mime();   // image/jpeg
-    echo $image->name();   // image_320x240.jpg
-    echo $image->ext();    // jpg
+    $image->size();   // 1024
+    $image->mime();   // 'image/jpeg'
+    $image->name();   // 'image_320x240.jpg'
+    $image->ext();    // 'jpg'
     ```
 
 - Copy, move, and delete the image file:
@@ -772,7 +785,8 @@ If you want to preserve association with the original image, you can append or p
 \ae\image('some/photo.jpg')
     ->prefix('unknown_')
     ->suffix('graphic_image')
-    ->save(); // some/unknown_photographic_image.jpg
+    ->save();
+// image is saved as 'some/unknown_photographic_image.jpg'
 ```
 
 If you want to change the name *or* image type completely, you should provide file name to `save()` method:
@@ -783,11 +797,13 @@ $image = \ae\image('some/image.png');
 $image
     ->quality(75)
     ->progressive(true)
-    ->save('image.jpg'); // some/image.jpg
+    ->save('image.jpg');
+// image is saved as 'some/image.jpg'
 
 $image
     ->interlaced(true)
-    ->save('image.gif'); // some/image.gif
+    ->save('image.gif');
+// image is saved as 'some/image.gif'
 ```
 
 
@@ -1321,7 +1337,7 @@ $result = \ae\db\query("SELECT * FROM `authors` WHERE `author_id` = {id}", [
         'id' => $morgan_id
     ]);
 
-echo $result[0]->name . ' is ' . $result[0]->nationality; // Richard K. Morgan is British
+$result[0]->name . ' is ' . $result[0]->nationality; // Richard K. Morgan is British
 ```
 
 ### Query functions 
@@ -1485,6 +1501,7 @@ Let's make things more interesting by introducing a second class of objects: <sa
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `author_id` int(10) unsigned NOT NULL,
         `title` varchar(255) NOT NULL,
+        `published_on` date NOT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 ```
@@ -1513,11 +1530,12 @@ class Author extends \ae\db\ActiveRecord
         return 'authors';
     }
     
-    public function add_novel($title)
+    public function add_novel($title, $year)
     {
         return Novel::insert([
             'author_id' => $this->id,
-            'title' => $title
+            'title' => $title,
+            'date' => $year . '-01-01'
         ]);
     }
     
@@ -1738,7 +1756,6 @@ $probe->mark('cleaned the garbage');
 ```
 
 
-
 ## Utilities
 
 ### File system paths
@@ -1808,11 +1825,11 @@ $a = 'foo';
 
 $switcher = \ae\switcher($a, 'bar');
 
-// $a === 'bar'
+$a; // 'bar'
 
 unset($switcher);
 
-// $a === 'foo'
+$a; // 'foo'
 ```
 
 And if you need to run some arbitrary code (to free resources for instance), use `\ae\deferrer()` to create an object that will do so when it's destroyed:
@@ -1858,7 +1875,11 @@ $options['baz'] = 'How do you do?';
 Note that <samp>baz</samp> option can be set to any value type, because its default value is <samp>null</samp>. In contrast, the following code will throw an `\ae\options\Exception`:
 
 ```php
-$options['foo'] = null; // Exception: foo can only be TRUE or FALSE
+try {
+    $options['foo'] = null;
+} catch (Exception $e) {
+    $e->getMessage(); // 'foo can only be TRUE or FALSE'
+}
 ```
 
 You can also set option values by passing an associative array via second argument to `\ae\options()`. Those values are subject to validation rules listed above. This is useful when you want to both declare and use the options object to configure, say, your library:
