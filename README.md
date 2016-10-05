@@ -160,7 +160,7 @@ Splendid! Now let's familiarise you with all the libraries and hack together a f
 
 Request library is a lightweight abstraction of HTTP requests that let's you do the following:
 
-- Distinguish between different kinds of requests via `\ae\request\method()` function:
+- Distinguish between different request methods via `\ae\request\method()` function:
 
     ```php
     if (\ae\request\method() === \ae\request\GET)
@@ -254,7 +254,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 
 You should always strive to break down your application into smallest independent components. The best way to handle a request is to map it to a specific function or template that encapsulates a part of your application's functionality.
 
-Requests are mapped using rules, key-value pairs of a path pattern and either an object that conforms to `\ae\response\Dispatchable` interface or a function/method that returns such an object.
+Requests are mapped using rules, key-value pairs of a path pattern and *either* an object that conforms to `\ae\response\Dispatchable` interface *or* a function/method that returns such an object.
 
 Here's an example of a request (<samp>GET /about-us HTTP/1.1</samp>) being mapped to a page template (<samp>about-us-page.php</samp>):
 
@@ -433,7 +433,7 @@ echo \ae\template('path/to/template.php', [
 ]);
 ```
 
-Provided the content of <samp>template.php</samp> is...
+Provided the content of <samp>template.php</samp> is:
 
 ```php
 <title><?= $title ?></title>
@@ -634,6 +634,8 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
         $file->move('path/to/destination/' . $_FILES['file']['name']);
     }
     ```
+    
+    <!-- FIXME: What if file name is dangerous relative path? -->
 
 - Assign arbitrary metadata to a file, e.g. database keys, related files, alternative names, etc.:
 
@@ -696,7 +698,7 @@ Image library is a wrapper around standard GD library functions. It lets you eff
 - Copy, move, and delete the image file:
 
     ```php
-    $image = \ae\image('example/image.jpg');
+    $image = \ae\image('path/to/image.jpg');
 
     if ($image->exists())
     {
@@ -1065,7 +1067,7 @@ You can change the default validation error message by passing a string as the l
 ```php
 $form['name'] = \ae\form\text('Full name')
     ->required('Please state your full name.')
-    ->max_length(100);
+    ->max_length(100, 'Your name is too long!');
 ```
 
 You can also customize error messages based on value by passing an anonymous function instead of a string: 
@@ -1075,7 +1077,7 @@ $form['name'] = \ae\form\text('Full name')
     ->required('Please state your full name.')
     ->max_length(100, function ($value) {
         $diff = strlen($value) - 100;
-        return 'Your name is ' . $diff . ' character' . ($diff !== 1 ? 's' : '') . ' longer than it should be!'
+        return 'Your name is ' . $diff . ' character' . ($diff !== 1 ? 's' : '') . ' longer than what is acceptable!'
     });
 ```
 
@@ -1274,7 +1276,7 @@ If you want to know what queries were made and how much memory and time they too
 \ae\inspector\show('queries', true);
 ```
 
-You must show inspector first though, before you start making any queries! See [Inspector](#inspector) section for more information.
+You must show inspector before you start making any queries! See [Inspector](#inspector) section for more information.
 
 
 ### Making queries 
@@ -1337,7 +1339,7 @@ $result = \ae\db\query("SELECT * FROM `authors` WHERE `author_id` = {id}", [
         'id' => $morgan_id
     ]);
 
-$result[0]->name . ' is ' . $result[0]->nationality; // Richard K. Morgan is British
+$result[0]->name . ' is ' . $result[0]->nationality; // 'Richard K. Morgan is British'
 ```
 
 ### Query functions 
@@ -1357,6 +1359,8 @@ You can make any query just with `\ae\db\query()` function alone, but it's not a
 > All functions that use `$predicate`, do require it. If you want to, say, apply a <samp>DELETE</samp> query to all rows, you must use `\ae\db\all` constant. 
 > 
 > A predicate can be either an associative array of column name/value pairs, or an object returned by `\ae\db\predicate()` function, e.g. `\ae\db\predicate('a_column LIKE "%{value}%"', ['value' => 'foo'])`.
+
+<!-- FIXME: "%{value}%" would not work as {value} is an escaped string containing quotes. -->
 
 Let's insert more data:
 
@@ -1799,9 +1803,9 @@ foreach ($path as $segment)
 
 echo $absolute_path;
 
-echo $path[-3]; // some
-echo $path[-2]; // file
-echo $path[-1]; // path.txt
+$path[-3]; // 'some'
+$path[-2]; // 'file'
+$path[-1]; // 'path.txt'
 ```
 
 ### Exception safety
