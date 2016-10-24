@@ -10,7 +10,7 @@ In many cases a single example listing can specify both its assumptions (input p
 $_GET['foo']; // 'bar'
 ```
 
-The test script will interpret this listing as:
+The test script will interpret it loosely as follows:
 
 ```php
 $_GET['foo'] = 'bar';
