@@ -1,4 +1,4 @@
-> Looking for a different version? Try [this branch](https://github.com/chromice/ae/tree/deadend-1.0).
+> Looking for previous version? Try [this branch](https://github.com/chromice/ae/tree/deadend-1.0).
 
 # æ – minimalist PHP toolkit
 
