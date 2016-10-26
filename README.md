@@ -6,10 +6,10 @@
 
 This project has been created by its sole author to explore, express and validate his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
-- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with either: all libraries come preconfigured with sensible default values.
-- **Reliability**: The APIs were designed to be expressive and user error-resistant. Versions of this code have powered a few moderately complex websites and applications.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with either: most libraries come preconfigured with sensible default values.
+- **Reliability**: The APIs were designed to be expressive and user error-resistant. All functionality described in this document is covered with tests.
 - **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
-- **Independence:** This toolkit does not have any third-party dependencies, nor does it needlessly adhere to any style guide or standard. There are only 6 thousand lines of code written by a single author, so it would not take you long to figure out what all of them do.
+- **Independence:** This toolkit does not have any third-party dependencies and the codebase is intentially small and clean, so that anyone can understand how something works, or why it does not work.
 
 There is nothing particularly groundbreaking or fancy about this toolkit. If you just need a lean PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com).
 
