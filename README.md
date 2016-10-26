@@ -155,7 +155,7 @@ GET /universe HTTP/1.1
 Hello universe!
 ```
 
-Splendid! Now let's familiarise you with all the libraries and hack together a few more simple apps.
+Now let's familiarise you with all the libraries.
 
 
 ## Request
