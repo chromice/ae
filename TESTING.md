@@ -84,15 +84,15 @@ echo 'Hello World!';
 Hello World!
 ```
 
-## Dependacies
+## Dependencies 
 
-Some scripts may depend on other scripts or files. You can specify such dependacies by naming the file (e.g. <samp>hello_world.php</samp>) in paragraph preceeding the listing of its content and ending the paragraph with a colon:
+Some scripts may depend on other scripts or files. You can specify such dependencies by naming the file (e.g. <samp>hello_world.php</samp>) in paragraph preceeding the listing of its content and ending the paragraph with a colon:
 
 ```php
 echo 'Hello. World.';
 ```
 
-Then you can reference that by prepending its name with `'path/to/'`, e.g.:
+Then you can reference that dependency by prepending its name with `'path/to/'`, e.g.:
 
 ```php
 echo 'Say: ';
