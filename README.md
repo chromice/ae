@@ -65,8 +65,8 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [File system paths](#file-system-paths)
     - [Exception safety](#exception-safety)
     - [Configuration options](#configuration-options)
-- [Testing](#testing)
-- [License](#license)
+- [Testing](./TESTING.md)
+- [License](./LICENSE.md)
 
 * * *
 
