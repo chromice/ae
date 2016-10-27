@@ -20,7 +20,7 @@ if ($_GET['foo'] !== 'bar') fail();
 
 ## Assumptions
 
-You can simulate a <samp>GET</samp> or <samp>POST</samp> request by specifying a commented out HTTP request header at the beginning of your PHP example:
+You can mock a <samp>GET</samp> or <samp>POST</samp> request by specifying a commented out HTTP request header at the beginning of your PHP example:
 
 ```php
 // POST /form.php HTTP/1.1
@@ -35,6 +35,8 @@ Alternatively you can specify HTTP header separtely right before the PHP example
 GET /index.html HTTP/1.1
 Host: www.example.com
 ```
+
+<!-- TODO: Implement mocking a request: http://phpdbg.com/docs/mocking-webserver -->
 
 ## Assertions
 
