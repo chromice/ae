@@ -40,9 +40,6 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Layout](#layout)
     - [Cache](#cache)
 - [File](#file)
-    - [Handling uploaded files](#handling-uploaded-files)
-    - [Passing metadata](#passing-metadata)
-    - [File size constants](#file-size-constants)
 - [Image](#image)
     - [Resizing and cropping](#resizing-and-cropping)
     - [Applying filters](#applying-filters)
@@ -1443,7 +1440,7 @@ $stephenson = \ae\db\find('authors', $stephenson_id);
 
 $stephenson->load(['name']);
 
-echo $stephenson->name; // echo "Neal Stephenson";
+$stephenson->name; // 'Neal Stephenson';
 ```
 
 You can make a new record and save it to the database manually:
