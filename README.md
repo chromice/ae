@@ -202,7 +202,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     ```php
     // GET /some/arbitrary/request.json HTTP/1.1
 
-    \ae\request\ext(); // 'json'
+    \ae\request\extension(); // 'json'
     ```
 
 - Get the client IP address via `\ae\request\address()` function.
@@ -608,7 +608,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     $file->size(); // 12
     $file->mime(); // 'text/plain'
     $file->name(); // 'file.txt'
-    $file->ext();  // 'txt'
+    $file->extension();  // 'txt'
 
     $path = $file->path(); // \ae\path('path/to/file.txt')
     ```
@@ -694,7 +694,7 @@ Image library is a wrapper around standard GD library functions. It lets you eff
     $image->size();   // 1024
     $image->mime();   // 'image/jpeg'
     $image->name();   // 'image_320x240.jpg'
-    $image->ext();    // 'jpg'
+    $image->extension();    // 'jpg'
     ```
 
 - Copy, move, and delete the image file:
