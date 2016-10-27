@@ -637,7 +637,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     }
     ```
     
-    <!-- FIXME: What if file name is dangerous relative path? -->
+    <!-- FIXME: What if file name is a dangerous relative path? -->
 
 - Assign arbitrary metadata to a file, e.g. database keys, related files, alternative names, etc.:
 
@@ -1332,7 +1332,9 @@ Now, there's a typo in the author's name, so let's fix it:
 
 Here we used `{data:set}` placeholder and specified its value via the third argument. We also used three parameters in the query and specified their values via the second argument.
 
-> **N.B.** You should always supply parameter and data values via the second and third arguments. The library escapes those values which prevents potential SQL injection attacks!
+> **N.B.** You should always supply parameter and data values via the second and third arguments. The library escapes those values if necessary by wrapping them in quotes and treating special characters to prevent SQL injection attacks.
+> 
+> If you require a raw parameter value (e.g. you want to pass a statement), use `{raw:value}` placeholder. If you want an escaped value, but want to wrap it in quotes yourself (e.g. you are making a `LIKE` comparison against a variable), use `{escaped:value}` placeholder.
 
 Now let's retrieve that record from the database:
 
@@ -1358,11 +1360,9 @@ You can make any query just with `\ae\db\query()` function alone, but it's not a
 - `\ae\db\sum($table, $column, $predicate)` – a custom <samp>SELECT</samp> query; returns a sum of all column values.
 - `\ae\db\average($table, $column, $predicate)` – a custom <samp>SELECT</samp> query; returns an average of all column values.
 
-> All functions that use `$predicate`, do require it. If you want to, say, apply a <samp>DELETE</samp> query to all rows, you must use `\ae\db\all` constant. 
+> All functions that use `$predicate` do require it. If you want to, say, apply a <samp>DELETE</samp> query to all rows, you must use `\ae\db\all` constant. 
 > 
-> A predicate can be either an associative array of column name/value pairs, or an object returned by `\ae\db\predicate()` function, e.g. `\ae\db\predicate('a_column LIKE "%{value}%"', ['value' => 'foo'])`.
-
-<!-- FIXME: "%{value}%" would not work as {value} is an escaped string containing quotes. -->
+> A predicate can be either an associative array of column name/value pairs, or an object returned by `\ae\db\predicate()` function, e.g. `\ae\db\predicate('a_column LIKE "%{escaped:value}%"', ['value' => 'foo'])`.
 
 Let's insert more data:
 
