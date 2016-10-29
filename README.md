@@ -574,18 +574,12 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 - Open and lock the file, and read and write its content:
 
     ```php
-    $file = \ae\file('path/to/file.txt')
-        ->open('w+')
-        ->lock()
+    $file = \ae\file('path/to/file.txt', \ae\file\writable && \ae\file\locked)
         ->truncate()
-        ->write('Hello World');
+        ->append('Hello', ' ')
+        ->append('World');
     
-    $file->seek(0);
-
-    if ($file->tell() === 0)
-    {
-        echo $file->read($file->size());
-    }
+    $file->content(); // 'Hello World'
 
     // Unlock file and close its handle
     unset($file);
@@ -605,9 +599,9 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     $file->size(); // 12
     $file->mime(); // 'text/plain'
     $file->name(); // 'file.txt'
-    $file->extension();  // 'txt'
+    $file->extension(); // 'txt'
 
-    $path = $file->path(); // \ae\path('path/to/file.txt')
+    $file->path(); // \ae\path('path/to/file.txt')
     ```
 
 - Copy, move, and delete existing files:
@@ -630,7 +624,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 
     if ($file->is_uploaded())
     {
-        $file->move('path/to/destination/' . $_FILES['file']['name']);
+        $file->moveTo('path/to/uploads/')->rename($_FILES['file']['name']);
     }
     ```
     
