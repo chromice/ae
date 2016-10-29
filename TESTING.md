@@ -1,6 +1,6 @@
 # Testing 
 
-README.md is an executable specification. Each chapter is self-contained and artifacts of running one example can be used in all subsequent examples within that chapter. All example code is run, even examples hidden from Markdown renderer in HTML comments. In fact, all code that is not required to understand how somethings works, but is necessary for the example code to be executed properly should be hidden.
+README.md is an executable specification. Each chapter is self-contained and artifacts of running one example can be used in all subsequent examples within that chapter. All example code is run, even examples hidden in HTML comments. In fact, all code irrelevant to user`s business needs must be hidden this way including pure integration and unit tests.
 
 In many cases a single example listing can specify both its assumptions (input parameters) and assertions (success state). For example:
 
@@ -112,6 +112,8 @@ echo 'Hello World!';
 ```txt
 Hello World!
 ```
+
+Effectively any output produced by a fenced PHP code can be compared byte for byte to *either* any other fenced code block *or* an image that immediately follows.
 
 <!-- DEPENDANCIES -->
 
