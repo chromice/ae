@@ -574,7 +574,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
 - Open and lock the file, and read and write its content:
 
     ```php
-    $file = \ae\file('path/to/file.txt', \ae\file\writable && \ae\file\locked)
+    $file = \ae\file('path/to/file.txt', \ae\file\writable & \ae\file\locked)
         ->truncate()
         ->append('Hello', ' ')
         ->append('World');
@@ -584,12 +584,6 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     // Unlock file and close its handle
     unset($file);
     ```
-    
-    <!--
-    ```txt
-    Hello World
-    ```
-    -->
 
 - Access basic information about the file:
 
@@ -682,10 +676,10 @@ Image library is a wrapper around standard GD library functions. It lets you eff
     $image->height(); // 240
     
     // general file info
-    $image->size();   // 1024
-    $image->mime();   // 'image/jpeg'
-    $image->name();   // 'image_320x240.jpg'
-    $image->extension();    // 'jpg'
+    $image->size(); // 1024
+    $image->mime(); // 'image/jpeg'
+    $image->name(); // 'image_320x240.jpg'
+    $image->extension(); // 'jpg'
     ```
 
 - Copy, move, and delete the image file:
