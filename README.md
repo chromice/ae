@@ -39,6 +39,7 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Template](#template)
     - [Layout](#layout)
     - [Cache](#cache)
+- [Path](#path)
 - [File](#file)
 - [Image](#image)
     - [Resizing and cropping](#resizing-and-cropping)
@@ -59,7 +60,6 @@ You may still find it useful, even if you are thinking of web app architecture i
     - [Debugging](#debugging)
     - [Profiling](#profiling)
 - [Utilities](#utilities)
-    - [File system paths](#file-system-paths)
     - [Exception safety](#exception-safety)
     - [Configuration options](#configuration-options)
 - [Testing](./TESTING.md)
@@ -560,6 +560,51 @@ You can change cache directory location like this:
 
 ```php
 \ae\cache\configure('directory', 'path/to/cache');
+```
+
+## Path
+
+All functions thar accept relative file paths as an argument rely on path library to resolve them.
+
+By default, all paths are resolved relative to the location of your main script. But you are encouraged to explicitly specify the root directory:
+
+```php
+\ae\path\configure('root', '/some/absolute/path');
+
+$absolute_path = \ae\path('relative/path/to/file.ext');
+```
+
+A part of your application may need to resolve a path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
+
+```php
+$dir = \ae\path('some/dir');
+
+$file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
+```
+
+`\ae\path()` function and `path()` method always return an object. You must explicitly cast it to string, when you need one:
+
+```php
+$path_string = (string) $path_object;
+```
+
+When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesirable, you should use `exists()`, `is_directory()`, and `is_file()` methods first to check, whether the path exists, and points to a directory or file.
+
+You can iterate path segments and access them individually using an index:
+
+```php
+$path = \ae\path('some/file/path.txt');
+$absolute_path = '';
+
+foreach ($path as $segment) {
+    $absolute_path.= '/' . $segment;
+}
+
+echo $absolute_path;
+
+$path[-3]; // 'some'
+$path[-2]; // 'file'
+$path[-1]; // 'path.txt'
 ```
 
 
@@ -1722,51 +1767,6 @@ $probe->mark('cleaned the garbage');
 
 
 ## Utilities
-
-### File system paths
-
-Several builtin functions (`\ae\file()`, `\ae\image()`, `\ae\template()`, `\ae\layout()`) accept relative file paths as an argument. Internally, they all rely on path library to locate the actual file.
-
-By default, all paths are resolved relative to the location of your main script. But you are encouraged to explicitly specify the root directory:
-
-```php
-\ae\path\configure('root', '/some/absolute/path');
-
-$absolute_path = \ae\path('relative/path/to/file.ext');
-```
-
-A part of your application may need to resolve a path relative to its own directory. In this case, instead of changing the configuration back and forth (which is very error prone), you should save the path to that directory to a variable:
-
-```php
-$dir = \ae\path('some/dir');
-
-$file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext');
-```
-
-`\ae\path()` function and `path()` method always return an object. You must explicitly cast it to string, when you need one:
-
-```php
-$path_string = (string) $path_object;
-```
-
-When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesirable, you should use `exists()`, `is_directory()`, and `is_file()` methods first to check, whether the path exists, and points to a directory or file.
-
-You can iterate path segments and access them individually using an index:
-
-```php
-$path = \ae\path('some/file/path.txt');
-$absolute_path = '';
-
-foreach ($path as $segment) {
-    $absolute_path.= '/' . $segment;
-}
-
-echo $absolute_path;
-
-$path[-3]; // 'some'
-$path[-2]; // 'file'
-$path[-1]; // 'path.txt'
-```
 
 ### Exception safety
 
