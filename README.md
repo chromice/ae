@@ -162,12 +162,9 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 - Distinguish between different request methods via `\ae\request\method()` function:
 
     ```php
-    if (\ae\request\method() === \ae\request\GET)
-    {
+    if (\ae\request\method() === \ae\request\GET) {
         echo "This is a GET request.";
-    }
-    else if (\ae\request\method() === \ae\request\POST)
-    {
+    } else if (\ae\request\method() === \ae\request\POST) {
         echo "This is a POST request.";
     }
     ```
@@ -300,8 +297,7 @@ Image processing is a very common problem that can be solved in multiple ways. L
 \ae\request\map([
     // ...
     '/resized/{alpha}' => function ($format, $path) {
-        switch ($format)
-        {
+        switch ($format) {
             case 'square':
                 $width = 256;
                 $height = 256;
@@ -569,7 +565,7 @@ You can change cache directory location like this:
 
 ## File
 
-File library is a wrapper that uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
+File library uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
 
 - Open and lock the file, and read and write its content:
 
@@ -603,8 +599,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     ```php
     $file = \ae\file('path/to/file.txt');
 
-    if ($file->exists())
-    {
+    if ($file->exists()) {
         $copy = $file->copy('./file-copy.txt');
         $file->delete();
         $copy->move('./file.txt');
@@ -616,8 +611,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     ```php
     $file = \ae\file($_FILES['file']['tmp_name']);
 
-    if ($file->is_uploaded())
-    {
+    if ($file->is_uploaded()) {
         $file->moveTo('path/to/uploads/')->rename($_FILES['file']['name']);
     }
     ```
@@ -630,8 +624,7 @@ File library is a wrapper that uses standard file functions: `fopen()`, `fclose(
     $file['real_name'] = 'My text file (1).txt';
     $file['resource_id'] = 123;
 
-    foreach ($file as $meta_name => $meta_value)
-    {
+    foreach ($file as $meta_name => $meta_value) {
         echo "{$meta_name}: $meta_value\n";
     }
     ```
@@ -687,8 +680,7 @@ Image library is a wrapper around standard GD library functions. It lets you eff
     ```php
     $image = \ae\image('path/to/image.jpg');
 
-    if ($image->exists())
-    {
+    if ($image->exists()) {
         $copy = $image->copy('./image-copy.jpg');
         $image->delete();
         $copy->move('./image.jpg');
@@ -970,26 +962,22 @@ $field = \ae\form\text('First name')
 Once the form is declared, you can check if it has been submitted, and if the submitted values are valid:
 
 ```php
-if ($form->is_submitted() && $form->is_valid())
-{
+if ($form->is_submitted() && $form->is_valid()) {
     // All HTML5 constraints are met
     // Time for custom validation
     $is_valid = true;
     
     // Validate name
-    if ($form['name']->value === 'John Connor')
-    {
+    if ($form['name']->value === 'John Connor') {
         $form['name']->error = 'You are not John Connor! State your real name please.';
         $is_valid = false;
     }
     
     // If name is valid, save the data
-    if ($is_valid)
-    {
+    if ($is_valid) {
         $user = Profile::find($user_id);
         
-        foreach ($form as $name => $field)
-        {
+        foreach ($form as $name => $field) {
             $user->$name = $field->value;
         }
         
@@ -1382,8 +1370,7 @@ $count = count($authors);
 
 echo "There are $count authors in the result set:\n";
 
-foreach ($authors as $author)
-{
+foreach ($authors as $author) {
     echo "- {$author->name} ({$author->nationality})\n";
 }
 ```
@@ -1451,10 +1438,8 @@ $shaky->delete();
 You can extend `\ae\db\ActiveRecord` class to add more functionality to these objects:
 
 ```php
-class Author extends \ae\db\ActiveRecord
-{
-    public static function table()
-    {
+class Author extends \ae\db\ActiveRecord {
+    public static function table() {
         return 'authors';
     }
 }
@@ -1500,10 +1485,8 @@ Let's make things more interesting by introducing a second class of objects: <sa
 We also need a class to represent this table. The class name is totally arbitrary, so we will call it `Novel`:
 
 ```php
-class Novel extends \ae\db\ActiveRecord
-{
-    public static function table()
-    {
+class Novel extends \ae\db\ActiveRecord {
+    public static function table() {
         return 'books';
     }
 }
@@ -1514,15 +1497,12 @@ class Novel extends \ae\db\ActiveRecord
 Now we could be adding new books using `Novel::insert()` method directly, but instead we are going to incapsulate this functionality into `Author::add_novel()` method. We will also add `Author::novels()` method for retrieving all novels written by an author:
 
 ```php
-class Author extends \ae\db\ActiveRecord
-{
-    public static function table()
-    {
+class Author extends \ae\db\ActiveRecord {
+    public static function table() {
         return 'authors';
     }
     
-    public function add_novel($title, $year)
-    {
+    public function add_novel($title, $year) {
         return Novel::insert([
             'author_id' => $this->id,
             'title' => $title,
@@ -1530,8 +1510,7 @@ class Author extends \ae\db\ActiveRecord
         ]);
     }
     
-    public function novels()
-    {
+    public function novels() {
         return Novel::select()
             ->where(['author_id' => $this->id]);
     }
@@ -1560,22 +1539,18 @@ $morgan->add_novel('Woken Furies', 2005);
 And finally, let's add a couple of methods to `Novel` class that will return book records sorted alphabetically:
 
 ```php
-class Novel extends \ae\db\ActiveRecord
-{
-    public static function table()
-    {
+class Novel extends \ae\db\ActiveRecord {
+    public static function table() {
         return 'books';
     }
     
-    public static function find_all()
-    {
+    public static function find_all() {
         return self::select()
             ->with('Author', 'author_id', 'author')
             ->order_by('title');
     }
     
-    public static function find_recent()
-    {
+    public static function find_recent() {
         return self::find_all()
             ->where('published_on > {date}', [
                 'date' => date('Y-m-d', strtotime('-15 years'))
@@ -1596,8 +1571,7 @@ $count = count($novels);
 
 echo "Here are all $count novels ordered alphabetically:\n";
 
-foreach ($novels as $novel)
-{
+foreach ($novels as $novel) {
     echo "- {$novel->title} by {$novel->author->name}\n";
 }
 ```
@@ -1783,8 +1757,7 @@ You can iterate path segments and access them individually using an index:
 $path = \ae\path('some/file/path.txt');
 $absolute_path = '';
 
-foreach ($path as $segment)
-{
+foreach ($path as $segment) {
     $absolute_path.= '/' . $segment;
 }
 
@@ -1876,12 +1849,10 @@ try {
 You can also set option values by passing an associative array via second argument to `\ae\options()`. Those values are subject to validation rules listed above. This is useful when you want to both declare and use the options object to configure, say, your library:
 
 ```php
-class MyLibrary
-{
+class MyLibrary {
     protected static $options;
     
-    public static function configure(/* $values OR $name, $value*/)
-    {
+    public static function configure(/* $values OR $name, $value*/) {
         $args = func_get_args();
         $values = func_num_args() > 1 ? [ $args[0] => $args[1] ] ? $args[0];
         
