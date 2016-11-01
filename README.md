@@ -1631,6 +1631,22 @@ Here are all 4 novels ordered alphabetically:
 - Woken Furies by Richard K. Morgan
 ```
 
+### Prepared statements
+
+```php
+$test = 0;
+$statement = \ae\db\prepare('SELECT 1 WHERE 1 = {test}')
+    ->bind('test', $test);
+
+$statement->fetch(); // null
+
+$test = 1;
+$statement->fetch(); // [1]
+
+$test = 2;
+$statement->fetch(); // null
+```
+
 
 ### Transactions
 
