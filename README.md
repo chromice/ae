@@ -152,14 +152,14 @@ GET /universe HTTP/1.1
 Hello universe!
 ```
 
-Now let's familiarise you with all the libraries.
+And that is it! Let's familiarise you with all the libraries.
 
 
 ## Request
 
 Request library is a lightweight abstraction of HTTP requests that let's you do the following:
 
-- Distinguish between different request methods via `\ae\request\method()` function:
+- Distinguish between different request methods (i.e. `GET`, `POST`, `PUT`, `PATCH`, `DELETE`) via `\ae\request\method()` function:
 
     ```php
     if (\ae\request\method() === \ae\request\GET) {
@@ -169,7 +169,7 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     }
     ```
 
-- Access URI path segments via `\ae\request\path()` function diectly or via path object it returns when called with no argument:
+- Access URI path segments via `\ae\request\path()` function directly or via path object it returns when called with no arguments:
 
     ```php
     // GET /some/arbitrary/script.php HTTP/1.1
@@ -209,6 +209,8 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     $client_ip = \ae\request\address(); 
     ```
     
+    <!-- TODO: What about IPv6 addresses? -->
+    
 - Access `$_GET` query arguments and `$_POST` data via `\ae\request\query()` and `\ae\request\data()` functions respectively:
 
     ```php
@@ -226,21 +228,23 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
 - Access uploaded files (when request body is encoded as <samp>multipart/form-data</samp>) via `\ae\request\files()` function.
 
     ```php
-    $files = \ae\request\files();
-    // returns an associative array of uploaded files:
+    $files = \ae\request\files(); // array
     // e.g. ['form_input_name' => \ae\file(), ...]
+    
+    $foo_file = \ae\request\file('foo'); // \ae\file($_FILES['foo']['tmp_name'])
     ```
     
 - Get a request header via `\ae\request\header()` function:
 
     ```php
-    $charset = \ae\request\header('Accept-Charset'); // 'utf-8'
+    $headers = \ae\request\header(); // array
+    $charset = \ae\request\header('Accept-Charset'); // $headers['Accept-Charset']
     ```
 
 - Access raw request body, use `\ae\request\body()` function:
 
     ```php
-    $raw = \ae\request\body(); // file_get_contents("php://input")
+    $raw = \ae\request\body(); // file_get_contents('php://input')
     ```
 
 - Map requests to a function/method or instance of a class that implements `\ae\response\Dispatchable` interface.
@@ -1629,22 +1633,6 @@ Here are all 4 novels ordered alphabetically:
 - Broken Angels by Richard K. Morgan
 - Reamde by Neal Stephenson
 - Woken Furies by Richard K. Morgan
-```
-
-### Prepared statements
-
-```php
-$test = 0;
-$statement = \ae\db\prepare('SELECT 1 WHERE 1 = {test}')
-    ->bind('test', $test);
-
-$statement->fetch(); // null
-
-$test = 1;
-$statement->fetch(); // [1]
-
-$test = 2;
-$statement->fetch(); // null
 ```
 
 
