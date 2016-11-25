@@ -199,14 +199,14 @@ Request library is a lightweight abstraction of HTTP requests that let's you do 
     \ae\request\extension(); // 'json'
     ```
 
-- Get the client IP address via `\ae\request\address()` function.
+- Get the client IP address via `\ae\request\from()` function.
     
     > **N.B.** If your app is running behind a reverse-proxy and/or load balancer, you must specify their IP addresses first
     
     ```php
     \ae\request\configure('proxies', ['83.14.1.1', '83.14.1.2']);
 
-    $client_ip = \ae\request\address(); 
+    $client_ip = \ae\request\from(); 
     ```
     
     <!-- TODO: What about IPv6 addresses? -->
