@@ -2,13 +2,13 @@
 
 # æ – minimalist PHP toolkit
 
-æ (pronounced "ash") is a collection of loosely coupled PHP libraries for request routing, response caching, templating, form validation, image manipulation, database operations, and easy debugging and profiling.
+æ (pronounced "ash") is a collection of loosely coupled PHP components for request routing, response caching, templating, form validation, image manipulation, database operations, and easy debugging and profiling.
 
 This project has been created by its sole author to explore, express and validate his views on web development. As a result, this is an opinionated codebase that attempts to achieve the following goals:
 
-- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with either: most libraries come preconfigured with sensible default values.
+- **Simplicity:** There are no controllers, event emitters and responders, filters, template engines. There are no config files to tinker with either: most components come preconfigured with sensible default values.
 - **Reliability**: The APIs were designed to be expressive and user error-resistant. All functionality described in this document is covered with tests.
-- **Performance:** All libraries have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
+- **Performance:** All components have been designed with performance and efficiency in mind. Responses can be cached statically and served by Apache alone.
 - **Independence:** This toolkit does not have any third-party dependencies and the codebase is intentially small and clean, so that anyone can understand how something works, or why it does not work.
 
 There is nothing particularly groundbreaking or fancy about this toolkit. If you just need a lean PHP framework, you may have found it. However, if someone told you that all your code must be broken into models, views and controllers, you will be better off using something like [Yii](http://www.yiiframework.com) or [Laravel](http://laravel.com).
@@ -152,12 +152,12 @@ GET /universe HTTP/1.1
 Hello universe!
 ```
 
-And that is it! Let's familiarise you with all the libraries.
+And that is it! Let's familiarise you with all the components.
 
 
 ## Request
 
-Request library is a lightweight abstraction of HTTP requests that let's you do the following:
+Request component is a lightweight abstraction of HTTP requests that let's you do the following:
 
 - Distinguish between different request methods (i.e. `GET`, `POST`, `PUT`, `PATCH`, `DELETE`) via `\ae\request\method()` function:
 
@@ -363,7 +363,7 @@ And finally, our last rule will display home page, *or* show 404 error for all u
 
 ## Response
 
-Response library is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
+Response component is a set of functions, classes, and interfaces that lets you create a response object, set its content and headers, and (optionally) cache and compress it. It is designed to work with `\ae\request\map()` function (see above), which expects you to create a response object for each request.
 
 Here is an example of a simple application that creates a response, sets one custom header, caches it for 5 minutes, and dispatches it. The response is also automatically compressed using Apache's `mod_deflate`:
 
@@ -451,7 +451,7 @@ Provided the content of <samp>template.php</samp> is:
 
 ### Layout
 
-Layout library allows you to wrap output of a script with output of another script. The layout script is executed *last*, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
+Layout component allows you to wrap output of a script with output of another script. The layout script is executed *last*, thus avoiding many problems of using separate header and footer scripts to keep the template code [DRY](http://en.wikipedia.org/wiki/DRY).
 
 Here's an example of a simple layout <samp>layout_html.php</samp>:
 
@@ -568,7 +568,7 @@ You can change cache directory location like this:
 
 ## Path
 
-All functions thar accept relative file paths as an argument rely on path library to resolve them.
+All functions thar accept relative file paths as an argument rely on path component to resolve them.
 
 By default, all paths are resolved relative to the location of your main script. But you are encouraged to explicitly specify the root directory:
 
@@ -592,7 +592,7 @@ $file = $dir->path('filename.ext'); // same as \ae\path('some/dir/filename.ext')
 $path_string = (string) $path_object;
 ```
 
-When you cast (implicitly or explicitly) a path object to a string, the library will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesirable, you should use `exists()`, `is_directory()`, and `is_file()` methods first to check, whether the path exists, and points to a directory or file.
+When you cast (implicitly or explicitly) a path object to a string, the component will throw an `\ae\path\Exception`, if the path does not exist. If such behavior is undesirable, you should use `exists()`, `is_directory()`, and `is_file()` methods first to check, whether the path exists, and points to a directory or file.
 
 You can iterate path segments and access them individually using an index:
 
@@ -614,7 +614,7 @@ $path[-1]; // 'path.txt'
 
 ## File
 
-File library uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
+File component uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fwrite()`, `copy()`, `rename()`, `is_uploaded_file()`, `move_uploaded_file()`, etc. All methods throw `\ae\file\Exception` on error.
 
 - Open and lock the file, and read and write its content:
 
@@ -706,7 +706,7 @@ File library uses standard file functions: `fopen()`, `fclose()`, `fread()`, `fw
 
 ## Image
 
-Image library is a wrapper around standard GD library functions. It lets you effortlessly resize, crop and apply filters to an image, and also:
+Image component is a wrapper around standard GD library functions. It lets you effortlessly resize, crop and apply filters to an image, and also:
 
 - Retrieve basic information about the image:
 
@@ -839,7 +839,7 @@ $image
 
 ## Form
 
-Form library lets you create web forms and validate them both on the client and the server sides using HTML5 constraints. Both forms and individual controls render themselves into valid HTML when cast to string (by implementing `__toString()` magic method), but you can render them manually, if you so desire.
+Form component lets you create web forms and validate them both on the client and the server sides using HTML5 constraints. Both forms and individual controls render themselves into valid HTML when cast to string (by implementing `__toString()` magic method), but you can render them manually, if you so desire.
 
 
 ### Declaration
@@ -893,7 +893,7 @@ Field objects expose methods that you can use to define their validation constra
 
 #### Basic field types
 
-Form library supports most kinds of `<input>`, `<select>`, or `<textarea>` fields out of the box. All field factory functions accept a field label as the first argument, and (optionally) an initial value(s) as the second argument:
+Form component supports most kinds of `<input>`, `<select>`, or `<textarea>` fields out of the box. All field factory functions accept a field label as the first argument, and (optionally) an initial value(s) as the second argument:
 
 > You can specify initial values when creating both form and field objects. However, initial values of the form always override initial values of its fields.
 
@@ -975,7 +975,7 @@ $field = \ae\form\text('First name')
 ##### Text field constraints
 
 - `min_length($length)` and `max_length($length)` define maximum and minimum length constraints; they correspond to <samp>minlength</samp> and <samp>maxlength</samp> attributes in HTML5.
-- `pattern($pattern)` defines a pattern constraint; `$pattern` must be a valid regular expression without slashes, e.g. `#[0-9a-f]{6}`; it corresponds to <samp>pattern</samp> attribute in HTML5; the library has several patterns defined as constants:
+- `pattern($pattern)` defines a pattern constraint; `$pattern` must be a valid regular expression without slashes, e.g. `#[0-9a-f]{6}`; it corresponds to <samp>pattern</samp> attribute in HTML5; the component has several patterns defined as constants:
     - `\ae\form\integer` – an integer number, e.g. <samp>-1</samp>, <samp>0</samp>, <samp>1</samp>, <samp>2</samp>, <samp>999</samp>.
     - `\ae\form\decimal` – a decimal number, e.g. <samp>0.01</samp>, <samp>-.02</samp>, <samp>25.00</samp>, <samp>30</samp>.
     - `\ae\form\numeric` – a string consisting of numeric characters, e.g. <samp>123</samp>, <samp>000</samp>.
@@ -1269,7 +1269,7 @@ You can iterate and render the blocks manually:
 
 ## Database
 
-Database library lets you make queries to a MySQL database, and exposes simple object-oriented abstractions for individual tables and records.
+Database component lets you make queries to a MySQL database, and exposes simple object-oriented abstractions for individual tables and records.
 
 Before we can do anything, you must configure the connection:
 
@@ -1354,7 +1354,7 @@ Now, there's a typo in the author's name, so let's fix it:
 
 Here we used `{data:set}` placeholder and specified its value via the third argument. We also used three parameters in the query and specified their values via the second argument.
 
-> **N.B.** You should always supply parameter and data values via the second and third arguments. The library escapes those values if necessary by wrapping them in quotes and treating special characters to prevent SQL injection attacks.
+> **N.B.** You should always supply parameter and data values via the second and third arguments. The component escapes those values if necessary by wrapping them in quotes and treating special characters to prevent SQL injection attacks.
 > 
 > If you require a raw parameter value (e.g. you want to pass a statement), use `{raw:value}` placeholder. If you want an escaped value, but want to wrap it in quotes yourself (e.g. you are making a `LIKE` comparison against a variable), use `{escaped:value}` placeholder.
 
@@ -1812,7 +1812,7 @@ $fclose = \ae\defer(function () use ($file) {
 
 ### Configuration options
 
-While most æ libraries come with sensible defaults, they also allow you to configure their behavior via `\ae\*\configure()` functions. Internally, all of them use `\ae\options()` function to create an object that:
+While most æ components come with sensible defaults, they also allow you to configure their behavior via `\ae\*\configure()` functions. Internally, all of them use `\ae\options()` function to create an object that:
 
 - enumerates all possible option names
 - provides default values for each option
@@ -1850,7 +1850,7 @@ try {
 }
 ```
 
-You can also set option values by passing an associative array via second argument to `\ae\options()`. Those values are subject to validation rules listed above. This is useful when you want to both declare and use the options object to configure, say, your library:
+You can also set option values by passing an associative array via second argument to `\ae\options()`. Those values are subject to validation rules listed above. This is useful when you want to both declare and use the options object to configure, say, your component:
 
 ```php
 class MyLibrary {
